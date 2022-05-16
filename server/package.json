@@ -6,7 +6,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.3",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.7",
     "passport-auth-token": "^1.0.1",
     "pg": "^8.7.3",
     "request": "^2.88.0"
