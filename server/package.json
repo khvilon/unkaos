@@ -1,0 +1,26 @@
+{
+  "name": "unkaos_server",
+  "version": "0.0.1",
+  "description": "server side for the unkaos task tracker project, connecting Vue client to the postgresql db",
+  "main": "app.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.3",
+    "node-fetch": "^2.6.0",
+    "passport-auth-token": "^1.0.1",
+    "pg": "^8.7.3",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "node",
+    "task",
+    "tracker",
+    "unkaos"
+  ],
+  "author": "Nikolay Khvilon",
+  "license": "ISC"
+}
