@@ -72,6 +72,7 @@
 	}
 
 	
+	
      
 
 	const data = {collumns, buttons, name, search_collumns}
@@ -97,13 +98,14 @@
 
 
 
-<template ref='issues'>
+<template ref='issues' >
     <TopMenu 
+		v-if="is_visible"
   		:buttons="buttons"
   		:name="name"
   		:collumns="search_collumns"
     />
-    <div id=issues_down_panel>
+    <div id=issues_down_panel class="panel" :class="!is_visible ? 'hidden' : ''" @click="is_visible=!is_visible">
 	  	<div id="issues_table_panel">
 	    	<KTable 
 	    		:collumns="collumns"
@@ -125,6 +127,8 @@
     color: white;
     min-height: calc(100vh - 77px);
     height: calc(100vh - 100px);
+
+    transition: all 3s ease;
 	}
 
 
