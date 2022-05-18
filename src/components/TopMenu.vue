@@ -126,24 +126,14 @@
 
 <style>
   /* Google Font Link */
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
-  @import url('https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css');
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-  }
-  body {
-    transition: all 0.5s ease;
-  }
+
   .topbar {
     position: relative;
     display: flex;
     flex-direction: column;
     left: 0;
     top: 0;
-    height:74px;
+
     min-height: min-content;
     /* overflow-y: auto; */
     width:  calc(100% - 3px);
@@ -154,12 +144,13 @@
     border-bottom-color: rgb(71, 81, 89);;
     /*border-bottom-style: solid;
     border-bottom-width: 1px;*/
+    height: var(--top-menu-height);
 
     border-radius: 8px;
     
     margin: 1px;
     margin-left: 2px;
-    padding-top: 17px;
+    padding-top: 14px;
     padding-left: 0px;
   }
 
