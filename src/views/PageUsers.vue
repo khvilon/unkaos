@@ -137,15 +137,15 @@
   		:name="name"
   		:collumns="search_collumns"
     />
-    <div id=users_down_panel>
-	  	<div id="users_table_panel">
+    <div id=users_down_panel >
+	  	<div id="users_table_panel" class="panel">
 	    	<KTable 
 	    		:collumns="collumns"
 	    		:table-data="users"
 	    		:name="'users'"
 	    	/>
 	  	</div>
-	  	<div id="users_card">
+	  	<div id="users_card" class="panel">
 	  		<component v-bind:is="input.type + 'Input'"
 	  			v-for="(input, index) in inputs"
 	  			:label="input.label"
@@ -178,12 +178,9 @@
 
 <style>
 	#users_table_panel, #users_card {
-    background-color: rgb(35, 39, 43);
-    border-radius: 8px;
     margin: 1px;
     color: white;
-    min-height: calc(100vh - 77px);
-    height: calc(100vh - 100px);
+    height: calc(100vh - var(--top-menu-height) - 2px);
 	}
 
 
