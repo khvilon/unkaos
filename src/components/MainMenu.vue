@@ -1,55 +1,4 @@
-<template>
-  <div
-    class="sidebar view"
-    :class="isOpened ? 'open' : ''"
-    :style="cssVars"
-  >
-    <div class="logo-details">
-      <i
-        class="bx icon"
-        :class="menuIcon"
-      />
-
-      <div class="logo_name">
-        unkaos
-      </div>
-
-      <i
-        class="bx"
-        :class="isOpened ? 'bx-menu-alt-right' : 'bx-menu'"
-        id="btn"
-        @click="isOpened = !isOpened"
-      />
-    </div>
-
-    <div class="main-menu-list">
-      <div id="my-scroll">
-        <ul
-          class="nav-list"
-          style="overflow: visible;"
-        >
-          <span
-            v-for="(menuItem, index) in menuItems"
-            :key="index"
-          >
-            <li>
-              <router-link :to="menuItem.link" :class="'menu-item-' + menuItem.level">
-                <i
-                  class="bx"
-                  :class="menuItem.icon || 'bx-square-rounded'"
-                />
-                <span class="links_name">{{ menuItem.name }}</span>
-              </router-link>    
-            </li>
-          </span>
-        </ul>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script>
-  import palette from '../palette.ts'
   import dict from '../dict.ts'
   
   export default {
@@ -57,24 +6,9 @@
       //! Menu settings
       isMenuOpen: {
         type: Boolean,
-        default: true,
+        default: false,
       },
-      menuIcon: {
-        type: String,
-        default: 'bx-hive',
-      },
-      isPaddingLeft: {
-        type: Boolean,
-        default: true,
-      },
-       menuOpenedPaddingLeftBody: {
-        type: String,
-        default: '250px'
-      },
-      menuClosedPaddingLeftBody: {
-        type: String,
-        default: '78px'
-      },
+      
 
       //! Menu items
       menuItems: {
@@ -147,126 +81,265 @@
             level: 2
           },
         ],
-      },
-
-      
-
-      
+      },      
     },
     data() {
       return {
-        isOpened: false
+        is_opened: false,
+        hover_offset_x: 0,
+        hover_offset_y: 0,
+        select_offset_x: 0,
+        select_offset_y: 0,
+        hover_opacity: 0,
+        select_opacity: 0,
       }
     },
-    mounted() {
-      this.isOpened = this.isMenuOpen
-    },
-    beforeCreate()
-    {
-      //dict.set_lang('en')
-      //console.log(dict['Задачи'])
-    },
-    computed: {
-      cssVars() {
-        return {
-          // '--padding-left-body': this.isOpened ? this.menuOpenedPaddingLeftBody : this.menuClosedPaddingLeftBody,
-          '--bg-color': palette.bg_color,
-          '--logo-title-color': palette.color,
-          '--icons-color': palette.color,
-          '--menu-items-hover-color': palette.hover_bg_color,
-          '--menu-items-text-color': palette.color,
-        }
+    methods: {
+      move_hover(e) {
+        this.hover_opacity = 1
+        this.hover_offset_x = e.target.offsetLeft
+        this.hover_offset_y = e.target.offsetTop
       },
-    },
-    watch: {
-      isOpened() {
-        window.document.body.style.paddingLeft = this.isOpened && this.isPaddingLeft ? this.menuOpenedPaddingLeftBody : this.menuClosedPaddingLeftBody
+      hide_hover(e) {
+        this.hover_opacity = 0
+      },
+      move_select(e) {
+        this.select_opacity = 1
+        this.select_offset_x = e.target.offsetLeft
+        this.select_offset_y = e.target.offsetTop
+        this.exit_menu()
+      },
+      exit_menu(e) {
+        if(e != undefined && e.x < 210) return //todo magic number to variable
+        this.is_opened = 0
       }
     }
   }
 </script>
 
-<style>
-  /* Google Font Link */
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
-  @import url('https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css');
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-  }
+
+<template>
+  <div
+    id = "main-menu"
+    class="sidebar panel"
+    :class="is_opened ? 'open' : ''"
+    @mouseout="exit_menu($event)" 
+  >
+    <div class="logo-details">
+      <i
+        class="bx icon bx-hive"
+      />
+      <div class="logo_name">
+        unkaos
+      </div>
+    </div>
+
+    <div class="main-menu-list" @mouseenter="is_opened = true" >
+      <div class="main-menu-element-bg-hover" :style="{ opacity: hover_opacity, top: hover_offset_y + 'px',  left: hover_offset_x + 'px'}"></div>
+      <div class="main-menu-element-bg-select" :style="{ opacity: select_opacity, top: select_offset_y + 'px',  left: select_offset_x + 'px'}"></div>
+      <div class="main-menu-element"
+          v-for="(menuItem, index) in menuItems"
+          :key="index">
+        <router-link :to="menuItem.link"> 
+          <div class="main-menu-element-bg" 
+          @mouseenter="move_hover($event)"
+          @mouseout="hide_hover($event)"
+          @click="move_select($event)"
+          ></div> 
+          <div  :class="'main-menu-link main-menu-element-' + menuItem.level">
+            <i
+              class="bx"
+              :class="menuItem.icon || 'bx-square-rounded'"
+            />
+            <span class="links_name">{{ menuItem.name }}</span>
+          </div>   
+        </router-link>
+      </div>
+    </div>
+  </div>
+</template>
+
+
+<style lang="scss">
+
+@import '../css/palette.scss';
+@import '../css/global.scss';
+
+
+  $main-menu-open-time: 0.2s;
+  $main-menu-selection-time: 0.05s;
+  $logo-size: 30px;
+  $logo-field-size: 75px;
+  $main-menu-element-height: 45px;
+  $main-menu-icon-size: 20px;
+  $main-menu-element-font-size: 16px;
+  $main-menu-selection-offset: 20px;
+  $main-menu-selection-offset: 10px;
+  $logo-icon-size: 30px;
   
   .menu-logo {
-    width: 30px;
+    width: $logo-size;
     margin: 0 10px 0 10px;
   }
   .sidebar {
-    position: relative;
+    position: absolute;
     display: flex;
     flex-direction: column;
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100%;
-    min-height: min-content;
-    width: 78px;
+    left:0px;
+    top: 0px;
+    height: 100vh;
+    width: $main-menu-width;
+    z-index: 100;
+
+    min-height: $min-win-height;
     
-    z-index: 99;
-    transition: all 0.5s ease;
-    border-radius: 8px;
+    transition-property: all !important;
+    transition-duration: $main-menu-open-time !important;
+
     margin:1px;
   }
   .sidebar.open {
-    width: 250px;
+    width: $main-menu-width-open;
   }
   .sidebar .logo-details {
+    
     height: 60px;
     display: flex;
     align-items: center;
-    position: relative;
-    margin: 6px 14px 0 14px;
+    position: absolute;
+    left: ($main-menu-width - $logo-icon-size) / 2;
   }
-  .sidebar .logo-details .icon {
-    opacity: 0;
-    transition: all 0.5s ease;
-  }
+
+   .sidebar .logo-details i {
+     font-size: $logo-icon-size;
+   }
+
   .sidebar .logo-details .logo_name {
-    color: var(--logo-title-color);
     font-size: 35px;
     font-weight: 400;
+
+    //transform: translateX(-50%);
+    //padding-left: ($main-menu-width - $logo-icon-size) / 2 + $logo-icon-size + $main-menu-width-open/2;
     opacity: 0;
-    transition: all 0.5s ease;
+    transition: all $main-menu-open-time ease;
   }
-  .sidebar.open .logo-details .icon,
+
   .sidebar.open .logo-details .logo_name {
     opacity: 1;
   }
-  .sidebar .logo-details #btn {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    transform: translateY(-50%);
-    font-size: 22px;
-    transition: all 0.4s ease;
-    font-size: 23px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.5s ease;
-  }
-  .sidebar.open .logo-details #btn {
-    text-align: right;
-  }
-
+ 
   .sidebar .main-menu-list
   {
-    height: 100%;
+    height: calc(100% - $logo-field-size);
+    position: absolute;
+    top: $logo-field-size;
+    left: 0px;
+    width: 100%;
   }
 
+  .main-menu-element
+  {
+    width: 100%;
+    height: $main-menu-element-height;
+    left: 0px;
+    top: 0px;
+  }
+
+  .main-menu-element-bg
+  {
+    position: relative;
+    width: calc(100% - 2*$main-menu-selection-offset);
+    height: $main-menu-element-height;
+    opacity: 0;
+    left: $main-menu-selection-offset;
+  }
+
+
+
+  .main-menu-link
+  {
+    text-decoration: none;
+    pointer-events: none;
+    z-index: 2;
+    position: relative;
+    left: 0px;
+    top: -1 * ($main-menu-element-height - ($main-menu-element-height - $main-menu-icon-size) / 2); //- $main-menu-icon-size) / 2;
+    display: flex;
+  }
+
+  
+.main-menu-element a {
+    text-decoration: none;
+}
+
+  .main-menu-element i
+  {
+    position: relative;
+    width: calc(($main-menu-width + $main-menu-icon-size) / 2);
+    font-size: $main-menu-icon-size;
+    left: calc(($main-menu-width - $main-menu-icon-size) / 2);
+  }
+
+  .main-menu-element span
+  {
+    position: relative;
+    left: 0;
+    font-size: $main-menu-element-font-size;
+    padding-left: $main-menu-selection-offset;
+    opacity: 0;
+
+    transition-property: all;
+    transition-duration: $main-menu-open-time;
+  }
+
+  .sidebar.open .main-menu-element span
+  {
+    opacity: 1;
+  }
+
+  .sidebar.open .main-menu-element-2 span
+  {
+    left: $main-menu-selection-offset
+  }
+  .sidebar.open .main-menu-element-2 i, .sidebar.open .main-menu-element-2 span {
+   		padding-left: $main-menu-selection-offset;
+   }
+
+
+  .main-menu-element-bg-select, .main-menu-element-bg-hover
+  {
+    width: calc($main-menu-width) - 2*$main-menu-selection-offset;
+    height: $main-menu-element-height;
+    position: absolute;
+    border-radius: 12px;
+  }
+
+  .sidebar.open .main-menu-element-bg-select, .sidebar.open .main-menu-element-bg-hover
+  {
+    width: calc($main-menu-width-open - 2*$main-menu-selection-offset);
+    
+  }
+
+  .main-menu-element-bg-select
+  {
+    background-color: $table-row-color-selected;
+    transition: all $main-menu-open-time ease;
+  }
+  
+
+  .main-menu-element-bg-hover
+  {
+    background: $table-row-color;
+    transition: all $main-menu-selection-time ease;
+  }
+
+  
+  
+/*
   .sidebar i {
-    color: var(--icons-color);
+    color: $text-color);
     height: 55px;
-    min-width: 50px;
+    width: 50px;
     font-size: 28px;
     text-align: center;
     line-height: 60px;
@@ -284,23 +357,22 @@
     display: flex;
     height: 100%;
     width: 100%;
-    border-radius: 12px;
+    border-radius: 4px;
     align-items: center;
     text-decoration: none;
-    transition: all 0.4s ease;
-    background: var(--bg-color);
+    transition: all var(--menu-open-time) ease;
   }
   .sidebar li a:hover {
-    background: var(--menu-items-hover-color);
+    background: var(--table-row-color);
   }
   .sidebar li a .links_name {
-    color: var(--menu-items-text-color);
+    color: var(--text-color);
     font-size: 15px;
     font-weight: 400;
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
-    transition: 0.4s;
+    transition: var(--menu-open-time);
   }
   .sidebar.open li a .links_name {
     opacity: 1;
@@ -308,42 +380,41 @@
   }
   .sidebar li a:hover .links_name,
   .sidebar li a:hover i {
-    transition: all 0.5s ease;
-    color: var(--bg-color);
+    transition: all var(--menu-open-time) ease;
+    color: #ddddff
   }
   .sidebar li i {
     height: 50px;
     line-height: 50px;
     font-size: 18px;
-    border-radius: 12px;
+    border-radius: 8px;
   }
 
   .sidebar .menu-item-2 {
-   		padding-left: 10px;
+   		padding-left: 0px;
    }
-  .sidebar.open .menu-item-2 {
-   		padding-left: 30px;
+  .sidebar.open .menu-item-2 i {
+   		padding-left: 20px;
    }
 
    .menu-item-2 span {
    		font-size: 12px;
    }
   
-  .sidebar.open ~ .home-section {
-    left: 250px;
-    width: calc(100% - 250px);
-  }
 
   .my-scroll-active {
     overflow-y: auto;
   }
   #my-scroll {
     overflow-y: auto;
-    height: calc(100% - 60px);
-    margin: 6px 14px 0 14px;
+ 
+    height: 100%;
+    margin: 6px 14px 0 10px;
+
   }
   #my-scroll::-webkit-scrollbar{
     display:none;
-  }
+  } */
 
 </style>
+

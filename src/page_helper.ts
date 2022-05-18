@@ -18,8 +18,22 @@ page_helper.create_module = function(name, crud, rdata, components, store_module
   	computed[name] = function(){ return this.$store.getters['get_' + name] }
   	computed['selected_' + name] = function(){ return this.$store.getters['selected_' + name] }
 
+	  
+	  const beforeUnmount = function() {
+		this.is_visible=false
+		console.log('unm', this.is_visible)
+	  }
+
+	  const mounted = function() {
+
+		this.is_visible=true
+		console.log('mounted', this.is_visible)
+	  }
+
 	const created = async function() 
    	{
+		   console.log('created')
+		  
     	await this.$store.dispatch("get_" + name);
 
 		let instance = {}
@@ -30,6 +44,8 @@ page_helper.create_module = function(name, crud, rdata, components, store_module
 		this.$store.state[name]['selected_' + name] = instance
 		this.$store.state[name]['instance_' + name] =  tools.obj_clone(instance)
   	}
+
+	rdata.is_visible = false
 
   	const data = function()
   	{
@@ -44,6 +60,8 @@ page_helper.create_module = function(name, crud, rdata, components, store_module
 	return {
     	components,
     	created,
+		mounted,
+		beforeUnmount,
   		computed,
     	data,
     	beforeCreate,
