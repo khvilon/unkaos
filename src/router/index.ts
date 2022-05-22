@@ -14,6 +14,7 @@ import PageIssue from '../views/PageIssue.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+
   	{ path: '/dashboards', component: PageFields },
   	{ path: '/issues', component: PageIssues},
   	{ path: '/alerts', component: PageFields },

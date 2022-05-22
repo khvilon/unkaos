@@ -6,11 +6,30 @@
   import dict from './dict.ts'
   import tools from './tools.ts'
 
-  let lang = tools.get_uri_param(window.location.href, 'lang')
+  let uri = window.location.href
+
+  let lang = tools.get_uri_param(uri, 'lang')
   dict.set_lang(lang)
+  
 
   export default 
   {
+
+   created ()
+    {
+      let uri = window.location.href
+      let uri_parts = uri.split('.')
+
+      let subdomain = 'public'
+
+      if(uri_parts.length == 3) subdomain = uri_parts[0].replace('http://', '')
+       // console.log('ddd', this.$store.state['domain'])
+      
+      this.$store.registerModule('common', {subdomain: subdomain});
+      
+    },
+
+   
     components: 
     {
       MainMenu,
@@ -32,6 +51,9 @@
   </transition>
 </router-view>
 </div>
+  <div class="loading-background">
+    <div class="loading-bar"></div>
+  </div>
   <MainMenu />
   <Profile />
 </template>
@@ -130,6 +152,40 @@ $table-row-color-selected: rgb(50, 60, 70);
   .fade-enter, .fade-leave-to {
       opacity: 0;
   }
+
+  .topbar
+  {z-index: 0;}
+
+
+$loading-bar-width: 200vw;
+
+  .loading-background {
+    display: none;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0,00,0,0.2);
+  overflow: hidden;
+  border-radius: 10px;
+  z-index: 3;
+}
+
+.loading-bar {
+  position: relative;
+  height: 100%;
+  width: $loading-bar-width;
+  left:-$loading-bar-width;
+  background: linear-gradient(0.25turn, rgba(200,200,200,0.0), rgba(0,0,0,0.8), rgba(200,200,200,0.0));
+  animation: background 3s infinite ease-in-out;
+}
+
+@keyframes background {
+  100% {
+    left:calc(100%);
+  }
+}
 
 
 

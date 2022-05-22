@@ -12,6 +12,8 @@ const tools = require('./tools');
 const app = express()
 const port = 3001
 
+var bodyParser = require('body-parser')
+
 const dict =
 {
     read: 'get',
@@ -22,16 +24,18 @@ const dict =
 }
 
 app.use(cors());
-app.use(express.json())
+app.use(bodyParser.json({limit: '20mb'}));
+app.use(bodyParser.raw({limit: '20mb'}));
+app.use(bodyParser.urlencoded({limit: '20mb', extended: true}));
 
 async function init()
 {
+    await sql.init()
     await crud.load()
     //await cash.load()
 
     for(let table in crud.querys)
     {
-        console.log('tt', table)
         for(let method in crud.querys[table])
         {
             console.log('mm', method)
@@ -39,6 +43,9 @@ async function init()
             console.log('d', dict[method])
             app[dict[method]]('/' + func_name, async (req, res) => {                
                 let params = req.query
+
+                let subdomain = req.headers.subdomain
+           
 
                 let [method, table_name] = tools.split2(func_name, '_')
 
@@ -50,7 +57,8 @@ async function init()
                     return 
                 }*/
 
-                let ans = await crud.do(method, table_name, params)
+                console.log('ss', subdomain)
+                let ans = await crud.do(subdomain, method, table_name, params)
 
                 res.send(ans)
             })

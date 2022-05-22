@@ -149,7 +149,7 @@ store_helper.create_module = function(name, crud)
 	const actions = {}
 	actions['get_' + name] = async function()
 	{
-		const data = await rest.run_method('read_' + name)
+		const data = await rest.run_method('read_' + name, undefined)
 
 	    this.commit('get_' + name, data);
 	}
