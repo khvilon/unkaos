@@ -4,6 +4,7 @@
   "description": "server side for the unkaos task tracker project, connecting Vue client to the postgresql db",
   "main": "app.js",
   "dependencies": {
+    "body-parser": "^1.20.0",
     "cors": "^2.8.5",
     "express": "^4.17.3",
     "node-fetch": "^2.6.7",

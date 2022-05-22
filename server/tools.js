@@ -37,6 +37,14 @@ String.prototype.contains = function(substr)
     return str.indexOf(substr) > -1
 }
 
+String.prototype.replaceAll = function(old_substr, new_substr)
+{
+    let str = this
+    while(str.contains(old_substr)) str = str.replace(old_substr, new_substr)
+
+    return str
+}
+
 
 
 module.exports = tools

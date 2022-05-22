@@ -283,7 +283,7 @@ crud.get_uuids = function(obj)
 }
 
 
-crud.do = async function(method, table_name, params)
+crud.do = async function(subdomain, method, table_name, params)
 {
 
     let query = crud.get_query(method, table_name, params)
@@ -292,7 +292,9 @@ crud.do = async function(method, table_name, params)
     {
         let read_query = crud.make_query.read(table_name, {uuid:  params.uuid})
 
-        let data = await sql.query(read_query)
+        let data = await sql.query(subdomain, read_query)
+
+        console.log('rqrqrqrqrq', read_query, data)
 
         if(data.rows.length > 0)
         {
@@ -315,10 +317,10 @@ crud.do = async function(method, table_name, params)
         }   
     }
 
-    console.log('qqqqq', query)
-    let ans = await sql.query(query)
+    console.log('qqqqq', subdomain, query)
+    let ans = await sql.query(subdomain, query)
 
-    if(ans[1] != undefined) ans = ans[ans.length-1]
+    if(ans != null && ans[1] != undefined) ans = ans[ans.length-1]
 
     return ans
 }

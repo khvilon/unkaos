@@ -2,6 +2,8 @@ let data_model = {}
 
 let sql = require('./sql')
 var tools = require('./tools')
+
+const schema = 'public'
    
 data_model.querys = 
 {
@@ -41,7 +43,7 @@ data_model.querys =
 
 data_model.load_columns = async function()
 {
-    let ans = await sql.query(data_model.querys.columns)
+    let ans = await sql.query(schema, data_model.querys.columns)
     let columns = ans.rows
     data_model.model = {}
     let table_name
@@ -62,7 +64,7 @@ data_model.load_columns = async function()
 
 data_model.load_relations = async function()
 {
-    let ans = await sql.query(data_model.querys.forein_keys)
+    let ans = await sql.query(schema, data_model.querys.forein_keys)
     let forein_keys = ans.rows
 
     for(let i in forein_keys)

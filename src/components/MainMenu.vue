@@ -173,7 +173,6 @@
   $main-menu-element-height: 45px;
   $main-menu-icon-size: 20px;
   $main-menu-element-font-size: 16px;
-  $main-menu-selection-offset: 20px;
   $main-menu-selection-offset: 10px;
   $logo-icon-size: 30px;
   
@@ -212,6 +211,7 @@
 
    .sidebar .logo-details i {
      font-size: $logo-icon-size;
+     padding-right: $main-menu-selection-offset/2;
    }
 
   .sidebar .logo-details .logo_name {

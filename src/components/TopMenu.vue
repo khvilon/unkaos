@@ -101,12 +101,15 @@
 
 <template>
   <div
-    class="topbar"
+    class="topbar panel"
     :style="cssVars"
   >
 
     <div style="display: flex ; flex-direction:row; flex-grow: 1; max-height: calc(100% - 60px); ">
 
+      <span>
+        {{ name }}
+      </span>
       <SearchInput 
         :name="name"
         :collumns="collumns"
@@ -137,16 +140,14 @@
     min-height: min-content;
     /* overflow-y: auto; */
     width:  calc(100% - 3px);
-    background: var(--bg-color);
     /* padding: 6px 14px 0 14px; */
     z-index: 99;
-    transition: all 0.5s ease;
     border-bottom-color: rgb(71, 81, 89);;
     /*border-bottom-style: solid;
     border-bottom-width: 1px;*/
     height: var(--top-menu-height);
 
-    border-radius: 8px;
+
     
     margin: 1px;
     margin-left: 2px;
@@ -158,15 +159,30 @@
  
   .topbar input {
     font-size: 15px;
-    color: var(--serach-input-text-color);
     font-weight: 400;
     border-radius: 6px;
     transition: all 0.5s ease;
     background: var(--secondary-color);
-    margin-left: 20px
-
+    margin-left:0px
   }
  
+  .topbar span
+  {
+    width: 200px;
+    font-size: 20px;
+    text-align: center;
+
+   /*     -webkit-text-stroke: thin;
+    /* background-color: #313131; */
+    /* background: red; */
+    height: 40px;
+    border-radius: 8px;
+    border-color: grey;
+    border-width: 2px;
+    border-style: groove;
+    margin-left:20px;
+    background-color: rgb(30, 34, 39);
+  }
   
 
  
