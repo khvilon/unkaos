@@ -23,7 +23,7 @@
     },
     methods:
     {
-      click(btn){ if(this.func!=undefined)this.$store.dispatch(this.func); }
+      click(btn){ if(this.func!=undefined && this.func!='')this.$store.dispatch(this.func); }
     }
   }
 </script>

@@ -158,5 +158,33 @@ tools.get_uri_param = function(uri, name)
   return ''
 }
 
+tools.split2 = function(str, delim)
+{
+    let str1 = str.split(delim)[0]
+
+    let str2 = str.substring(str.indexOf(delim)+1)
+
+    return [str1, str2]
+}
+
+String.prototype.contains = function(substr)
+{
+    let str = this.toLowerCase()
+
+    substr = substr.toString().toLowerCase() 
+
+    return str.indexOf(substr) > -1
+}
+
+String.prototype.replaceAll = function(old_substr, new_substr)
+{
+    let str = this
+    while(str.contains(old_substr)) str = str.replace(old_substr, new_substr)
+
+    return str
+}
+
+
+
 
 export default tools

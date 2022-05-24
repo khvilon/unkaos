@@ -1,7 +1,7 @@
 <template>   
   <div class="string">
     <div class="label">{{label}}</div>
-    <input class="string-input" type="text"  v-model="value" :disabled="disabled">
+    <input class="string-input" :type="type"  v-model="value" :disabled="disabled">
   </div>
 </template>
 
@@ -35,13 +35,25 @@
       {
         type: String,
         default: ''
-      }
+      },
+      type:
+      {
+        type: String,
+        default: 'text'
+      },
 
     },
+
+    emits: ['update_parent_from_input'],
     
     watch: {
       value: function(val, oldVal) {
         console.log(val, oldVal, this.id, this.parent_name)
+
+        this.$emit('update_parent_from_input', val)
+
+        if(this.parent_name == undefined || this.parent_name == '') return;
+
         let data = {}
         data[this.id] = val
         this.$store.commit('push_update_' + this.parent_name, data)
