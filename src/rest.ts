@@ -1,5 +1,7 @@
 const rest = {}
 
+import store from './stores/index'
+
 rest.base_url = 'http://localhost:3001/'
 
 rest.dict = 
@@ -56,6 +58,10 @@ rest.get_token = async function(email, pass)
 
 rest.run_method = async function(method, body)
 { 
+	let alert_id = new Date()
+    store.state['alerts'][alert_id] = {type: 'loading', status:'new'}
+
+
 	method = method.replace('create', 'upsert').replace('update', 'upsert')
 
 	rest.headers.token = localStorage.user_token
@@ -76,11 +82,22 @@ rest.run_method = async function(method, body)
 
 	if(resp.status == 401) window.location.href = '/login';
 
+	console.log('resp.status', resp  )
+	if(resp.status != 200) 
+	{
+		store.state['alerts'][alert_id].text = resp.statusText + ' >>'
+		store.state['alerts'][alert_id].type='error'
+		return null
+	}
+
 	console.log('respppppppp', resp)
 
 	const data = await resp.json();
 
 	if(data[1] != undefined) return data[1].rows
+
+	store.state['alerts'][alert_id].type='ok'
+
 	return data.rows
 }
 

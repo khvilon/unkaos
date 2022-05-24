@@ -1,6 +1,7 @@
 <script>
   import MainMenu from './components/MainMenu.vue'
   import Profile from './components/Profile.vue'
+  import KAlerter from './components/KAlerter.vue'
 
   import palette from './palette.ts'
   import dict from './dict.ts'
@@ -45,6 +46,8 @@
        // console.log('ddd', this.$store.state['domain'])
       
       this.$store.registerModule('common', {subdomain: subdomain});
+      this.$store.registerModule('alerts', {});
+      this.$store.state['alerts'] = {}
 
      
     },
@@ -86,7 +89,8 @@
     components: 
     {
       MainMenu,
-      Profile
+      Profile,
+      KAlerter
     }  
   }
 
@@ -111,6 +115,7 @@
   </div>
   <MainMenu />
   <Profile v-if="is_in_workspace"/>
+  <KAlerter />
 </template>
 
 <style lang="scss">
