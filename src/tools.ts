@@ -76,7 +76,7 @@ tools.obj_attr_by_path = function(obj, path)
   let path_parts = path.split('.')
   let data_part = obj
 
-  console.log('j', path_parts, data_part)
+  //console.log('j', path_parts, data_part)
 
   if(path_parts[0] == 'values')
   {

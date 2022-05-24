@@ -52,7 +52,7 @@ async function init()
         else ans = token
 
         console.log('token', ans)
-
+        
         res.send(ans)
     })
 

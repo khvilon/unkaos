@@ -111,10 +111,12 @@
         this.select_offset_x = e.target.offsetLeft
         this.select_offset_y = e.target.offsetTop
         this.exit_menu()
+        //[{type: 'loading'}, {type: 'ok'}, {type: 'error', text: 'Это очень страшная ошибка!'}]
       },
       exit_menu(e) {
         if(e != undefined && e.x < 210) return //todo magic number to variable
         this.is_opened = 0
+
       }
 
 

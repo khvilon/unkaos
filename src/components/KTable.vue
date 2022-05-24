@@ -83,7 +83,7 @@
 
         let val = this.get_json_val(row, collumn.id)
 
-        console.log('fff', val)
+        //console.log('fff', val)
 
         //(collumn.id.indexOf('.') > -1) val = row[collumn.id.split('.')[0]][0][collumn.id.split('.')[1]]
 

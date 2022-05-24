@@ -96,7 +96,8 @@
     margin-right: 16px;
     float:right;
     margin-top: 16px;
-    background-image: url('https://oboz.myjetbrains.com/hub/api/rest/avatar/7755ec62-dfa1-4c3c-a3a9-ac6748d607c1?dpr=1.25&size=20')
+    background-image: url('https://oboz.myjetbrains.com/hub/api/rest/avatar/7755ec62-dfa1-4c3c-a3a9-ac6748d607c1?dpr=1.25&size=20');
+    cursor: pointer;
   }
   .profile div {
     margin-top: 20px;
@@ -122,6 +123,7 @@
     margin: 0px;
     width: 100%;
     text-align: center;
+    cursor: pointer;
   }
 
 </style>
