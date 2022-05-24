@@ -99,11 +99,35 @@ export default
 		"Поиск...": 
 		{
 			en: 'Search...'
+		},
+		"Электронная почта": 
+		{
+			en: 'email'
+		},
+		"Пароль": 
+		{
+			en: 'Password'
+		},
+		"Войти": 
+		{
+			en: 'Sign in'
+		},
+		"Вы находитесть на странице проекта Unkaos. Данный инструмент создан в целях борьбы с хаосом в разработке программного обеспечения и других проектах, нуждающихся в качественном трекере задач.": 
+		{
+			en: 'You are on the page of the Unkaos project. This is an instrument to fight chaos in software development and other projects that need a task tracker'
 		}
-
-
+		,
+		"Система бесплатна и распространяется под лицензией Apache 2.0, вы можете как пользоваться облачной версией, так и установить коробочную версию. Исходный код открыт и доступен в репозитории https://github.com/khvilon/unkaos.": 
+		{
+			en: 'The system is free and is made under Apache 2.0 license. You can use it the cloud or install from https://github.com/khvilon/unkaos.'
+		}
+		,
+		"Связаться с автором можно по почте n@khvilon.ru (Николй Хвилон)":
+		{
+			en: 'To contact the author you can use email n@khvilon.ru (Nikolas Khvilon)'
+		}
 		
-	
+
 
 
 	},

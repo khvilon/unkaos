@@ -11,22 +11,75 @@
   let lang = tools.get_uri_param(uri, 'lang')
   dict.set_lang(lang)
   
-
   export default 
   {
 
+  data()
+  {
+    return
+    {
+      is_in_workspace = false;
+    }
+  },
+
    created ()
     {
+      
+
+      console.log('localStorage.tic', localStorage.tic)
+
       let uri = window.location.href
       let uri_parts = uri.split('.')
 
+      this.check_is_in_workspace()
+
       let subdomain = 'public'
+
+      if(!uri.contains('?lang='))
+      { 
+        console.log('select lang') 
+        window.location.href += '?lang=ru'     
+      }
 
       if(uri_parts.length == 3) subdomain = uri_parts[0].replace('http://', '')
        // console.log('ddd', this.$store.state['domain'])
       
       this.$store.registerModule('common', {subdomain: subdomain});
-      
+
+     
+    },
+    updated() {
+      check_is_in_workspace()
+    },
+    mounted()
+    {
+      console.log('app mounted')
+    },
+    methods: {
+      check_is_in_workspace()
+      {
+        console.log('check_is_in_workspace')
+        let uri = window.location.href
+
+        let uri_parts = uri.split('.')
+
+        if(uri_parts.length!=3)
+        {
+          this.is_in_workspace = false
+          this.$router.push('/issues')
+          return 
+        }
+
+        let subdomain = 'public'
+
+        if(uri.contains('/login'))
+        { 
+          console.log('main menu off') 
+          this.is_in_workspace = false
+        }
+
+        this.is_in_workspace = true
+      }
     },
 
    
@@ -42,7 +95,9 @@
 
 <template>
   
-  <div id="router-view-container">
+  <div id="router-view-container" 
+ v-bind:class="{ 'no-menu-container': !is_in_workspace }"
+ >
     <router-view v-slot="{ Component, route }">
   <transition name="fade" mode="out-in">
     <div :key="route.name">  
@@ -55,7 +110,7 @@
     <div class="loading-bar"></div>
   </div>
   <MainMenu />
-  <Profile />
+  <Profile v-if="is_in_workspace"/>
 </template>
 
 <style lang="scss">
@@ -115,6 +170,11 @@ $table-row-color-selected: rgb(50, 60, 70);
     box-sizing: border-box;
   }
 
+  .no-menu-container
+  {
+    left: 0px !important;
+  }
+
   #router-view-container
   {
     position: absolute;
@@ -122,6 +182,8 @@ $table-row-color-selected: rgb(50, 60, 70);
     width: calc(100vw - var(--main-menu-width));
     height: 100vh;
   }
+
+  
 
   .panel
   {

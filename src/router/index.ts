@@ -8,13 +8,19 @@ import PageIssueTypes from '../views/PageIssueTypes.vue'
 import PageIssueStatuses from '../views/PageIssueStatuses.vue'
 import PageIssues from '../views/PageIssues.vue'
 import PageIssue from '../views/PageIssue.vue'
+import PageLogin from '../views/PageLogin.vue'
+import PageLanding from '../views/PageLanding.vue'
 
+import store from "../stores";
+import tools from "../tools";
 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
 
+	{ path: '/', component: PageLanding },
+	{ path: '/login', component: PageLogin },
   	{ path: '/dashboards', component: PageFields },
   	{ path: '/issues', component: PageIssues},
   	{ path: '/alerts', component: PageFields },
@@ -29,6 +35,32 @@ const router = createRouter({
 	{ path: '/issue/:id', component: PageIssue, props: true },
   ]
 })
+
+
+const get_subdomain = function()
+{
+	let uri = window.location.href
+
+	let uri_parts = uri.split('.')
+
+	if(uri_parts.length!=3) return ''
+
+	return uri_parts[0].replace('http://', '')
+}
+       
+
+   
+
+router.afterEach((to, from) => {
+
+	console.log('old to', store.state['common'].uri, store.state['common'].is_in_workspace)
+
+
+	store.state['common'].uri = to.fullPath
+	store.state['common'].subdomain = get_subdomain()
+	store.state['common'].is_in_workspace = !store.state['common'].uri.contains('/login') && (store.state['common'].subdomain != '')
+	console.log('too', to.fullPath, store.state['common'].is_in_workspace)
+  })
 
 export default router
 

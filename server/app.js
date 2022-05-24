@@ -5,10 +5,11 @@ var sql = require('./sql')
 var data_model = require('./data_model')
 var crud = require('./crud')
 var cash = require('./cash')
+var security = require('./security')
 
 const cors = require('cors');
 const express = require('express');
-const tools = require('./tools');
+var tools = require('./tools')
 const app = express()
 const port = 3001
 
@@ -34,17 +35,51 @@ async function init()
     await crud.load()
     //await cash.load()
 
+    app.get('/get_token', async (req, res) => {   
+        let subdomain = req.headers.subdomain
+        let email = req.headers.email
+        let pass = req.headers.password
+
+        let token = await security.get_token(subdomain, email, pass)
+
+        let ans
+
+        if(token == null) 
+        {
+            ans = {error: 'Не верное имя пользователя или пароль'} 
+            res.status(401);
+        }
+        else ans = token
+
+        console.log('token', ans)
+
+        res.send(ans)
+    })
+
     for(let table in crud.querys)
     {
         for(let method in crud.querys[table])
         {
-            console.log('mm', method)
+            console.log('add ', method)
             let func_name = method + '_' + table
             console.log('d', dict[method])
             app[dict[method]]('/' + func_name, async (req, res) => {                
                 let params = req.query
 
                 let subdomain = req.headers.subdomain
+
+                let token = req.headers.token
+
+                user = await security.check_token(subdomain, token)
+
+                if(user == null)
+                {
+                    res.status(401);
+                    res.send({message: 'wrong token'});
+                    return
+                }
+
+                console.log('checked user ', user)
            
 
                 let [method, table_name] = tools.split2(func_name, '_')

@@ -1,5 +1,6 @@
 <script>
   import dict from '../dict.ts'
+  import tools from '../tools.ts'
   
   export default {
     props: {
@@ -92,6 +93,8 @@
         select_offset_y: 0,
         hover_opacity: 0,
         select_opacity: 0,
+        is_in_login_form: false,
+        common: this.$store.state['common']
       }
     },
     methods: {
@@ -113,6 +116,13 @@
         if(e != undefined && e.x < 210) return //todo magic number to variable
         this.is_opened = 0
       }
+
+
+      
+    },
+    created()
+    {
+      
     }
   }
 </script>
@@ -123,6 +133,7 @@
     id = "main-menu"
     class="sidebar panel"
     :class="is_opened ? 'open' : ''"
+    v-if="common.is_in_workspace"
     @mouseout="exit_menu($event)" 
   >
     <div class="logo-details">
