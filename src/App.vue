@@ -7,6 +7,8 @@
   import dict from './dict.ts'
   import tools from './tools.ts'
 
+  
+
   let uri = window.location.href
 
   let lang = tools.get_uri_param(uri, 'lang')
@@ -116,6 +118,7 @@
   <MainMenu />
   <Profile v-if="is_in_workspace"/>
   <KAlerter />
+  
 </template>
 
 <style lang="scss">
@@ -164,11 +167,67 @@ $table-row-color-selected: rgb(50, 60, 70);
      background: var(--panel-bg-color);
   }
 
+@font-face {
+  font-family: 'Segoe UI Local';
+  src: local('Segoe UI Light');
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Local';
+  src: local('Segoe UI Semilight');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Local';
+  src: local('Segoe UI');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Local';
+  src: local('Segoe UI Semibold');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Web (West European)';
+  src: url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-light.woff2') format('woff2'), url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-light.woff') format('woff');
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Web (West European)';
+  src: url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-semilight.woff2') format('woff2'), url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-semilight.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Web (West European)';
+  src: url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-regular.woff2') format('woff2'), url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Web (West European)';
+  src: url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-semibold.woff2') format('woff2'), url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-semibold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+}
+
   *
   {
     color: var(--text-color);
     font-size: var(--font-size);
-    font-family: var(--font-family);
+    font-family: 'Segoe UI Local';//segoiui;//var(--font-family);
 
     margin: 0;
     padding: 0;

@@ -6,6 +6,8 @@
 	import BooleanInput from '../components/BooleanInput.vue'
 	import AvatarInput from '../components/AvatarInput.vue'
 	import DateInput from '../components/DateInput.vue'
+	import UserInput from '../components/UserInput.vue'
+	
 
 	import tools from '../tools.ts'
 	import store_helper from '../store_helper.ts'
@@ -15,6 +17,9 @@
 	const crud = 'crud'
 
 	const store_module = store_helper.create_module(name, crud)
+
+	
+
 
 	const collumns =
 	[
@@ -89,8 +94,9 @@
                 {
                     label: 'Владелец',
                     id: 'owner.0.name',
-                    type: 'String',
-                    disabled: true
+                    type: 'User',
+                    disabled: true,
+					clearable: false
                 },
 				{
 					label: 'Зарегистрирован',
@@ -114,10 +120,14 @@
     	BooleanInput,
     	AvatarInput,
     	DateInput,
+		UserInput,
+		
     	KButton
     }
 
     const mod = page_helper.create_module(name, crud, data, components, store_module, props)
+
+	
 
 	export default mod
 
@@ -150,7 +160,9 @@
 	  			:value="get_json_val(selected_projects, input.id)"
 	  			:parent_name="'projects'"
 	  			:disabled="input.disabled"
+				:clearable="input.clearable"
 	  		></component>
+			 
 	  		<div id="projects_card_footer_div">
 	  			<div id="projects_card_infooter_div">
 			  		<KButton
