@@ -220,7 +220,9 @@ td:last-child {
   }
   
 
-  
+  .user{
+margin-top: -5px;
+  }
 
 
 
@@ -231,6 +233,6 @@ td:last-child {
     border-radius: 4px;
     margin-right: 10px;
     position: relative;
-    top: 3px
+    top: 5px
 }
 </style>

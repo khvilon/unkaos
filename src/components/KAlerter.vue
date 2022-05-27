@@ -23,7 +23,7 @@
       //  alerts: this.$store.state['alerts'].arr,//[{type: 'loading'}, {type: 'ok'}, {type: 'error', text: 'Это очень страшная ошибка!'}],
         icons:
         {
-          loading: 'https://technokey.ru/bitrix/templates/dresscode/components/dresscode/fast.calculate.delivery/catalog-no-modal/images/loader-51px.svg',
+          loading: '../unkaos_loader.png',
           ok: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Check_icon.svg/1200px-Check_icon.svg.png',
           error: 'https://i.siteapi.org/tSCjeOTESUHufL0SV-8lW_rXMM0=/fit-in/1024x768/center/top/d9c4db369208e1b.ru.s.siteapi.org/img/5zmr7n1p0t8gkscggssk048ks08swk'
         }
@@ -97,8 +97,6 @@
     border-top-right-radius: 0px !important;
     border-bottom-right-radius: 0px !important;
 
-
-
     transition: all $alert-show-hide-transiion-time !important;
   }
   
@@ -115,17 +113,6 @@
     margin-right: 0px;
 
   }
-
-  .alert_loading
-  {
-
-  }
-
-  .alert_ok
-  {
-
-  }
-
   
 
   .alert img{
@@ -133,11 +120,24 @@
     height: 20px;
   }
 
+    .alert_loading img{
+
+    animation: rotateAnimation 3s linear infinite;
+  }
+
   .alert span{
     top: -6px;
     left: 6px;
     position: relative;
   }
+
+  @keyframes rotateAnimation {
+	0% { transform: rotate3d(1, 1, 0, 0deg); }
+25% { transform: rotate3d(1, 1, 0, 90deg); }
+50% { transform: rotate3d(1, -1, 0, 180deg); }
+	75% { transform: rotate3d(-1, -1, 0, 90deg); }
+	100% { transform: rotate3d(-1, 1, 0, 360deg); }
+}
   
 
 </style>

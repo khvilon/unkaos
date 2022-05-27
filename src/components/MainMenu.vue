@@ -227,6 +227,11 @@
      padding-right: $main-menu-selection-offset/2;
    }
 
+   .sidebar.open .logo-details i {
+     animation: rotateAnimation 3s linear infinite;
+     
+   }
+
   .sidebar .logo-details .logo_name {
     font-size: 35px;
     font-weight: 400;
@@ -346,6 +351,14 @@
     transition: all $main-menu-selection-time ease;
   }
 
+
+  @keyframes rotateAnimation {
+	0% { transform: perspective(500px) rotate3d(1, 1, 0, 0deg); }
+25% { transform: perspective(500px) rotate3d(1, 1, 0, 90deg); }
+50% { transform: perspective(500px) rotate3d(1, -1, 0, 180deg); }
+	75% { transform: perspective(500px) rotate3d(-1, -1, 0, 90deg); }
+	100% { transform: perspective(500px) rotate3d(-1, 1, 0, 360deg); }
+}
   
   
 /*
