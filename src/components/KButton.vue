@@ -25,6 +25,7 @@
     {
       click(btn){ if(this.func!=undefined && this.func!='')this.$store.dispatch(this.func); }
     }
+    
   }
 </script>
 

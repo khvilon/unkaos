@@ -7,7 +7,7 @@ let lang = tools.get_uri_param(window.location.href, 'lang')
 
 dict.set_lang(lang)
 
-page_helper.create_module = function(name, crud, rdata, components, store_module, props)
+page_helper.create_module = function(name, crud, rdata, components, store_module, props, methods)
 { 
 	const beforeCreate = function() {
     	if (!this.$store.state[name]) this.$store.registerModule(name, store_module);
@@ -52,10 +52,9 @@ page_helper.create_module = function(name, crud, rdata, components, store_module
     	return rdata
     }
 
-    const methods = 
-    {
-    	'get_json_val' : tools.obj_attr_by_path
-    }
+	if(methods == undefined) methods = {}
+    methods.get_json_val = tools.obj_attr_by_path
+    
 
 	return {
     	components,

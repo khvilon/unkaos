@@ -89,20 +89,25 @@
   }
  
   .profile img {
-    height: 32px;
-    width: 32px;
+    height: $input-height;
+    width: $input-height;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: $border-radius;
     margin-right: 16px;
     float:right;
-    margin-top: 16px;
+    margin-top: 6px;
     background-image: url('https://oboz.myjetbrains.com/hub/api/rest/avatar/7755ec62-dfa1-4c3c-a3a9-ac6748d607c1?dpr=1.25&size=20');
     cursor: pointer;
+    border-style: groove;
+    border-width: 2px;
   }
   .profile div {
-    margin-top: 20px;
+    margin-top: 14px;
     margin-right: 10px;
     float:right;
+
+    font-weight: 600;
+    font-size: 14px;
   }
 
   #profile-menu

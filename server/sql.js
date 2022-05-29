@@ -10,10 +10,6 @@
     const admin_name = 'khvilon'
     const admin_pass = 'colaider'
 
-    sql.users = {
-        wol: 'mypass',
-        oboz2: 'mypass'
-    }
 
     var pools = {
     }

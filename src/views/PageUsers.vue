@@ -12,6 +12,7 @@
 
 	const name = 'users'
 	const crud = 'crud'
+	const label = 'Пользователи'
 
 	const store_module = store_helper.create_module(name, crud)
 
@@ -46,7 +47,7 @@
 	const buttons = 
 	[
         {
-            name: 'Создать пользователя',
+            name: 'Создать',
             func: 'unselect_' + name,
         }
     ]
@@ -135,6 +136,7 @@
     <TopMenu 
   		:buttons="buttons"
   		:name="name"
+		:label="'Пользователи'"
   		:collumns="search_collumns"
     />
     <div id=users_down_panel >

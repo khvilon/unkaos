@@ -54,7 +54,7 @@
 	const buttons = 
 	[
         {
-            name: d['Создать задачу'],
+            name: d['Создать'],
             func: 'unselect_' + name,
         }
     ]
@@ -103,6 +103,7 @@
 		v-if="is_visible"
   		:buttons="buttons"
   		:name="name"
+		:label="'Задачи'"
   		:collumns="search_collumns"
     />
     <div id=issues_down_panel class="panel" :class="!is_visible ? 'hidden' : ''" @click="is_visible=!is_visible">

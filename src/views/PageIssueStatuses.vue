@@ -48,7 +48,7 @@
 	const buttons = 
 	[
         {
-            name: 'Создать статус',
+            name: 'Создать',
             func: 'unselect_' + name,
         }
     ]
@@ -127,6 +127,7 @@
     <TopMenu 
   		:buttons="buttons"
   		:name="name"
+		:label="'Статусы задач'"
   		:collumns="search_collumns"
     />
     <div id=issue_statuses_down_panel>

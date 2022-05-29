@@ -181,13 +181,13 @@
 
   $main-menu-open-time: 0.2s;
   $main-menu-selection-time: 0.05s;
-  $logo-size: 30px;
+  $logo-size: 32px;
   $logo-field-size: 75px;
   $main-menu-element-height: 45px;
   $main-menu-icon-size: 20px;
   $main-menu-element-font-size: 16px;
   $main-menu-selection-offset: 10px;
-  $logo-icon-size: 30px;
+  $logo-icon-size: 32px;
   
   .menu-logo {
     width: $logo-size;
@@ -215,7 +215,7 @@
   }
   .sidebar .logo-details {
     
-    height: 60px;
+    height: 56px;
     display: flex;
     align-items: center;
     position: absolute;
@@ -225,6 +225,7 @@
    .sidebar .logo-details i {
      font-size: $logo-icon-size;
      padding-right: $main-menu-selection-offset/2;
+     padding-top:8px
    }
 
    .sidebar.open .logo-details i {

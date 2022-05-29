@@ -38,7 +38,7 @@
   const buttons = 
   [
         {
-            name: 'Создать workflow',
+            name: 'Создать',
             func: 'unselect_' + name,
         }
     ]
@@ -94,6 +94,7 @@
     <TopMenu 
       :buttons="buttons"
       :name="name"
+      :label="'Статусная модель'"
       :collumns="search_collumns"
     />
     <div id=workflows_down_panel>

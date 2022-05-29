@@ -42,7 +42,7 @@
   const buttons = 
   [
         {
-            name: 'Создать поле',
+            name: 'Создать',
             func: 'unselect_' + name,
         }
     ]
@@ -119,6 +119,7 @@
     <TopMenu 
       :buttons="buttons"
       :name="name"
+      :label="'Поля'"
       :collumns="search_collumns"
     />
     <div id=fields_down_panel>
