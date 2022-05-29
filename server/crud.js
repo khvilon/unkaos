@@ -178,7 +178,8 @@ crud.make_query = {
         params.updated_at = 'NOW()'
 
         for(let i in params){
-            if(columns[i] === undefined || i === 'created_at' ||  i === 'deleted_at') continue;
+            if(columns[i] === undefined || i === 'created_at' ||  i === 'deleted_at' ||
+             i === 'password' || i === 'token' || i === 'token_created_at') continue;
 
             if(keys != ''){keys += ', '; values += ', '}
 
@@ -207,7 +208,8 @@ crud.make_query = {
         params.updated_at = 'NOW()'
 
         for(let i in params){
-            if(columns[i] === undefined || i === 'created_at' ||  i === 'deleted_at') continue;
+            if(columns[i] === undefined || i === 'created_at' ||  i === 'deleted_at' ||
+             i === 'password' || i === 'token' || i === 'token_created_at') continue;
 
             if(set != '') set += ', '
 

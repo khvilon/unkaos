@@ -14,7 +14,14 @@
 	const name = 'issue_types'
 	const crud = 'crud'
 
+	
+
 	const store_module = store_helper.create_module(name, crud)
+
+	//this.$store.registerModule('workflows', store_helper.create_module('workflows', 'crud'))
+	//		this.$store.dispatch("get_workflows");
+
+	
 
 	 const instance = 
 	{
@@ -33,7 +40,7 @@
 	const buttons = 
 	[
         {
-            name: 'Создать тип здачи',
+            name: 'Создать',
             func: 'unselect_' + name,
         }
     ]
@@ -62,9 +69,11 @@
 
 				},
 				{
-					label: 'Workflow',
-					id: 'workflow.0.name',
-					type: 'Select'
+					label: 'Воркфлоу',
+					id: 'workflow.0.uuid',
+					type: 'Select',
+					clearable: false,
+					reduce: workflow => workflow.uuid
 				}
 				,
 				{
@@ -92,7 +101,25 @@
 		SelectInput
     }
 
+	//data.workflows = [1,2,3]
+
     const mod = page_helper.create_module(name, crud, data, components, store_module, props)
+
+	mod.beforeCreate = function()
+	{
+		//workflows = ['a1', 'a2']
+		if (!this.$store.state['issue_types']) 
+		{
+			this.$store.registerModule('issue_types', store_helper.create_module('issue_types', 'crud'))
+		}
+		if (!this.$store.state['workflows']) 
+		{
+			this.$store.registerModule('workflows', store_helper.create_module('workflows', 'crud'))
+			this.$store.dispatch("get_workflows");
+		}
+	}
+	mod.computed.workflows = function(){ return this.$store.getters['get_workflows'] }
+	
 
 	export default mod
 
@@ -106,6 +133,7 @@
     <TopMenu 
   		:buttons="buttons"
   		:name="name"
+		:label="'Типы задач'"
   		:collumns="search_collumns"
     />
     <div id=issue_types_down_panel>
@@ -125,6 +153,9 @@
 	  			:value="get_json_val(selected_issue_types, input.id)"
 	  			:parent_name="'issue_types'"
 	  			:disabled="input.disabled"
+				:clearable="input.clearable"
+				:values="workflows"
+				:parameters="input"
 	  		></component>
 	  		<div id="issue_types_card_footer_div">
 	  			<div id="issue_types_card_infooter_div">

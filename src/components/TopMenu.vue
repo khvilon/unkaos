@@ -30,6 +30,11 @@
         type: String,
         default: ''
       },
+      label:
+      {
+        type: String,
+        default: ''
+      },
 
       collumns: {
         type: Array,
@@ -108,7 +113,7 @@
     <div style="display: flex ; flex-direction:row; flex-grow: 1; max-height: calc(100% - 60px); ">
 
       <span>
-        {{ name }}
+        {{ label }}
       </span>
       <SearchInput 
         :name="name"
@@ -127,8 +132,9 @@
 </template>
 
 
-<style>
-  /* Google Font Link */
+<style lang="scss">
+  @import '../css/palette.scss';
+  @import '../css/global.scss';
 
   .topbar {
     position: relative;
@@ -150,10 +156,17 @@
 
     
     margin: 1px;
+    margin-bottom: 0px;
     margin-left: 2px;
-    padding-top: 14px;
+    padding-top: 13px;
     padding-left: 0px;
   }
+
+      .topbar .btn .btn_input
+      {
+        width: 100px;
+        height: $input-height;
+      }
 
   
  
@@ -163,26 +176,32 @@
     border-radius: 6px;
     transition: all 0.5s ease;
     background: var(--secondary-color);
-    margin-left:0px
+    margin-left:10px;
+    height: $input-height;
   }
  
   .topbar span
   {
-    width: 200px;
-    font-size: 20px;
-    text-align: center;
+
+    font-size: 25px;
+    font-weight: 600;
+    margin-top: -2px;
+
 
    /*     -webkit-text-stroke: thin;
     /* background-color: #313131; */
     /* background: red; */
-    height: 40px;
     border-radius: 8px;
     border-color: grey;
     border-width: 2px;
-    border-style: groove;
+
     margin-left:20px;
-    background-color: rgb(30, 34, 39);
+    margin-right: 10px;
+
   }
+
+
+
   
 
  

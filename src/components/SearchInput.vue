@@ -42,12 +42,14 @@
 
 </template>
 
-<style>
+<style lang="scss">
+  @import '../css/palette.scss';
+  @import '../css/global.scss';
+
   .search .search-input
   {
-    width: 250px;
-    height: 40px;
-    color: white;
+    width: 300px;
+
     padding: 0 20px 0 10px;
   }
 

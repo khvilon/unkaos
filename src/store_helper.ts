@@ -84,6 +84,8 @@ store_helper.create_module = function(name, crud)
 	mutations['push_update_' + name] = function(state, data)
 	{
 		if(data.uuid!==undefined && state['selected_' + name].uuid != data.uuid) return
+
+		console.log('data', data)
 		state['updated_' + name] = tools.clone_obj(data)
 		state['selected_' + name] = tools.obj_join(state['selected_' + name], data)
 	}

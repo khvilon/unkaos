@@ -2,12 +2,17 @@
 <div class="user-input">
   <div class="label">{{label}}</div>
  
-  <v-select :closeOnSelect="false" label="name" :clearable="clearable" :options=options>
+  <v-select v-model="value" label="name" :clearable="clearable" :options=options :reduce="user => user.uuid"> 
     <template #option="{ name, active, avatar }">
       <img :src="avatar ?? default_avatar" />{{ name }}{{ active ? '' : ' (заблокирован)' }}
     </template>
     <template #selected-option="{ name, active, avatar }">
-      <img :src="avatar ?? default_avatar"  />{{ name }}{{ active ? '' : ' (заблокирован)' }}
+      <img :src="avatar ?? default_avatar"  />{{ name }}{{ active || name=='' ? '' : ' (заблокирован)' }}
+    </template>
+    <template v-slot:no-options="{ search, searching }">
+      <template v-if="searching">
+        Ничего не найдено 
+      </template>
     </template>
   </v-select>
   
@@ -31,6 +36,18 @@ export default {
       default_avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAe9JREFUSEvlVtFRHTEQkyqADggVABWEdAAdQAVABSQVABWkBOgAqACoAEqACsRoZp05fPZ5j8kMH+zPvbnzW3m18srEFwW/CBefApa0D2AnNv1I8n5tAauAJR0A+AtgswJ6BXBM8ia7gTSwpEsAJ4PEZyS9bhgp4KD2NrKZVie/I/kaLJwC+Bnff5G8GyFngR+jp08kd1tJJb0A2ALgnu/9L2BFoi6Vkn4DOPc6ksOChgsqmrs0ZtcVJjLAPwA8xx8Oe8qVdBSK99Jtkqa+G0Ng/1OSj8sGgCuSFtIsJqp/I1kft9n6LPD0KM3ormjubm6KngV2BT4iZVr5t5VuJjxUitK7qq9LTgEH3e61J1MBr3P5fB+NepsWV51dkns8rdKV32Qn1qeBR4Mh+z1FtST30BT72Zxc0XNX7z77uRiLwJIsKruRqV0T1oLdyuJrRhe4Y4FvUVkrmZnwWS+xaJVN4KD2YZLkyo40UqwkK9/im9rnXov6HnBxI1d4kLG5KQXB1nW8a7rVDHjqMgDSxt45dhfx/g9Ju9e/aAF7KtnU01OoJyBJhbl7kr6nLQIX753tco2svXbJoz9UXImqa4HZDVS9/iCyGth0lLtV6u60tImly0EN7IFRJpPV2B0AmapjADXzpUZmBmTtmu8H/A4J79EfjfUqWAAAAABJRU5ErkJggg=='
     }
   },
+   watch: {
+      value: function(val, oldVal) {
+        
+        console.log('change_val',  val, oldVal, this.id, this.parent_name)
+
+        if(this.parent_name == undefined || this.parent_name == '') return;
+
+        let data = {}
+        data[this.id] = val
+        this.$store.commit('push_update_' + this.parent_name, data)
+      }
+    },
   beforeCreate()
   {
     	if (!this.$store.state['users']) 
@@ -46,6 +63,11 @@ export default {
   },
   props:
     {
+      value:
+      {
+        type: String,
+        default: ''
+      },
       label:
       {
         type: String,
@@ -55,6 +77,20 @@ export default {
         type: Boolean,
         default: true
       },
+      id:
+      {
+        type: String,
+        default: undefined
+      },
+      parent_name:
+      {
+        type: String,
+        default: ''
+      },
+      parameters: {
+        type: Object,
+        default: {}
+      }
 
     },
   methods: {
@@ -68,9 +104,6 @@ export default {
 @import '../css/palette.scss';
 @import '../css/global.scss';
 
->>> {
---vs-dropdown-option--active-bg: red;
-}
 
  .user-input .vs__search::placeholder,
  .user-input .vs__dropdown-toggle,
@@ -132,102 +165,6 @@ export default {
 .user-input .vs__dropdown-menu::-webkit-scrollbar {
     display: none; 
 }
-
-/*
-  $main-menu-open-time: 0.2s;
-
-  multiselect__tags{
-    position: relative;
-    border-style: inset;
-    border-color: rgb(118, 118, 118);
-    border-image: initial;
-  }
-   .multiselect__tags
-  {
-    width: 100%;
-    height: 35px;
-    color: white;
-    padding: 0 10px 0 10px;
-
-    border-color: rgb(118, 118, 118);
-    border-style: inset;
-    border-width: 2px;
-  }
-
- 
-
-  .select-list
-  {
-    height: 0px;
-    z-index: 1001;
-    position: relative;
-  }
-
-  .select-list .active
-  {
-    height: 60px;
-  }
-
-  .multiselect span {
-    
-  }
-
-.multiselect__option
-{
-background: $input-bg-color;
-}
-.multiselect__option--selected, .multiselect__option--selected.multiselect__option--highlight
-{
-background: $table-row-color-selected;
-}
- 
-
-.multiselect__option--highlight
-{
-background: $input-hover-bg-color
-}
-
-.multiselect__tags
-{
-background: $input-bg-color;
-}
-
-.multiselect   {
-   background: $input-bg-color;
-}
-
-.multiselect__input, .multiselect__single
-{
-   background: $input-bg-color;
-       padding: 8px;
-}
-
-
-.multiselect__content-wrapper {
-    -ms-overflow-style: none; 
-    scrollbar-width: none; 
-    overflow-y: scroll; 
-}
-
-.multiselect__content-wrapper::-webkit-scrollbar {
-    display: none; 
-}
-
-
-
-.user-input input,    {
-    font-size: 15px;
-    font-weight: 400;
-    border-radius: 6px;
-    transition: all 0.5s ease;
-     background: rgb(29, 27, 49);
-    width: 100%;
-  }
-
-  .user-input:disabled {
-    background: $input-bg-color-disabled
-  }*/
-
 
 
 </style>

@@ -7,6 +7,7 @@
 	import AvatarInput from '../components/AvatarInput.vue'
 	import DateInput from '../components/DateInput.vue'
 	import UserInput from '../components/UserInput.vue'
+	import TextInput from '../components/TextInput.vue'
 	
 
 	import tools from '../tools.ts'
@@ -48,14 +49,14 @@
 	const buttons = 
 	[
         {
-            name: 'Создать проект',
+            name: 'Создать',
             func: 'unselect_' + name,
         }
     ]
 
     const search_collumns = ['name', 'short_name']
 
-    methods: 
+    const methods = 
     {
     	/*add_project(event) 
     	{
@@ -63,6 +64,10 @@
       // `event` — нативное событие DOM
       		if (event) console.log(event.target.tagName)
         }*/
+		update_field(value, field_id)
+		{
+			console.log('update_field', value, field_id)
+		}
 	}
 
 	const props = 
@@ -84,7 +89,7 @@
 				{
 					label: 'Описание',
 					id: 'description',
-					type: 'String'
+					type: 'Text'
 				},
 				{
 					label: 'Аватар',
@@ -93,7 +98,7 @@
 				},
                 {
                     label: 'Владелец',
-                    id: 'owner.0.name',
+                    id: 'owner_uuid',
                     type: 'User',
                     disabled: true,
 					clearable: false
@@ -121,11 +126,11 @@
     	AvatarInput,
     	DateInput,
 		UserInput,
-		
+		TextInput,
     	KButton
     }
 
-    const mod = page_helper.create_module(name, crud, data, components, store_module, props)
+    const mod = page_helper.create_module(name, crud, data, components, store_module, props, methods)
 
 	
 
@@ -141,6 +146,7 @@
     <TopMenu 
   		:buttons="buttons"
   		:name="name"
+		:label="'Проекты'"
   		:collumns="search_collumns"
     />
     <div id=projects_down_panel>
@@ -161,6 +167,7 @@
 	  			:parent_name="'projects'"
 	  			:disabled="input.disabled"
 				:clearable="input.clearable"
+				v-on:update_parent_from_input="update_field"
 	  		></component>
 			 
 	  		<div id="projects_card_footer_div">
