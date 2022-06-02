@@ -1,8 +1,8 @@
 <template>   
   <label class="boolean">
     <div class="label">{{label}}</div>
-    <input  type="checkbox"  v-model="value" />
-    <span class="boolean-input"> </span>
+    <input  type="checkbox"  v-model="value" :disabled="disabled"/>
+    <span class="boolean-input" v-bind:class="{ disabled: disabled }" > </span>
   </label>
 </template>
 
@@ -12,6 +12,11 @@
 
     props:
     {
+       disabled:
+      {
+        type: Boolean,
+        default: false
+      },
       label:
       {
         type: String,
@@ -39,18 +44,22 @@
         console.log(val, oldVal, this.id, this.parent_name)
         let data = {}
         data[this.id] = val
-        //this.$store.commit('push_update_' + this.parent_name, data)
+        this.$store.commit('push_update_' + this.parent_name, data)
       }
     }
   }
 </script>
 
-<style>
+<style lang="scss">
+
+@import '../css/palette.scss';
+@import '../css/global.scss';
+
   .boolean .boolean-input
   {
     width: 35px;
     height: 35px;
-    color: white;
+    color: $text-color;
   }
 
   .boolean
@@ -62,12 +71,12 @@
   .boolean-input {
     font-size: 20px;
     font-weight: 400;
-    border-radius: 6px;
+    border-radius: $border-radius;
     transition: all 0.5s ease;
-    background: rgb(29, 27, 49);
+    background: $input-bg-color;
     display: inline-block;
     text-align: center;  
-    border-color: rgb(118, 118, 118);
+    border-color: $border-color;
     border-width: 2px;
     border-style: inset;   
   }
@@ -84,6 +93,10 @@
   .boolean-input:after {
     content: '\2714';
     display: none;
+  }
+
+   .boolean .disabled {
+    background: $disabled-bg-color
   }
           
 

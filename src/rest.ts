@@ -76,7 +76,18 @@ rest.run_method = async function(method, body)
 	    headers: rest.headers
 	}
 
-	if(body != undefined) options.body = JSON.stringify(body)
+	if(body != undefined) 
+	{
+		if(method.split('_')[1] == 'issue')
+		{
+			method += '?'
+			for(let i in body)
+			{
+				method += i + '=' + body[i] + '&'
+			}
+		}
+		else options.body = JSON.stringify(body)
+	}
 
 	const resp = await fetch(this.base_url + method, options)
 

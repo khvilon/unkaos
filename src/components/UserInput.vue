@@ -2,7 +2,7 @@
 <div class="user-input">
   <div class="label">{{label}}</div>
  
-  <v-select v-model="value" label="name" :clearable="clearable" :options=options :reduce="user => user.uuid"> 
+  <v-select v-model="value" label="name" :clearable="clearable" :options=options :disabled="disabled" :reduce="user => user.uuid"> 
     <template #option="{ name, active, avatar }">
       <img :src="avatar ?? default_avatar" />{{ name }}{{ active ? '' : ' (заблокирован)' }}
     </template>
@@ -90,6 +90,10 @@ export default {
       parameters: {
         type: Object,
         default: {}
+      },
+      disabled: {
+        type: Boolean,
+        default: false
       }
 
     },
@@ -167,10 +171,16 @@ export default {
 }
 
 
+
+.vs--disabled .vs__clear, .vs--disabled .vs__dropdown-toggle, .vs--disabled .vs__open-indicator, .vs--disabled .vs__search, .vs--disabled .vs__selected {
+  background-color: $disabled-bg-color;
+  
+}
+
+.vs--disabled .vs__clear, .vs--disabled .vs__open-indicator
+{
+  fill: $disabled-bg-color;
+}
+
 </style>
 
-<style scoped>
->>> {
-  --vs-dropdown-option--active-bg: rgb(50, 60, 70);
-}
-</style>

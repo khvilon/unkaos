@@ -313,6 +313,12 @@ $loading-bar-width: 200vw;
   }
 }
 
+.ktable
+  {
+    width:100%;
+    margin-left: 20px;
+    margin-right: 20px;
+  }
 
 
 </style>

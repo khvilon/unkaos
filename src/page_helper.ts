@@ -43,7 +43,19 @@ page_helper.create_module = function(name, crud, rdata, components, store_module
 
 		this.$store.state[name]['selected_' + name] = instance
 		this.$store.state[name]['instance_' + name] =  tools.obj_clone(instance)
+
+		for(let i in this.inputs)
+		{
+			//console.log('iiiii00', this.inputs[i].values)
+			if(typeof this.inputs[i].values != undefined && typeof this.inputs[i].values == 'string' && this.inputs[i].values.split('.')[0] == 'this')
+			this.inputs[i].values = this[this.inputs[i].values.split('.')[1]]
+		}
+
+		console.log('cr', this.$store.state[name])
+
+		
   	}
+	  
 
 	rdata.is_visible = false
 

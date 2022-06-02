@@ -1,12 +1,4 @@
 <script>
-  import TopMenu from '../components/TopMenu.vue'
-  import KTable from '../components/KTable.vue'
-  import KButton from '../components/KButton.vue'
-  import StringInput from '../components/StringInput.vue'
-  import BooleanInput from '../components/BooleanInput.vue'
-  import AvatarInput from '../components/AvatarInput.vue'
-  import DateInput from '../components/DateInput.vue'
-
   import tools from '../tools.ts'
   import store_helper from '../store_helper.ts'
   import page_helper from '../page_helper.ts'
@@ -24,7 +16,8 @@
       },
       {
           name: 'Тип',
-          id: "type[0].name"
+          id: "type.0.name",
+          
       },
         {
             name: 'Пользовательское',
@@ -38,6 +31,37 @@
       },
   ]
 
+  const inputs = [
+        {
+          label: 'Название',
+          id: 'name',
+          type: 'String'
+
+        },
+        {
+          label: 'Тип',
+          id: 'type_uuid',
+          type: 'Select',
+          clearable: false,
+          values: "field_types",
+          reduce: type => type.uuid
+        },
+        {
+          label: 'Пользовательское',
+          id: 'is_custom',
+          type: 'Boolean',
+          disabled: true
+        },
+        {
+          label: 'Зарегистрировано',
+          id: 'created_at',
+          type: 'Date',
+          disabled: true
+        }
+
+      ]
+    
+
 
   const buttons = 
   [
@@ -49,63 +73,34 @@
 
     const search_collumns = ['name', 'short_name']
 
-    methods: 
-    {
-      /*add_project(event) 
-      {
-          console.log('ttt ' + this)
-      // `event` — нативное событие DOM
-          if (event) console.log(event.target.tagName)
-        }*/
-  }
 
   const props = 
   {
-    inputs: {
-      type: Array,
-          default: () => [
-        {
-          label: 'Название',
-          id: 'name',
-          type: 'String'
-
-        },
-        {
-          label: 'Тип',
-          id: 'type.0.name',
-          type: 'String'
-        },
-        {
-          label: 'Пользовательское',
-          id: 'is_custom',
-          type: 'Boolean'
-        },
-        {
-          label: 'Зарегистрировано',
-          id: 'created_at',
-          type: 'Date',
-          disabled: true
-        }
-
-      ]
-    }
+   
+    
   }
      
 
-  const data = {collumns, buttons, name, search_collumns}
+  const data = {collumns, buttons, name, search_collumns, inputs}
 
-  const components =
+
+
+    const mod = page_helper.create_module(name, '', data, {}, store_module, {})
+
+    mod.beforeCreate = function()
     {
-      TopMenu,
-      KTable,
-      StringInput,
-      BooleanInput,
-      AvatarInput,
-      DateInput,
-      KButton
+      //workflows = ['a1', 'a2']
+      if (!this.$store.state['fields']) 
+      {
+        this.$store.registerModule('fields', store_helper.create_module('fields', 'crud'))
+      }
+      if (!this.$store.state['field_types']) 
+      {
+        this.$store.registerModule('field_types', store_helper.create_module('field_types', 'crud'))
+        this.$store.dispatch("get_field_types");
+      }
     }
-
-    const mod = page_helper.create_module(name, crud, data, components, store_module, props)
+	  mod.computed.field_types = function(){ return this.$store.getters['get_field_types'] }
 
   export default mod
 
@@ -139,6 +134,8 @@
           :value="get_json_val(selected_fields, input.id)"
           :parent_name="'fields'"
           :disabled="input.disabled"
+          :parameters="input"
+          :values="field_types"
         ></component>
         <div id="fields_card_footer_div">
           <div id="fields_card_infooter_div">
@@ -212,10 +209,5 @@
   }
 
 
-  .ktable
-  {
-    width:100%;
-    margin-left: 20px;
-    margin-right: 20px;
-  }
+  
 </style>

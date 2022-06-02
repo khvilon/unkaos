@@ -2,8 +2,15 @@
 <div class="select-input">
   <div class="label">{{label}}</div>
  
-  <v-select v-model="value"  label="name" :reduce="parameters.reduce" :clearable="parameters.clearable" :options=values>
-    
+  <v-select v-model="value"  
+
+  label="name" :reduce="parameters.reduce" :multiple="parameters.multiple" :clearable="parameters.clearable" :options=values>
+    <template v-slot:no-options="{ search, searching }">
+      <template v-if="searching">
+        Ничего не найдено 
+      </template>
+      </template>
+
   </v-select>
   
 </div>
@@ -36,15 +43,18 @@ export default {
           if(this.values[i].uuid == val) {val_obj = this.values[i]; break}
         }
         
-        console.log(val, oldVal, this.id, this.parent_name, val_obj)
+        console.log(val, oldVal, this.id, val_obj)
+        console.log('pname', this.parent_name)
 
 
-        this.$emit('update_parent_from_input', val)
+        this.$emit('update_parent_from_input', val, this.parent_name)
 
         if(this.parent_name == undefined || this.parent_name == '') return;
 
         let data = {}
         data[this.id] = val
+
+        console.log('commit select data ', data)
         this.$store.commit('push_update_' + this.parent_name, data)
       }
     },
@@ -75,6 +85,16 @@ export default {
       parameters: {
         type: Object,
         default: {}
+      },
+      id:
+      {
+        type: String,
+        default: ''
+      },
+      parent_name:
+      {
+        type: String,
+        default: ''
       }
 
     },
@@ -90,10 +110,6 @@ export default {
 
 @import '../css/palette.scss';
 @import '../css/global.scss';
-
->>> {
---vs-dropdown-option--active-bg: red;
-}
 
  .select-input .vs__search::placeholder,
  .select-input .vs__dropdown-toggle,
@@ -154,6 +170,14 @@ export default {
 
 .select-input .vs__dropdown-menu::-webkit-scrollbar {
     display: none; 
+}
+
+.vs__selected {
+  background-color: $table-row-color-selected;
+}
+
+.vs__deselect {
+  fill: $text-color;
 }
 
 
