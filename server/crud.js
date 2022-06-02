@@ -110,7 +110,7 @@ crud.load = async function(){
     T1.PROJECT_UUID,
     T12.NAME AS PROJECT_NAME,
     T12.SHORT_NAME AS PROJECT_SHORT_NAME,
-    JSONB_AGG(T13) AS VALUES
+	JSONB_AGG(T14) AS VALUES
     FROM 
     ISSUES T1
     JOIN
@@ -121,15 +121,25 @@ crud.load = async function(){
     PROJECTS T12
     ON 
     T1.PROJECT_UUID = T12.UUID
-    JOIN
-    (SELECT FV.ISSUE_UUID, FV.VALUE, F.NAME
-     FROM FIELD_VALUES FV
-     JOIN FIELDS F
-     ON FV.FIELD_UUID = F.UUID
-    )T13
-    ON 
-    T1.UUID = T13.ISSUE_UUID
-    WHERE T1.DELETED_AT IS NULL
+	JOIN
+	(SELECT 
+	 	YT.UUID AS ISSUE_TYPE_UUID,
+	 	F.NAME AS LABEL,
+	 	FT.CODE AS TYPE,
+	 	FV.VALUE,
+	 	FV.ISSUE_UUID
+	 FROM ISSUE_TYPES YT
+	 JOIN ISSUE_TYPES_TO_FIELDS ITF
+	 ON ITF.ISSUE_TYPES_UUID = YT.UUID
+	 JOIN FIELDS F
+	 ON ITF.FIELDS_UUID = F.UUID
+	 JOIN FIELD_TYPES FT
+	 ON FT.UUID = F.TYPE_UUID
+	 LEFT JOIN FIELD_VALUES FV
+	 ON FV.FIELD_UUID = F.UUID
+	) T14
+	ON T1.TYPE_UUID = T14.ISSUE_TYPE_UUID AND T1.UUID = T14.ISSUE_UUID
+    WHERE T1.DELETED_AT IS NULL $1
     GROUP BY
     T1.UUID,
     T1.NUM,
@@ -142,6 +152,10 @@ crud.load = async function(){
     PROJECT_NAME,
     PROJECT_SHORT_NAME
     `
+
+    crud.querys['issue'] = {}
+    crud.querys['issue']['read'] = crud.querys['issues']['read']
+    
 }
 
 crud.make_query = {
@@ -154,7 +168,7 @@ crud.make_query = {
 
         let where = ''
         for(let i in params){
-            where = ' AND t1.' + i + "='" + params[i] + "'"
+            where = 'AND t1.' + i + "='" + params[i] + "'"
         }
         return query.replace('$1', where)
     },

@@ -57,37 +57,42 @@
         }*/
 	}
 
-	const props = 
-	{
-		inputs: {
-			type: Array,
-        	default: () => [
-				{
-					label: 'Название',
-					id: 'name',
-					type: 'String'
+	const inputs =  [
+		{
+			label: 'Название',
+			id: 'name',
+			type: 'String'
 
-				},
-				{
-					label: 'Воркфлоу',
-					id: 'workflow.0.uuid',
-					type: 'Select',
-					clearable: false,
-					reduce: workflow => workflow.uuid
-				}
-				,
-				{
-					label: 'Зарегистрирован',
-					id: 'created_at',
-					type: 'Date',
-					disabled: true
-				}
-
-			]
+		},
+		{
+			label: 'Воркфлоу',
+			id: 'workflow_uuid',
+			type: 'Select',
+			clearable: false,
+			reduce: workflow => workflow.uuid,
+			values: 'this.workflows'
+		},
+		{
+			label: 'Поля',
+			id: 'fields',
+			type: 'Select',
+			clearable: false,
+			reduce: field => field.uuid,
+			values: 'this.fields',
+			multiple: true
 		}
-	}
+		,
+		{
+			label: 'Зарегистрирован',
+			id: 'created_at',
+			type: 'Date',
+			disabled: true
+		}
+
+	]
+	
      
-	const data = {instance, collumns, buttons, name, search_collumns}
+	const data = {instance, collumns, buttons, name, search_collumns, inputs}
 
 	const components =
     {
@@ -103,7 +108,7 @@
 
 	//data.workflows = [1,2,3]
 
-    const mod = page_helper.create_module(name, crud, data, components, store_module, props)
+    const mod = page_helper.create_module(name, crud, data, components, store_module, {})
 
 	mod.beforeCreate = function()
 	{
@@ -117,8 +122,14 @@
 			this.$store.registerModule('workflows', store_helper.create_module('workflows', 'crud'))
 			this.$store.dispatch("get_workflows");
 		}
+		if (!this.$store.state['fields']) 
+		{
+			this.$store.registerModule('fields', store_helper.create_module('fields', 'crud'))
+			this.$store.dispatch("get_fields");
+		}
 	}
 	mod.computed.workflows = function(){ return this.$store.getters['get_workflows'] }
+	mod.computed.fields = function(){ return this.$store.getters['get_fields'] }
 	
 
 	export default mod
@@ -154,7 +165,7 @@
 	  			:parent_name="'issue_types'"
 	  			:disabled="input.disabled"
 				:clearable="input.clearable"
-				:values="workflows"
+				:values="input.values"
 				:parameters="input"
 	  		></component>
 	  		<div id="issue_types_card_footer_div">

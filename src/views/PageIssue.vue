@@ -1,11 +1,4 @@
 <script>
-	import TopMenu from '../components/TopMenu.vue'
-	import KTable from '../components/KTable.vue'
-	import KButton from '../components/KButton.vue'
-	import StringInput from '../components/StringInput.vue'
-	import BooleanInput from '../components/BooleanInput.vue'
-	import AvatarInput from '../components/AvatarInput.vue'
-	import DateInput from '../components/DateInput.vue'
 
 	import tools from '../tools.ts'
 	import store_helper from '../store_helper.ts'
@@ -37,62 +30,54 @@
 			type: String,
 			default: null,
 		},
-		inputs: {
-			type: Array,
-        	default: () => [
-				{
-					label: 'Название',
-					id: 'name',
-					type: 'String'
-
-				},
-				{
-					label: 'Код',
-					id: 'short_name',
-					type: 'String'
-				},
-				{
-					label: 'Описание',
-					id: 'description',
-					type: 'String'
-				},
-				{
-					label: 'Аватар',
-					id: 'avatar',
-					type: 'Avatar'
-				},
-                {
-                    label: 'Владелец',
-                    id: 'owner.0.name',
-                    type: 'String',
-                    disabled: true
-                },
-				{
-					label: 'Зарегистрирован',
-					id: 'created_at',
-					type: 'Date',
-					disabled: true
-				}
-
-			]
-		}
+	
 	}
      
 
 	const data = { name, search_collumns}
 
-	const components =
-    {
-    	TopMenu,
-    	KTable,
-    	StringInput,
-    	BooleanInput,
-    	AvatarInput,
-    	DateInput,
-    	KButton
-    }
 
-    const mod = page_helper.create_module(name, crud, data, components, store_module, props)
+	let methods = {
+		get_field_by_name: function(name)
+		{
+			if(this.issue.length != 1) return {}
+			for(let i in this.issue[0].values) 
+			{
+				if(this.issue[0].values[i].label == name) return this.issue[0].values[i]
+			}
+		},
+		get_fields_exclude_names: function(names)
+		{
+			let fields = []
+			if(this.issue.length != 1) return {}
+			for(let i in this.issue[0].values) 
+			{
+				let match = false
+				for(let j in names)
+				{
+					if(this.issue[0].values[i].label == names[j])
+					{
+						match = true
+						continue
+					}
+				}
+				if(!match) fields.push(this.issue[0].values[i])
+			}
+			return fields
+		}
+	}
+
+    const mod = page_helper.create_module(name, crud, data, {}, store_module, props, methods)
+
+
+	//  mod.computed.issue_data = function(){ return this.$store.getters['get_issue'] }
+
+
+
+	mod.updated = function()
+	{
+		console.log('i updated')
+	}
 
 	export default mod
 
@@ -104,13 +89,28 @@
 
 <template ref='issue'>
     <div id=issue_down_panel>
-	  	<div id="issue_card">
-	  		<component v-bind:is="input.type + 'Input'"
-	  			v-for="(input, index) in inputs"
+	  	<div id="issue_card" v-if="issue[0]!=undefined">
+		  	<div><span>{{issue[0].project_short_name}}-{{issue[0].num}}</span></div>
+			<StringInput :label="get_field_by_name('Название').label"
+				:value="get_field_by_name('Название').value"
+			>
+			</StringInput>
+			<TextInput :label="get_field_by_name('Описание').label"
+				:value="get_field_by_name('Описание').value"
+			>
+			</TextInput>
+			<UserInput :label="get_field_by_name('Автор').label"
+				:value="get_field_by_name('Автор').value"
+				:disabled="true"
+			>
+			</UserInput>
+	  		<component  v-bind:is="input.type + 'Input'"
+	  			v-for="(input, index) in get_fields_exclude_names(['Название', 'Описание', 'Автор'])"
+				
 	  			:label="input.label"
 	  			:key="index"
 	  			:id="input.id"
-	  			:value="get_json_val(selected_issue, input.id)"
+	  			:value="input.value"
 	  			:parent_name="'issue'"
 	  			:disabled="input.disabled"
 	  		></component>
