@@ -1,6 +1,7 @@
 const rest = {}
 
 import store from './stores/index'
+import tools from './tools.ts'
 
 rest.base_url = 'http://localhost:3001/'
 
@@ -70,15 +71,17 @@ rest.run_method = async function(method, body)
 
 	console.log('hhhh', rest.headers)
 
+	let method_array = tools.split2(method, '_')
+
 	const options = 
 	{
-		method: rest.dict[method.split('_')[0]],
+		method: rest.dict[method_array[0]],
 	    headers: rest.headers
 	}
 
 	if(body != undefined) 
 	{
-		if(method.split('_')[1] == 'issue')
+		if(method_array[1] == 'issue')
 		{
 			method += '?'
 			for(let i in body)

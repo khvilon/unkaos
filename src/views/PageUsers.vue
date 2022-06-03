@@ -1,23 +1,13 @@
 <script>
-	import TopMenu from '../components/TopMenu.vue'
-	import KTable from '../components/KTable.vue'
-	import KButton from '../components/KButton.vue'
-	import StringInput from '../components/StringInput.vue'
-	import BooleanInput from '../components/BooleanInput.vue'
-	import AvatarInput from '../components/AvatarInput.vue'
-	import DateInput from '../components/DateInput.vue'
 
-	import store_helper from '../store_helper.ts'
 	import page_helper from '../page_helper.ts'
 
-	const name = 'users'
-	const crud = 'crud'
-	const label = 'Пользователи'
 
-	const store_module = store_helper.create_module(name, crud)
-
-	const collumns =
-	[
+	const data = 
+  {
+    name: 'users',
+    label: 'Пользователи',
+    collumns:[
 	  	{
 	    	name: 'ФИО',
 	        id: "name",
@@ -41,34 +31,8 @@
 	        id: "created_at",
 	        type: 'date'
 	    },
-	]
-
-
-	const buttons = 
-	[
-        {
-            name: 'Создать',
-            func: 'unselect_' + name,
-        }
-    ]
-
-    const search_collumns = ['name', 'login', 'mail']
-
-    methods: 
-    {
-    	/*add_user(event) 
-    	{
-      		console.log('ttt ' + this)
-      // `event` — нативное событие DOM
-      		if (event) console.log(event.target.tagName)
-        }*/
-	}
-
-	const props = 
-	{
-		inputs: {
-			type: Array,
-        	default: () => [
+	],
+    inputs: [
 				{
 					label: 'ФИО',
 					id: 'name',
@@ -105,24 +69,9 @@
 				}
 
 			]
-		}
-	}
+  }
      
-
-	const data = {collumns, buttons, name, search_collumns}
-
-	const components =
-    {
-    	TopMenu,
-    	KTable,
-    	StringInput,
-    	BooleanInput,
-    	AvatarInput,
-    	DateInput,
-    	KButton
-    }
-
-    const mod = page_helper.create_module(name, crud, data, components, store_module, props)
+  const mod = await page_helper.create_module(data)
 
 	export default mod
 
@@ -157,7 +106,7 @@
 	  			:parent_name="'users'"
 	  			:disabled="input.disabled"
 	  		></component>
-	  		<div id="users_card_footer_div">
+	  		<div id="users_card_footer_div"  class="footer_div">
 	  			<div id="users_card_infooter_div">
 			  		<KButton
 			  			id="save_users_btn"
@@ -178,37 +127,30 @@
 
 
 
-<style>
+<style lang="scss">
+  @import '../css/palette.scss';
+  @import '../css/global.scss';
+
+  $card-width: 400px;
+
 	#users_table_panel, #users_card {
     margin: 1px;
-    color: white;
-    height: calc(100vh - var(--top-menu-height) - 2px);
+    height: calc(100vh - $top-menu-height);
 	}
 
 
   #users_table_panel {
     display: flex;
     margin-left: 2px;
-    width: calc(100% - 3px - 400px);
+    width: calc(100vw - 3px - $card-width);
   }
 
   #users_card {
-    width: 400px;
+    width: $card-width;
     margin-left: 0px;
     display: table;
   }
 
-  #users_card StringInput {
-  	display: table-row;
-  }
-
-  #users_card_footer_div {
-  	display: table-footer-group;
-  }
-  #users_card_infooter_div {
-  	display: flex;
-  }
-  
 
   #save_users_btn, #delete_users_btn {
   	padding: 0px 20px 15px 20px;
@@ -225,11 +167,4 @@
     display: flex;
   }
 
-
-  .ktable
-	{
-		width:100%;
-		margin-left: 20px;
-		margin-right: 20px;
-	}
 </style>

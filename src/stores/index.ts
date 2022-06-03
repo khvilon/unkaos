@@ -32,4 +32,8 @@ const actions = {
 
 const store = createStore()
 
+store.registerModule('common',{});
+store.registerModule('alerts', {});
+store.state['alerts'] = {}
+
 export default store

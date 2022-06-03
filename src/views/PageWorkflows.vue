@@ -1,59 +1,19 @@
 <script>
-  import TopMenu from '../components/TopMenu.vue'
-  import KTable from '../components/KTable.vue'
-  import KButton from '../components/KButton.vue'
-  import StringInput from '../components/StringInput.vue'
-  import BooleanInput from '../components/BooleanInput.vue'
-  import AvatarInput from '../components/AvatarInput.vue'
-  import DateInput from '../components/DateInput.vue'
-  import WorkflowsEditor from '../components/WorkflowsEditor.vue'
-  import KTab from '../components/KTab.vue'
-  import KTabPanel from '../components/KTabPanel.vue'
 
-  import store_helper from '../store_helper.ts'
   import page_helper from '../page_helper.ts'
-
-  const name = 'workflows'
-  const crud = 'crud'
-
-
-  const store_module = store_helper.create_module(name, crud)
-
-  const instance = 
+    
+  const data = 
   {
-    name: '',
-    transitions: [],
-    workflow_nodes: []
-  }
-
-  const collumns =
-  [
+    name: 'workflows',
+    label: 'Воркфлоу',
+    collumns:[
       {
         name: 'Название',
-          id: "name"
+          id: "name",
+          search: true
       }
-  ]
-
-
-  const buttons = 
-  [
-        {
-            name: 'Создать',
-            func: 'unselect_' + name,
-        }
-    ]
-
-    const search_collumns = ['name']
-
-    methods: 
-    {
-    }
-
-  const props = 
-  {
-    inputs: {
-      type: Array,
-          default: () => [
+  ],
+    inputs:[
         {
           label: 'Название',
           id: 'name',
@@ -61,30 +21,18 @@
 
         }
 
-      ]
-    }
+      ],
+      instance: 
+      {
+        name: '',
+        transitions: [],
+        workflow_nodes: []
+      }
   }
      
+  const mod = await page_helper.create_module(data)
 
-  const data = {instance, collumns, buttons, name, search_collumns}
-
-  const components =
-    {
-      TopMenu,
-      KTable,
-      StringInput,
-      BooleanInput,
-      AvatarInput,
-      DateInput,
-      KButton,
-      WorkflowsEditor,
-      KTab,
-      KTabPanel
-    }
-
-    const mod = page_helper.create_module(name, crud, data, components, store_module, props)
-
-  export default mod
+  export default mod 
   
 </script>
 
@@ -94,18 +42,18 @@
     <TopMenu 
       :buttons="buttons"
       :name="name"
-      :label="'Статусная модель'"
+      :label="label"
       :collumns="search_collumns"
     />
     <div id=workflows_down_panel>
-      <div id="workflows_table_panel">
+      <div id="workflows_table_panel" class="panel">
         <KTable 
           :collumns="collumns"
           :table-data="workflows"
           :name="'workflows'"
         />
       </div>
-      <div id="workflows_card">
+      <div id="workflows_card" class="panel">
         <KTabPanel>
           <KTab title="Основное">
             <component v-bind:is="input.type + 'Input'"
@@ -126,7 +74,7 @@
           <KTab title="Статусы">Статусы</KTab>
           <KTab title="Автоматизация">Автоматизация</KTab>
         </KTabPanel>
-        <div id="workflows_card_footer_div">
+        <div id="workflows_card_footer_div" class="footer_div">
           <div id="workflows_card_infooter_div">
             <KButton
               id="save_workflows_btn"
@@ -148,19 +96,22 @@
 
 
 
-<style>
+<style lang="scss">
+  @import '../css/palette.scss';
+  @import '../css/global.scss';
+
+  $table-width: 290px;
+
+
   #workflows_table_panel, #workflows_card {
-    background-color: rgb(35, 39, 43);
-    border-radius: 8px;
     margin: 1px;
-    color: white;
-    height: calc(100vh - 77px);
+    height: calc(100vh - $top-menu-height);
   }
 
   #workflows_table_panel {
     display: flex;
     margin-left: 2px;
-    width: 290px;
+    width: $table-width;
   }
   #issue_statuses_table_panel {
     display: flex;
@@ -169,20 +120,9 @@
   }
 
   #workflows_card {
-    width: calc(100% - 3px - 290px);
+    width: calc(100vw - 3px - $table-width);
     margin-left: 0px;
     display: table;
-  }
-
-  #workflows_card StringInput {
-    display: table-row;
-  }
-
-  #workflows_card_footer_div {
-    display: table-footer-group;
-  }
-  #workflows_card_infooter_div {
-    display: flex;
   }
 
   #save_workflows_btn, #delete_workflows_btn {
@@ -199,12 +139,7 @@
     display: flex;
   }
 
-  .ktable
-  {
-    width:100%;
-    margin-left: 20px;
-    margin-right: 20px;
-  }
+
 
   #workflows_card .tab-panel
   {

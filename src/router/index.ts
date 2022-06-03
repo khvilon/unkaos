@@ -10,6 +10,12 @@ import PageIssues from '../views/PageIssues.vue'
 import PageIssue from '../views/PageIssue.vue'
 import PageLogin from '../views/PageLogin.vue'
 import PageLanding from '../views/PageLanding.vue'
+import PageConfigs from '../views/PageConfigs.vue'
+import PageDashboards from '../views/PageDashboards.vue'
+import PageNotifications from '../views/PageNotifications.vue'
+import PageRoles from '../views/PageRoles.vue'
+
+
 
 import store from "../stores";
 import tools from "../tools";
@@ -21,17 +27,17 @@ const router = createRouter({
 
 	{ path: '/', component: PageLanding },
 	{ path: '/login', component: PageLogin },
-  	{ path: '/dashboards', component: PageFields },
+  	{ path: '/dashboards', component: PageDashboards },
   	{ path: '/issues', component: PageIssues},
-  	{ path: '/alerts', component: PageFields },
+  	{ path: '/notifications', component: PageNotifications },
   	{ path: '/projects', component: PageProjects },
-  	{ path: '/configs/roles', component: PageFields },
+  	{ path: '/configs/roles', component: PageRoles },
   	{ path: '/configs/issue_types', component: PageIssueTypes },
   	{ path: '/configs/workflows', component: PageWorkflows },
 	{ path: '/configs/issue_statuses', component: PageIssueStatuses },
 	{ path: '/configs/users', component: PageUsers },
 	{ path: '/configs/fields', component: PageFields },
-	{ path: '/configs', component: PageFields },
+	{ path: '/configs', component: PageConfigs },
 	{ path: '/issue/:id', component: PageIssue, props: true },
   ]
 })

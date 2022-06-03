@@ -255,6 +255,8 @@ crud.make_query = {
 
             for(let j in params[i]){
                 let child =  params[i][j] 
+
+                console.log('child', child)
                 subquerys += '\r\n' + crud.make_query.upsert(child.table_name, child)
             }
         }
@@ -286,10 +288,13 @@ crud.get_uuids = function(obj)
     for(let i in obj)
     {
         if(obj[i]===undefined || obj[i]===null || obj[i][0] === undefined || obj[i][0].uuid === undefined) continue
+
         let fks = data_model.model[obj.table_name]['fks']
         console.log('fff', fks, 'fdfdfd', obj[i][0].table_name)
+
         if(fks == undefined || !fks.includes(obj[i][0].table_name)) continue
         console.log('fff2', fks, 'fdfdfd', obj[i][0].table_name)
+
         for(let j in obj[i])
         {
             ans = tools.obj_join(ans, crud.get_uuids(obj[i][j]))
@@ -303,6 +308,9 @@ crud.do = async function(subdomain, method, table_name, params)
 {
 
     let query = crud.get_query(method, table_name, params)
+
+    console.log('paraaaaaaaaaaaaaaaaaaaaaams', params)
+    
 
     if(method != 'read')
     {

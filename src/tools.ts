@@ -12,7 +12,8 @@ tools.str_contains = function(str, substr)
 
 tools.row_contains = function(row, val, collumns)
 {   
-    if(collumns == undefined || collumns == []) collumns = Object.keys(row)
+    console.log('cont', val, collumns, row)
+    if(collumns == undefined || collumns == [])  collumns = Object.keys(row)
         
     for(let i in collumns)
     {
@@ -59,6 +60,8 @@ tools.obj_join = function(obj0, obj1)
 
 tools.obj_attr_by_path = function(obj, path)
 {
+  if(obj == undefined) return ''
+  console.log('obj_attr_by_path', obj, path)
   if(Array.isArray(path))
   {
     let ans = ''

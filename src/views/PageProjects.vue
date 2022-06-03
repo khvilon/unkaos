@@ -1,37 +1,22 @@
 <script>
-	import TopMenu from '../components/TopMenu.vue'
-	import KTable from '../components/KTable.vue'
-	import KButton from '../components/KButton.vue'
-	import StringInput from '../components/StringInput.vue'
-	import BooleanInput from '../components/BooleanInput.vue'
-	import AvatarInput from '../components/AvatarInput.vue'
-	import DateInput from '../components/DateInput.vue'
-	import UserInput from '../components/UserInput.vue'
-	import TextInput from '../components/TextInput.vue'
 	
-
-	import tools from '../tools.ts'
-	import store_helper from '../store_helper.ts'
 	import page_helper from '../page_helper.ts'
 
-	const name = 'projects'
-	const crud = 'crud'
-
-	const store_module = store_helper.create_module(name, crud)
-
-	
-
-
-	const collumns =
-	[
+	const data = 
+  {
+    name: 'projects',
+    label: 'Проекты',
+    collumns:[
 	  	{
 	    	name: 'Название',
 	        id: "name",
-	        type: 'user'
+	        type: 'user',
+			search: true
 	    },
 	    {
 	        name: 'Код',
-	        id: "short_name"
+	        id: "short_name",
+			search: true
 	    },
         {
             name: 'Владелец',
@@ -43,38 +28,8 @@
 	        id: "created_at",
 	        type: 'date'
 	    },
-	]
-
-
-	const buttons = 
-	[
-        {
-            name: 'Создать',
-            func: 'unselect_' + name,
-        }
-    ]
-
-    const search_collumns = ['name', 'short_name']
-
-    const methods = 
-    {
-    	/*add_project(event) 
-    	{
-      		console.log('ttt ' + this)
-      // `event` — нативное событие DOM
-      		if (event) console.log(event.target.tagName)
-        }*/
-		update_field(value, field_id)
-		{
-			console.log('update_field', value, field_id)
-		}
-	}
-
-	const props = 
-	{
-		inputs: {
-			type: Array,
-        	default: () => [
+	],
+    inputs: [
 				{
 					label: 'Название',
 					id: 'name',
@@ -100,7 +55,7 @@
                     label: 'Владелец',
                     id: 'owner_uuid',
                     type: 'User',
-                    disabled: true,
+                    disabled: false,
 					clearable: false
                 },
 				{
@@ -111,28 +66,9 @@
 				}
 
 			]
-		}
-	}
+  }
      
-
-	const data = {collumns, buttons, name, search_collumns}
-
-	const components =
-    {
-    	TopMenu,
-    	KTable,
-    	StringInput,
-    	BooleanInput,
-    	AvatarInput,
-    	DateInput,
-		UserInput,
-		TextInput,
-    	KButton
-    }
-
-    const mod = page_helper.create_module(name, crud, data, components, store_module, props, methods)
-
-	
+  const mod = await page_helper.create_module(data)	
 
 	export default mod
 
@@ -146,18 +82,18 @@
     <TopMenu 
   		:buttons="buttons"
   		:name="name"
-		:label="'Проекты'"
+		:label="label"
   		:collumns="search_collumns"
     />
     <div id=projects_down_panel>
-	  	<div id="projects_table_panel">
+	  	<div id="projects_table_panel"  class="panel">
 	    	<KTable 
 	    		:collumns="collumns"
 	    		:table-data="projects"
 	    		:name="'projects'"
 	    	/>
 	  	</div>
-	  	<div id="projects_card">
+	  	<div id="projects_card"  class="panel">
 	  		<component v-bind:is="input.type + 'Input'"
 	  			v-for="(input, index) in inputs"
 	  			:label="input.label"
@@ -167,10 +103,9 @@
 	  			:parent_name="'projects'"
 	  			:disabled="input.disabled"
 				:clearable="input.clearable"
-				v-on:update_parent_from_input="update_field"
 	  		></component>
 			 
-	  		<div id="projects_card_footer_div">
+	  		<div id="projects_card_footer_div" class="footer_div">
 	  			<div id="projects_card_infooter_div">
 			  		<KButton
 			  			id="save_projects_btn"
@@ -190,39 +125,28 @@
 
 
 
+<style lang="scss">
+  @import '../css/palette.scss';
+  @import '../css/global.scss';
 
-<style>
+  $card-width: 400px;
+
 	#projects_table_panel, #projects_card {
-    background-color: rgb(35, 39, 43);
-    border-radius: 8px;
     margin: 1px;
-    color: white;
-    min-height: calc(100vh - 77px);
-    height: calc(100vh - 100px);
+    height: calc(100vh - $top-menu-height);
 	}
 
 
   #projects_table_panel {
     display: flex;
     margin-left: 2px;
-    width: calc(100% - 3px - 400px);
+    width: calc(100% - 3px - $card-width);
   }
 
   #projects_card {
-    width: 400px;
+    width: $card-width;
     margin-left: 0px;
     display: table;
-  }
-
-  #projects_card StringInput {
-  	display: table-row;
-  }
-
-  #projects_card_footer_div {
-  	display: table-footer-group;
-  }
-  #projects_card_infooter_div {
-  	display: flex;
   }
   
 
@@ -230,7 +154,6 @@
   	padding: 0px 20px 15px 20px;
   	width: 50%
   }
-
 
   #save_projects_btn input, #delete_projects_btn input{
   	width: 100%
@@ -242,10 +165,4 @@
   }
 
 
-  .ktable
-	{
-		width:100%;
-		margin-left: 20px;
-		margin-right: 20px;
-	}
 </style>

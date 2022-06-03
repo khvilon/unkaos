@@ -4,7 +4,8 @@
  
   <v-select v-model="value"  
 
-  label="name" :reduce="parameters.reduce" :multiple="parameters.multiple" :clearable="parameters.clearable" :options=values>
+  label="name" :reduce="parameters.reduce" :multiple="parameters.multiple" :clearable="parameters.clearable" :disabled="disabled"
+   :options=values>
     <template v-slot:no-options="{ search, searching }">
       <template v-if="searching">
         Ничего не найдено 
@@ -95,6 +96,10 @@ export default {
       {
         type: String,
         default: ''
+      },
+      disabled: {
+        type: Boolean,
+        default: false
       }
 
     },
@@ -178,6 +183,16 @@ export default {
 
 .vs__deselect {
   fill: $text-color;
+}
+
+.vs--disabled .vs__clear, .vs--disabled .vs__dropdown-toggle, .vs--disabled .vs__open-indicator, .vs--disabled .vs__search, .vs--disabled .vs__selected {
+  background-color: $disabled-bg-color;
+  
+}
+
+.vs--disabled .vs__clear, .vs--disabled .vs__open-indicator
+{
+  fill: $disabled-bg-color;
 }
 
 
