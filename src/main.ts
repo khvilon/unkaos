@@ -24,6 +24,11 @@ import KButton from './components/KButton.vue'
 
 import TopMenu from './components/TopMenu.vue'
 
+import WorkflowsEditor from './components/WorkflowsEditor.vue'
+
+import KTabPanel from './components/KTabPanel.vue'
+import KTab from './components/KTab.vue'
+
 
 const app = createApp(App);
  
@@ -44,6 +49,12 @@ app.component('KTable', KTable)
 app.component('KButton', KButton)
 
 app.component('TopMenu', TopMenu)
+
+app.component('WorkflowsEditor', WorkflowsEditor)
+
+app.component('KTabPanel', KTabPanel)
+app.component('KTab', KTab)
+
 
 app.mount('#app')
 

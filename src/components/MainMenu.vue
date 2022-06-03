@@ -28,7 +28,7 @@
             level: 1
           },
           {
-            link: '/alerts',
+            link: '/notifications',
             name: dict['Уведомления'],
             icon: 'bx-envelope',
             level: 1

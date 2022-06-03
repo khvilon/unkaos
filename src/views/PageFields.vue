@@ -1,131 +1,83 @@
 <script>
-  import tools from '../tools.ts'
-  import store_helper from '../store_helper.ts'
   import page_helper from '../page_helper.ts'
 
-  const name = 'fields'
-  const crud = 'crud'
 
-  const store_module = store_helper.create_module(name, crud)
-
-  const collumns =
-  [
+  const data = 
+  {
+    name: 'fields',
+    label: 'Поля',
+    collumns:[
       {
         name: 'Название',
-          id: "name"
+        id: "name",
+        search: true
       },
       {
-          name: 'Тип',
-          id: "type.0.name",
-          
+        name: 'Тип',
+        id: "type.0.name" 
       },
-        {
-            name: 'Пользовательское',
-            id: "is_custom",
-            type: "boolean"
-        },
       {
-          name: 'Зарегистрирован',
-          id: "created_at",
-          type: 'date'
+        name: 'Пользовательское',
+        id: "is_custom",
+        type: "boolean"
       },
-  ]
-
-  const inputs = [
-        {
-          label: 'Название',
-          id: 'name',
-          type: 'String'
-
-        },
-        {
-          label: 'Тип',
-          id: 'type_uuid',
-          type: 'Select',
-          clearable: false,
-          values: "field_types",
-          reduce: type => type.uuid
-        },
-        {
-          label: 'Пользовательское',
-          id: 'is_custom',
-          type: 'Boolean',
-          disabled: true
-        },
-        {
-          label: 'Зарегистрировано',
-          id: 'created_at',
-          type: 'Date',
-          disabled: true
-        }
-
-      ]
-    
-
-
-  const buttons = 
-  [
-        {
-            name: 'Создать',
-            func: 'unselect_' + name,
-        }
+      {
+        name: 'Зарегистрирован',
+        id: "created_at",
+        type: 'date'
+      },
+    ],
+    inputs: [
+      {
+        label: 'Название',
+        id: 'name',
+        type: 'String'
+      },
+      {
+        label: 'Тип',
+        id: 'type_uuid',
+        dictionary: 'field_types',
+        type: 'Select',
+        clearable: false,
+      },
+      {
+        label: 'Пользовательское',
+        id: 'is_custom',
+        type: 'Boolean',
+        disabled: true
+      },
+      {
+        label: 'Зарегистрировано',
+        id: 'created_at',
+        type: 'Date',
+        disabled: true
+      }
     ]
-
-    const search_collumns = ['name', 'short_name']
-
-
-  const props = 
-  {
-   
-    
   }
      
+  const mod = await page_helper.create_module(data)
 
-  const data = {collumns, buttons, name, search_collumns, inputs}
-
-
-
-    const mod = page_helper.create_module(name, '', data, {}, store_module, {})
-
-    mod.beforeCreate = function()
-    {
-      //workflows = ['a1', 'a2']
-      if (!this.$store.state['fields']) 
-      {
-        this.$store.registerModule('fields', store_helper.create_module('fields', 'crud'))
-      }
-      if (!this.$store.state['field_types']) 
-      {
-        this.$store.registerModule('field_types', store_helper.create_module('field_types', 'crud'))
-        this.$store.dispatch("get_field_types");
-      }
-    }
-	  mod.computed.field_types = function(){ return this.$store.getters['get_field_types'] }
-
-  export default mod
-
-
-  
+  export default mod  
 </script>
 
 
 
-<template ref='fields'>
+<template ref='fields' v-if="fields">
     <TopMenu 
       :buttons="buttons"
       :name="name"
-      :label="'Поля'"
+      :label="label"
       :collumns="search_collumns"
     />
     <div id=fields_down_panel>
-      <div id="fields_table_panel">
+      <div id="fields_table_panel" class="panel">
         <KTable 
           :collumns="collumns"
           :table-data="fields"
           :name="'fields'"
         />
       </div>
-      <div id="fields_card">
+      <div id="fields_card" class="panel">
         <component v-bind:is="input.type + 'Input'"
           v-for="(input, index) in inputs"
           :label="input.label"
@@ -133,11 +85,11 @@
           :id="input.id"
           :value="get_json_val(selected_fields, input.id)"
           :parent_name="'fields'"
-          :disabled="input.disabled"
+          :disabled="input.disabled || (input.id=='type_uuid' && !get_json_val(selected_fields, 'is_custom'))"
           :parameters="input"
-          :values="field_types"
+          :values="input.values"
         ></component>
-        <div id="fields_card_footer_div">
+        <div id="fields_card_footer_div" class="footer_div">
           <div id="fields_card_infooter_div">
             <KButton
               id="save_fields_btn"
@@ -158,56 +110,40 @@
 
 
 
-<style>
-  #fields_table_panel, #fields_card {
-    background-color: rgb(35, 39, 43);
-    border-radius: 8px;
-    margin: 1px;
-    color: white;
-    min-height: calc(100vh - 77px);
-    height: calc(100vh - 100px);
-  }
+<style lang="scss">
+  @import '../css/palette.scss';
+  @import '../css/global.scss';
 
+  $card-width: 400px;
+
+  #fields_table_panel, #fields_card {
+    margin: 1px;
+    height: calc(100vh - $top-menu-height);
+  }
 
   #fields_table_panel {
     display: flex;
     margin-left: 2px;
-    width: calc(100% - 3px - 400px);
+    width: calc(100vw - 3px - $card-width);
   }
 
   #fields_card {
-    width: 400px;
+    width:  $card-width;
     margin-left: 0px;
     display: table;
   }
-
-  #fields_card StringInput {
-    display: table-row;
-  }
-
-  #fields_card_footer_div {
-    display: table-footer-group;
-  }
-  #fields_card_infooter_div {
-    display: flex;
-  }
   
-
   #save_fields_btn, #delete_fields_btn {
     padding: 0px 20px 15px 20px;
     width: 50%
   }
 
-
   #save_fields_btn input, #delete_fields_btn input{
     width: 100%
-
   }
 
   #fields_down_panel {
     display: flex;
   }
 
-
-  
 </style>

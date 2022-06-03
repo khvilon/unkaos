@@ -14,9 +14,8 @@ store_helper.dict =
 	d: 'delete'
 }
 
-store_helper.create_module = function(name, crud)
+store_helper.create_module = function(name)
 { 
-	//crud = crud.split()
 	let st = {}
 	st[name] = []
 	st['filtered_' + name] = []
@@ -200,7 +199,8 @@ store_helper.create_module = function(name, crud)
 		//let body = state.state['updated_' + name]
 		//body.uuid = state.state['selected_' + name].uuid
 
-		console.log('u', state.state['selected_' + name])
+		console.log('uuuuupdate', state.state['selected_' + name])
+
 		rest.run_method('update_' + name, state.state['selected_' + name])
 	}
 	actions['save_' + name] = async function(state)

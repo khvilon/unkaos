@@ -1,30 +1,20 @@
 <script>
-	import TopMenu from '../components/TopMenu.vue'
-	import KTable from '../components/KTable.vue'
-	import KButton from '../components/KButton.vue'
-	import StringInput from '../components/StringInput.vue'
-	import BooleanInput from '../components/BooleanInput.vue'
-	import AvatarInput from '../components/AvatarInput.vue'
-	import DateInput from '../components/DateInput.vue'
-
-	import store_helper from '../store_helper.ts'
+	
 	import page_helper from '../page_helper.ts'
 
 	import d from '../dict.ts'
-	
-
-	const name = 'issues'
-	const crud = 'crud'
 
 	console.log('d', d['Название'],d)
 
-	const store_module = store_helper.create_module(name, crud)
-
-	const collumns =
-	[
+	const data = 
+  {
+    name: 'issues',
+    label: 'Задачи',
+    collumns:[
 		{
 	        name: '№',
-	        id: ["project_short_name","'-'", "num"] 
+	        id: ["project_short_name","'-'", "num"],
+			search: true
 	    },
 	  	{
 	    	name: d['Название'],
@@ -48,51 +38,15 @@
 	        id: "updated_at",
 	        type: 'date'
 	    },
-	]
-
-
-	const buttons = 
-	[
-        {
-            name: d['Создать'],
-            func: 'unselect_' + name,
-        }
+	],
+    inputs: [
+      
     ]
-
-    const search_collumns = ['name']
-
-    methods: 
-    {
-    	/*add_project(event) 
-    	{
-      		console.log('ttt ' + this)
-      // `event` — нативное событие DOM
-      		if (event) console.log(event.target.tagName)
-        }*/
-	}
-
-	
-	
+  }
      
-
-	const data = {collumns, buttons, name, search_collumns}
-
-	const components =
-    {
-    	TopMenu,
-    	KTable,
-    	StringInput,
-    	BooleanInput,
-    	AvatarInput,
-    	DateInput,
-    	KButton
-    }
-
-    const mod = page_helper.create_module(name, crud, data, components, store_module, {})
+  const mod = await page_helper.create_module(data)
 
 	export default mod
-
-
 	
 </script>
 
@@ -100,13 +54,12 @@
 
 <template ref='issues' >
     <TopMenu 
-		v-if="is_visible"
   		:buttons="buttons"
   		:name="name"
-		:label="'Задачи'"
+		:label="label"
   		:collumns="search_collumns"
     />
-    <div id=issues_down_panel class="panel" :class="!is_visible ? 'hidden' : ''" @click="is_visible=!is_visible">
+    <div id=issues_down_panel class="panel">
 	  	<div id="issues_table_panel">
 	    	<KTable 
 	    		:collumns="collumns"
@@ -120,14 +73,13 @@
 
 
 
-<style>
+<style lang="scss">
+  @import '../css/palette.scss';
+  @import '../css/global.scss';
+
 	#issues_table_panel, #issues_card {
-    background-color: rgb(35, 39, 43);
-    border-radius: 8px;
     margin: 1px;
-    color: white;
-    min-height: calc(100vh - 77px);
-    height: calc(100vh - 100px);
+    height: calc(100vh - $top-menu-height);
 
     transition: all 3s ease;
 	}
@@ -139,23 +91,7 @@
     width: calc(100%);
   }
 
-  #issues_card {
-    width: 400px;
-    margin-left: 0px;
-    display: table;
-  }
 
-  #issues_card StringInput {
-  	display: table-row;
-  }
-
-  #issues_card_footer_div {
-  	display: table-footer-group;
-  }
-  #issues_card_infooter_div {
-  	display: flex;
-  }
-  
 
   #save_issues_btn, #delete_issues_btn {
   	padding: 0px 20px 15px 20px;
@@ -171,12 +107,4 @@
   #issues_down_panel {
     display: flex;
   }
-
-
-  .ktable
-	{
-		width:100%;
-		margin-left: 20px;
-		margin-right: 20px;
-	}
 </style>

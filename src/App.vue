@@ -47,9 +47,7 @@
       if(uri_parts.length == 3) subdomain = uri_parts[0].replace('http://', '')
        // console.log('ddd', this.$store.state['domain'])
       
-      this.$store.registerModule('common', {subdomain: subdomain});
-      this.$store.registerModule('alerts', {});
-      this.$store.state['alerts'] = {}
+      
 
      
     },
@@ -319,6 +317,16 @@ $loading-bar-width: 200vw;
     margin-left: 20px;
     margin-right: 20px;
   }
+
+
+.footer_div
+{
+  display: table-footer-group;
+}
+
+.footer_div div{
+  display: flex;
+}
 
 
 </style>
