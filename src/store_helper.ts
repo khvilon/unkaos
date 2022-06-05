@@ -148,12 +148,12 @@ store_helper.create_module = function(name)
 	
 
 	const actions = {}
-	actions['get_' + name] = async function()
+	actions['get_' + name] = async function(state, params)
 	{
-		console.log('geeeeeet', name)
-		let params
-		if(name == 'issue') params = {uuid: 'cf80f5b4-ba05-472e-80ea-4805ffc2f431'}
-		else params = undefined
+		console.log('geeeeeet', name, params)
+		
+		//if(name == 'issue') params = {uuid: 'cf80f5b4-ba05-472e-80ea-4805ffc2f431'}
+		//else params = undefined
 		const data = await rest.run_method('read_' + name, params)
 
 		console.log('got data', data)

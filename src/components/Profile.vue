@@ -99,7 +99,7 @@
     background-image: url('https://oboz.myjetbrains.com/hub/api/rest/avatar/7755ec62-dfa1-4c3c-a3a9-ac6748d607c1?dpr=1.25&size=20');
     cursor: pointer;
     border-style: groove;
-    border-width: 2px;
+    border-width: 1px;
   }
   .profile div {
     margin-top: 14px;

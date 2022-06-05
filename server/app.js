@@ -13,6 +13,8 @@ var tools = require('./tools')
 const app = express()
 const port = 3001
 
+const comment_type_uuid = 'f53d8ecc-c26e-4909-a070-5c33e6f7a196'
+
 var bodyParser = require('body-parser')
 
 const dict =
@@ -93,6 +95,16 @@ async function init()
                 }*/
 
                 console.log('ss', subdomain)
+
+                if(table_name == 'issue_actions')
+                {
+                    params.type_uuid = comment_type_uuid;
+                    params.author_uuid = user.uuid;
+                }
+
+                console.log('ppppppp', params)
+
+
                 let ans = await crud.do(subdomain, method, table_name, params)
 
                 res.send(ans)

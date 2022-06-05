@@ -1,7 +1,8 @@
 <template>   
   <div class="text">
     <div class="label">{{label}}</div>
-    <textarea ref="text_input" class="text-input" :type="type"  v-model="value" :disabled="disabled" ></textarea>
+    <textarea ref="text_input" @focus="$emit('input_focus', true)" @blur="$emit('input_focus', false)"
+    class="text-input" :type="type"  v-model="value" :disabled="disabled" ></textarea>
   </div>
 </template>
 
@@ -44,14 +45,14 @@
 
     },
 
-    emits: ['update_parent_from_input'],
+    emits: ['update_parent_from_input', 'input_focus'],
 
      methods: {
       resize() {
         console.log('resizing')
         this.$refs.text_input.style.height = "auto";
         this.$refs.text_input.style.height = `${this.$refs.text_input.scrollHeight+4}px`;
-      }
+      },
     },
     updated() {
       this.resize();

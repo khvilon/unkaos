@@ -81,7 +81,7 @@
 
 
 
-<template ref='users'>
+<template ref='users' >
     <TopMenu 
   		:buttons="buttons"
   		:name="name"
@@ -89,8 +89,9 @@
   		:collumns="search_collumns"
     />
     <div id=users_down_panel >
-	  	<div id="users_table_panel" class="panel">
+	  	<div id="users_table_panel" class="panel" >
 	    	<KTable 
+				
 	    		:collumns="collumns"
 	    		:table-data="users"
 	    		:name="'users'"
@@ -99,6 +100,7 @@
 	  	<div id="users_card" class="panel">
 	  		<component v-bind:is="input.type + 'Input'"
 	  			v-for="(input, index) in inputs"
+				
 	  			:label="input.label"
 	  			:key="index"
 	  			:id="input.id"

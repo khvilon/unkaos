@@ -52,8 +52,6 @@ rest.get_token = async function(email, pass)
 	localStorage.user_token = data.user_token
 	localStorage.profile = JSON.stringify(data.profile)
 
-	
-
 	return data
 }
 
@@ -81,7 +79,7 @@ rest.run_method = async function(method, body)
 
 	if(body != undefined) 
 	{
-		if(method_array[1] == 'issue')
+		if(method_array[0] == 'read')
 		{
 			method += '?'
 			for(let i in body)
