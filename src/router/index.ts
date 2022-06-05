@@ -39,6 +39,7 @@ const router = createRouter({
 	{ path: '/configs/fields', component: PageFields },
 	{ path: '/configs', component: PageConfigs },
 	{ path: '/issue/:id', component: PageIssue, props: true },
+	{ path: '/issue/', component: PageIssue },
   ]
 })
 

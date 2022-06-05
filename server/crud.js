@@ -110,7 +110,11 @@ crud.load = async function(){
     T1.PROJECT_UUID,
     T12.NAME AS PROJECT_NAME,
     T12.SHORT_NAME AS PROJECT_SHORT_NAME,
-	JSONB_AGG(T14) AS VALUES
+    CASE WHEN COUNT(T14) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T14) END AS VALUES,
+    CASE WHEN COUNT(T15) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T15) END AS ACTIONS,
+    T16.NAME AS TYPE,
+    T16.WORKFLOW_UUID,
+    STATUS_UUID
     FROM 
     ISSUES T1
     JOIN
@@ -121,7 +125,9 @@ crud.load = async function(){
     PROJECTS T12
     ON 
     T1.PROJECT_UUID = T12.UUID
-	JOIN
+    JOIN ISSUE_TYPES T16
+    ON T1.TYPE_UUID = T16.UUID
+	LEFT JOIN
 	(SELECT 
 	 	YT.UUID AS ISSUE_TYPE_UUID,
 	 	F.NAME AS LABEL,
@@ -139,6 +145,21 @@ crud.load = async function(){
 	 ON FV.FIELD_UUID = F.UUID
 	) T14
 	ON T1.TYPE_UUID = T14.ISSUE_TYPE_UUID AND T1.UUID = T14.ISSUE_UUID
+    LEFT JOIN 
+    (SELECT
+        A.UUID,
+        A.ISSUE_UUID,
+        U.NAME AS AUTHOR,
+        A.VALUE,
+        AT.NAME,
+        A.CREATED_AT
+    FROM ISSUE_ACTIONS A
+    JOIN ISSUE_ACTIONs_TYPES AT
+    ON A.TYPE_UUID = AT.UUID
+    JOIN USERS U
+    ON A.AUTHOR_UUID = U.UUID
+    ) T15
+    ON T1.UUID = T15.ISSUE_UUID
     WHERE T1.DELETED_AT IS NULL $1
     GROUP BY
     T1.UUID,
@@ -150,11 +171,19 @@ crud.load = async function(){
     T1.DELETED_AT,
     T1.PROJECT_UUID,
     PROJECT_NAME,
-    PROJECT_SHORT_NAME
+    PROJECT_SHORT_NAME,
+    T16.NAME,
+    T16.WORKFLOW_UUID,
+    T1.STATUS_UUID
     `
 
     crud.querys['issue'] = {}
     crud.querys['issue']['read'] = crud.querys['issues']['read']
+
+
+
+    crud.querys['issue_actions']['read'] = `SELECT * FROM issue_actions t1 WHERE deleted_at IS NULL $1`
+    
     
 }
 
@@ -306,7 +335,6 @@ crud.get_uuids = function(obj)
 
 crud.do = async function(subdomain, method, table_name, params)
 {
-
     let query = crud.get_query(method, table_name, params)
 
     console.log('paraaaaaaaaaaaaaaaaaaaaaams', params)
@@ -315,6 +343,8 @@ crud.do = async function(subdomain, method, table_name, params)
     if(method != 'read')
     {
         let read_query = crud.make_query.read(table_name, {uuid:  params.uuid})
+
+        console.log('rqrqrqrqrq0', read_query)
 
         let data = await sql.query(subdomain, read_query)
 

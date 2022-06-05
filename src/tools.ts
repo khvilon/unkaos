@@ -116,6 +116,24 @@ tools.compare_obj = function(sort_name)
 	};
 }
 
+tools.compare_obj_dt = function(sort_name)
+{
+	return function(a, b) 
+	{
+		console.log(a, b, sort_name)
+	    let fa = new Date(a[sort_name]),
+	        fb = new Date(b[sort_name])
+
+	    if (fa < fb) {
+	        return -1;
+	    }
+	    if (fa > fb) {
+	        return 1;
+	    }
+	    return 0;
+	};
+}
+
 
 tools.readUploadedFileAsImg = (inputFile) => 
 {
@@ -185,6 +203,21 @@ String.prototype.replaceAll = function(old_substr, new_substr)
     while(str.contains(old_substr)) str = str.replace(old_substr, new_substr)
 
     return str
+}
+
+
+const dt_options = {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  timezone: 'Moscow',
+  hour12: false,
+  hour: '2-digit', minute:'2-digit'
+};
+
+tools.format_dt = function(dt)
+{
+  return new Date(dt).toLocaleString("ru", dt_options)
 }
 
 

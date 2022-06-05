@@ -36,12 +36,15 @@
     height: 40px;
     color: white;
     background-color: #333;
-    border-width: 2px;
+    border-width: 1px;
     border-color: white;
     border-style: solid;
     font-size: 15px;
     border-radius: 6px;
     border-style: outset;
+    cursor: pointer;
   }
+
+
 
 </style>
