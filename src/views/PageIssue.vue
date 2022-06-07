@@ -110,6 +110,7 @@
 
 			this.statuses = []
 			this.statuses_to = []
+			let curr_status = {}
 			for(let i in this.transitions)
 			{
 				let status_to_uuid = this.transitions[i].status_to_uuid
@@ -123,10 +124,11 @@
 					}
 					else if(workflow.workflow_nodes[j].issue_statuses[0].uuid == this.issue[0].status_uuid) 
 					{
-						this.statuses.push(workflow.workflow_nodes[j].issue_statuses[0])
+						curr_status = workflow.workflow_nodes[j].issue_statuses[0]
 					}
 				}
 			}
+			this.statuses.push(curr_status)
 
 			//TODO
 			this.issue_types = this.$store.state.issue_types.issue_types
@@ -137,8 +139,8 @@
 		},
 		get_type_uuid: function()
 		{
-			if(this.issue != undefined && this.issue[0] != undefined && this.issue[0].type_name != '') return this.issue[0].type_name
-			if(this.issue_statuses != undefined) return Object.values(this.issue_statuses)[0].name
+			if(this.issue != undefined && this.issue[0] != undefined && this.issue[0].type_name != '') return this.issue[0].type_uuid
+			if(this.issue_statuses != undefined) return Object.values(this.issue_statuses)[0].uuid
 			return ''
 		},
 		get_types()
@@ -172,6 +174,13 @@
 			type: 'Select',
 			clearable:"false"
 			
+		},
+		{
+			label: 'Проекты',
+			id: 'project_uuid',
+			dictionary: 'projects',
+			type: 'Select',
+			clearable:"false"
 		}
     ],
 	comment: '',
@@ -200,18 +209,6 @@
 
 <template ref='issue'>
     <div id="issue_top_panel" class="panel">
-		<SelectInput
-		v-if="issue != undefined || issue_types != undefined"
-		label=""
-		key="issue_type_input"
-		:value="get_type_uuid()"
-		:values="get_types()"
-		:reduce= "obj => obj.uuid"
-		:disabled="false"
-		class="issue-type-input"
-		:clearable="false"
-		>
-		</SelectInput>
 		<StringInput 
 		v-if="issue != undefined && issue[0] != undefined"
 		key="issue_code"
@@ -221,13 +218,24 @@
 		:value="id"
 		>
 		</StringInput>
-		<SelectInput v-if="issue != undefined && issue[0] != undefined" label=""
-		:value="issue[0].status_name"
+		<SelectInput
+		v-if="issue != undefined || issue_types != undefined"
+		label=""
+		key="issue_type_input"
+		:value="get_type_uuid()"
+		:values="get_types()"
+		:disabled="false"
+		class="issue-type-input"
+		:parameters="{clearable: false, reduce: obj => obj.uuid}"
+		>
+		</SelectInput>
+		
+		<SelectInput v-if="issue != undefined && issue[0] != undefined && transitions != undefined" label=""
+		:value="issue[0].status_uuid"
 		:values="statuses"
-		:reduce= "obj => obj.uuid"
-		:disabled="true"
+		:disabled="transitions.length < 4"
 		class="issue-status-input"
-		:clearable="false"
+		:parameters="{clearable: false, reduce: obj => obj.uuid}"
 		>
 		</SelectInput>
 		<KButton
@@ -250,12 +258,20 @@
 				class="issue-name-input"
 			>
 			</StringInput>
-			<UserInput label="Автор"
-				:value="get_field_by_name('Автор').value"
-				:disabled="true"
-				class="issue-author-input"
+			<SelectInput
+			v-if="issue != undefined && issue[0] != undefined && projects != undefined"
+			label='Проект'
+			key="issue_project_input"
+			:value="issue[0].project_uuid"
+			:values="projects"
+			:disabled="false"
+			class="issue-project-input"
+			:clearable="false"
+			:parameters="{clearable: false, reduce: obj => obj.uuid}"
 			>
-			</UserInput>
+			</SelectInput>
+
+
 		</div>
 
 			<TextInput label='Описание'
@@ -305,6 +321,13 @@
 	  			:parent_name="'issue'"
 	  			:disabled="input.disabled"
 	  		></component>
+
+			  <UserInput label="Автор"
+				:value="get_field_by_name('Автор').value"
+				:disabled="true"
+				class="issue-author-input"
+			>
+			</UserInput>
         
         <div id="issue_card_footer_div" class="footer_div">
 	  			<div id="issue_card_infooter_div">
@@ -334,7 +357,7 @@
 
 	$card-width: 400px;
   $code-width: 160px;
-  $author-input-width: 250px;
+  $project-input-width: 250px;
 
   #issue_top_panel
   {
@@ -407,11 +430,11 @@
 	}
 
 .issue-name-input{
-	width: calc(100% - $author-input-width)
+	width: calc(100% -  $project-input-width)
 }
 
 .issue-author-input{
-	width: $author-input-width;
+	
 }
 
 #send_comment_btn
@@ -443,8 +466,27 @@
 	outline: 1px solid;
 }
 
+.issue-type-input{
+	width: 200px;
+}
+
+.issue-type-input, .issue-code, .issue-status-input
+{
+	padding-right: 0px !important;
+	width: 200px;
+	
+}
 
 
+.issue-type-input .vs__dropdown-toggle, .issue-status-input .vs__dropdown-toggle
+{
+	border-width: 1px !important;
+}
+
+.issue-project-input
+{
+	width:  $project-input-width;
+}
     
 
 

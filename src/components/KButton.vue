@@ -33,7 +33,7 @@
   .btn .btn_input
   {
     width: 200px;
-    height: 40px;
+    height: 35px;
     color: white;
     background-color: #333;
     border-width: 1px;

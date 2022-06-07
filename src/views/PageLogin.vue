@@ -87,8 +87,8 @@
 	width: 400px;
 	position: absolute;
 	left: 50vw;
-    top: calc(50vh - 250px);
-    transform: translate(-50%, -50%);
+    top: 40vh;
+    transform: translate(-60%, -50%);
 	}
 
 	.login-panel .btn
