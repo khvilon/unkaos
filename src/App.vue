@@ -52,11 +52,18 @@
      
     },
     updated() {
-      check_is_in_workspace()
+      this.check_is_in_workspace()
     },
     mounted()
     {
       console.log('app mounted')
+    },
+    computed:
+    {
+      loading: function(){
+        if(this.$store.state['common'] == undefined) return false
+        return this.$store.state['common']['loading']
+      }
     },
     methods: {
       check_is_in_workspace()
@@ -110,7 +117,8 @@
   </transition>
 </router-view>
 </div>
-  <div class="loading-background">
+  <div v-show="loading"
+  class="loading-background">
     <div class="loading-bar"></div>
   </div>
   <MainMenu />
@@ -243,17 +251,30 @@
 
 
   
+.panel_fade-enter-active,
+.panel_fade-leave-active {
+  transition: opacity 0.2s;
+}
+
+.element_fade-enter-active,
+.element_fade-leave-active {
+  transition: opacity 0.2s;
+}
+
+.panel_fade-enter-from,
+.panel_fade-leave-to,
+.element_fade-enter-from,
+.element_fade-leave-to {
+  opacity: 0;
+}
 
 
-  .fade-enter-active, .fade-leave-active {
 
 
-      transition: opacity 1s;
-  }
+  
 
-  .fade-enter, .fade-leave-to {
-      opacity: 0;
-  }
+
+  
 
   .topbar
   {z-index: 0;}
@@ -261,33 +282,46 @@
 
 $loading-bar-width: 200vw;
 
+
   .loading-background {
-    display: none;
+   // display: none;
   position: absolute;
   top: 2px;
   left: 2px;
   width: 100%;
   height: 100vh;
-  background: rgba(0,00,0,0.2);
+  background: rgba(0,00,0,0.15);
   overflow: hidden;
   border-radius: 10px;
-  z-index: 3;
+  z-index: 10;
 }
 
+
+
 .loading-bar {
-  position: relative;
-  height: 100%;
-  width: $loading-bar-width;
-  left:-$loading-bar-width;
-  background: linear-gradient(0.25turn, rgba(200,200,200,0.0), rgba(0,0,0,0.8), rgba(200,200,200,0.0));
-  animation: background 3s infinite ease-in-out;
+  position: absolute;
+  //height: 100%;
+  width: 100%;
+  
+  height: 60vh;
+  top:-30vh;
+  //width: $loading-bar-width;
+  //left:-$loading-bar-width;
+  //background: linear-gradient(0.25turn, rgba(200,200,200,0.0), rgba(0,0,0,0.8), rgba(200,200,200,0.0));
+  //animation: background 3s infinite ease-in-out;
+  background: linear-gradient( rgba(200,200,200,0.0), rgba(5,10,5,0.5), rgba(200,200,200,0.0));
+  animation: background 2s infinite alternate ease-in-out;
 }
+
+
 
 @keyframes background {
   100% {
-    left:calc(100%);
+//    left:calc(100%);
+    top:70vh;
   }
 }
+
 
 .ktable
   {
@@ -299,7 +333,9 @@ $loading-bar-width: 200vw;
 
 .footer_div
 {
-  display: table-footer-group;
+  position: absolute;
+  bottom: 0px;
+  //display: table-footer-group;
 }
 
 .footer_div div{
