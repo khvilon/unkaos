@@ -113,20 +113,17 @@
   	$table-panel-width: 290px;
 
 	#issue_types_table_panel, #issue_types_card {
-    margin: 1px;
     height: calc(100vh - $top-menu-height);
 	}
 
 
   #issue_types_table_panel {
     display: flex;
-    margin-left: 2px;
 	width: $table-panel-width;
   }
 
   #issue_types_card {
     width: calc(100% - $table-panel-width);
-    margin-left: 0px;
     display: table;
   }
   
@@ -145,12 +142,4 @@
   #issue_types_down_panel {
     display: flex;
   }
-
-
-  .ktable
-	{
-		width:100%;
-		margin-left: 20px;
-		margin-right: 20px;
-	}
 </style>

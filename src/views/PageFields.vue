@@ -117,19 +117,16 @@
   $card-width: 400px;
 
   #fields_table_panel, #fields_card {
-    margin: 1px;
     height: calc(100vh - $top-menu-height);
   }
 
   #fields_table_panel {
     display: flex;
-    margin-left: 2px;
-    width: calc(100vw - 3px - $card-width);
+    width: calc(100vw - $card-width);
   }
 
   #fields_card {
     width:  $card-width;
-    margin-left: 0px;
     display: table;
   }
   

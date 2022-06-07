@@ -57,7 +57,6 @@
 
 <style>
 	.landing-panel {
-    margin: 1px;
     height: 100vh;
 	width: 100vw;
 	position: absolute;

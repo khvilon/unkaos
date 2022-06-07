@@ -69,7 +69,7 @@ tools.obj_attr_by_path = function(obj, path)
       console.log('pp', path[i])
       ans += tools.obj_attr_by_path(obj, path[i])
     }
-    ans = '<a href="/issue/' + ans + '">' + ans + '</a>'
+    //ans = '<a href="/issue/' + ans + '">' + ans + '</a>'
     return ans
   }
 

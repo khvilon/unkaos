@@ -164,7 +164,6 @@
   #issue_statuses_table_panel, #issue_statuses_card {
     background-color: rgb(35, 39, 43);
     border-radius: 8px;
-    margin: 1px;
     color: white;
     min-height: calc(100vh - 77px);
     height: calc(100vh - 100px);
@@ -173,8 +172,7 @@
 
   #issue_statuses_table_panel {
     display: flex;
-    margin-left: 2px;
-    width: calc(100% - 3px - 400px);
+    width: calc(100% - 400px);
   }
 
   #issue_statuses_card {

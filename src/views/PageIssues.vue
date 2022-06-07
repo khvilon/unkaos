@@ -14,11 +14,13 @@
 		{
 	        name: '№',
 	        id: ["project_short_name","'-'", "num"],
-			search: true
+			search: true,
+			type: 'link'
 	    },
 	  	{
 	    	name: d['Название'],
 	        id: "values.Название",
+			search: true,
 	    },
         {
             name: d['Автор'],
@@ -78,7 +80,6 @@
   @import '../css/global.scss';
 
 	#issues_table_panel, #issues_card {
-    margin: 1px;
     height: calc(100vh - $top-menu-height);
 
     transition: all 3s ease;
@@ -87,7 +88,6 @@
 
   #issues_table_panel {
     display: flex;
-    margin-left: 2px;
     width: calc(100%);
   }
 

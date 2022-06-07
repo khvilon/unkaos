@@ -83,13 +83,12 @@
 
 <style>
 	.login-panel {
-    margin: 1px;
     height: 250px;
 	width: 400px;
 	position: absolute;
 	left: 50vw;
-    top: 50vh;
-    transform: translate(-50%, -70%);
+    top: calc(50vh - 250px);
+    transform: translate(-50%, -50%);
 	}
 
 	.login-panel .btn

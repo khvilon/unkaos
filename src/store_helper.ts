@@ -60,6 +60,7 @@ store_helper.create_module = function(name)
 	const mutations = {}
 	mutations['get_' + name] = function(state, payload)
 	{
+		state[name] = []
 		state[name] = payload
 	  	state['filtered_' + name] = tools.clone_obj(payload)
 	}
@@ -69,12 +70,16 @@ store_helper.create_module = function(name)
 	}
 	mutations['select_' + name] = function(state, uuid)
 	{
+		
 		for(let i in state['filtered_' + name])
 		{
+			
 			if(state['filtered_' + name][i].uuid == uuid)
 			{
+				
 				state['selected_' + name] = state['filtered_' + name][i]
 				state['filtered_' + name][i].selected = true
+				continue
 			}
 			else state['filtered_' + name][i].selected = false
 		}
@@ -162,6 +167,7 @@ store_helper.create_module = function(name)
 	}
 	actions['filter_' + name] = async function(state, {val, collumns})
 	{
+		console.log('ffffiiiiii', val, collumns)
 		let data = tools.filter_data(state.state[name], val, collumns)
 
 	    this.commit('filter_' + name, data);

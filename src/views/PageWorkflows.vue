@@ -18,7 +18,6 @@
           label: 'Название',
           id: 'name',
           type: 'String'
-
         }
 
       ],
@@ -104,24 +103,17 @@
 
 
   #workflows_table_panel, #workflows_card {
-    margin: 1px;
+
     height: calc(100vh - $top-menu-height);
   }
 
   #workflows_table_panel {
     display: flex;
-    margin-left: 2px;
     width: $table-width;
-  }
-  #issue_statuses_table_panel {
-    display: flex;
-    margin-left: 2px;
-    width: calc(40% - 3px);
   }
 
   #workflows_card {
-    width: calc(100vw - 3px - $table-width);
-    margin-left: 0px;
+    width: calc(100vw - $table-width);
     display: table;
   }
 
@@ -144,6 +136,5 @@
   #workflows_card .tab-panel
   {
     height: calc(100vh - 77px - 70px);
-    padding: 2px
   }
 </style>

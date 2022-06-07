@@ -132,20 +132,17 @@
   $card-width: 400px;
 
 	#projects_table_panel, #projects_card {
-    margin: 1px;
     height: calc(100vh - $top-menu-height);
 	}
 
 
   #projects_table_panel {
     display: flex;
-    margin-left: 2px;
-    width: calc(100% - 3px - $card-width);
+    width: calc(100% - $card-width);
   }
 
   #projects_card {
     width: $card-width;
-    margin-left: 0px;
     display: table;
   }
   

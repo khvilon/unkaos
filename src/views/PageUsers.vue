@@ -11,15 +11,18 @@
 	  	{
 	    	name: 'ФИО',
 	        id: "name",
-	        type: 'user'
+	        type: 'user',
+			search: true
 	    },
 	    {
 	        name: 'Логин',
-	        id: "login"
+	        id: "login",
+			search: true
 	    },
 	    {
 	        name: 'Почта',
-	        id: "mail"
+	        id: "mail",
+			search: true
 	    },
 	    {
 	        name: 'Активен',
@@ -136,15 +139,15 @@
   $card-width: 400px;
 
 	#users_table_panel, #users_card {
-    margin: 1px;
+  
     height: calc(100vh - $top-menu-height);
 	}
 
 
   #users_table_panel {
     display: flex;
-    margin-left: 2px;
-    width: calc(100vw - 3px - $card-width);
+ 
+    width: calc(100vw - $card-width);
   }
 
   #users_card {

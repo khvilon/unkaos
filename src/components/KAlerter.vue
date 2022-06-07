@@ -3,7 +3,7 @@
     <div 
     v-for="(alert, index) in alerts"
     :class="'alert_' + alert.type + ' alert_' + alert.status"   
-    class="alert panel"
+    class="alert"
     @click="hide($event)"
     >
     <img :src="icons[alert.type]"><span>{{alert.text}}</span>
@@ -77,7 +77,7 @@
   #alert-container{
     position: absolute;
     right: 0px;
-    bottom: 20px;
+    bottom: 100px;
     width: 200px;
     z-index: 100;
     
@@ -88,6 +88,7 @@
 
   .alert
   {
+    position: fixed;
     height: 20px;
     margin-top: 5px;
     width: 25px;
