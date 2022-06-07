@@ -126,14 +126,8 @@
   @import './css/palette.scss';
   @import './css/global.scss';
 
-
-
-
-
-
-    
    
-    $border-width: 1px;
+    
     
      //$font-family:'Poppins', sans-serif;
 
@@ -233,7 +227,7 @@
     border-radius: 10px;
     margin: 0px;
     border-style:ridge;
-    border-width: 1px;
+    border-width: $border-width;
     border-color: $body-bg-color;
     //box-shadow: 1px 0px 1px $body-bg-color;
 
