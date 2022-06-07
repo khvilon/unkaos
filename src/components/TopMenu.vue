@@ -147,7 +147,7 @@
     /* overflow-y: auto; */
     width:  calc(100vw - $main-menu-width);
     /* padding: 6px 14px 0 14px; */
-    z-index: 99;
+    z-index: 0;
     /*border-bottom-style: solid;
     border-bottom-width: 1px;*/
     height: $top-menu-height;

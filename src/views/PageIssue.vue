@@ -208,9 +208,12 @@
 
 
 <template ref='issue'>
-    <div id="issue_top_panel" class="panel">
+	<Transition name="panel_fade">
+
+    <div id="issue_top_panel" class="panel" v-if="visible">
+		<Transition name="element_fade">
 		<StringInput 
-		v-if="issue != undefined && issue[0] != undefined"
+		v-if="!loading"
 		key="issue_code"
 		class='issue-code' 
 		label='' 
@@ -218,8 +221,10 @@
 		:value="id"
 		>
 		</StringInput>
+		</Transition>
+		<Transition name="element_fade">
 		<SelectInput
-		v-if="issue != undefined || issue_types != undefined"
+		v-if="!loading"
 		label=""
 		key="issue_type_input"
 		:value="get_type_uuid()"
@@ -229,8 +234,11 @@
 		:parameters="{clearable: false, reduce: obj => obj.uuid}"
 		>
 		</SelectInput>
-		
-		<SelectInput v-if="issue != undefined && issue[0] != undefined && transitions != undefined" label=""
+		</Transition>
+		<Transition name="element_fade">
+		<SelectInput 
+		v-if="!loading"
+		label=""
 		:value="issue[0].status_uuid"
 		:values="statuses"
 		:disabled="transitions.length < 4"
@@ -238,20 +246,31 @@
 		:parameters="{clearable: false, reduce: obj => obj.uuid}"
 		>
 		</SelectInput>
+		</Transition>
+
+		<Transition name="element_fade">
+		<div v-if="!loading" style="display: flex;">
 		<KButton
-		v-for="(transition, index) in transitions"
+		v-for="(transition, index) in transitions" 
 		:key="index"
 		class="status-btn"
 		:name="transition.name"
 		:func="''"
 		/>
+		</div>
+		
+		</Transition >
+
 	</div>
+	</Transition>
 
 
-    <div id=issue_down_panel >
+	<Transition name="panel_fade">
+    <div id=issue_down_panel v-if="visible">
       <div id="issue_main_panel" class="panel" >
         
-		<div class="issue-line">
+		<Transition name="element_fade">
+		<div class="issue-line" v-if="!loading">
 
 		  <StringInput label='Название'
 				:value="get_field_by_name('Название').value"
@@ -259,7 +278,6 @@
 			>
 			</StringInput>
 			<SelectInput
-			v-if="issue != undefined && issue[0] != undefined && projects != undefined"
 			label='Проект'
 			key="issue_project_input"
 			:value="issue[0].project_uuid"
@@ -270,17 +288,19 @@
 			:parameters="{clearable: false, reduce: obj => obj.uuid}"
 			>
 			</SelectInput>
-
-
 		</div>
+		</Transition>
 
-			<TextInput label='Описание'
+			<Transition name="element_fade">
+			<TextInput label='Описание' v-if="!loading"
 				:value="get_field_by_name('Описание').value"
 			>
 			</TextInput>
+			</Transition>
+			
 
-			<TextInput label='Комментарий'
-				v-if="issue != undefined && issue[0] != undefined"
+			<Transition name="element_fade">
+			<TextInput label='Комментарий' v-if="!loading"
 				id="comment_input"
 				@update_parent_from_input="update_parent_from_input"
 				:value="comment"
@@ -288,29 +308,35 @@
 
 			>
 			</TextInput>
+			</Transition>
+		
 
-
+			<Transition name="element_fade">
 			<KButton
-				v-if="issue != undefined && issue[0] != undefined"
+				v-if="!loading"
 			  	id="send_comment_btn"
 			  	name='Отправить'
 				v-bind:class="{ outlined: comment_focused }"
 				@click="send_comment()"
 			/>
+			</Transition>
 
-
+			<Transition name="element_fade">
 			<TextInput label='История'
-				v-if="issue != undefined && issue[0] != undefined"
+				v-if="!loading"
 				:value="get_history()"
 				:disabled="true"
 			>
 			</TextInput>
 
+			</Transition>
+
 
 
       </div>
       <div id="issue_card" class="panel">
-
+		  <Transition name="element_fade">
+		  <div id="issue_card_scroller" v-if="!loading">
 		<component  v-bind:is="input.type + 'Input'"
 	  			v-for="(input, index) in get_fields_exclude_names(['Название', 'Описание', 'Автор'])"
 				
@@ -322,12 +348,19 @@
 	  			:disabled="input.disabled"
 	  		></component>
 
+			
 			  <UserInput label="Автор"
 				:value="get_field_by_name('Автор').value"
 				:disabled="true"
 				class="issue-author-input"
 			>
 			</UserInput>
+
+			
+
+			</div>
+			</Transition>
+			
         
         <div id="issue_card_footer_div" class="footer_div">
 	  			<div id="issue_card_infooter_div">
@@ -345,6 +378,7 @@
 	  		</div>
       </div>
   </div>
+  </Transition>
 </template>
 
 
@@ -487,6 +521,32 @@
 {
 	width:  $project-input-width;
 }
+
+#issue_card_infooter_div
+{
+	width: $card-width;
+}
+
+	#issue_card_scroller
+	{
+	 height: calc(100vh - $top-menu-height);
+	overflow-y: scroll;
+	}
+	 #issue_card_scroller::-webkit-scrollbar{
+    display:none;
+	 }
+
+
+/*
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}*/
     
 
 

@@ -10,6 +10,12 @@ let lang = tools.get_uri_param(window.location.href, 'lang')
 
 dict.set_lang(lang)
 
+const beforeCreate = function()
+{
+	console.log('before create 5555555555555555', store.state['common'])
+	store.state['common']['loading'] = true;
+}
+
 const register_store_module_if_not_exists = async function(name, params)
 {
 	console.log('mename', name)
@@ -46,6 +52,8 @@ page_helper.create_module = async function(data, methods)
 	//data[data.name] = {}
 	//data[data.name]['selected_' + data.name] = {}
 
+	data.visible = false
+
 	if (data.buttons == undefined) data.buttons= []
 	data.buttons.push(
       {
@@ -60,7 +68,12 @@ page_helper.create_module = async function(data, methods)
 		if(data.collumns[i].search) data.search_collumns.push(data.collumns[i].id)
 	}
 
-	let computed = {}
+	let computed = {
+		loading: function(){
+		  if(this.$store.state['common'] == undefined) return false
+		  return this.$store.state['common']['loading']
+		}
+	  }
 	computed = await register_computed(computed, data.name)
 
 	for(let i in data.inputs)
@@ -76,6 +89,8 @@ page_helper.create_module = async function(data, methods)
 	const created = async function() 
    	{
 		let params
+
+		
 
 		if(this.id != undefined)
 		{
@@ -130,6 +145,8 @@ page_helper.create_module = async function(data, methods)
 
 		this.loaded = true
 		console.log('meee loaaaaadeeeeeddd')
+
+		this.$store.state['common']['loading'] = false
 		
 		//this.$forceUpdate()
   	}
@@ -137,6 +154,7 @@ page_helper.create_module = async function(data, methods)
 	  const mounted = function() {
 		//this.$forceUpdate()
 		console.log('meee Mounted!')
+		this.visible = true
 	  }
 	  
 
@@ -148,7 +166,7 @@ page_helper.create_module = async function(data, methods)
 		mounted,
 		//beforeUnmount,
 		data:function(){return data},
-    	//beforeCreate,
+    	beforeCreate,
 		methods,
 		computed
   	}
