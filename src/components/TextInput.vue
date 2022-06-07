@@ -57,6 +57,9 @@
     updated() {
       this.resize();
     },
+    mounted() {
+      this.resize();
+    },
     
     watch: {
       value: function(val, oldVal) {
@@ -98,7 +101,7 @@
 
 
   .text-input {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 400;
     border-radius: 6px;
     transition: all 0.5s ease;

@@ -40,6 +40,11 @@ const router = createRouter({
 	{ path: '/configs', component: PageConfigs },
 	{ path: '/issue/:id', component: PageIssue, props: true },
 	{ path: '/issue/', component: PageIssue },
+/*	{
+		path: "/:catchAll(.*)",
+		name: "NotFound",
+		component: { render: (h) => h("div", ["404! Page Not Found!"]) },
+	}*/
   ]
 })
 

@@ -1,7 +1,7 @@
 <template>   
-  <div class="string">
+  <div class="date">
     <div class="label">{{label}}</div>
-    <input class="string-input" type="text"  :value="format(value)" :disabled="disabled">
+    <input class="date-input" type="text"  :value="format(value)" :disabled="disabled">
   </div>
 </template>
 
@@ -66,7 +66,7 @@
 </script>
 
 <style>
-  .string .string-input
+  .date .date-input
   {
     width: 100%;
     height: 35px;
@@ -74,13 +74,13 @@
     padding: 0 10px 0 10px;
   }
 
-  .string
+  .date
   {
     padding: 10px 20px 10px 20px;
   }
 
 
-  .string-input {
+  .date-input {
     font-size: 15px;
     font-weight: 400;
     border-radius: 6px;
@@ -89,7 +89,7 @@
     width: 100%;
   }
 
-  .string-input:disabled {
+  .date-input:disabled {
     background: rgb(30, 35, 38);
   }
 

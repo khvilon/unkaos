@@ -7,8 +7,9 @@
 	let methods = {
 		get_field_by_name: function(name)
 		{
-	console.log('histissue', this.issue)
-			if(this.issue.length != 1) return {}
+			
+			console.log('histissue', this.issue)
+			if(this.issue == undefined || this.issue.length != 1) return {}
 			for(let i in this.issue[0].values) 
 			{
 				if(this.issue[0].values[i].label == name) return this.issue[0].values[i]
@@ -18,7 +19,7 @@
 		{
 			console.log('histissue', this.issue)
 			let fields = []
-			if(this.issue.length != 1) return {}
+			if(this.issue == undefined || this.issue.length != 1) return {}
 			for(let i in this.issue[0].values) 
 			{
 				let match = false
@@ -51,7 +52,9 @@
 				history += dt + ' ' + action.author + ' ' + action.name + '\r\n' + action.value
 			}
 
+			//TODO
 			this.available_transitions()
+			this.$forceUpdate()
 
 			return history
 		},
@@ -77,11 +80,12 @@
 		},
 		update_parent_from_input: function(val)
 		{
-			this.available_transitions()
+			
 			this.comment = val
 		},
 		comment_focus: function(val)
 		{
+			console.log('tyyyyypesffffff', this.$store.state.issue_types)
 			this.comment_focused=val
 		},
 		available_transitions: function()
@@ -103,6 +107,8 @@
 			}
 			console.log('statusesstatusesstatuses1', this.transitions)
 
+
+			this.statuses = []
 			this.statuses_to = []
 			for(let i in this.transitions)
 			{
@@ -111,13 +117,35 @@
 				for(let j in workflow.workflow_nodes)
 				{console.log('statusesstatusesstatuses3', workflow.workflow_nodes[j].issue_statuses[0].uuid)
 					if(workflow.workflow_nodes[j].issue_statuses[0].uuid == status_to_uuid) 
+					{
 						this.statuses_to.push(workflow.workflow_nodes[j].issue_statuses[0])
+						this.statuses.push(workflow.workflow_nodes[j].issue_statuses[0])
+					}
+					else if(workflow.workflow_nodes[j].issue_statuses[0].uuid == this.issue[0].status_uuid) 
+					{
+						this.statuses.push(workflow.workflow_nodes[j].issue_statuses[0])
+					}
 				}
 			}
+
+			//TODO
+			this.issue_types = this.$store.state.issue_types.issue_types
 
 			return this.transitions
 
 			console.log('statusesstatusesstatuses', this.statuses_to)
+		},
+		get_type_uuid: function()
+		{
+			if(this.issue != undefined && this.issue[0] != undefined && this.issue[0].type_name != '') return this.issue[0].type_name
+			if(this.issue_statuses != undefined) return Object.values(this.issue_statuses)[0].name
+			return ''
+		},
+		get_types()
+		{
+			console.log('tyyyyypes', this.issue_types)
+			if(this.issue_types == undefined) return []
+			return this.issue_types
 		}
 
 	}
@@ -136,13 +164,22 @@
 			id: 'workflow_uuid',
 			dictionary: 'workflows',
 			type: 'Select',
-			clearable: false,
+		},
+		{
+			label: 'Типы задач',
+			id: 'type_uuid',
+			dictionary: 'issue_types',
+			type: 'Select',
+			clearable:"false"
+			
 		}
     ],
 	comment: '',
 	comment_focused: false,
 	transitions: [],
-	statuses_to: []
+	statuses_to: [],
+	statuses: [],
+	loaded: false
   }
      
   const mod = await page_helper.create_module(data, methods)
@@ -156,33 +193,50 @@
       }
     }
 
-//	mod.computed.transitions = mod.available_transitions
-
-
 	export default mod
-
-
-	
 </script>
 
 
 
 <template ref='issue'>
     <div id="issue_top_panel" class="panel">
-				<StringInput 
-				class='issue-code' 
-				label='' 
-				disabled="true"
-				:value="id"
-				>
-				</StringInput>
-				<KButton
-	  			v-for="(transition, index) in transitions"
-	  			:key="index"
-				class="status-btn"
-			  	:name="transition.name"
-			  	:func="''"
-	  			/>
+		<SelectInput
+		v-if="issue != undefined || issue_types != undefined"
+		label=""
+		key="issue_type_input"
+		:value="get_type_uuid()"
+		:values="get_types()"
+		:reduce= "obj => obj.uuid"
+		:disabled="false"
+		class="issue-type-input"
+		:clearable="false"
+		>
+		</SelectInput>
+		<StringInput 
+		v-if="issue != undefined && issue[0] != undefined"
+		key="issue_code"
+		class='issue-code' 
+		label='' 
+		disabled="true"
+		:value="id"
+		>
+		</StringInput>
+		<SelectInput v-if="issue != undefined && issue[0] != undefined" label=""
+		:value="issue[0].status_name"
+		:values="statuses"
+		:reduce= "obj => obj.uuid"
+		:disabled="true"
+		class="issue-status-input"
+		:clearable="false"
+		>
+		</SelectInput>
+		<KButton
+		v-for="(transition, index) in transitions"
+		:key="index"
+		class="status-btn"
+		:name="transition.name"
+		:func="''"
+		/>
 	</div>
 
 
@@ -210,6 +264,7 @@
 			</TextInput>
 
 			<TextInput label='Комментарий'
+				v-if="issue != undefined && issue[0] != undefined"
 				id="comment_input"
 				@update_parent_from_input="update_parent_from_input"
 				:value="comment"
@@ -220,6 +275,7 @@
 
 
 			<KButton
+				v-if="issue != undefined && issue[0] != undefined"
 			  	id="send_comment_btn"
 			  	name='Отправить'
 				v-bind:class="{ outlined: comment_focused }"
@@ -228,6 +284,7 @@
 
 
 			<TextInput label='История'
+				v-if="issue != undefined && issue[0] != undefined"
 				:value="get_history()"
 				:disabled="true"
 			>
@@ -286,7 +343,6 @@
   }
 
 	#issue_table_panel, #issue_card {
-    margin: 1px;
     height: calc(100vh - $top-menu-height);
 	}
 
@@ -298,7 +354,6 @@
 	#issue_main_panel
 	{
 		display: block;
-   	 	margin: 1px;
     	width: calc(100% - $card-width);
 		overflow-y: scroll;
 	}
@@ -346,7 +401,7 @@
 	{
 		height: $input-height !important;
 		
-		width: 250px  !important;
+		width: 200px  !important;
 
 		margin-right: 20px;
 	}

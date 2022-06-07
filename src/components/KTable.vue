@@ -25,9 +25,12 @@
             v-for="(collumn, index) in collumns"
             :key="index"
             @click="select_row($event)"
-            v-html="format_val(row, collumn)"
+            
           >
-          
+            <span v-if="collumn.type!='link'"  v-html="format_val(row, collumn)"></span>
+            <router-link v-if="collumn.type=='link'" 
+            :to="'/issue/'+get_json_val(row, collumn.id)" tag="li">{{get_json_val(row, collumn.id)}}
+            </router-link>
           </td>     
         </tr>
       </tbody>

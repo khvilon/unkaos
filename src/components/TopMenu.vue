@@ -145,20 +145,14 @@
 
     min-height: min-content;
     /* overflow-y: auto; */
-    width:  calc(100% - 3px);
+    width:  calc(100vw - $main-menu-width);
     /* padding: 6px 14px 0 14px; */
     z-index: 99;
-    border-bottom-color: rgb(71, 81, 89);;
     /*border-bottom-style: solid;
     border-bottom-width: 1px;*/
-    height: var(--top-menu-height);
+    height: $top-menu-height;
 
-
-    
-    margin: 1px;
-    margin-bottom: 0px;
-    margin-left: 2px;
-    padding-top: 13px;
+    padding-top: 11px;
     padding-left: 0px;
   }
 
@@ -183,9 +177,9 @@
   .topbar span
   {
 
-    font-size: 25px;
-    font-weight: 600;
-    margin-top: -2px;
+    font-size: 20px;
+    font-weight: 400;
+    margin-top: 1px;
 
 
    /*     -webkit-text-stroke: thin;
