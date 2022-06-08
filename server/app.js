@@ -99,8 +99,10 @@ async function init()
                 if(table_name == 'issue_actions')
                 {
                     params.type_uuid = comment_type_uuid;
-                    params.author_uuid = user.uuid;
+                    
                 }
+
+                if(method!='read') params.author_uuid = user.uuid;
 
                 console.log('ppppppp', params)
 

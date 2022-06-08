@@ -54,9 +54,29 @@
 
         if(this.parent_name == undefined || this.parent_name == '') return;
 
-        let data = {}
-        data[this.id] = val
-        this.$store.commit('push_update_' + this.parent_name, data)
+/*
+        
+        let data = val
+
+        let id_parts = this.id.split('.')
+
+        let i = id_parts.length-1;
+        let id = id_parts[i]
+         
+        while (id != undefined)
+        {
+          let new_data = {}
+          new_data[id] = data
+          data = new_data
+          i--
+          id = id_parts[i]
+        }
+        */
+
+        this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
+
+        //data[this.id] = val
+        //this.$store.commit('push_update_' + this.parent_name, data)
       }
     }
   }

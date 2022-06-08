@@ -65,6 +65,7 @@ const get_subdomain = function()
 
 router.afterEach((to, from) => {
 
+	//store.state['common']['is_router_view_visible'] = false
 	console.log('old to', store.state['common'].uri, store.state['common'].is_in_workspace)
 
 
@@ -72,6 +73,7 @@ router.afterEach((to, from) => {
 	store.state['common'].subdomain = get_subdomain()
 	store.state['common'].is_in_workspace = !store.state['common'].uri.contains('/login') && (store.state['common'].subdomain != '')
 	console.log('too', to.fullPath, store.state['common'].is_in_workspace)
+	
   })
 
 export default router

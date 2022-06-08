@@ -4,6 +4,8 @@ let data_model = require('./data_model')
 var tools = require('./tools')
 var sql = require('./sql')
 
+const edited_type_uuid = '1ff12964-4f5c-4be9-8fe3-f3d9a7225300'
+
 crud.json_sql = function(table_name)
 {
     return "CASE WHEN COUNT(" + table_name + ") = 0 then '[]' ELSE JSONB_AGG(DISTINCT " + table_name + ") END"
@@ -129,11 +131,14 @@ crud.load = async function(){
     ON T1.STATUS_UUID = T17.UUID
 	LEFT JOIN
 	(SELECT 
+        'field_values' AS TABLE_NAME,
+        FV.UUID AS UUID,
 	 	YT.UUID AS ISSUE_TYPE_UUID,
 	 	F.NAME AS LABEL,
 	 	FT.CODE AS TYPE,
 	 	FV.VALUE,
-	 	FV.ISSUE_UUID
+	 	FV.ISSUE_UUID,
+        F.UUID AS FIELD_UUID
 	 FROM ISSUE_TYPES YT
 	 JOIN ISSUE_TYPES_TO_FIELDS ITF
 	 ON ITF.ISSUE_TYPES_UUID = YT.UUID
@@ -179,6 +184,9 @@ crud.load = async function(){
 
     crud.querys['issue'] = {}
     crud.querys['issue']['read'] = crud.querys['issues']['read']
+    crud.querys['issue']['upsert'] = crud.querys['issues']['upsert']
+    crud.querys['issue']['create'] = crud.querys['issues']['create']
+    crud.querys['issue']['update'] = crud.querys['issues']['update']
 
 
 
@@ -191,6 +199,7 @@ crud.make_query = {
 
     read: function(table_name, params){
 
+        if(table_name == undefined) return '';
         let query = crud.querys[table_name]['read']
 
         if(!params || params.length == 0) return query.replace('$1', '')
@@ -211,6 +220,8 @@ crud.make_query = {
 
     create: function(table_name, params){
         console.log('tn', table_name)
+
+        if(table_name == undefined) return '';
     
         let query = crud.querys[table_name]['create']
 
@@ -223,6 +234,8 @@ crud.make_query = {
         for(let i in params){
             if(columns[i] === undefined || i === 'created_at' ||  i === 'deleted_at' ||
              i === 'password' || i === 'token' || i === 'token_created_at') continue;
+
+             if(data_model.model[table_name].columns[i] == undefined) continue
 
             if(keys != ''){keys += ', '; values += ', '}
 
@@ -237,6 +250,7 @@ crud.make_query = {
     },
 
     update: function(table_name, params){
+        if(table_name == undefined) return '';
         let read_query = crud.querys[table_name]['read']
 
 
@@ -254,6 +268,9 @@ crud.make_query = {
             if(columns[i] === undefined || i === 'created_at' ||  i === 'deleted_at' ||
              i === 'password' || i === 'token' || i === 'token_created_at') continue;
 
+             console.log(data_model.model[table_name])
+             if(data_model.model[table_name].columns[i] == undefined) continue
+
             if(set != '') set += ', '
 
             set += i + "='" + params[i] + "'"
@@ -265,6 +282,7 @@ crud.make_query = {
     },
 
     upsert: function(table_name, params){
+        if(table_name == undefined) return '';
         let query_create = crud.make_query.create(table_name, params)
         let query_update = crud.make_query.update(table_name, params)
         query_update = query_update.replace(table_name, '').split('WHERE')[0]
@@ -276,18 +294,34 @@ crud.make_query = {
         for(let i in params){
 
             //console.log('ccc1', params[i], typeof params[i])
-
             if(!params[i] || params[i][0] === undefined || typeof params[i][0] !== 'object') continue
 
            // console.log(typeof params[i])
-            
-
             for(let j in params[i]){
                 let child =  params[i][j] 
 
                 console.log('child', child)
                 subquerys += '\r\n' + crud.make_query.upsert(child.table_name, child)
             }
+        }
+
+
+
+        console.log('tntntntnttntnt', table_name)
+
+        if (table_name == 'issues')
+        {
+            let action_options = {
+                value: "",
+                issue_uuid: params.uuid,
+                author_uuid: params.author_uuid,
+                type_uuid: edited_type_uuid,
+                uuid: tools.uuidv4()
+            }
+
+            subquerys += '\r\n' + crud.make_query.create('issue_actions', action_options)
+
+            console.log('ssssssssssss', subquerys)
         }
 
         return query + subquerys
@@ -335,6 +369,7 @@ crud.get_uuids = function(obj)
 
 crud.do = async function(subdomain, method, table_name, params)
 {
+    if(table_name == 'issue') table_name = 'issues'
     let query = crud.get_query(method, table_name, params)
 
     console.log('paraaaaaaaaaaaaaaaaaaaaaams', params)

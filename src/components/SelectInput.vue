@@ -52,11 +52,7 @@ export default {
 
         if(this.parent_name == undefined || this.parent_name == '') return;
 
-        let data = {}
-        data[this.id] = val
-
-        console.log('commit select data ', data)
-        this.$store.commit('push_update_' + this.parent_name, data)
+        this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
       }
     },
   computed:

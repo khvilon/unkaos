@@ -60,23 +60,31 @@
   export default mod  
 </script>
 
-
-
 <template ref='fields' v-if="fields">
+<div>
+<div>
+ 
     <TopMenu 
       :buttons="buttons"
       :name="name"
       :label="label"
       :collumns="search_collumns"
     />
+
     <div id=fields_down_panel>
+
       <div id="fields_table_panel" class="panel">
+      <Transition name="element_fade">
         <KTable 
+          v-if="!loading"
           :collumns="collumns"
           :table-data="fields"
           :name="'fields'"
         />
+        </Transition>
       </div>
+
+
       <div id="fields_card" class="panel">
         <component v-bind:is="input.type + 'Input'"
           v-for="(input, index) in inputs"
@@ -104,6 +112,9 @@
           </div>
         </div>
       </div>
+   
+  </div>
+  </div>
   </div>
 </template>
 

@@ -49,9 +49,9 @@
 
         console.log(val)
 
-        let data = {}
-        data[this.id] = val
-        this.$store.commit('push_update_' + this.parent_name, data)
+        
+
+        this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
 
         console.log(event.path[1].children[2].src=val)
 
