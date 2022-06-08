@@ -14,7 +14,24 @@ const beforeCreate = function()
 {
 	console.log('before create 5555555555555555', store.state['common'])
 	store.state['common']['loading'] = true;
+	//store.state['common']['is_router_view_visible'] = false
 }
+
+const beforeUnmount = function()
+{
+	console.log('beforeUnmount 5555555555555555', store.state['common'])
+	this.visible = false
+	//store.state['common']['is_router_view_visible'] = false
+}
+
+const beforeMount = function()
+{
+	//this.visible = false
+	//store.state['common']['is_router_view_visible'] = false
+	store.state['common']['is_router_view_visible'] = true
+}
+
+
 
 const register_store_module_if_not_exists = async function(name, params)
 {
@@ -51,8 +68,11 @@ page_helper.create_module = async function(data, methods)
 {
 	//data[data.name] = {}
 	//data[data.name]['selected_' + data.name] = {}
+	
 
 	data.visible = false
+	data.loaded = false
+	
 
 	if (data.buttons == undefined) data.buttons= []
 	data.buttons.push(
@@ -88,9 +108,8 @@ page_helper.create_module = async function(data, methods)
 
 	const created = async function() 
    	{
+		//store.state['common']['is_router_view_visible'] = false
 		let params
-
-		
 
 		if(this.id != undefined)
 		{
@@ -147,14 +166,21 @@ page_helper.create_module = async function(data, methods)
 		console.log('meee loaaaaadeeeeeddd')
 
 		this.$store.state['common']['loading'] = false
+
+		if(this.name == 'issue') 
+		{
+			console.log('selilili', this[this.name][0].uuid)
+			this.$store.commit('select_issue', this[this.name][0].uuid);
+		}
 		
 		//this.$forceUpdate()
   	}
 
 	  const mounted = function() {
 		//this.$forceUpdate()
-		console.log('meee Mounted!')
+		console.log('meee 555555 Mounted!')
 		this.visible = true
+		store.state['common']['is_router_view_visible'] = true
 	  }
 	  
 
@@ -164,11 +190,12 @@ page_helper.create_module = async function(data, methods)
 	return {
     	created,
 		mounted,
-		//beforeUnmount,
+		beforeUnmount,
 		data:function(){return data},
     	beforeCreate,
 		methods,
-		computed
+		computed,
+		beforeMount
   	}
 }
 

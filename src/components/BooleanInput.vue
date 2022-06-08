@@ -42,9 +42,7 @@
     watch: {
       value: function(val, oldVal) {
         console.log(val, oldVal, this.id, this.parent_name)
-        let data = {}
-        data[this.id] = val
-        this.$store.commit('push_update_' + this.parent_name, data)
+        this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
       }
     }
   }

@@ -6,6 +6,7 @@
 
 
 <template ref='config' v-if="config">
+<div>
     <TopMenu 
       :label="'Настройки'"
       
@@ -13,6 +14,7 @@
     <div id=config_down_panel class="panel">
      
   </div>
+</div>
 </template>
 
 

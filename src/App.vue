@@ -63,6 +63,10 @@
       loading: function(){
         if(this.$store.state['common'] == undefined) return false
         return this.$store.state['common']['loading']
+      },
+      is_router_view_visible: function(){
+        if(this.$store.state['common'] == undefined) return false
+        return this.$store.state['common']['is_router_view_visible']
       }
     },
     methods: {
@@ -106,21 +110,27 @@
 
 <template>
   
+    
   <div id="router-view-container" 
- v-bind:class="{ 'no-menu-container': !is_in_workspace }"
+
+ v-bind:class="{ 'no-menu-container': !is_in_workspace, 'loading': loading }"
+ 
  >
-    <router-view v-slot="{ Component, route }">
-  <transition name="fade" mode="out-in">
-    <div :key="route.name">  
-      <component :is="Component"></component>
-    </div>
-  </transition>
-</router-view>
+
+ <router-view v-slot="{ Component }">
+    <transition name="ffade" mode="out-in">
+      <component :is="Component" ></component>
+    </transition>
+  </router-view>
+
 </div>
-  <div v-show="loading"
+
+<Transition name="loading_fade" mode="out-in">
+  <div v-show="false"
   class="loading-background">
     <div class="loading-bar"></div>
   </div>
+</Transition>
   <MainMenu />
   <Profile v-if="is_in_workspace"/>
   <KAlerter />
@@ -134,13 +144,9 @@
   @import './css/palette.scss';
   @import './css/global.scss';
 
-   
-    
-    
      //$font-family:'Poppins', sans-serif;
-
-
-  body { 
+  body 
+  { 
     background-color: $body-bg-color;
   }
 
@@ -211,6 +217,8 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    transition: all 0.2s ease;
+    opacity: 1;
   }
 
   .no-menu-container
@@ -221,10 +229,16 @@
   #router-view-container
   {
     position: absolute;
+    background-color: $body-bg-color;
     top: 0px;
     left: $main-menu-width;
     width: calc(100vw - $main-menu-width);
     height: 100vh;
+  }
+
+  .loading
+  {
+    //background-color:  $panel-bg-color !important;
   }
 
   
@@ -238,8 +252,6 @@
     border-width: $border-width;
     border-color: $body-bg-color;
     //box-shadow: 1px 0px 1px $body-bg-color;
-
-    transition: opacity 4s;
   }
 
 
@@ -249,31 +261,51 @@
   }
   
 
-
-  
 .panel_fade-enter-active,
 .panel_fade-leave-active {
-  transition: opacity 0.2s;
+  transition: opacity 4.1s;
 }
 
 .element_fade-enter-active,
 .element_fade-leave-active {
-  transition: opacity 0.2s;
+  transition: opacity 0.1s;
+}
+
+.loading_fade-enter-active {
+  transition: opacity 5s;
+}
+.loading_fade-leave-active {
+  transition: opacity 0.1s;
+}
+
+.element_fade-enter-from,
+.element_fade-leave-to
+{
+  opacity: 0;
 }
 
 .panel_fade-enter-from,
 .panel_fade-leave-to,
-.element_fade-enter-from,
-.element_fade-leave-to {
+.loading_fade-enter-from,
+.loading_fade-leave-to {
   opacity: 0;
 }
 
 
+.ffade-enter-active,
+.ffade-leave-active {
+  transition: opacity 0.15s ease;
+}
 
+.ffade-enter-from,
+.ffade-leave-to {
+  opacity: 0.9;
+}
 
-  
-
-
+.ffade-enter-to,
+.ffade-leave-from {
+  opacity: 1;
+}
   
 
   .topbar
@@ -304,7 +336,7 @@ $loading-bar-width: 200vw;
   width: 100%;
   
   height: 60vh;
-  top:-30vh;
+  top:-50vh;
   //width: $loading-bar-width;
   //left:-$loading-bar-width;
   //background: linear-gradient(0.25turn, rgba(200,200,200,0.0), rgba(0,0,0,0.8), rgba(200,200,200,0.0));
@@ -318,7 +350,7 @@ $loading-bar-width: 200vw;
 @keyframes background {
   100% {
 //    left:calc(100%);
-    top:70vh;
+    top:90vh;
   }
 }
 
@@ -341,6 +373,43 @@ $loading-bar-width: 200vw;
 .footer_div div{
   display: flex;
 }
+
+
+
+
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.75s ease-out;
+}
+
+
+.slide-enter-to {
+  position: absolute;
+  right: 0;
+}
+
+
+.slide-enter-from {
+  position: absolute;
+  right: -100%;
+}
+
+
+.slide-leave-to {
+  position: absolute;
+  left: -100%;
+}
+
+
+.slide-leave-from {
+  position: absolute;
+  left: 0;
+}
+
+
+
+
 
 
 </style>

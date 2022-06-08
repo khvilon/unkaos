@@ -12,7 +12,11 @@
 			if(this.issue == undefined || this.issue.length != 1) return {}
 			for(let i in this.issue[0].values) 
 			{
-				if(this.issue[0].values[i].label == name) return this.issue[0].values[i]
+				if(this.issue[0].values[i].label == name) 
+				{
+					this.issue[0].values[i].idx = i
+					return this.issue[0].values[i]
+				}
 			}
 		},
 		get_fields_exclude_names: function(names)
@@ -31,6 +35,7 @@
 						continue
 					}
 				}
+				this.issue[0].values[i].idx = i
 				if(!match) fields.push(this.issue[0].values[i])
 			}
 			return fields
@@ -188,7 +193,7 @@
 	transitions: [],
 	statuses_to: [],
 	statuses: [],
-	loaded: false
+	max_status_buttons_count: 3
   }
      
   const mod = await page_helper.create_module(data, methods)
@@ -208,9 +213,9 @@
 
 
 <template ref='issue'>
-	<Transition name="panel_fade">
+	<div>
 
-    <div id="issue_top_panel" class="panel" v-if="visible">
+    <div id="issue_top_panel" class="panel">
 		<Transition name="element_fade">
 		<StringInput 
 		v-if="!loading"
@@ -229,7 +234,7 @@
 		key="issue_type_input"
 		:value="get_type_uuid()"
 		:values="get_types()"
-		:disabled="false"
+		:disabled="issue[0]!=undefined"
 		class="issue-type-input"
 		:parameters="{clearable: false, reduce: obj => obj.uuid}"
 		>
@@ -241,7 +246,7 @@
 		label=""
 		:value="issue[0].status_uuid"
 		:values="statuses"
-		:disabled="transitions.length < 4"
+		:disabled="transitions.length <= max_status_buttons_count"
 		class="issue-status-input"
 		:parameters="{clearable: false, reduce: obj => obj.uuid}"
 		>
@@ -249,7 +254,7 @@
 		</Transition>
 
 		<Transition name="element_fade">
-		<div v-if="!loading" style="display: flex;">
+		<div v-if="!loading && transitions.length <= max_status_buttons_count" style="display: flex;">
 		<KButton
 		v-for="(transition, index) in transitions" 
 		:key="index"
@@ -262,19 +267,19 @@
 		</Transition >
 
 	</div>
-	</Transition>
 
 
-	<Transition name="panel_fade">
-    <div id=issue_down_panel v-if="visible">
+    <div id=issue_down_panel>
       <div id="issue_main_panel" class="panel" >
         
 		<Transition name="element_fade">
 		<div class="issue-line" v-if="!loading">
 
 		  <StringInput label='Название'
-				:value="get_field_by_name('Название').value"
-				class="issue-name-input"
+			:value="get_field_by_name('Название').value"
+			  class="issue-name-input"
+              :id="'values.'+ get_field_by_name('Название').idx+'.value'"
+              parent_name='issue'
 			>
 			</StringInput>
 			<SelectInput
@@ -286,6 +291,8 @@
 			class="issue-project-input"
 			:clearable="false"
 			:parameters="{clearable: false, reduce: obj => obj.uuid}"
+			id="project_uuid"
+            parent_name='issue'
 			>
 			</SelectInput>
 		</div>
@@ -294,6 +301,8 @@
 			<Transition name="element_fade">
 			<TextInput label='Описание' v-if="!loading"
 				:value="get_field_by_name('Описание').value"
+				:id="'values.'+ get_field_by_name('Описание').idx+'.value'"
+              	parent_name='issue'
 			>
 			</TextInput>
 			</Transition>
@@ -342,7 +351,7 @@
 				
 	  			:label="input.label"
 	  			:key="index"
-	  			:id="input.id"
+	  			:id="'values.'+ input.idx+'.value'"
 	  			:value="input.value"
 	  			:parent_name="'issue'"
 	  			:disabled="input.disabled"
@@ -378,7 +387,8 @@
 	  		</div>
       </div>
   </div>
-  </Transition>
+
+  </div>
 </template>
 
 

@@ -38,6 +38,7 @@
 
 
 <template ref='workflows'>
+<div>
     <TopMenu 
       :buttons="buttons"
       :name="name"
@@ -89,6 +90,7 @@
         </div>
         
       </div>
+  </div>
   </div>
 </template>
 

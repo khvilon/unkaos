@@ -6,12 +6,14 @@
 
 
 <template ref='roles' v-if="roles">
+<div>
     <TopMenu 
       :label="'Роли'"
       
     />
     <div id=roles_down_panel class="panel">
      
+  </div>
   </div>
 </template>
 

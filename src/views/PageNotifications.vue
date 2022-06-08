@@ -6,12 +6,14 @@
 
 
 <template ref='notifications' v-if="notifications">
+<div>
     <TopMenu 
       :label="'Уведомления'"
       
     />
     <div id=notifications_down_panel class="panel">
      
+  </div>
   </div>
 </template>
 

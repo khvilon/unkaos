@@ -6,12 +6,14 @@
 
 
 <template ref='dashboards' v-if="dashboards">
+  <div>
     <TopMenu 
       :label="'Дашборды'"
       
     />
     <div id=dashboards_down_panel class="panel">
      
+  </div>
   </div>
 </template>
 

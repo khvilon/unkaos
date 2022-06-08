@@ -85,6 +85,7 @@
 
 
 <template ref='users' >
+	<div>
     <TopMenu 
   		:buttons="buttons"
   		:name="name"
@@ -92,18 +93,20 @@
   		:collumns="search_collumns"
     />
     <div id=users_down_panel >
-	  	<div id="users_table_panel" class="panel" >
+	  	<div id="users_table_panel" class="panel">
+		  	<Transition name="element_fade">
 	    	<KTable 
-				
+				v-if="!loading"
 	    		:collumns="collumns"
 	    		:table-data="users"
 	    		:name="'users'"
 	    	/>
+			</Transition>
 	  	</div>
-	  	<div id="users_card" class="panel">
+	  	<div id="users_card" class="panel" v-if="visible">
+		  	
 	  		<component v-bind:is="input.type + 'Input'"
 	  			v-for="(input, index) in inputs"
-				
 	  			:label="input.label"
 	  			:key="index"
 	  			:id="input.id"
@@ -126,6 +129,7 @@
 		  		</div>
 	  		</div>
 	  	</div>
+	</div>
 	</div>
 </template>
 

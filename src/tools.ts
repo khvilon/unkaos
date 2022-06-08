@@ -53,9 +53,26 @@ tools.obj_join = function(obj0, obj1)
 {
     for (let i in obj1)
     {
-        if(obj0[i] !== obj1[i]) obj0[i] = tools.obj_clone(obj1[i])
+        if(obj0[i] !== obj1[i])
+        {
+          if(typeof obj0[i] == 'object') obj0[i] = tools.obj_join(obj0[i], obj1[i])
+          else obj0[i] = tools.obj_clone(obj1[i])
+        } 
     }
+
     return obj0
+}
+
+tools.obj_set_val = function(obj, path, val)
+{
+  const parts = path.split('.');
+  const limit = parts.length - 1;
+	for (let i = 0; i < limit; ++i) {
+      	const key = parts[i];
+        obj = obj[key] ?? (obj[key] = { });
+    }
+	const key = parts[limit];
+  obj[key] = val;
 }
 
 tools.obj_attr_by_path = function(obj, path)

@@ -71,6 +71,7 @@
 
 
 <template ref='issue_statuses'>
+<div>
     <TopMenu 
   		:buttons="buttons"
   		:name="name"
@@ -110,6 +111,7 @@
 		  		</div>
 	  		</div>
 	  	</div>
+	</div>
 	</div>
 </template>
 

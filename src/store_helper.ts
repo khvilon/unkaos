@@ -93,6 +93,10 @@ store_helper.create_module = function(name)
 		state['updated_' + name] = tools.clone_obj(data)
 		state['selected_' + name] = tools.obj_join(state['selected_' + name], data)
 	}
+	mutations['id_push_update_' + name] = function(state, data)
+	{
+		tools.obj_set_val(state['selected_' + name], data.id, data.val)
+	}
 	mutations['create_' + name] = function(state, data)
 	{
 		state[name].push(data)
@@ -200,7 +204,7 @@ store_helper.create_module = function(name)
 	}
 	actions['update_' + name] = async function(state)
 	{
-		this.commit('update_' + name);
+		//this.commit('update_' + name);
 
 		//let body = state.state['updated_' + name]
 		//body.uuid = state.state['selected_' + name].uuid
