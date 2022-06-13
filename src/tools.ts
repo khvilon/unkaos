@@ -65,6 +65,10 @@ tools.obj_join = function(obj0, obj1)
 
 tools.obj_set_val = function(obj, path, val)
 {
+  if(path == ''){
+    obj = tools.obj_clone(val)
+    return
+  }
   const parts = path.split('.');
   const limit = parts.length - 1;
 	for (let i = 0; i < limit; ++i) {
@@ -137,7 +141,6 @@ tools.compare_obj_dt = function(sort_name)
 {
 	return function(a, b) 
 	{
-		console.log(a, b, sort_name)
 	    let fa = new Date(a[sort_name]),
 	        fb = new Date(b[sort_name])
 

@@ -92,12 +92,26 @@ data_model.load_relations = async function()
             }
         }    
     }
+
+    console.log(data_model.model. issue_types)
+}
+
+data_model.has_fk = function(table_name, fk_name)
+{
+    let fk = data_model.model[table_name].fk
+    if(fk == undefined) return false
+    for(let i in fk)
+    {
+        if (fk_name == fk[i]) return true
+    }
+    return false
 }
 
 data_model.load = async function()
 {
     await data_model.load_columns()
     await data_model.load_relations()
+    
 }
 
 module.exports = data_model

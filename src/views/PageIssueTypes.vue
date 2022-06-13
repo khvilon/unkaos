@@ -7,6 +7,10 @@
   	{
     	name: 'issue_types',
     	label: 'Типы задач',
+		instance:
+		{
+			fields: []
+		},
     	collumns:[
 			{
 				name: 'Название',

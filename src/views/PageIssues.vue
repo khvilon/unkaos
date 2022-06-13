@@ -6,6 +6,20 @@
 
 	console.log('d', d['Название'],d)
 
+	let methods = {
+		get_field_path_by_name: function(name)
+			{
+				if(this.issue == undefined || this.issue.length != 1) return {}
+				for(let i in this.issue[0].values) 
+				{
+					if(this.issue[0].values[i].label == name) 
+					{
+						return 'values.'+ i+'.value'
+					}
+				}
+			}
+		}
+
 	const data = 
   {
     name: 'issues',
@@ -19,17 +33,17 @@
 	    },
 	  	{
 	    	name: d['Название'],
-	        id: "values.Название",
+	        id: "this.get_field_path_by_name('Название')",
 			search: true,
 	    },
         {
             name: d['Автор'],
-            id: "owner.0.name"
+            id: "this.get_field_path_by_name('Автор')"
         },
-        {
-            name: d['Ответственный'],
-            id: "project.0.short_name"
-        },
+		{
+	        name: 'Статус',
+	        id: "status_name"
+	    },
 	    {
 	        name: d['Создана'],
 	        id: "created_at",
@@ -46,7 +60,7 @@
     ]
   }
      
-  const mod = await page_helper.create_module(data)
+  const mod = await page_helper.create_module(data, methods)
 
 	export default mod
 	
