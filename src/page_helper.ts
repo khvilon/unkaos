@@ -42,6 +42,8 @@ const register_store_module_if_not_exists = async function(name, params)
 		store.registerModule(name, store_module)	
 	}
 
+	if(name=='issue' && params == undefined ) return
+	
 	await store.dispatch('get_' + name, params);
 
 	console.log('meeeeeeeeeeeee.$store.state[name]', name, JSON.stringify(store.getters['get_' + name]))
@@ -111,7 +113,7 @@ page_helper.create_module = async function(data, methods)
 		//store.state['common']['is_router_view_visible'] = false
 		let params
 
-		if(this.id != undefined)
+		if(this.id != undefined && this.id != '')
 		{
 			let [proj_short, num] = this.id.split('-')
 
@@ -138,7 +140,7 @@ page_helper.create_module = async function(data, methods)
 		let instance = {}
 		if(this.instance !== undefined) instance = tools.obj_clone(this.instance)
 		instance.uuid = tools.uuidv4()
-		instance.name = 'aaa'
+		//instance.name = 'aaa'
 		instance.is_new = true
 
 		console.log('ttt', this.$store.state[this.name][this.name])
@@ -159,8 +161,8 @@ page_helper.create_module = async function(data, methods)
 
 		console.log('cr', this.$store.state[this.name])
 
-		this[this.name] = this.$store.getters['get_' + this.name]
-		this['selected_' + this.name] = this.$store.getters['selected_' + this.name]
+		//this[this.name] = this.$store.getters['get_' + this.name]
+		//this['selected_' + this.name] = this.$store.getters['selected_' + this.name]
 
 		this.loaded = true
 		console.log('meee loaaaaadeeeeeddd')

@@ -1,22 +1,3 @@
-<template>
-<div class="select-input">
-  <div class="label">{{label}}</div>
- 
-  <v-select v-model="value"  
-
-  label="name" :reduce="parameters.reduce" :multiple="parameters.multiple" :clearable="parameters.clearable" :disabled="disabled"
-   :options=values>
-    <template v-slot:no-options="{ search, searching }">
-      <template v-if="searching">
-        Ничего не найдено 
-      </template>
-      </template>
-
-  </v-select>
-  
-</div>
-</template>
-
 <script>
 import Multiselect from 'vue-multiselect'
 import store_helper from '../store_helper.ts'
@@ -38,6 +19,8 @@ export default {
       value: function(val, oldVal) {
         
 
+        //this.convert_values_to_uuids()
+        
         let val_obj
         for(let i in this.values)
         {
@@ -50,6 +33,8 @@ export default {
 
         this.$emit('update_parent_from_input', val, this.parent_name)
 
+        
+
         if(this.parent_name == undefined || this.parent_name == '') return;
 
         this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
@@ -57,7 +42,7 @@ export default {
     },
   computed:
   {
- 
+      
   },
   props:
     {
@@ -68,7 +53,7 @@ export default {
       value:
       {
         type: Object,
-        default: ''
+        default: []
       },
       label:
       {
@@ -101,10 +86,63 @@ export default {
     },
   methods: {
  
+    check_selectable: function(val)
+    {
+      console.log('this.value0', val + '')
+      //console.log('this.value1', value + '')
+       console.log('this.value2', this.value + '')
+      if(this == undefined) return true
+      console.log('this.value', this.value + '')
+      if(!(this.value instanceof Array)) return true
+      for(let i in this.value)
+      {
+        if(this.value[i].uuid == undefined && this.value[i] == val.uuid) return false
+        else if(this.value[i].uuid == val.uuid) return false
+      }
+      return true
+    },
+    convert_values_to_uuids: function()
+      {
+        if(this.value == undefined) return
+        if(!(this.value instanceof Array)) return
+        if(this.value.length == 0) return
+        if(this.value[0].uuid == undefined) return
+
+        let val = []
+        for(let i in this.value)
+        {
+          val.push(this.value[i].uuid)
+        }
+        console.log('vvv2', this.value+'')
+        this.value = val
+      }
 
   }
 }
 </script>
+
+<template>
+<div class="select-input">
+  <div class="label">{{label}}</div>
+ 
+  <v-select v-model="value"  
+
+  label="name" :reduce="parameters.reduce" :multiple="parameters.multiple" :clearable="parameters.clearable" :disabled="disabled"
+   :options=values 
+   :selectable="check_selectable"
+   >
+    <template 
+    v-slot:no-options="{ searching }" >
+      <template v-if="searching">
+        Ничего не найдено 
+      </template>
+    </template>
+      
+
+  </v-select>
+  
+</div>
+</template>
 
 
 <style lang="scss">

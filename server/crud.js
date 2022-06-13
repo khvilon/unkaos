@@ -5,6 +5,10 @@ var tools = require('./tools')
 var sql = require('./sql')
 
 const edited_type_uuid = '1ff12964-4f5c-4be9-8fe3-f3d9a7225300'
+const transition_type_uuid = '4d7d3265-806b-492a-b6c1-636e1fa653a9'
+
+const uuid_length = edited_type_uuid.length
+
 
 crud.json_sql = function(table_name)
 {
@@ -129,7 +133,7 @@ crud.load = async function(){
     T1.PROJECT_UUID = T12.UUID
     JOIN ISSUE_STATUSES T17
     ON T1.STATUS_UUID = T17.UUID
-	LEFT JOIN
+	LEFT JOIN LATERAL
 	(SELECT 
         'field_values' AS TABLE_NAME,
         FV.UUID AS UUID,
@@ -137,7 +141,7 @@ crud.load = async function(){
 	 	F.NAME AS LABEL,
 	 	FT.CODE AS TYPE,
 	 	FV.VALUE,
-	 	FV.ISSUE_UUID,
+	 	T1.UUID AS ISSUE_UUID,
         F.UUID AS FIELD_UUID
 	 FROM ISSUE_TYPES YT
 	 JOIN ISSUE_TYPES_TO_FIELDS ITF
@@ -147,9 +151,9 @@ crud.load = async function(){
 	 JOIN FIELD_TYPES FT
 	 ON FT.UUID = F.TYPE_UUID
 	 LEFT JOIN FIELD_VALUES FV
-	 ON FV.FIELD_UUID = F.UUID
+	 ON FV.FIELD_UUID = F.UUID  AND T1.UUID = FV.ISSUE_UUID
 	) T14
-	ON T1.TYPE_UUID = T14.ISSUE_TYPE_UUID AND T1.UUID = T14.ISSUE_UUID
+	ON T1.TYPE_UUID = T14.ISSUE_TYPE_UUID
     LEFT JOIN 
     (SELECT
         A.UUID,
@@ -268,7 +272,7 @@ crud.make_query = {
             if(columns[i] === undefined || i === 'created_at' ||  i === 'deleted_at' ||
              i === 'password' || i === 'token' || i === 'token_created_at') continue;
 
-             console.log(data_model.model[table_name])
+             //console.log(data_model.model[table_name])
              if(data_model.model[table_name].columns[i] == undefined) continue
 
             if(set != '') set += ', '
@@ -294,13 +298,22 @@ crud.make_query = {
         for(let i in params){
 
             //console.log('ccc1', params[i], typeof params[i])
-            if(!params[i] || params[i][0] === undefined || typeof params[i][0] !== 'object') continue
+
+
+            if(!params[i] || params[i][0] === undefined || typeof params[i][0] !== 'object') 
+            {
+                for(let j in params[i]){
+                    let child =  params[i][j] 
+                    if(data_model.has_fk(table_name, j)) console.log('chiiiild', child)//subquerys += '\r\n' + 'INSERT INTO ' table_name + '_to_'
+                }
+                continue
+            }
 
            // console.log(typeof params[i])
             for(let j in params[i]){
                 let child =  params[i][j] 
 
-                console.log('child', child)
+               
                 subquerys += '\r\n' + crud.make_query.upsert(child.table_name, child)
             }
         }
@@ -352,17 +365,36 @@ crud.get_uuids = function(obj)
     {
         if(obj[i]===undefined || obj[i]===null || obj[i][0] === undefined || obj[i][0].uuid === undefined) continue
 
+        let fk = data_model.model[obj.table_name]['fk']
+        if(fk!==undefined)
+        {
+            console.log('fk', obj.table_name, fk)
+
+            for(let k in fk)
+            {
+                for (let j in obj[fk[k]])
+                {
+                    if(obj[fk[k]][j].uuid == undefined) ans[obj[fk[k]][j]] = fk[k]
+                    else ans[obj[fk[k]][j].uuid] = fk[k]
+                }
+            }
+            
+        }
+
         let fks = data_model.model[obj.table_name]['fks']
-        console.log('fff', fks, 'fdfdfd', obj[i][0].table_name)
+        console.log(obj.table_name, 'fff', fks, 'fdfdfd', obj[i][0].table_name, obj[i][0])
 
         if(fks == undefined || !fks.includes(obj[i][0].table_name)) continue
         console.log('fff2', fks, 'fdfdfd', obj[i][0].table_name)
 
         for(let j in obj[i])
         {
+
             ans = tools.obj_join(ans, crud.get_uuids(obj[i][j]))
         }  
     }
+
+    console.log('aaaaaaaaaans uuids', ans)
     return ans
 }
 
@@ -389,18 +421,34 @@ crud.do = async function(subdomain, method, table_name, params)
         {
             let old_uuids = crud.get_uuids(data.rows[0])
 
-            console.log(old_uuids)
+            console.log('old_uuids', old_uuids)
 
             let new_uuids = crud.get_uuids(params)
 
-            console.log(new_uuids)
+            console.log('new_uuids', new_uuids)
 
             let del_query = ''
             for(let i in old_uuids)
             {
                 if(new_uuids[i] != undefined) continue;
-                del_query = crud.get_query('delete', old_uuids[i], {'uuid': i}) + ';' + del_query
+                console.log('del', old_uuids[i], JSON.stringify(i))
+                if(data_model.has_fk(table_name, old_uuids[i])) del_query += 'delete from ' + table_name + '_to_' + old_uuids[i] + ' where ' + old_uuids[i] + "_uuid = '" + i + "';"
+                else del_query += crud.get_query('delete', old_uuids[i], {'uuid': i}) + ';' + del_query
+
+                console.log('del2', del_query)
             }
+
+            for(let i in new_uuids)
+            {
+                if(old_uuids[i] != undefined) continue;
+                if(!data_model.has_fk(table_name, new_uuids[i])) continue;
+                del_query += 'insert into ' + table_name + '_to_' + new_uuids[i] + '(' + new_uuids[i] + "_uuid, " + table_name + "_uuid) VALUES('"+ i + "', '" + params.uuid +  "');"
+
+
+                console.log('addddd', del_query)
+            }
+
+
 
             query = del_query + query
         }   

@@ -1,10 +1,5 @@
 
 <script>
-  import StringInput from './StringInput.vue';
-  import BooleanInput from './BooleanInput.vue';
-  import KButton from './KButton.vue';
-  import KTable from '../components/KTable.vue'
-
   import tools from '../tools.ts';
   import graph_math from '../graph_math.ts';
 
@@ -16,14 +11,6 @@
 
   export default 
   {
-    components: 
-    {
-      StringInput,
-      BooleanInput,
-      KButton,
-      KTable
-    },
-
 
 
     data() 
@@ -288,6 +275,36 @@
         if(this.selected.node != undefined) return this.selected.node.issue_statuses[0].name
         if(this.selected.edge != undefined) return this.selected.edge.name
         return ''
+      },
+      update_selected_name(val)
+      {
+        if(this.selected.node != undefined) 
+        {
+          let uuid = this.selected.node.issue_statuses[0].uuid
+
+          for (let i in this.wdata.workflow_nodes)
+          {
+            if(this.wdata.workflow_nodes[i].issue_statuses[0].uuid == uuid) 
+            {
+              this.wdata.workflow_nodes[i].issue_statuses[0].name = val
+              return
+            }
+          }
+        }
+        else if(this.selected.edge != undefined)
+        {
+          let uuid = this.selected.edge.uuid
+
+          for (let i in this.wdata.transitions)
+          {
+            console.log('edge',uuid, this.wdata.transitions[i].uuid)
+            if(this.wdata.transitions[i].uuid == uuid) 
+            {
+              this.wdata.transitions[i].name = val
+              return
+            }
+          } 
+        }
       }
 
     },
@@ -349,7 +366,9 @@
     watch: {
       wdata: {
         handler: function(val, oldVal) {
-          this.$store.commit('push_update_workflows', val)
+        //  this.$store.commit('push_update_workflows', val)
+
+          this.$store.commit('id_push_update_workflows', {id: '', val:val} )
           console.log('wwwww', val)
         }, 
         deep:true
@@ -394,7 +413,7 @@
       <div class="workflows-command-panel">
         <StringInput
             :label="'Название статуса/перехода'"
-            :id="'workflow-element-name'"
+            @update_parent_from_input="update_selected_name"
             :value="get_selected_name()"
           />
           <KButton 

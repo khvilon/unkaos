@@ -8,7 +8,7 @@
 		get_field_by_name: function(name)
 		{
 			
-			console.log('histissue', this.issue)
+			console.log('get_field_by_name', name)
 			if(this.issue == undefined || this.issue.length != 1) return {}
 			for(let i in this.issue[0].values) 
 			{
@@ -21,7 +21,7 @@
 		},
 		get_fields_exclude_names: function(names)
 		{
-			console.log('histissue', this.issue)
+			console.log('get_fields_exclude_names', names)
 			let fields = []
 			if(this.issue == undefined || this.issue.length != 1) return {}
 			for(let i in this.issue[0].values) 
@@ -36,32 +36,34 @@
 					}
 				}
 				this.issue[0].values[i].idx = i
-				if(!match) fields.push(this.issue[0].values[i])
+				if(!match) 
+				{
+					if(this.issue[0].values[i].uuid == null) 
+					{
+						this.issue[0].values[i].uuid = tools.uuidv4()
+						//this.$store.commit('id_push_update_' + issue, {id: 'values.' + i + '.uuid', val:this.issue[0].values[i].uuid})
+					}
+					fields.push(this.issue[0].values[i])
+				}
 			}
 			return fields
 		},
-		get_history: function()
+		add_action_to_history: async function(type, val)
 		{
-			console.log('histissue', this.issue)
-			if(this.issue.length != 1) return ''
-			let history = ''
-			console.log('histissue', this.issue)
-
-			this.issue[0].actions = this.issue[0].actions.sort(tools.compare_obj_dt('created_at')).reverse()
-
-			for(let i in this.issue[0].actions)
+			if(this.issue[0] == undefined || this.issue[0].actions == undefined) return;
+			const action_icons = 
 			{
-				if(i > 0) history += '\r\n\r\n'
-				let action = this.issue[0].actions[i]
-				let dt = tools.format_dt(action.created_at)
-				history += dt + ' ' + action.author + ' ' + action.name + '\r\n' + action.value
+				comment: '🗩',
+				edit: '🖉'
+			}
+			let new_action = {
+				name: action_icons[type], 
+				created_at: new Date, 
+				value: val,
+				author: JSON.parse(localStorage.profile).name
 			}
 
-			//TODO
-			this.available_transitions()
-			this.$forceUpdate()
-
-			return history
+			this.issue[0].actions.unshift(new_action)
 		},
 		send_comment: async function()
 		{
@@ -72,14 +74,7 @@
 
 			let ans = await rest.run_method('upsert_issue_actions', params)
 
-			let new_action = {
-				name: '🗩', 
-				created_at: new Date, 
-				value: params.value,
-				author: JSON.parse(localStorage.profile).name
-			}
-			
-			this.issue[0].actions.unshift(new_action)
+			this.add_action_to_history('comment', params.value)
 
 			this.comment = ''
 		},
@@ -93,7 +88,7 @@
 			console.log('tyyyyypesffffff', this.$store.state.issue_types)
 			this.comment_focused=val
 		},
-		available_transitions: function()
+		available_transitions2: function()
 		{
 			let workflow
 			for(let i in this.workflows)
@@ -102,7 +97,7 @@
 			}
 
 			if(workflow == undefined) return []
-			console.log('statusesstatusesstatuses0', workflow, this.issue[0].status_uuid)
+			//console.log('statusesstatusesstatuses0', workflow, this.issue[0].status_uuid)
 
 			this.transitions = []
 			for(let i in workflow.transitions)
@@ -110,37 +105,43 @@
 				if(workflow.transitions[i].status_from_uuid == this.issue[0].status_uuid) 
 					this.transitions.push(workflow.transitions[i])
 			}
-			console.log('statusesstatusesstatuses1', this.transitions)
+			//console.log('statusesstatusesstatuses1', this.transitions)
 
 
+			let curr_status = {}
 			this.statuses = []
 			this.statuses_to = []
-			let curr_status = {}
-			for(let i in this.transitions)
+
+			for(let j in workflow.workflow_nodes)
 			{
-				let status_to_uuid = this.transitions[i].status_to_uuid
-				console.log('statusesstatusesstatuses2', status_to_uuid)
-				for(let j in workflow.workflow_nodes)
-				{console.log('statusesstatusesstatuses3', workflow.workflow_nodes[j].issue_statuses[0].uuid)
+				for(let i in this.transitions)
+				{
+					let status_to_uuid = this.transitions[i].status_to_uuid
+					
 					if(workflow.workflow_nodes[j].issue_statuses[0].uuid == status_to_uuid) 
 					{
 						this.statuses_to.push(workflow.workflow_nodes[j].issue_statuses[0])
 						this.statuses.push(workflow.workflow_nodes[j].issue_statuses[0])
 					}
-					else if(workflow.workflow_nodes[j].issue_statuses[0].uuid == this.issue[0].status_uuid) 
-					{
-						curr_status = workflow.workflow_nodes[j].issue_statuses[0]
-					}
+				}
+
+				if(workflow.workflow_nodes[j].issue_statuses[0].uuid == this.issue[0].status_uuid) 
+				{
+					curr_status = workflow.workflow_nodes[j].issue_statuses[0]
+					
 				}
 			}
+
 			this.statuses.push(curr_status)
 
+			console.log('this.statuses', this.statuses)
+
 			//TODO
-			this.issue_types = this.$store.state.issue_types.issue_types
+			//this.issue_types = this.$store.state.issue_types.issue_types
 
 			return this.transitions
 
-			console.log('statusesstatusesstatuses', this.statuses_to)
+			//console.log('statusesstatusesstatuses', this.statuses_to)
 		},
 		get_type_uuid: function()
 		{
@@ -148,11 +149,32 @@
 			if(this.issue_statuses != undefined) return Object.values(this.issue_statuses)[0].uuid
 			return ''
 		},
-		get_types()
+		get_types: function()
 		{
 			console.log('tyyyyypes', this.issue_types)
 			if(this.issue_types == undefined) return []
 			return this.issue_types
+		},
+		set_status: function(status_uuid)
+		{
+		
+			this.issue[0].status_uuid = status_uuid
+			
+		},
+		get_status: function()
+		{
+			if(this.issue == undefined) return ''
+			//if(this.issue[0] == undefined) return ''
+			return this.issue[0].status_uuid
+		},
+		update_statuses: function(val)
+		{
+			console.log('uuuupppppaaarrrr', this.issue[0].status_uuid , val )
+
+			//this.issue[0].status_uuid = val
+			this.current_status = !this.current_status//val + '' + new Date()
+			this.set_status(val)
+			console.log(this.available_transitions)
 		}
 
 	}
@@ -178,7 +200,6 @@
 			dictionary: 'issue_types',
 			type: 'Select',
 			clearable:"false"
-			
 		},
 		{
 			label: 'Проекты',
@@ -193,7 +214,39 @@
 	transitions: [],
 	statuses_to: [],
 	statuses: [],
-	max_status_buttons_count: 3
+	max_status_buttons_count: 2,
+	current_status: true,
+	instance: {values:[
+    {
+        "type": "Text",
+        "uuid": "008e6daf-eb79-48c0-bd13-69b779c268ee",
+        "label": "Описание",
+        "value": "",
+        "field_uuid": "4a095ff5-c1c4-4349-9038-e3c35a2328b9",
+        "issue_uuid": "",
+        "table_name": "field_values",
+    },
+    {
+        "type": "String",
+        "uuid": "c5098dbf-0f12-4352-afb6-0a1279dcc1c4",
+        "label": "Название",
+        "value": "",
+        "field_uuid": "c96966ea-a591-47a9-992c-0a2f6443bc80",
+        "issue_uuid": "cf80f5b4-ba05-472e-80ea-4805ffc2f431",
+        "table_name": "field_values",
+        "issue_type_uuid": "94de7306-a8f2-40c5-9460-f927ebbb9062"
+    },
+    {
+        "type": "User",
+        "uuid": "d0bd2251-c88a-4731-b608-4d287684c215",
+        "label": "Автор",
+        "value": "9965cb94-17dc-46c4-ac1e-823857289e98",
+        "field_uuid": "733f669a-9584-4469-a41b-544e25b8d91a",
+        "issue_uuid": "cf80f5b4-ba05-472e-80ea-4805ffc2f431",
+        "table_name": "field_values",
+        "issue_type_uuid": "94de7306-a8f2-40c5-9460-f927ebbb9062"
+    }
+]}
   }
      
   const mod = await page_helper.create_module(data, methods)
@@ -206,6 +259,90 @@
         default: ''
       }
     }
+
+	mod.computed.history = function()
+		{
+			console.log('histissue', this.issue.length)
+			if(this.issue.length != 1) return ''
+			console.log('histissue2', this.issue.length)
+			let history = ''
+
+			let actions = tools.obj_clone(this.issue[0].actions)
+			actions = actions.sort(tools.compare_obj_dt('created_at'))
+			actions = actions.reverse()
+			
+			for(let i in actions)
+			{
+				if(i > 0) history += '\r\n\r\n'
+				let action = actions[i]
+				let dt = tools.format_dt(action.created_at)
+				history += dt + ' ' + action.author + ' ' + action.name + '\r\n' + action.value
+			}
+
+			//this.available_transitions()
+
+			return history
+		}
+
+
+		mod.computed.available_transitions =  function()
+		{
+			if(this.current_status) console.log('aa');
+			
+
+			let workflow
+			for(let i in this.workflows)
+			{
+				if(this.workflows[i].uuid == this.issue[0].workflow_uuid) {workflow = this.workflows[i]; continue}	
+			}
+
+			if(workflow == undefined) return []
+			//console.log('statusesstatusesstatuses0', workflow, this.issue[0].status_uuid)
+
+			this.transitions = []
+			for(let i in workflow.transitions)
+			{
+				if(workflow.transitions[i].status_from_uuid == this.issue[0].status_uuid) 
+					this.transitions.push(workflow.transitions[i])
+			}
+			//console.log('statusesstatusesstatuses1', this.transitions)
+
+
+			let curr_status = {}
+			this.statuses = []
+			this.statuses_to = []
+
+			for(let j in workflow.workflow_nodes)
+			{
+				for(let i in this.transitions)
+				{
+					let status_to_uuid = this.transitions[i].status_to_uuid
+					
+					if(workflow.workflow_nodes[j].issue_statuses[0].uuid == status_to_uuid) 
+					{
+						this.statuses_to.push(workflow.workflow_nodes[j].issue_statuses[0])
+						this.statuses.push(workflow.workflow_nodes[j].issue_statuses[0])
+					}
+				}
+
+				if(workflow.workflow_nodes[j].issue_statuses[0].uuid == this.issue[0].status_uuid) 
+				{
+					curr_status = workflow.workflow_nodes[j].issue_statuses[0]
+					
+				}
+			}
+
+			this.statuses.push(curr_status)
+
+			console.log('this.statuses', this.statuses)
+
+			//TODO
+			//this.issue_types = this.$store.state.issue_types.issue_types
+
+			return this.transitions
+
+			//console.log('statusesstatusesstatuses', this.statuses_to)
+		}
 
 	export default mod
 </script>
@@ -222,7 +359,7 @@
 		key="issue_code"
 		class='issue-code' 
 		label='' 
-		disabled="true"
+		:disabled="true"
 		:value="id"
 		>
 		</StringInput>
@@ -244,11 +381,12 @@
 		<SelectInput 
 		v-if="!loading"
 		label=""
-		:value="issue[0].status_uuid"
+		:value="get_status()"
 		:values="statuses"
 		:disabled="transitions.length <= max_status_buttons_count"
 		class="issue-status-input"
 		:parameters="{clearable: false, reduce: obj => obj.uuid}"
+		@update_parent_from_input="update_statuses"
 		>
 		</SelectInput>
 		</Transition>
@@ -256,11 +394,12 @@
 		<Transition name="element_fade">
 		<div v-if="!loading && transitions.length <= max_status_buttons_count" style="display: flex;">
 		<KButton
-		v-for="(transition, index) in transitions" 
+		v-for="(transition, index) in available_transitions" 
 		:key="index"
 		class="status-btn"
 		:name="transition.name"
 		:func="''"
+		@click="set_status(transition.status_to_uuid)"
 		/>
 		</div>
 		
@@ -333,7 +472,7 @@
 			<Transition name="element_fade">
 			<TextInput label='История'
 				v-if="!loading"
-				:value="get_history()"
+				:value="history"
 				:disabled="true"
 			>
 			</TextInput>
@@ -377,6 +516,7 @@
 			  			id="save_issue_btn"
 			  			:name="'Сохранить'"
 			  			:func="'save_issue'"
+						:click="add_action_to_history('edit', '')"
 			  		/>
 			  		<KButton
 			  			id="delete_issue_btn"
