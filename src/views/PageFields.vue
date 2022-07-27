@@ -39,6 +39,7 @@
         dictionary: 'field_types',
         type: 'Select',
         clearable: false,
+        
       },
       {
         label: 'Пользовательское',
@@ -97,6 +98,34 @@
           :parameters="input"
           :values="input.values"
         ></component>
+        <NumericInput
+          v-if="selected_fields.type != undefined && selected_fields.type[0].code == 'Numeric'"
+          label="Минимальное значение"
+          id="min_value"
+          :value="get_json_val(selected_fields, 'min_value') || 'NULL'"
+          :parent_name="'fields'"
+        ></NumericInput>
+        <NumericInput
+          v-if="selected_fields.type != undefined && selected_fields.type[0].code == 'Numeric'"
+          label="Максимальное значение"
+          id="max_value"
+          :value="get_json_val(selected_fields, 'max_value') || 'NULL'"
+          :parent_name="'fields'"
+        ></NumericInput>
+        <NumericInput
+          v-if="selected_fields.type != undefined && selected_fields.type[0].code == 'Numeric'"
+          label="Знаков после запятой"
+          id="presision"
+          :value="get_json_val(selected_fields, 'presision') || 'NULL'"
+          :parent_name="'fields'"
+        ></NumericInput>
+        <TextInput
+          v-if="selected_fields.type != undefined && selected_fields.type[0].code == 'Select'"
+          label="Список значений"
+          id="values"
+          :value="get_json_val(selected_fields, 'values')"
+          :parent_name="'fields'"
+        ></TextInput>
         <div id="fields_card_footer_div" class="footer_div">
           <div id="fields_card_infooter_div">
             <KButton

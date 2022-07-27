@@ -82,12 +82,12 @@ tools.obj_set_val = function(obj, path, val)
 tools.obj_attr_by_path = function(obj, path)
 {
   if(obj == undefined) return ''
-  console.log('obj_attr_by_path', obj, path)
+  //console.log('obj_attr_by_path', obj, path)
   if(Array.isArray(path))
   {
     let ans = ''
     for(let i in path) {
-      console.log('pp', path[i])
+      //console.log('pp', path[i])
       ans += tools.obj_attr_by_path(obj, path[i])
     }
     //ans = '<a href="/issue/' + ans + '">' + ans + '</a>'
@@ -100,13 +100,14 @@ tools.obj_attr_by_path = function(obj, path)
   let path_parts = path.split('.')
   let data_part = obj
 
-  //console.log('j', path_parts, data_part)
+  console.log('j', path_parts, data_part)
 
   if(path_parts[0] == 'values')
   {
     for(let i in obj.values)
     {
-      if(obj.values[i].name == path_parts[1]) return obj.values[i].value
+      console.log('vaal', obj.values[i].label, path_parts[1])
+      if(obj.values[i].label == path_parts[1]) return obj.values[i].value
     }
   }
 
@@ -154,6 +155,27 @@ tools.compare_obj_dt = function(sort_name)
 	};
 }
 
+tools.readUploadedFile = (inputFile) => 
+{
+  const temporaryFileReader = new FileReader();
+
+  return new Promise((resolve, reject) => 
+  {
+    temporaryFileReader.onerror = () => 
+    {
+      temporaryFileReader.abort();
+      reject(new DOMException("Problem parsing input file."));
+    };
+
+    temporaryFileReader.onload = () => 
+    {
+      resolve(temporaryFileReader.result);
+    };
+
+    console.log(inputFile)
+    temporaryFileReader.readAsDataURL(inputFile);
+  });
+};
 
 tools.readUploadedFileAsImg = (inputFile) => 
 {

@@ -18,7 +18,13 @@
           {
             link: '/dashboards',
             name: dict['Дашборды'],
-            icon: 'bx-layout',
+            icon: 'bxs-dashboard',
+            level: 1
+          },
+          {
+            link: '/boards',
+            name: dict['Доски'],
+            icon: 'bx-columns',
             level: 1
           },
           {
@@ -27,12 +33,12 @@
             icon: 'bx-detail',
             level: 1
           },
-          {
+          /*{
             link: '/notifications',
             name: dict['Уведомления'],
             icon: 'bx-envelope',
             level: 1
-          },
+          },*/
           {
             link: '/projects',
             name: dict['Проекты'],
@@ -70,17 +76,18 @@
             level: 2
           },
           {
-            link: '/configs/issue_types',
-            name: dict['Типы задач'],
-            icon: 'bx-category-alt',
-            level: 2
-          },
-          {
             link: '/configs/workflows',
             name: dict['Воркфлоу задач'],
             icon: 'bx-sitemap',
             level: 2
           },
+          {
+            link: '/configs/issue_types',
+            name: dict['Типы задач'],
+            icon: 'bx-category-alt',
+            level: 2
+          },
+          
         ],
       },      
     },

@@ -125,6 +125,7 @@
         :key="index"
         :name="button.name"
         :func="button.func"
+        
       />
 
     </div> 

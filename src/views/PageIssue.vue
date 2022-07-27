@@ -7,7 +7,6 @@
 	let methods = {
 		get_field_by_name: function(name)
 		{
-			
 			console.log('get_field_by_name', name)
 			if(this.issue == undefined || this.issue.length != 1) return {}
 			for(let i in this.issue[0].values) 
@@ -18,6 +17,7 @@
 					return this.issue[0].values[i]
 				}
 			}
+			
 		},
 		get_fields_exclude_names: function(names)
 		{
@@ -35,6 +35,8 @@
 						continue
 					}
 				}
+
+				console.log('get_fields_exclude_names1', this.issue[0].values[i].label, match)
 				this.issue[0].values[i].idx = i
 				if(!match) 
 				{
@@ -46,15 +48,19 @@
 					fields.push(this.issue[0].values[i])
 				}
 			}
+			console.log('get_fields_exclude_names2', fields)
 			return fields
 		},
 		add_action_to_history: async function(type, val)
 		{
+
+			console.log('add_action_to_history', type, val)
 			if(this.issue[0] == undefined || this.issue[0].actions == undefined) return;
 			const action_icons = 
 			{
 				comment: '🗩',
-				edit: '🖉'
+				edit: '🖉',
+				transition: '⤞'
 			}
 			let new_action = {
 				name: action_icons[type], 
@@ -78,7 +84,7 @@
 
 			this.comment = ''
 		},
-		update_parent_from_input: function(val)
+		update_comment: function(val)
 		{
 			
 			this.comment = val
@@ -87,61 +93,8 @@
 		{
 			console.log('tyyyyypesffffff', this.$store.state.issue_types)
 			this.comment_focused=val
-		},
-		available_transitions2: function()
-		{
-			let workflow
-			for(let i in this.workflows)
-			{
-				if(this.workflows[i].uuid == this.issue[0].workflow_uuid) {workflow = this.workflows[i]; continue}	
-			}
 
-			if(workflow == undefined) return []
-			//console.log('statusesstatusesstatuses0', workflow, this.issue[0].status_uuid)
-
-			this.transitions = []
-			for(let i in workflow.transitions)
-			{
-				if(workflow.transitions[i].status_from_uuid == this.issue[0].status_uuid) 
-					this.transitions.push(workflow.transitions[i])
-			}
-			//console.log('statusesstatusesstatuses1', this.transitions)
-
-
-			let curr_status = {}
-			this.statuses = []
-			this.statuses_to = []
-
-			for(let j in workflow.workflow_nodes)
-			{
-				for(let i in this.transitions)
-				{
-					let status_to_uuid = this.transitions[i].status_to_uuid
-					
-					if(workflow.workflow_nodes[j].issue_statuses[0].uuid == status_to_uuid) 
-					{
-						this.statuses_to.push(workflow.workflow_nodes[j].issue_statuses[0])
-						this.statuses.push(workflow.workflow_nodes[j].issue_statuses[0])
-					}
-				}
-
-				if(workflow.workflow_nodes[j].issue_statuses[0].uuid == this.issue[0].status_uuid) 
-				{
-					curr_status = workflow.workflow_nodes[j].issue_statuses[0]
-					
-				}
-			}
-
-			this.statuses.push(curr_status)
-
-			console.log('this.statuses', this.statuses)
-
-			//TODO
-			//this.issue_types = this.$store.state.issue_types.issue_types
-
-			return this.transitions
-
-			//console.log('statusesstatusesstatuses', this.statuses_to)
+			
 		},
 		get_type_uuid: function()
 		{
@@ -153,6 +106,7 @@
 		{
 			console.log('tyyyyypes', this.issue_types)
 			if(this.issue_types == undefined) return []
+			this.update_type(this.issue[0].type_uuid)
 			return this.issue_types
 		},
 		set_status: function(status_uuid)
@@ -165,9 +119,10 @@
 		{
 			if(this.issue == undefined) return ''
 			//if(this.issue[0] == undefined) return ''
+			
 			return this.issue[0].status_uuid
 		},
-		update_statuses: function(val)
+		update_statuses: async function(val)
 		{
 			console.log('uuuupppppaaarrrr', this.issue[0].status_uuid , val )
 
@@ -175,6 +130,95 @@
 			this.current_status = !this.current_status//val + '' + new Date()
 			this.set_status(val)
 			console.log(this.available_transitions)
+
+			let status_name
+			for(let i in this.statuses)
+			{
+				if(this.statuses[i].uuid == val) 
+				{
+					status_name = this.statuses[i].name
+					continue
+				}
+			} 
+
+			this.$store.state['issue']['selected_issue'].status_name = status_name
+			this.$store.state['issue']['issue'][0].status_name = status_name
+			this.$store.state['issue']['filtered_issue'][0].status_name = status_name
+
+			this.add_action_to_history('transition', '->' + status_name)
+
+			let ans = await this.$store.dispatch('save_issue');
+		},
+		update_type: function(type_uuid)
+		{
+			if(this.id!= '') return
+
+			this.$store.commit('id_push_update_issues', {id: 'type_uuid', val:type_uuid})
+			console.log('update_type', type_uuid)
+
+			let issue_type
+			for(let i in this.issue_types)
+			{
+				if(this.issue_types[i].uuid == type_uuid)
+				{
+					issue_type = this.issue_types[i]
+					continue
+				}
+			}
+
+			console.log('update_type2', issue_type)
+
+			let values = []
+			for(let i in issue_type.fields)
+			{
+				values.push({
+					type: issue_type.fields[i].type[0].code,
+					uuid: tools.uuidv4(),
+					label: issue_type.fields[i].name,
+					value: '',
+					field_uuid: issue_type.fields[i].uuid,
+					table_name: "field_values",
+					issue_uuid: this.issue[0].uuid
+				})
+			}
+
+			this.$store.state['issue']['selected_issue'].values = values
+			this.$store.state['issue']['issue'][0].values = values
+			this.$store.state['issue']['filtered_issue'][0].values = values
+
+			this.$store.state['issue']['selected_issue'].type_uuid = type_uuid
+			this.$store.state['issue']['issue'][0].type_uuid = type_uuid
+			this.$store.state['issue']['filtered_issue'][0].type_uuid = type_uuid
+
+			console.log('update_type3', values)
+		},
+		saved: function(issue)
+		{
+			this.add_action_to_history('edit', '')
+			if(this.id!='') return
+			
+			//this.$router.push('/issue/' + issue[0].project_short_name + '-' + issue[0].num)
+			window.location.href = '/issue/' + issue[0].project_short_name + '-' + issue[0].num
+		},
+		deleted: function(issue)
+		{
+			window.location.href = '/issues/'
+		},
+		add_attachment: async function(att)
+		{
+			att.issue_uuid = this.issue[0].uuid
+			this.$store.state['issue']['selected_issue'].attachments.push(att)
+			let ans = await rest.run_method('upsert_attachments', att)
+		},
+		delete_attachment: async function(att)
+		{
+			let attachments = this.$store.state['issue']['selected_issue'].attachments
+			for(let i in attachments)
+			{
+				if(attachments[i].uuid == att.uuid) 
+					this.$store.state['issue']['selected_issue'].attachments.splice(i, 1)
+			}
+			let ans = await rest.run_method('delete_attachments', att)
 		}
 
 	}
@@ -232,9 +276,8 @@
         "label": "Название",
         "value": "",
         "field_uuid": "c96966ea-a591-47a9-992c-0a2f6443bc80",
-        "issue_uuid": "cf80f5b4-ba05-472e-80ea-4805ffc2f431",
+        "issue_uuid": "",
         "table_name": "field_values",
-        "issue_type_uuid": "94de7306-a8f2-40c5-9460-f927ebbb9062"
     },
     {
         "type": "User",
@@ -242,9 +285,8 @@
         "label": "Автор",
         "value": "9965cb94-17dc-46c4-ac1e-823857289e98",
         "field_uuid": "733f669a-9584-4469-a41b-544e25b8d91a",
-        "issue_uuid": "cf80f5b4-ba05-472e-80ea-4805ffc2f431",
+        "issue_uuid": "",
         "table_name": "field_values",
-        "issue_type_uuid": "94de7306-a8f2-40c5-9460-f927ebbb9062"
     }
 ]}
   }
@@ -259,6 +301,10 @@
         default: ''
       }
     }
+
+	
+		
+	
 
 	mod.computed.history = function()
 		{
@@ -352,6 +398,15 @@
 <template ref='issue'>
 	<div>
 
+	<Transition name="element_fade">
+			<KNewRelationModal 
+				v-if="false" 
+				
+			/>
+		
+
+	</Transition>
+
     <div id="issue_top_panel" class="panel">
 		<Transition name="element_fade">
 		<StringInput 
@@ -371,15 +426,16 @@
 		key="issue_type_input"
 		:value="get_type_uuid()"
 		:values="get_types()"
-		:disabled="issue[0]!=undefined"
+		:disabled="id!=''"
 		class="issue-type-input"
 		:parameters="{clearable: false, reduce: obj => obj.uuid}"
+		@update_parent_from_input="update_type"
 		>
 		</SelectInput>
 		</Transition>
 		<Transition name="element_fade">
 		<SelectInput 
-		v-if="!loading"
+		v-if="!loading && id!=''"
 		label=""
 		:value="get_status()"
 		:values="statuses"
@@ -392,7 +448,7 @@
 		</Transition>
 
 		<Transition name="element_fade">
-		<div v-if="!loading && transitions.length <= max_status_buttons_count" style="display: flex;">
+		<div v-if="!loading && id!='' && transitions.length <= max_status_buttons_count" style="display: flex;">
 		<KButton
 		v-for="(transition, index) in available_transitions" 
 		:key="index"
@@ -426,7 +482,7 @@
 			key="issue_project_input"
 			:value="issue[0].project_uuid"
 			:values="projects"
-			:disabled="false"
+			:disabled="id!=''"
 			class="issue-project-input"
 			:clearable="false"
 			:parameters="{clearable: false, reduce: obj => obj.uuid}"
@@ -445,12 +501,35 @@
 			>
 			</TextInput>
 			</Transition>
+
+
+			<Transition name="element_fade">
+			<KRelations
+				v-if="!loading && id!=''"
+				label=''
+				id="issue-relations"
+				
+			>
+			</KRelations>
+			</Transition>
+
+			<Transition name="element_fade">
+			<KAttachment
+				v-if="!loading && id!=''"
+				label=''
+				id="issue-attachments"
+				:attachments="issue[0].attachments"
+				@attachment_added="add_attachment"
+				@attachment_deleted="delete_attachment"
+			>
+			</KAttachment>
+			</Transition>
 			
 
 			<Transition name="element_fade">
-			<TextInput label='Комментарий' v-if="!loading"
+			<TextInput label='Комментарий' v-if="!loading && id!=''"
 				id="comment_input"
-				@update_parent_from_input="update_parent_from_input"
+				@update_parent_from_input="update_comment"
 				:value="comment"
 				@input_focus="comment_focus"
 
@@ -461,7 +540,7 @@
 
 			<Transition name="element_fade">
 			<KButton
-				v-if="!loading"
+				v-if="!loading && id!=''"
 			  	id="send_comment_btn"
 			  	name='Отправить'
 				v-bind:class="{ outlined: comment_focused }"
@@ -471,7 +550,7 @@
 
 			<Transition name="element_fade">
 			<TextInput label='История'
-				v-if="!loading"
+				v-if="!loading && id!=''"
 				:value="history"
 				:disabled="true"
 			>
@@ -498,11 +577,19 @@
 
 			
 			  <UserInput label="Автор"
+			  	v-if="!loading && id!=''"
 				:value="get_field_by_name('Автор').value"
 				:disabled="true"
 				class="issue-author-input"
 			>
 			</UserInput>
+
+			<DateInput label="Создана"
+				:v-if="id!=''"
+				:value="issue[0].created_at"
+				:disabled="true"
+			>
+			</DateInput>
 
 			
 
@@ -513,15 +600,18 @@
         <div id="issue_card_footer_div" class="footer_div">
 	  			<div id="issue_card_infooter_div">
 			  		<KButton
+					  	v-if="!loading"
 			  			id="save_issue_btn"
 			  			:name="'Сохранить'"
 			  			:func="'save_issue'"
-						:click="add_action_to_history('edit', '')"
+						@button_ans="saved"
 			  		/>
 			  		<KButton
+					  	v-if="!loading && id!=''"
 			  			id="delete_issue_btn"
 			  			:name="'Удалить'"
 			  			:func="'delete_issue'"
+						@button_ans="deleted"
 			  		/>
 		  		</div>
 	  		</div>
@@ -684,6 +774,10 @@
 	}
 	 #issue_card_scroller::-webkit-scrollbar{
     display:none;
+	 }
+
+	 #issue-attachments{
+		 width: 100%;
 	 }
 
 
