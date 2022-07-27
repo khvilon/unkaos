@@ -122,12 +122,12 @@ page_helper.create_module = async function(data, methods)
 			params = {project_uuid: proj[0].uuid, num: num}
 		}
 
-		await register_store_module_if_not_exists(data.name, params)
+		await register_store_module_if_not_exists(this.name, params)
 
-		for(let i in data.inputs)
+		for(let i in this.inputs)
 		{
-			if(data.inputs[i].dictionary == undefined) continue
-			await register_store_module_if_not_exists(data.inputs[i].dictionary)
+			if(this.inputs[i].dictionary == undefined) continue
+			await register_store_module_if_not_exists(this.inputs[i].dictionary)
 		}
 		
 		console.log('created')
@@ -142,6 +142,18 @@ page_helper.create_module = async function(data, methods)
 		instance.uuid = tools.uuidv4()
 		//instance.name = 'aaa'
 		instance.is_new = true
+
+		if(this.name=='issue' && params == undefined )
+		{
+			instance.project_uuid = this.$store.state['projects']['projects'][0].uuid
+			instance.type_uuid = this.$store.state['issue_types']['issue_types'][0].uuid
+
+			this.$store.state[this.name]['filtered_' + this.name]  = [instance]
+			
+			this.$store.state[this.name][this.name] = [instance]
+			
+			
+		}
 
 		console.log('ttt', this.$store.state[this.name][this.name])
 		this.$store.state[this.name]['selected_' + this.name] = instance

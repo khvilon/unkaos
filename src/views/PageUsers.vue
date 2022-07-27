@@ -10,7 +10,7 @@
     collumns:[
 	  	{
 	    	name: 'ФИО',
-	        id: "name",
+	        id: "uuid",
 	        type: 'user',
 			search: true
 	    },
@@ -100,6 +100,7 @@
 	    		:collumns="collumns"
 	    		:table-data="users"
 	    		:name="'users'"
+				:dicts="{users: users}"
 	    	/>
 			</Transition>
 	  	</div>

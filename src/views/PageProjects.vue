@@ -10,7 +10,7 @@
 	  	{
 	    	name: 'Название',
 	        id: "name",
-	        type: 'user',
+	        type: 'String',
 			search: true
 	    },
 	    {
@@ -20,7 +20,8 @@
 	    },
         {
             name: 'Владелец',
-            id: "owner.0.name"
+            id: "owner_uuid",
+			type: 'user'
         
         },
 	    {
@@ -56,7 +57,8 @@
                     id: 'owner_uuid',
                     type: 'User',
                     disabled: false,
-					clearable: false
+					clearable: false,
+					dictionary: 'users',
                 },
 				{
 					label: 'Зарегистрирован',
@@ -92,6 +94,7 @@
 	    		:collumns="collumns"
 	    		:table-data="projects"
 	    		:name="'projects'"
+				:dicts="{users: users}"
 	    	/>
 	  	</div>
 	  	<div id="projects_card"  class="panel">

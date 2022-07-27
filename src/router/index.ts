@@ -12,6 +12,7 @@ import PageLogin from '../views/PageLogin.vue'
 import PageLanding from '../views/PageLanding.vue'
 import PageConfigs from '../views/PageConfigs.vue'
 import PageDashboards from '../views/PageDashboards.vue'
+import PageBoards from '../views/PageBoards.vue'
 import PageNotifications from '../views/PageNotifications.vue'
 import PageRoles from '../views/PageRoles.vue'
 
@@ -28,6 +29,7 @@ const router = createRouter({
 	{ path: '/', component: PageLanding },
 	{ path: '/login', component: PageLogin },
   	{ path: '/dashboards', component: PageDashboards },
+	{ path: '/boards', component: PageBoards },
   	{ path: '/issues', component: PageIssues},
   	{ path: '/notifications', component: PageNotifications },
   	{ path: '/projects', component: PageProjects },
@@ -39,7 +41,7 @@ const router = createRouter({
 	{ path: '/configs/fields', component: PageFields },
 	{ path: '/configs', component: PageConfigs },
 	{ path: '/issue/:id', component: PageIssue, props: true },
-	{ path: '/issue/', component: PageIssue },
+	{ path: '/issue/', component: PageIssue }
 /*	{
 		path: "/:catchAll(.*)",
 		name: "NotFound",

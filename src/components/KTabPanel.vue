@@ -43,10 +43,6 @@
 
 <style lang="css">
 
-*
-{
-color: white;
-}
 
 .tab-panel {
     display: flex;

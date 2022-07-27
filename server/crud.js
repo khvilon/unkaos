@@ -6,6 +6,7 @@ var sql = require('./sql')
 
 const edited_type_uuid = '1ff12964-4f5c-4be9-8fe3-f3d9a7225300'
 const transition_type_uuid = '4d7d3265-806b-492a-b6c1-636e1fa653a9'
+const author_field_uuid = '733f669a-9584-4469-a41b-544e25b8d91a'
 
 const uuid_length = edited_type_uuid.length
 
@@ -120,7 +121,8 @@ crud.load = async function(){
     CASE WHEN COUNT(T14) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T14) END AS VALUES,
     CASE WHEN COUNT(T15) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T15) END AS ACTIONS,
     STATUS_UUID,
-    T17.NAME AS STATUS_NAME
+    T17.NAME AS STATUS_NAME,
+    CASE WHEN COUNT(T18) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T18) END AS ATTACHMENTS
     FROM 
     ISSUES T1
     JOIN
@@ -163,12 +165,21 @@ crud.load = async function(){
         AT.NAME,
         A.CREATED_AT
     FROM ISSUE_ACTIONS A
-    JOIN ISSUE_ACTIONs_TYPES AT
+    JOIN ISSUE_ACTIONS_TYPES AT
     ON A.TYPE_UUID = AT.UUID
     JOIN USERS U
     ON A.AUTHOR_UUID = U.UUID
     ) T15
     ON T1.UUID = T15.ISSUE_UUID
+    LEFT JOIN
+    (SELECT 
+        'attachments' AS TABLE_NAME,
+        UUID,
+        NAME,
+        EXTENTION,
+        ISSUE_UUID
+    FROM ATTACHMENTS) T18
+    ON T1.UUID = T18.ISSUE_UUID
     WHERE T1.DELETED_AT IS NULL $1
     GROUP BY
     T1.UUID,
@@ -191,10 +202,12 @@ crud.load = async function(){
     crud.querys['issue']['upsert'] = crud.querys['issues']['upsert']
     crud.querys['issue']['create'] = crud.querys['issues']['create']
     crud.querys['issue']['update'] = crud.querys['issues']['update']
-
-
+    crud.querys['issue']['delete'] = crud.querys['issues']['delete']
 
     crud.querys['issue_actions']['read'] = `SELECT * FROM issue_actions t1 WHERE deleted_at IS NULL $1`
+
+    crud.querys['attachments']['read'] = `SELECT * FROM attachments T1 WHERE TRUE $1`
+    crud.querys['attachments']['delete'] = `DELETE FROM attachments WHERE uuid = $1`
     
     
 }
@@ -205,6 +218,27 @@ crud.make_query = {
 
         if(table_name == undefined) return '';
         let query = crud.querys[table_name]['read']
+
+        if(table_name == 'issues' && params['query']!= undefined)
+        {/*
+            let user_query = params['query'].toLowerCase()
+
+
+
+            let uuids_query = `WITH uuids AS (
+                SELECT DISTINCT issue_uuid 
+                FROM field_values FV
+                JOIN fields F
+                ON FV.field_uuid = F.uuid
+                WHERE `
+
+            
+                
+                (F.name = 'Название' AND FV.value  'aaa')
+                OR
+                (F.name = 'Описание' AND FV.value = 'b3')
+                )*/
+        }
 
         if(!params || params.length == 0) return query.replace('$1', '')
 
@@ -269,6 +303,11 @@ crud.make_query = {
         params.updated_at = 'NOW()'
 
         for(let i in params){
+            if(params[i] == author_field_uuid) return 'NOTHING'
+        }
+        
+
+        for(let i in params){
             if(columns[i] === undefined || i === 'created_at' ||  i === 'deleted_at' ||
              i === 'password' || i === 'token' || i === 'token_created_at') continue;
 
@@ -293,6 +332,24 @@ crud.make_query = {
 
         let query = query_create + ' ON CONFLICT(uuid) DO ' + query_update + ';'
 
+        if(table_name == 'issues' && params.num == undefined)
+        {
+            query += "UPDATE issues SET num = (SELECT COALESCE(MAX(num), 0) + 1 FROM oboz.issues WHERE project_uuid = '" + 
+            params.project_uuid + "') WHERE uuid = '" + params.uuid + "';";
+
+            query += `UPDATE issues SET status_uuid = (
+            SELECT IST.uuid 
+            FROM issue_types IT
+            JOIN workflow_nodes WN
+            ON WN.workflows_uuid = IT.workflow_uuid
+            JOIN issue_statuses IST
+            ON IST.uuid = WN.issue_statuses_uuid AND IST.is_start = TRUE
+            WHERE IT.uuid = '` + params.type_uuid + `'
+            LIMIT 1
+            ) WHERE uuid = '` + params.uuid + "';";
+        }
+
+        
         let subquerys = ''
         
         for(let i in params){
@@ -322,20 +379,7 @@ crud.make_query = {
 
         console.log('tntntntnttntnt', table_name)
 
-        if (table_name == 'issues')
-        {
-            let action_options = {
-                value: "",
-                issue_uuid: params.uuid,
-                author_uuid: params.author_uuid,
-                type_uuid: edited_type_uuid,
-                uuid: tools.uuidv4()
-            }
 
-            subquerys += '\r\n' + crud.make_query.create('issue_actions', action_options)
-
-            console.log('ssssssssssss', subquerys)
-        }
 
         return query + subquerys
     }
@@ -419,6 +463,34 @@ crud.do = async function(subdomain, method, table_name, params)
 
         if(data.rows.length > 0)
         {
+            if(table_name == 'issues' && data.rows[0].status_uuid != params.status_uuid)
+            {
+                let status_text = data.rows[0].status_name + '->' + params.status_name
+
+                let action_options = {
+                    value: status_text,
+                    issue_uuid: params.uuid,
+                    author_uuid: params.author_uuid,
+                    type_uuid: transition_type_uuid,
+                    uuid: tools.uuidv4()
+                }
+    
+                query += ';\r\n' + crud.make_query.create('issue_actions', action_options) + ';'
+                
+            }
+            else if (table_name == 'issues')
+            {
+                let action_options = {
+                    value: "",
+                    issue_uuid: params.uuid,
+                    author_uuid: params.author_uuid,
+                    type_uuid: edited_type_uuid,
+                    uuid: tools.uuidv4()
+                }
+
+                query += ';\r\n' + crud.make_query.create('issue_actions', action_options) + ';'
+            }
+
             let old_uuids = crud.get_uuids(data.rows[0])
 
             console.log('old_uuids', old_uuids)

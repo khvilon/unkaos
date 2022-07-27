@@ -1,6 +1,7 @@
 <script>
 	
 	import page_helper from '../page_helper.ts'
+	import query_parser from '../query_parser.ts'
 
 	import d from '../dict.ts'
 
@@ -17,6 +18,20 @@
 						return 'values.'+ i+'.value'
 					}
 				}
+			},
+			new_issue: function()
+			{
+				this.$router.push('/issue')
+			},
+			update_search_query: function(val)
+			{
+				this.search_query = val
+			},
+			search()
+			{
+				query_parser.parse(this.search_query, this.fields)
+
+
 			}
 		}
 
@@ -24,6 +39,7 @@
   {
     name: 'issues',
     label: 'Задачи',
+	search_query: '',
     collumns:[
 		{
 	        name: '№',
@@ -33,17 +49,26 @@
 	    },
 	  	{
 	    	name: d['Название'],
-	        id: "this.get_field_path_by_name('Название')",
+	        id: "values.Название",
 			search: true,
 	    },
-        {
-            name: d['Автор'],
-            id: "this.get_field_path_by_name('Автор')"
-        },
+		{
+	        name: 'Тип',
+	        id: "type_name"
+	    },
 		{
 	        name: 'Статус',
 	        id: "status_name"
 	    },
+		{
+	        name: 'Проект',
+	        id: "project_name"
+	    },
+		{
+            name: d['Автор'],
+            id: "values.Автор",
+			type:'user'
+        },
 	    {
 	        name: d['Создана'],
 	        id: "created_at",
@@ -56,7 +81,18 @@
 	    },
 	],
     inputs: [
-      
+		{
+			label: 'fields',
+			id: '',
+			dictionary: 'fields',
+			type: 'Select',
+		},
+		{
+			label: 'users',
+			id: '',
+			dictionary: 'users',
+			type: 'User',
+		},
     ]
   }
      
@@ -71,12 +107,31 @@
 <template ref='issues' >
 <div>
 	
-    <TopMenu 
-  		:buttons="buttons"
-  		:name="name"
-		:label="label"
-  		:collumns="search_collumns"
-    />
+    <div class='panel topbar'>
+		<div style="display: flex ; flex-direction:row; flex-grow: 1; max-height: calc(100% - 60px); ">
+		<span>{{ label }}</span>
+		<IssuesSearchInput
+		label=""
+		class='issue-search-input'
+		@update_parent_from_input="update_search_query"
+		:fields="fields"
+		>
+
+		</IssuesSearchInput>
+		<KButton 
+		name='bx-search-alt-2'
+		class='issue-search-input-btn'
+		@click="search()"
+		/>
+		
+
+		<KButton 
+		:name="'Создать'"
+		@click="new_issue"
+		/>
+			
+		</div>
+	</div>
 
     <div id=issues_down_panel class="panel">
 	
@@ -86,6 +141,7 @@
 					:collumns="collumns"
 					:table-data="issues"
 					:name="'issues'"
+					:dicts="{users: users}"
 				/>
 			</Transition>
 	  	</div>
@@ -122,4 +178,35 @@
   #issues_down_panel {
     display: flex;
   }
+
+  .issue-search-input textarea{
+	  padding: 0px !important;
+
+  }
+  .issue-search-input{
+	  padding: 0px !important;
+	  width: 50vw;
+  }
+  .issue-search-input-btn{
+	  padding: 0px;
+	  width: $input-height;
+  }
+  .issue-search-input-btn .btn_input{
+	  padding: 0px;
+	  border-top-left-radius: 0px !important;
+    border-bottom-left-radius: 0px !important;
+	margin-left: -$input-height;
+	width: $input-height !important;
+
+	border-top-width: 0px !important;
+	border-bottom-width: 2px !important;
+	border-left-color: $border-color !important;
+    border-top-color: $border-color !important;
+	//border-bottom-color: $border-color !important;
+
+  }
+  
+
+
+
 </style>

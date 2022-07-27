@@ -68,6 +68,8 @@
 
         this.resize()
 
+        this.$emit('update_parent_from_input', val)
+
         if(this.parent_name == undefined || this.parent_name == '') return;
 
         

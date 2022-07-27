@@ -105,6 +105,17 @@ async function init()
 
                 if(method!='read') params.author_uuid = user.uuid;
 
+                if(params.values != undefined)
+                {
+                    for(let i in params.values)
+                    {
+                        if(params.values[i].label == 'Автор' && params.values[i].value == '')
+                        {
+                            params.values[i].value = user.uuid
+                        }
+                    }
+                }
+
                 console.log('ppppppp', params)
 
 

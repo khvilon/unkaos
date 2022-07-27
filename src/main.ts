@@ -30,6 +30,15 @@ import WorkflowsEditor from './components/WorkflowsEditor.vue'
 import KTabPanel from './components/KTabPanel.vue'
 import KTab from './components/KTab.vue'
 
+import KAttachment from './components/KAttachment.vue'
+import KRelations from './components/KRelations.vue'
+
+
+import IssuesSearchInput from './components/IssuesSearchInput.vue'
+import KNewRelationModal from './components/KNewRelationModal.vue'
+
+
+
 
 const app = createApp(App);
  
@@ -56,6 +65,14 @@ app.component('WorkflowsEditor', WorkflowsEditor)
 
 app.component('KTabPanel', KTabPanel)
 app.component('KTab', KTab)
+
+app.component('KAttachment', KAttachment)
+app.component('KRelations', KRelations)
+
+
+app.component('IssuesSearchInput', IssuesSearchInput)
+
+app.component('KNewRelationModal', KNewRelationModal)
 
 
 app.mount('#app')

@@ -201,6 +201,8 @@ store_helper.create_module = function(name)
 
 		state.state['updated_' + name] = ans[0]
 		this.commit('update_' + name)
+
+		return ans
 	}
 	actions['update_' + name] = async function(state)
 	{
@@ -211,15 +213,15 @@ store_helper.create_module = function(name)
 
 		console.log('uuuuupdate', state.state['selected_' + name])
 
-		rest.run_method('update_' + name, state.state['selected_' + name])
+		return await rest.run_method('update_' + name, state.state['selected_' + name])
 	}
 	actions['save_' + name] = async function(state)
 	{
 		const is_new = state.state['selected_' + name] == undefined || state.state['selected_' + name].uuid == undefined || state.state['selected_' + name].is_new
 		console.log('is_new', is_new)
 		state.state['selected_' + name].is_new = false
-		if(is_new) this.dispatch('create_' + name)
-		else this.dispatch('update_' + name)
+		if(is_new) return this.dispatch('create_' + name)
+		return this.dispatch('update_' + name)
 	}
 	actions['delete_' + name] = async function(state)
 	{

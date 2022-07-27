@@ -126,6 +126,11 @@ export default
 		{
 			en: 'To contact the author you can use email n@khvilon.ru (Nikolas Khvilon)'
 		}
+		,
+		"Доски":
+		{
+			en: 'Boards'
+		}
 		
 
 

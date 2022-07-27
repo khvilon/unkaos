@@ -1,6 +1,7 @@
 <template>   
   <div class="btn">
-    <input class="btn_input" type="button" :value="name" @click="click(this)">
+    <input   v-if="name.substr(0,3) != 'bx-'"  class="btn_input" type="button" :value="name" @click="click(this)">
+    <i v-if="name.substr(0,3) == 'bx-'" :class="'btn_input bx ' + name"  @click="click(this)"></i>
   </div>
 </template>
 
@@ -21,15 +22,26 @@
       },
 
     },
+    emits: ['button_ans'],
     methods:
     {
-      click(btn){ if(this.func!=undefined && this.func!='')this.$store.dispatch(this.func); }
+        async click(btn) { 
+        if(this.func!=undefined && this.func!='')
+        {
+          let ans = await this.$store.dispatch(this.func);
+          //console.log('btn aaans', ans)
+          this.$emit('button_ans', ans)
+        }
+       }
     }
     
   }
 </script>
 
-<style>
+<style lang="scss">
+  @import '../css/palette.scss';
+  @import '../css/global.scss';
+
   .btn .btn_input
   {
     width: 200px;
@@ -44,6 +56,13 @@
     border-style: outset;
     cursor: pointer;
   }
+
+.btn i{
+  text-align: center;
+    line-height: $input-height;
+    font-size: 18px !important;
+}
+  
 
 
 

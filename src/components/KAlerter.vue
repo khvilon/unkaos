@@ -103,7 +103,7 @@
   
   .alert_error
   {
-    width: 100%;
+    width: 200px;
    // background-color: red !important; 
     margin-right: -110%;
     cursor: pointer;
