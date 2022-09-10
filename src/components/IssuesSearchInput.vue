@@ -1,8 +1,12 @@
 <template>   
   <div class="text">
     <div class="label">{{label}}</div>
-    <textarea ref="text_input" @focus="$emit('input_focus', true);is_in_focus=true;if(value=='')this.fill_suggestions(0)" @blur="$emit('input_focus', false);blur()"
-    class="text-input" :type="type"  v-model="value" :disabled="disabled" ></textarea>
+    <div contenteditable="" ref="issues_search_input" 
+    @focus="focus" @blur="$emit('input_focus', false);blur()"
+    @input="handleInput"
+    class="text-input" :type="type"   :disabled="disabled" 
+    v-html="get_html()"
+    ></div>
     <div ref="suggestion_area"  
     class="suggestion-area"
     v-show="is_in_focus"
@@ -20,6 +24,8 @@
 </template>
 
 <script>
+  import { nextTick } from 'vue'
+
   export default 
   {
 
@@ -70,7 +76,8 @@
         fields_and_attributes: [],
         value: '',
         str_start_idx: 0,
-        str_end_idx: 0
+        str_end_idx: 0,
+        position: 0
 
       }
     },
@@ -82,6 +89,88 @@
       //  this.$refs.text_input.style.height = "auto";
       //  this.$refs.text_input.style.height = `${this.$refs.text_input.scrollHeight+4}px`;
       },
+      get_html()
+      {
+        let chars = this.value.split('')
+        let html = ''
+        for(let i in chars)
+        {
+          if(chars[i] == ' ') chars[i] = '&nbsp;'
+          html += '<span class="issues-search-char char-' + i + '">' + chars[i] + '</span>'
+        }
+        
+        let pos0 = this.position
+        let pos1 = this.getCaretIndex(this.$refs.issues_search_input)
+        console.log(pos0, pos1)
+        if(pos0 > 0) this.setCaretIndex(this.$refs.issues_search_input, pos0)
+        
+        return html
+      },
+      getCaretIndex(element) {
+        let position = 0;
+        const isSupported = typeof window.getSelection !== "undefined";
+        if (isSupported) {
+          const selection = window.getSelection();
+          if (selection.rangeCount !== 0) {
+            const range = window.getSelection().getRangeAt(0);
+            const preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(element);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            position = preCaretRange.toString().length;
+          }
+        }
+        return position;
+      },
+      setCaretIndex(element, pos) {
+        const isSupported = typeof window.getSelection !== "undefined";
+         nextTick(() => {
+        if (isSupported) {
+              
+              console.log('popopo', pos-1)
+              const node = element.childNodes[pos-1]
+              if(node == undefined) return
+              const range = document.createRange()
+              range.setStart(node, 1)
+              range.setEnd(node, 1)
+
+              const selection = window.getSelection()
+              selection.removeAllRanges()
+              selection.addRange(range)          
+          }
+        });
+        
+      },
+      color_text(start_idx, end_idx, color)
+      {
+
+        for(let i = start_idx; i < end_idx; i++)
+        {
+          this.createClass('char-' + i, '{color: ' + color + '}')
+        }
+          
+      },
+      handleInput(e) 
+      {
+     
+          this.position = this.getCaretIndex(e.target)
+          console.log('pospos', e, this.position)
+          this.value = e.target.innerText.replace(' ', ' ')
+
+          if(this.value == undefined) return ''
+          this.convert_query(this.value)
+  
+    },
+
+    focus(e)
+    {
+      console.log('fff', e)
+      this.$emit('input_focus', true);
+      this.is_in_focus=true;
+      if(this.value=='') this.fill_suggestions(0)
+      
+
+      
+    },
 
       blur()
       {
@@ -123,134 +212,156 @@
         else if(waits_for_idx == 3)  this.suggestions = this.logic_operators
       },
 
+
+      
+
       use_suggestion(suggestion)
       {
-        console.log('use_suggestion')
+        console.log('use_suggestion', this.str_start_idx, this.str_end_idx)
+        if(this.str_start_idx > 0 && this.value[this.str_start_idx] != ' ') suggestion = ' ' + suggestion
+        suggestion += ' '
+        console.log('ssss', suggestion + '#')
         this.value = this.value.substring(0, this.str_start_idx) + suggestion + this.value.substring(this.str_end_idx+1)
+        this.position = this.str_start_idx + suggestion.length
+        console.log('ssss2', this.value + '#')
+        this.$refs.issues_search_input.focus();
+
+        nextTick(() => {
+          this.setCaretIndex(this.$refs.issues_search_input, this.position)
+
+           nextTick(() => {
+            this.convert_query(this.value)
+           })
+        })
+
+        
+
+        //this.color_text(this.$refs.issues_search_input, this.str_start_idx, this.str_start_idx + suggestion.length, 'red')        
       },
+
+      createClass(name,rules)
+      {
+        let style = document.getElementById(name)
+        if(!style) 
+        {
+          style = document.createElement('style');
+          style.id = name
+          style.type = 'text/css';
+          document.getElementsByTagName('head')[0].appendChild(style);  
+        }
+        
+        style.innerHTML = '.' + name + ' ' + rules;
+         
+        console.log(name)    
+      },
+
+
+      try_find_field(qd)
+      {
+        let found = false
+
+        for(let j in this.fields)
+        {
+          if(this.have_word_at(qd.query, this.fields[j].name, qd.i))
+          {
+            qd.converted_query += 'fields#' + this.fields[j].uuid + '#'
+            qd.i += this.fields[j].name.length-1
+            found = true;
+            break;
+          }
+        }
+
+        if (found) return found
+
+        for(let j in this.attributes)
+        {
+          if(this.have_word_at(qd.query, this.attributes[j], qd.i))
+          {
+            converted_query += 'attr#' + this.attributes[j] + '#'
+            i += this.attributes[j].length-1
+            qd.found_attr = true;
+            break;
+          }
+        }
+
+        return found
+      },
+
+      
 
       convert_query(query){
 
+
+
+        //query = query.substring(0, this.position)
+
         let waits_for_statuses = ['field', 'oper', 'val', 'logic']
-        let waits_for_idx = 0
+        let waits_for_idx = 0 
+
+        //query data
+        let qd = 
+        {
+          query: query,
+          i: 0,
+          converted_query: ''
+        }
 
         
         console.log('query', query, this.fields)
 
         let converted_query = ''
 
-        for(let i = 0; i < query.length; i++)
+        for(qd.i = 0; qd.i < query.length; qd.i++)
         {
-          if(query[i] == ' ') 
+          
+          console.log('aaaaaaaaaa', qd)
+
+          if(query[qd.i] == ' ') 
           {
-            if(i == query.length-1) this.fill_suggestions(waits_for_idx)
+            this.str_start_idx = i
+            this.end_idx = qd.query.length
+            if(i == qd.query.length-1) this.fill_suggestions(waits_for_idx)
             continue
           }
         
-
-          console.log('waits_for_idx', waits_for_idx, i)
+          console.log('waits_for_idx', waits_for_idx, qd.i)
 
           if(waits_for_idx == 0)
           {
-            let br = this.have_words_at(query, this.brackets, i)
+            let br = this.have_words_at(query, this.brackets, qd.i)
             if(br)
             {
-              converted_query += br
+              qd.converted_query += br
               continue
             }
 
-            let name
+            let found = this.try_find_field(qd)
 
-            let found_field = false
-            for(let j in this.fields)
-            {
-              if(this.have_word_at(query, this.fields[j].name, i))
-              {
-                converted_query += 'fields#' + this.fields[j].uuid + '#'
-                name = this.fields[j].name
-                i += name.length-1
-                found_field = true;
-                console.log('conv query', converted_query)
-                break;
-              }
-            }
-            if(found_field)
+            if(found)
             {
               waits_for_idx = 1
-              this.fill_suggestions(waits_for_idx)
-              //console.log('waits_for_idx', waits_for_idx, i)
-              continue
-            }
-
-            let found_attr = false
-            for(let j in this.attributes)
-            {
-              if(this.have_word_at(query, this.attributes[j], i))
-              {
-                converted_query += 'attr#' + this.attributes[j] + '#'
-                name = this.attributes[j]
-                i += name.length-1
-                found_attr = true;
-                console.log('conv query', converted_query)
-                break;
-              }
-            }
-            if(found_attr)
-            {
-              waits_for_idx = 1
-              this.fill_suggestions(waits_for_idx)
-              continue
-            }
-
-            
-            name = query.substr(i, query.length-i)
-            this.str_start_idx = i
-            this.str_end_idx = query.length
-            console.log('field not found', name, converted_query)
-          
-            this.fill_suggestions(waits_for_idx)
-
-
-            this.suggestions = this.suggestions.filter((elem)=>elem.includes(name))
-            return
-            
-
-
-          }
-          else if(waits_for_idx == 2)
-          {
-            let end_idx
-            if( query[i] == "'")
-            {
-              i++
-              end_idx = query.indexOf("'", i)
-              if(end_idx < 0)
-              {
-                console.log('string value end not found', converted_query)
-                return 
-              }
+              this.color_text(this.str_start_idx, qd.i+1, 'green')
+              this.str_start_idx = qd.i+1
+              this.str_end_idx = qd.i+1
             }
             else
             {
-              if(query.indexOf(' ', i) > 0) end_idx = query.indexOf(' ', i)
-              else if(query.indexOf(')', i) > 0) end_idx = query.indexOf(')', i)
-              
+              this.str_start_idx = qd.i
+              this.str_end_idx = qd.query.length
+              let name = query.substr(qd.i, qd.query.length-qd.i)
+              this.fill_suggestions(waits_for_idx)
+              this.suggestions = this.suggestions.filter((elem)=>elem.includes(name))
+              console.log('field not found', name, qd.converted_query)
+              this.color_text(this.str_start_idx, this.str_end_idx, 'red')
+              return
             }
-
-            if(end_idx == undefined) end_idx = query.length-1;
-            else waits_for_idx = 3
-            
-            let len = end_idx - i
-            let val = query.substr(i, len)
-
-            i+=len
-            converted_query += val
           }
           else if(waits_for_idx == 1)
           {
             let found_oper = false
             for(let j in this.operations)
             {
+              console.log('opoper', query, i)
               if(this.have_word_at(query, this.operations[j], i))
               {
                 converted_query += this.operations[j]
@@ -259,20 +370,67 @@
                 break;
               }
             }
+
+
             if(found_oper)
             {
-              waits_for_idx = 2
-              this.fill_suggestions(waits_for_idx)
-              continue
+                waits_for_idx = 2
+                console.log('draw y', this.str_start_idx, i)
+                this.color_text(this.str_start_idx, i+1, 'yellow')
+                this.str_start_idx = i+1
+                this.str_end_idx = i+1
+                this.fill_suggestions(2)
             }
-
-            console.log('operation not found', converted_query)
-            this.str_start_idx = i
-            this.str_end_idx = query.length-1
-            this.fill_suggestions(1)
-            return
+            else
+            {
+              console.log('operation not found', converted_query)
+              this.str_start_idx = i
+              this.str_end_idx = query.length-1
+              this.fill_suggestions(1)
+              return
+            }
             
           }
+          else if(waits_for_idx == 2)
+          {
+            let end_idx = -1
+
+            if( query[i] == "'") end_idx = query.indexOf("'", i+1)
+            else
+            {
+              let end_idx0 =  query.indexOf(' ', i)
+              let end_idx1 =  query.indexOf(')', i)
+              if(end_idx0 > 0 && end_idx1 > 0) end_idx = Math.min(end_idx0, end_idx1)
+              else if(end_idx0 > 0) end_idx = end_idx0
+              else if(end_idx1 > 0) end_idx = end_idx1
+            }
+
+            console.log('end_idx', end_idx)
+
+            if(end_idx > 0)
+            {
+              let val = query.substring(i, end_idx)
+              converted_query += val
+              console.log('value finalised', converted_query)
+              this.color_text(i, end_idx+1, 'blue')
+              waits_for_idx = 3
+              this.fill_suggestions(waits_for_idx)
+              this.suggestions = this.suggestions.filter((elem)=>elem.includes(name))
+              i+= val.length +1
+              this.str_start_idx = i+1;
+              this.str_end_idx = i+1;
+              
+            }
+            else
+            {
+              console.log('value not finalised', converted_query)
+              this.color_text(i, query.length, 'red')
+              return
+            }
+            
+
+          }
+          
           else if(waits_for_idx == 3)
           {
             let found_oper = false
@@ -291,18 +449,27 @@
             {
               waits_for_idx = 0
               this.fill_suggestions(waits_for_idx)
+
+              console.log('oper found', converted_query)
+              this.color_text(i, end_idx+1, 'orange')
+
+              this.fill_suggestions(waits_for_idx)
+              this.suggestions = this.suggestions.filter((elem)=>elem.includes(name))
+              this.str_start_idx = i+1;
+              this.str_end_idx = i+1;
               continue
             }
-
-            this.str_start_idx = i
-            this.str_end_idx = query.length-1
-            this.fill_suggestions(3)
-            return
+            else
+            {
+              this.fill_suggestions(waits_for_idx)
+              return
+            }
+            
           }
 
       }
 
-      this.fill_suggestions(waits_for_idx)
+      //this.fill_suggestions(waits_for_idx)
 
       console.log('convvvvvvvvvvv query', converted_query)
     }
@@ -313,7 +480,7 @@
     mounted() {
       this.resize();
     },
-    
+   /* 
     watch: {
       value: function(val, oldVal) {
        // console.log(val, oldVal, this.id, this.parent_name)
@@ -329,7 +496,7 @@
         
         this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
       }
-    }
+    }*/
   }
 </script>
 
@@ -337,6 +504,12 @@
 
 @import '../css/palette.scss';
 @import '../css/global.scss';
+
+  .issues-search-char
+  {
+    margin: 0px !important;
+    font-size: 15px !important;
+  }
 
   .text .text-input
   {

@@ -13,6 +13,7 @@ import PageLanding from '../views/PageLanding.vue'
 import PageConfigs from '../views/PageConfigs.vue'
 import PageDashboards from '../views/PageDashboards.vue'
 import PageBoards from '../views/PageBoards.vue'
+import PageBoard from '../views/PageBoard.vue'
 import PageNotifications from '../views/PageNotifications.vue'
 import PageRoles from '../views/PageRoles.vue'
 
@@ -41,6 +42,7 @@ const router = createRouter({
 	{ path: '/configs/fields', component: PageFields },
 	{ path: '/configs', component: PageConfigs },
 	{ path: '/issue/:id', component: PageIssue, props: true },
+	{ path: '/board/:uuid', component: PageBoard, props: true },
 	{ path: '/issue/', component: PageIssue }
 /*	{
 		path: "/:catchAll(.*)",

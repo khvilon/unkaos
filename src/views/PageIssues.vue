@@ -45,7 +45,9 @@
 	        name: '№',
 	        id: ["project_short_name","'-'", "num"],
 			search: true,
-			type: 'link'
+			type: 'link',
+			link: '/issue/' ,
+			link_id: ["project_short_name","'-'", "num"]
 	    },
 	  	{
 	    	name: d['Название'],

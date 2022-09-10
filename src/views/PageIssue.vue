@@ -16,8 +16,7 @@
 					this.issue[0].values[i].idx = i
 					return this.issue[0].values[i]
 				}
-			}
-			
+			}	
 		},
 		get_fields_exclude_names: function(names)
 		{

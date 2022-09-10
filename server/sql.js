@@ -50,6 +50,7 @@
 
     sql.query = async function(subdomain, query)
     {
+        
         if(pools[subdomain] == undefined) return null
         return await pools[subdomain].query(query)
     }

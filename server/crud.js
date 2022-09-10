@@ -208,6 +208,14 @@ crud.load = async function(){
 
     crud.querys['attachments']['read'] = `SELECT * FROM attachments T1 WHERE TRUE $1`
     crud.querys['attachments']['delete'] = `DELETE FROM attachments WHERE uuid = $1`
+
+
+    crud.querys['board'] = {}
+    crud.querys['board']['read'] = crud.querys['boards']['read']
+    crud.querys['board']['upsert'] = crud.querys['boards']['upsert']
+    crud.querys['board']['create'] = crud.querys['boards']['create']
+    crud.querys['board']['update'] = crud.querys['boards']['update']
+    crud.querys['board']['delete'] = crud.querys['boards']['delete']
     
     
 }
@@ -446,6 +454,8 @@ crud.get_uuids = function(obj)
 crud.do = async function(subdomain, method, table_name, params)
 {
     if(table_name == 'issue') table_name = 'issues'
+    else if(table_name == 'board') table_name = 'boards'
+    else if(table_name == 'dashboard') table_name = 'dashboards'
     let query = crud.get_query(method, table_name, params)
 
     console.log('paraaaaaaaaaaaaaaaaaaaaaams', params)
@@ -526,6 +536,8 @@ crud.do = async function(subdomain, method, table_name, params)
         }   
     }
 
+    while(query.indexOf('null') > -1) query = query.replace("'null'", 'NULL')
+    
     console.log('qqqqq', subdomain, query)
     let ans = await sql.query(subdomain, query)
 
