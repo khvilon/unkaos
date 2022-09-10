@@ -170,9 +170,14 @@
     font-weight: 400;
     border-radius: 6px;
     transition: all 0.5s ease;
-    background: var(--secondary-color);
+    //background: var(--secondary-color);
     margin-left:10px;
     height: $input-height;
+  }
+
+  .search-input
+  {
+    background: var(--secondary-color);
   }
  
   .topbar span

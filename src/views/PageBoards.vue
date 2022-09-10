@@ -10,7 +10,10 @@
       {
         name: 'Название',
         id: "name",
-        search: true
+        search: true,
+        type: 'link',
+        link: '/board/' ,
+			  link_id: "uuid"
       },
       {
         name: 'Автор',

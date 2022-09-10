@@ -29,19 +29,19 @@
           >
             <span v-if="collumn.type!='link'"  v-html="format_val(row, collumn)"></span>
             <router-link v-if="collumn.type=='link'" 
-            :to="'/issue/'+get_json_val(row, collumn.id)" tag="li">{{get_json_val(row, collumn.id)}}
+            :to="collumn.link + get_json_val(row, collumn.link_id)" tag="li">{{get_json_val(row, collumn.id)}}
             </router-link>
           </td>     
         </tr>
       </tbody>
     </table>
 
-
   </div>
 </template>
 
 <script>
   import tools from '../tools.ts';
+//"'/issue/'+get_json_val(row, collumn.id)"
 
   export default 
   {

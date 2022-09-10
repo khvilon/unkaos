@@ -113,6 +113,7 @@ page_helper.create_module = async function(data, methods)
 		//store.state['common']['is_router_view_visible'] = false
 		let params
 
+		console.log('thisthis', this)
 		if(this.id != undefined && this.id != '')
 		{
 			let [proj_short, num] = this.id.split('-')
@@ -120,6 +121,12 @@ page_helper.create_module = async function(data, methods)
 			let proj = await rest.run_method('read_projects', {short_name: proj_short})
 
 			params = {project_uuid: proj[0].uuid, num: num}
+		}
+		else if(this.uuid != undefined && this.uuid != '')
+		{
+			console.log('thisthis uuuuuuiiiiid', this.uuid)
+
+			params = {uuid: this.uuid} 
 		}
 
 		await register_store_module_if_not_exists(this.name, params)
@@ -190,12 +197,12 @@ page_helper.create_module = async function(data, methods)
 		//this.$forceUpdate()
   	}
 
-	  const mounted = function() {
+	 /* const mounted = function() {
 		//this.$forceUpdate()
 		console.log('meee 555555 Mounted!')
 		this.visible = true
 		store.state['common']['is_router_view_visible'] = true
-	  }
+	  }*/
 	  
 
 	if(methods == undefined) methods = {}
@@ -203,7 +210,7 @@ page_helper.create_module = async function(data, methods)
 
 	return {
     	created,
-		mounted,
+		//mounted,
 		beforeUnmount,
 		data:function(){return data},
     	beforeCreate,

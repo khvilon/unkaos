@@ -11,7 +11,7 @@ data_model.querys =
     GRANT USAGE ON SCHEMA "$1" to "$1";
     ALTER ROLE $1 SET search_path = $1;
     `
-    ,
+    
 }
 
 admin.add_user = async function()
