@@ -52,7 +52,18 @@
     {
         
         if(pools[subdomain] == undefined) return null
-        return await pools[subdomain].query(query)
+        console.log('q', query)
+        let ans
+        try{
+            ans = await pools[subdomain].query(query)
+        }
+        catch(e)
+        {
+            console.log('sql error', e)
+            ans = {error: 'Ошибка запроса в БД', http_code: 400}
+        }
+        
+        return ans
     }
 
 
