@@ -10,13 +10,15 @@ var security = require('./security')
 const cors = require('cors');
 const express = require('express');
 var tools = require('./tools')
+var mail = require('./mail')
 const app = express()
 const port = 3001
 
 const comment_type_uuid = 'f53d8ecc-c26e-4909-a070-5c33e6f7a196'
 
 
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
+//const { user } = require('./mail');
 
 const dict =
 {
@@ -58,6 +60,77 @@ async function init()
         
         res.send(ans)
     })
+
+    app.post('/upsert_password', async (req, res) => {   
+        let subdomain = req.headers.subdomain
+        let params = req.body
+
+        let token = req.headers.token
+
+        user = await security.check_token(subdomain, token)
+
+        if(user == null)
+        {
+            res.status(401);
+            res.send({message: 'wrong token'});
+            return
+        }
+
+        if(user.uuid != params.uuid)
+        {
+            es.status(403);
+            res.send({message: 'you dont have permission to change other users password'});
+            return
+        }
+        
+        await security.set_password(subdomain, params.uuid, params.password)
+        
+        res.send('done')
+    })
+
+    app.post('/upsert_password_rand', async (req, res) => {   
+        let subdomain = req.headers.subdomain
+        let params = req.body
+
+        let token = req.headers.token
+
+        let user = await security.check_token(subdomain, token)
+
+        if(user == null)
+        {
+            res.status(401);
+            res.send({message: 'wrong token'});
+            return
+        }
+
+        if(false) //todo check admin role
+        {
+            es.status(403);
+            res.send({message: 'you dont have permission to change other users password if you are not an Admin'});
+            return
+        }
+
+        const pass_chars = "0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const pass_len = 12;
+
+        let password = ''
+
+        for (var i = 0; i <= pass_len; i++) 
+        {
+            let rand_num = Math.floor(Math.random() * pass_chars.length);
+            password += pass_chars.substring(rand_num, rand_num +1);
+        }
+        
+        await security.set_password(subdomain, params.uuid, password)
+
+        
+
+        mail.send('n@khvilon.ru', 'new pass', 'your new pass is ' + password, '')
+        
+        res.send('done')
+    })
+
+    
 
     for(let table in crud.querys)
     {
@@ -121,6 +194,12 @@ async function init()
 
                 let ans = await crud.do(subdomain, method, table_name, params)
 
+                
+                if(ans.rows == undefined)
+                {
+                    res.status(ans.http_code != undefined ? ans.http_code : '400');
+                } 
+
                 res.send(ans)
             })
         }
@@ -130,6 +209,8 @@ async function init()
     {
         console.log(`Server running on port ${port}`)
     })
+
+    
 
 }
     

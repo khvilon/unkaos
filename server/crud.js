@@ -8,6 +8,8 @@ const edited_type_uuid = '1ff12964-4f5c-4be9-8fe3-f3d9a7225300'
 const transition_type_uuid = '4d7d3265-806b-492a-b6c1-636e1fa653a9'
 const author_field_uuid = '733f669a-9584-4469-a41b-544e25b8d91a'
 
+const atob = require('atob');
+
 const uuid_length = edited_type_uuid.length
 
 
@@ -216,6 +218,8 @@ crud.load = async function(){
     crud.querys['board']['create'] = crud.querys['boards']['create']
     crud.querys['board']['update'] = crud.querys['boards']['update']
     crud.querys['board']['delete'] = crud.querys['boards']['delete']
+
+   
     
     
 }
@@ -227,25 +231,49 @@ crud.make_query = {
         if(table_name == undefined) return '';
         let query = crud.querys[table_name]['read']
 
-        if(table_name == 'issues' && params['query']!= undefined)
-        {/*
-            let user_query = params['query'].toLowerCase()
+        if(table_name == 'issues' && params['query']!= undefined && params['query']!= '')
+        {
+            let user_query = decodeURIComponent(atob( (params['query'])))
 
-
+            console.log('user_query', user_query)
 
             let uuids_query = `WITH uuids AS (
                 SELECT DISTINCT issue_uuid 
                 FROM field_values FV
                 JOIN fields F
                 ON FV.field_uuid = F.uuid
+                JOIN issues I
+                ON FV.issue_uuid = I.uuid
                 WHERE `
 
-            
-                
+                //"fields#733f669a-9584-4469-a41b-544e25b8d91a#='Х'andfields#247e7f58-5c9b-4a31-9c27-5d1d4c84669f#='ШС'"
+
+                while(user_query.indexOf('fields#') > -1)
+                {
+                    user_query = user_query.replace('fields#', "(F.uuid = '" )
+                    user_query = user_query.replace('#', "' AND FV.value" )
+                    user_query = user_query.replace('#', ")" )
+                }
+                while(user_query.indexOf('attr#') > -1)
+                {
+                    user_query = user_query.replace('attr#', "I." )
+                    user_query = user_query.replace('#', "" )
+                    user_query = user_query.replace('#', "" )
+                }
+
+
+                query = uuids_query + user_query + ')' + query.replace('$1', 'AND T1.uuid in (SELECT issue_uuid FROM uuids) $1')
+
+                console.log('qq w f', query)
+               
+
+               /* 
                 (F.name = 'Название' AND FV.value  'aaa')
                 OR
                 (F.name = 'Описание' AND FV.value = 'b3')
                 )*/
+
+                delete params['query']
         }
 
         if(!params || params.length == 0) return query.replace('$1', '')

@@ -1,6 +1,7 @@
 <script>
 
 	import page_helper from '../page_helper.ts'
+	import rest from '../rest.ts'
 
 
 	const data = 
@@ -76,6 +77,21 @@
      
   const mod = await page_helper.create_module(data)
 
+  mod.methods.is_this_user = function()
+  {
+	let user = JSON.parse(localStorage.profile)
+	return (this.selected_users.uuid == user.uuid)
+  }
+
+  mod.methods.change_password = function()
+  {
+	  if(this.selected_users == undefined || this.selected_users.uuid == undefined ) return
+	rest.run_method('update_password_rand', {uuid: this.selected_users.uuid})
+  }
+
+
+  
+
 	export default mod
 
 
@@ -104,7 +120,7 @@
 	    	/>
 			</Transition>
 	  	</div>
-	  	<div id="users_card" class="panel" v-if="visible">
+	  	<div id="users_card" class="panel">
 		  	
 	  		<component v-bind:is="input.type + 'Input'"
 	  			v-for="(input, index) in inputs"
@@ -115,6 +131,17 @@
 	  			:parent_name="'users'"
 	  			:disabled="input.disabled"
 	  		></component>
+			<div class="change-pass-div" v-if="is_this_user()">
+				<StringInput label="Пароль"></StringInput>
+				<KButton
+			  			:name="'Изменить'"
+			  	/>
+				  
+			</div>
+			<KButton class="change-password"
+			  			:name="'Сбросить пароль'"
+						  @click="change_password()"
+			  	/>
 	  		<div id="users_card_footer_div"  class="footer_div">
 	  			<div id="users_card_infooter_div">
 			  		<KButton
@@ -175,6 +202,29 @@
 
   #users_down_panel {
     display: flex;
+  }
+
+  .change-pass-div
+  {
+	  display: flex;
+	  flex-direction: row;
+  }
+
+  .change-pass-div .btn
+  {
+	  padding-top: 32px;
+	  padding-right: 20px;
+	  //width: 100px;
+  }
+
+  .change-password 
+  {
+	padding: 10px 20px 10px 20px;
+	width: 100%;
+  }
+  .change-password .btn_input
+  {
+	width: 100% !important;
   }
 
 </style>

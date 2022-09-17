@@ -218,6 +218,21 @@
 					this.$store.state['issue']['selected_issue'].attachments.splice(i, 1)
 			}
 			let ans = await rest.run_method('delete_attachments', att)
+		},
+		get_available_values: function(field_uuid)
+		{
+			console.log('get_available_values', field_uuid)
+
+			for(let i in this.fields)
+			{
+				if(this.fields[i].uuid == field_uuid)
+				{
+					if(this.fields[i].available_values == undefined) return
+					let available_values = this.fields[i].available_values.split(',').map((v) => v.replace('\n', '').replace('\r', '').trim())
+					return available_values
+				}
+			}
+			return [1,2,3,6]
 		}
 
 	}
@@ -248,6 +263,13 @@
 			label: 'Проекты',
 			id: 'project_uuid',
 			dictionary: 'projects',
+			type: 'Select',
+			clearable:"false"
+		},
+		{
+			label: 'Поля',
+			id: 'field_uuid',
+			dictionary: 'fields',
 			type: 'Select',
 			clearable:"false"
 		}
@@ -572,6 +594,7 @@
 	  			:value="input.value"
 	  			:parent_name="'issue'"
 	  			:disabled="input.disabled"
+				:values="get_available_values(input.field_uuid)"
 	  		></component>
 
 			
@@ -661,7 +684,8 @@
   #issue_card {
     width:  $card-width;
     margin-left: 0px;
-    display: table;
+	display: flex;
+    flex-direction: column;
   }
 
   
@@ -764,6 +788,7 @@
 #issue_card_infooter_div
 {
 	width: $card-width;
+	position: relative !important;
 }
 
 	#issue_card_scroller

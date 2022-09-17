@@ -39,6 +39,7 @@
         dictionary: 'field_types',
         type: 'Select',
         clearable: false,
+        disabled: false
         
       },
       {
@@ -53,7 +54,12 @@
         type: 'Date',
         disabled: true
       }
-    ]
+    ],
+    instance: 
+      {
+        is_custom: true,
+        
+      }
   }
      
   const mod = await page_helper.create_module(data)
@@ -122,8 +128,8 @@
         <TextInput
           v-if="selected_fields.type != undefined && selected_fields.type[0].code == 'Select'"
           label="Список значений"
-          id="values"
-          :value="get_json_val(selected_fields, 'values')"
+          id="available_values"
+          :value="get_json_val(selected_fields, 'available_values')"
           :parent_name="'fields'"
         ></TextInput>
         <div id="fields_card_footer_div" class="footer_div">

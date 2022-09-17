@@ -23,7 +23,11 @@
     	{
 			let token = await rest.get_token(this.user_name, this.pass)
 
-			if(token == null) console.log('wrong email or pass')
+			if(token == null) 
+			{
+				console.log('wrong email or pass')
+				this.wrong = true
+			}
 			else
 			{
 				//localStorage.user_token = token
@@ -43,7 +47,7 @@
 
 	login_page.data= function()
   	{
-    	return {label, user_name, pass}
+    	return {label, user_name, pass, wrong: false}
     } 
 
 	login_page.components =
@@ -71,10 +75,12 @@
 		v-on:update_parent_from_input="update_pass"
 		:type="'password'"
     />
+	
 	<KButton 
   		:name="label.login_button_label"
 		@click="login()"
     />
+	<span v-show="wrong" class="wrong-pass-label">Неправильный логин или пароль</span>
 	</div>
 </template>
 
@@ -100,6 +106,13 @@
 	.login-panel .btn Input
 	{
 		width: 100%;
+	}
+
+	.wrong-pass-label
+	{
+		color: rgb(124, 0, 0);
+		padding: 10px 20px 10px 20px;
+		height: 20px;
 	}
 
 

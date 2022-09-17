@@ -9,13 +9,17 @@
 	console.log('d', d['Название'],d)
 
 	let methods = {
-		get_issues: async function(qyery)
+		get_issues: async function(query)
 			{
-				this.issues = await rest.run_method('read_issues')
+
+				console.log('get issues with query ', query)
+				let options = {}
+				if(query != undefined && query != '') options.query = query
+				this.issues = await rest.run_method('read_issues', options)
 			},
 			filtered_issues: function(status_uuid)
 			{
-				return this.issues.filter(issue => issue.status_uuid == status_uuid);
+				return this.issues != undefined ? this.issues.filter(issue => issue.status_uuid == status_uuid) : [];
 			},
 			
 			update_search_query: function(val)
@@ -146,6 +150,17 @@
 			id: '',
 			dictionary: 'issue_statuses',
 			type: 'User',
+		}
+		,
+		{
+			label: 'projects',
+			id: '',
+			dictionary: 'projects'
+		},
+		{
+			label: 'issue_types',
+			id: '',
+			dictionary: 'issue_types'
 		},
     ]
   }
@@ -179,14 +194,15 @@
 		class='issue-search-input'
 		@update_parent_from_input="update_search_query"
 		:fields="fields"
+		@search_issues="get_issues"
+		:projects="projects"
+		:issue_statuses="issue_statuses"
+		:issue_types="issue_types"
+		:users="users"
 		>
 
 		</IssuesSearchInput>
-		<KButton 
-		name='bx-search-alt-2'
-		class='issue-search-input-btn'
-		@click="search()"
-		/>
+		
 		
 	
 		</div>
@@ -357,12 +373,12 @@
   }
   .issue-card-title
   {
-	  height: 20px;
+	  height: 40px;
   }
 
   .issue-card-description
   {
-	  height: 100px;
+	  height: 80px;
 	  border-top-color: $table-row-color;
 	  border-bottom-color: $table-row-color;
 	  border-top-width: 2px;

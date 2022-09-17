@@ -4,11 +4,13 @@
   "description": "server side for the unkaos task tracker project, connecting Vue client to the postgresql db",
   "main": "app.js",
   "dependencies": {
+    "atob": "^2.1.2",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
     "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
     "node-fetch": "^2.6.7",
+    "nodemailer": "^6.7.8",
     "passport-auth-token": "^1.0.1",
     "pg": "^8.7.3",
     "request": "^2.88.0"

@@ -365,7 +365,9 @@ $loading-bar-width: 200vw;
 
 .footer_div
 {
-  position: absolute;
+  //position: absolute;
+  padding-top: 5px;
+
   bottom: 0px;
   //display: table-footer-group;
 }

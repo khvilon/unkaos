@@ -95,6 +95,8 @@ store_helper.create_module = function(name)
 	}
 	mutations['id_push_update_' + name] = function(state, data)
 	{
+		console.log('treert', name, data)
+		
 		tools.obj_set_val(state['selected_' + name], data.id, data.val)
 	}
 	mutations['create_' + name] = function(state, data)

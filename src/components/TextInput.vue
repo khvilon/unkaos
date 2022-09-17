@@ -56,7 +56,7 @@
       },
     },
     updated() {
-      this.resize();
+      //this.resize();
     },
     mounted() {
       this.resize();
@@ -64,7 +64,7 @@
     
     watch: {
       value: function(val, oldVal) {
-       // console.log(val, oldVal, this.id, this.parent_name)
+        console.log(val, oldVal, this.id, this.parent_name)
 
         this.resize()
 
