@@ -81,11 +81,11 @@
     top: 0px; 
     padding: 7px;
     
-    z-index: 1001;
+    z-index: 1;
     display: block;
     align-items: center;
     color: white;
-    width:  300px;
+    width:  auto;
   }
  
   .profile img {

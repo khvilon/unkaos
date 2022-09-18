@@ -8,6 +8,8 @@ const edited_type_uuid = '1ff12964-4f5c-4be9-8fe3-f3d9a7225300'
 const transition_type_uuid = '4d7d3265-806b-492a-b6c1-636e1fa653a9'
 const author_field_uuid = '733f669a-9584-4469-a41b-544e25b8d91a'
 
+const select_limit = 100
+
 const atob = require('atob');
 
 const uuid_length = edited_type_uuid.length
@@ -196,8 +198,9 @@ crud.load = async function(){
     PROJECT_SHORT_NAME,
     T1.STATUS_UUID,
     T17.NAME,
-    T11.WORKFLOW_UUID
-    `
+    T11.WORKFLOW_UUID 
+    LIMIT 
+    ` + select_limit
 
     crud.querys['issue'] = {}
     crud.querys['issue']['read'] = crud.querys['issues']['read']
@@ -235,7 +238,7 @@ crud.make_query = {
         {
             let user_query = decodeURIComponent(atob( (params['query'])))
 
-            console.log('user_query', user_query)
+            //console.log('user_query', user_query)
 
             let uuids_query = `WITH uuids AS (
                 SELECT DISTINCT issue_uuid 
@@ -250,21 +253,23 @@ crud.make_query = {
 
                 while(user_query.indexOf('fields#') > -1)
                 {
-                    user_query = user_query.replace('fields#', "(F.uuid = '" )
-                    user_query = user_query.replace('#', "' AND FV.value" )
-                    user_query = user_query.replace('#', ")" )
+                    let start = user_query.indexOf('fields#')
+                    user_query = user_query.replaceFrom('fields#', "(F.uuid = '", start )
+                    user_query = user_query.replaceFrom('#', "' AND FV.value" , start )
+                    user_query = user_query.replaceFrom('#', ")" , start )
                 }
                 while(user_query.indexOf('attr#') > -1)
                 {
-                    user_query = user_query.replace('attr#', "I." )
-                    user_query = user_query.replace('#', "" )
-                    user_query = user_query.replace('#', "" )
+                    let start = user_query.indexOf('attr#')
+                    user_query = user_query.replaceFrom('attr#', "I." , start )
+                    user_query = user_query.replaceFrom('#', "" , start )
+                    user_query = user_query.replaceFrom('#', "" , start )
                 }
 
 
                 query = uuids_query + user_query + ')' + query.replace('$1', 'AND T1.uuid in (SELECT issue_uuid FROM uuids) $1')
 
-                console.log('qq w f', query)
+               // console.log('qq w f', query)
                
 
                /* 
@@ -280,7 +285,12 @@ crud.make_query = {
 
         let where = ''
         for(let i in params){
-            where = 'AND t1.' + i + "='" + params[i] + "'"
+            if(i == 'offset')
+            {
+                query += ' OFFSET ' + params[i]
+                continue
+            } 
+            where += 'AND t1.' + i + "='" + params[i] + "'"
         }
         return query.replace('$1', where)
     },
@@ -314,7 +324,7 @@ crud.make_query = {
             if(keys != ''){keys += ', '; values += ', '}
 
             keys += i
-            values += "'" + params[i] + "'"
+            values += "'" + params[i].toString().replaceAll("'", "`") + "'"
         }
 
         query = query.replace('$1',  keys)
@@ -352,7 +362,7 @@ crud.make_query = {
 
             if(set != '') set += ', '
 
-            set += i + "='" + params[i] + "'"
+            set += i + "='" + params[i].toString().replaceAll("'", "`") + "'"
         }
 
         query = query.replace('$2', set)
@@ -390,7 +400,7 @@ crud.make_query = {
         
         for(let i in params){
 
-            //console.log('ccc1', params[i], typeof params[i])
+           // console.log('ccc1', params[i], typeof params[i])
 
 
             if(!params[i] || params[i][0] === undefined || typeof params[i][0] !== 'object') 
@@ -413,7 +423,7 @@ crud.make_query = {
 
 
 
-        console.log('tntntntnttntnt', table_name)
+      //  console.log('tntntntnttntnt', table_name)
 
 
 
@@ -564,9 +574,12 @@ crud.do = async function(subdomain, method, table_name, params)
         }   
     }
 
-    while(query.indexOf('null') > -1) query = query.replace("'null'", 'NULL')
+
+    console.log('before while')
+    while(query.indexOf("'null'") > -1) query = query.replace("'null'", 'NULL')
+    while(query.indexOf('null') > -1) query = query.replace('null', 'NULL')
     
-    console.log('qqqqq', subdomain, query)
+    //console.log('qqqqq', subdomain, query)
     let ans = await sql.query(subdomain, query)
 
     if(ans != null && ans[1] != undefined) ans = ans[ans.length-1]

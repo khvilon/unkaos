@@ -40,9 +40,20 @@ String.prototype.contains = function(substr)
 String.prototype.replaceAll = function(old_substr, new_substr)
 {
     let str = this
-    while(str.contains(old_substr)) str = str.replace(old_substr, new_substr)
-
+    console.log('while replaceAll', str)
+    str_parts = str.split(old_substr)
+    console.log('while replaceAll2', str_parts)
+    str = str_parts.join(new_substr)
+    console.log('while replaceAll3', str)
+    
     return str
+}
+
+String.prototype.replaceFrom = function(old_substr, new_substr, start)
+{
+    let str = this
+    if(start == undefined) start = 0
+    return str.substring(0, start) + str.substring(start).replace(old_substr, new_substr)
 }
 
 
@@ -61,6 +72,22 @@ tools.uuidv4 = function() {
         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
   }
+
+  const dt_options = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    timezone: 'Moscow',
+    hour12: false,
+    hour: '2-digit', minute:'2-digit'
+  };
+  
+  tools.format_dt = function(dt)
+  {
+    return new Date(dt).toLocaleString("ru", dt_options)
+  }
+
+ 
 
 
 module.exports = tools

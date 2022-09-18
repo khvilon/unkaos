@@ -315,6 +315,7 @@
 $loading-bar-width: 200vw;
 
 
+
   .loading-background {
    // display: none;
   position: absolute;
@@ -409,6 +410,30 @@ $loading-bar-width: 200vw;
   left: 0;
 }
 
+
+.modal
+{
+  height: 100%;
+}
+
+.btn-container
+{
+  display: flex;
+  padding: 10px 20px 10px 20px;
+  bottom: 0px;
+    position: fixed;
+    width: -webkit-fill-available;
+}
+
+.btn-container .btn
+{
+  width: 50%;
+}
+
+.btn-container .btn input
+{
+  width: 100%;
+}
 
 
 
