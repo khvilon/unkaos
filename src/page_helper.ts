@@ -43,6 +43,8 @@ const register_store_module_if_not_exists = async function(name, params)
 	}
 
 	if(name=='issue' && params == undefined ) return
+
+	if(name=='issues') return
 	
 	await store.dispatch('get_' + name, params);
 

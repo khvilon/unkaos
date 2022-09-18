@@ -92,6 +92,7 @@
 	search_query: '',
 	issues: [],
 	colorFromScript: 'green',
+	configs_open: false,
     collumns:[
 		{
 	        name: '№',
@@ -169,6 +170,12 @@
 
   mod.mounted = methods.get_issues
 
+  mod.computed.board_query_info = function(){
+	  let board_query_info = this.search_query
+	  if(this.search_query == '')
+	return this.search_query + ' ' + this.issues.length
+  }
+
 	export default mod
 	
 </script>
@@ -186,22 +193,25 @@
 		key="board_name"
 		class="board-name-input"
 		:value="board[0].name"
-		:disabled="false"
+		:disabled="!configs_open"
 		>
 		</StringInput>
-		<IssuesSearchInput
-		label=""
-		class='issue-search-input'
-		@update_parent_from_input="update_search_query"
-		:fields="fields"
-		@search_issues="get_issues"
-		:projects="projects"
-		:issue_statuses="issue_statuses"
-		:issue_types="issue_types"
-		:users="users"
+		<StringInput class="board-query-info"
+		v-if="board != undefined && board[0] != undefined"
+		label=''
+		disabled="true"
+		:value="board_query_info"
 		>
-
-		</IssuesSearchInput>
+			
+		</StringInput>
+		
+		
+		<i class='bx bx-dots-vertical-rounded top-menu-icon-btn'
+		@click="configs_open=!configs_open"
+		></i>
+		<i class='bx bx-trash top-menu-icon-btn delete-board-btn'></i>
+		
+	
 		
 		
 	
@@ -236,8 +246,8 @@
 				<div class="issue-card-top"></div>
 				<div class="issue-card-title">
 				<a 
-				:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}}</a>&nbsp
-				<label>{{issue.type_name}}</label>&nbsp
+				:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}} {{issue.type_name}}</a>
+				
 				<label>{{get_field_by_name(issue, 'Название').value}}</label>
 				</div>
 				<label class="issue-card-description">{{get_field_by_name(issue, 'Описание').value.substring(0, 100)}}</label>
@@ -248,8 +258,59 @@
 			</div>
 			</div>
 		</div>
+
+		<div class="modal-bg" v-show="configs_open">
+		<div
+			class="panel modal board-config"
+		>  
+
+		<IssuesSearchInput
+		label=""
+		class='board-issue-search-input'
+		@update_parent_from_input="update_search_query"
+		:fields="fields"
+		@search_issues="get_issues"
+		:projects="projects"
+		:issue_statuses="issue_statuses"
+		:issue_types="issue_types"
+		:users="users"
+		:disabled="!configs_open"
+		>
+
+		</IssuesSearchInput>
+		
+		<SelectInput 
+	  		
+			label='Поля'
+			id='fields'
+			
+			:parent_name="'board'"
+			clearable="false"
+			dictionary= 'fields'
+			:values="[]"
+			multiple: true
+		></SelectInput>
+
+	
+		<div class="btn-container">
+		<KButton 
+		name="Сохранить"
+		id="save-board-config-btn"
+		/>
+		<KButton 
+		name="Отменить"
+		id="cancel-board-config-btn"
+		@click="configs_open=false"
+		/>
+		</div>
+
+		</div>
+  </div>
 		  
 	</div>
+
+	
+
 	</div>
 </template>
 
@@ -260,21 +321,21 @@
   @import '../css/palette.scss';
   @import '../css/global.scss';
 
-	#issues_table_panel, #issues_card {
+	#boards_table_panel, #boards_card {
     height: calc(100vh - $top-menu-height);    
 	}
 
-  #issues_table_panel {
+  #boards_table_panel {
     display: flex;
     width: calc(100%);
   }
 
-  #save_issues_btn, #delete_issues_btn {
+  #save_boards_btn, #delete_boards_btn {
   	padding: 0px 20px 15px 20px;
   	width: 50%
   }
 
-  #save_issues_btn input, #delete_issues_btn input{
+  #save_boards_btn input, #delete_boards_btn input{
   	width: 100%
   }
 
@@ -284,32 +345,6 @@
 	//overflow:scroll;
   }
 
-  .issue-search-input textarea{
-	  padding: 0px !important;
-
-  }
-  .issue-search-input{
-	  padding: 0px !important;
-	  width: 50vw;
-  }
-  .issue-search-input-btn{
-	  padding: 0px;
-	  width: $input-height;
-  }
-  .issue-search-input-btn .btn_input{
-	  padding: 0px;
-	  border-top-left-radius: 0px !important;
-    border-bottom-left-radius: 0px !important;
-	margin-left: -$input-height;
-	width: $input-height !important;
-
-	border-top-width: 0px !important;
-	border-bottom-width: 2px !important;
-	border-left-color: $border-color !important;
-    border-top-color: $border-color !important;
-	//border-bottom-color: $border-color !important;
-
-  }
 
   .status-board-collumn{
 	width: calc((100vw - $main-menu-width) / v-bind('issue_statuses.length'));
@@ -347,7 +382,7 @@
 	display:flex;
 	flex-direction: column;
 	width: calc(100% );//190px;
-	height: 150px;
+	height: 190px;
 
 	background: $panel-bg-color;
 	border-radius: $border-radius;
@@ -373,7 +408,16 @@
   }
   .issue-card-title
   {
-	  height: 40px;
+	height: 80px;
+	display: flex;
+    flex-direction: column;
+	
+	overflow: hidden;
+  }
+
+  .issue-card-title a
+  {
+	color: rgb(128, 146, 157)
   }
 
   .issue-card-description
@@ -385,6 +429,9 @@
 	  border-top-style: solid;
 	  border-bottom-width: 2px;
 	  border-bottom-style: solid;
+	  color: rgb(128, 146, 157);
+	  overflow: hidden;
+	  font-size: 10px
   }
 
   .issue-card-top
@@ -399,9 +446,13 @@
   .issue-board-card-footer
   {
 	  width:100%;
-	  height: 25px;
-		
+	  height: 12px;
+	  
+  }
 
+  .issue-board-card-footer label
+  {
+	font-size: 10px;
   }
 
   .board-name-input
@@ -418,6 +469,65 @@
 		-webkit-user-select: none;
 		-ms-user-select: none;
   }
+
+  #save-board-config-btn
+  {
+	  padding-right: 10px;
+  }
+  #cancel-board-config-btn
+  {
+	  padding-left: 10px;
+  }
+
+  .top-menu-icon-btn
+  {
+	height: 35px;
+    font-size: 25px;
+    border-radius: $border-radius;
+    margin-left: 10px;
+	color: white;
+    background-color: #333;
+    border-width: 1px;
+    border-color: white;
+    border-style: solid;
+    border-style: outset;
+    cursor: pointer;
+	width: 35px;
+    text-align: center;
+	padding-top: 4px;
+  }
+
+  .delete-board-btn
+  {
+	font-size: 23px;
+	padding-top: 5px;
+	color: #d27065
+  }
+
+  
+  .board-issue-search-input
+  {
+	padding: 10px 20px 10px 20px !important;
+  }
+
+  .board-issue-search-input span {
+    font-size: 20px;
+    font-weight: 400;
+    margin-top: 1px;
+    /* background: red; */
+    border-radius: 8px;
+    border-color: grey;
+    border-width: 2px;
+    margin-left: 20px;
+    margin-right: 10px;
+}
+
+.board-query-info{
+	padding: 0px 20px 10px 0px;
+	width: 50vw;
+}
+
+
 
 
 

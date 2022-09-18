@@ -13,7 +13,8 @@
     "nodemailer": "^6.7.8",
     "passport-auth-token": "^1.0.1",
     "pg": "^8.7.3",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "youtrack-rest-client": "^1.4.0"
   },
   "devDependencies": {},
   "scripts": {

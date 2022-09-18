@@ -17,11 +17,17 @@
       },
       {
         name: 'Автор',
-        id: "author" 
+        id: "author_uuid",
+			  type:'user'
       },
       {
-        name: 'Зарегистрирован',
+        name: 'Зарегистрирована',
         id: "created_at",
+        type: 'date'
+      },
+      {
+        name: 'Обновлена',
+        id: "updated_at",
         type: 'date'
       },
     ],
@@ -36,7 +42,13 @@
         id: 'created_at',
         type: 'Date',
         disabled: true
-      }
+      },
+      {
+        label: 'users',
+        id: '',
+        dictionary: 'users',
+        type: 'User',
+      },
     ]
   }
      
@@ -65,6 +77,7 @@
           :collumns="collumns"
           :table-data="boards"
           :name="'boards'"
+          :dicts="{users: users}"
         />
         </Transition>
       </div>

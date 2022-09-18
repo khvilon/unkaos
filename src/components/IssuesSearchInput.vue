@@ -14,6 +14,7 @@
 		name='bx-search-alt-2'
 		class='issue-search-input-btn'
 		@click="emit_query"
+    v-show="!disabled"
 		/>
     </div>
     <div ref="suggestion_area"  
@@ -43,6 +44,11 @@
 
     props:
     {
+      parent_query:
+      {
+        type: String,
+        default: ''
+      },
       disabled:
       {
         type: Boolean,
@@ -191,12 +197,42 @@
 
   },
 
+  watch: {
+      parent_query: function(val, oldVal) {
+        console.log('parent_query', val)
+        if(val != this.value)
+        {
+          this.value = val  
+                 
+        } 
+        this.emit_query() 
+
+      }
+    },
+    mounted()
+    {
+        this.value = this.parent_query
+        this.emit_query() 
+    },
+
      methods: {
       get_suggestions(){return this.suggestions},
       emit_query()
       {
+        
+        console.log('this.fields.length * this.projects.length * this.issue_types.length', this.fields.length , this.projects.length , this.issue_types.length)
+        if(this.fields.length * this.projects.length * this.issue_types.length == 0)
+        {
+          setTimeout(this.emit_query, 200)
+          return
+        }
+          
+
         if(this.value == undefined) return
         if(!this.convert_query(this.value, true)) return
+
+        this.$emit( 'update_parent_from_input', this.value)
+        this.$refs.issues_search_input.blur();
         let base64_query = btoa(encodeURIComponent(this.converted_query))  
         this.$emit('search_issues', base64_query)
       },
@@ -250,10 +286,15 @@
       },
       handleInput(e) 
       {
+
+        
      
           this.position = this.getCaretIndex(e.target)
           console.log('pospos', e, this.position)
           this.value = e.target.innerText.replace(' ', ' ')
+
+          this.$emit( 'update_parent_from_input', this.value)
+
 
           if(this.value == undefined) return ''
           this.convert_query(this.value)
@@ -354,6 +395,7 @@
            nextTick(() => {
             this.convert_query(this.value)
             setTimeout(this.set_focus_true, 300)
+            this.$emit( 'update_parent_from_input', this.value)
            })
         })
 
@@ -598,9 +640,13 @@
 
       this.converted_query = qd.converted_query
 
-      console.log('convvvvvvvvvvv query', qd)
+      
 
-      return (qd.i == qd.query.length && qd.query.length > 0 && waits_for_idx == 3)
+      let query_valid = (qd.i == qd.query.length && qd.query.length > 0 && waits_for_idx == 3) || qd.query.length == 0
+
+      console.log('convvvvvvvvvvv query', query_valid, qd)
+
+      return (query_valid)
 
 
 
@@ -692,6 +738,34 @@
 .issue-search-div{
   display: flex;
 }
+
+
+.issue-search-input textarea{
+	  padding: 0px !important;
+
+  }
+  .issue-search-input{
+	  padding: 0px !important;
+	  width: 50vw;
+  }
+  .issue-search-input-btn{
+	  padding: 0px;
+	  //width: $input-height;
+  }
+  .issue-search-input-btn .btn_input{
+	  padding: 0px;
+	  border-top-left-radius: 0px !important;
+    border-bottom-left-radius: 0px !important;
+	margin-left: -$input-height;
+	width: $input-height !important;
+
+	border-top-width: 0px !important;
+	border-bottom-width: 2px !important;
+	border-left-color: $border-color !important;
+    border-top-color: $border-color !important;
+	//border-bottom-color: $border-color !important;
+
+  }
 
 
 

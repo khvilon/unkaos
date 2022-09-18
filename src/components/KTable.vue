@@ -1,5 +1,6 @@
 <template>   
-  <div class="ktable" >
+  <div class="ktable" 
+  @scroll="scroll_handler">
     <table>
       <thead>
         <tr>
@@ -71,6 +72,18 @@
           }
           this.$store.dispatch('sort_' + this.name, collumn.id)
       },
+      scroll_handler(e)
+      {
+        let bottom = e.target.getBoundingClientRect().bottom
+        let table_bottom = e.target.children[0].getBoundingClientRect().bottom
+        const critical_diff = 200
+        if(table_bottom - bottom > critical_diff) return
+        const time_diff = 1000
+        if(new Date() - this.last_scroll_update < time_diff) return
+        this.last_scroll_update = new Date()
+        this.$emit('scroll_update')
+        console.log('time to load more')
+      },
       select_row()
       {
         let uuid = event.path[1].getAttribute('uuid');
@@ -93,13 +106,24 @@
         if (type == undefined) return val
         if (type == 'date') 
         {   
+          
+          console.log('dtval', val)
             var options = {
               year: 'numeric',
               month: 'numeric',
               day: 'numeric',
               timezone: 'Moscow',
             };
-            return new Date(val).toLocaleString("ru", options)
+            let dt = ''
+            try{
+              dt = new Date(val).toLocaleString("ru", options)
+              if(dt == 'Invalid Date') return ''
+            }
+            catch
+            {
+              return ''
+            }
+            return dt
         }
         if(type == 'boolean')
         {
@@ -133,6 +157,11 @@
         return val
       }
 
+    },
+    emits: ['scroll_update'],
+    data()
+    {
+        last_scroll_update: new Date()
     },
     props: 
     { 
