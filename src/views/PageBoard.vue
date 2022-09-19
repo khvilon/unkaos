@@ -5,86 +5,173 @@
 
 	import d from '../dict.ts'
 	import rest from '../rest';
+	import tools from '../tools.ts'
+import { computed } from '@vue/runtime-core';
 
 	console.log('d', d['Название'],d)
 
 	let methods = {
-		get_issues: async function(query)
-			{
 
-				console.log('get issues with query ', query)
-				let options = {}
-				if(query != undefined && query != '') options.query = query
-				this.issues = await rest.run_method('read_issues', options)
-			},
-			filtered_issues: function(status_uuid)
+		init: async function()
+		{
+			console.log('sselected_board0')
+
+			//check loaded
+			if(this.board == undefined || this.board[0] == undefined || 
+			this.issue_statuses == undefined || this.inputs_dict == undefined || this.inputs_dict.boards_columns == undefined) 
 			{
-				return this.issues != undefined ? this.issues.filter(issue => issue.status_uuid == status_uuid) : [];
-			},
-			
-			update_search_query: function(val)
+				setTimeout(this.init, 200)
+				return
+			}
+
+			console.log('sselected_board1')
+
+			//check not double
+			if(!this.selected_board.is_new) return
+
+			console.log('sselected_board2')
+			//make current board selected
+			if(this.selected_board.uuid != this.board[0].uuid) this.$store.commit('select_board', this.board[0].uuid);
+
+			this.selected_board.boards_columns = this.selected_board.boards_columns.sort((a, b) => { a.num-b.num } )
+
+			console.log('sselected_board3')
+			//prapare column values
+			this.column_values = []
+			for(let i in this.inputs_dict['boards_columns'].values)
 			{
-				this.search_query = val
-			},
-			search()
+				let val = this.inputs_dict['boards_columns'].values[i]
+				let col =  {status:[val], name:val.name}
+				for(let j in this.selected_board.boards_columns)
+				{
+					if (this.selected_board.boards_columns[j].status[0].uuid == val.uuid)
+					{
+						col = this.selected_board.boards_columns[j] 
+						break
+					}
+				}
+				if(col.uuid == undefined) {
+					col.uuid = tools.uuidv4()
+					col.num = 0
+					col.table_name = 'boards_columns'
+					col.status_uuid = val.uuid
+					col.boards_uuid = this.selected_board.uuid
+				}
+				
+				this.column_values.push(col)
+			}
+
+			console.log('column_values', this.column_values, this.selected_board)
+			for(let i in this.selected_board.boards_columns)
 			{
-				query_parser.parse(this.search_query, this.fields)
-			},
-			get_field_by_name: function(issue, name)
-			{
-				//console.log('get_field_by_name', name)
+				this.selected_board.boards_columns[i].name = this.selected_board.boards_columns[i].status[0].name
+			}
+
+			console.log('sselected_board4')
+
+			//get_issues()
+
+		},
+		get_issues: async function(query) ///added other things on mount
+		{
+			let options = {}
+			if(query != undefined && query != '') options.query = query
+			else return
+			this.issues = await rest.run_method('read_issues', options)
+		},
+		filtered_issues: function(status_uuid)
+		{
+			return this.issues != undefined ? this.issues.filter(issue => issue.status_uuid == status_uuid) : [];
+		},
 		
-				for(let i in issue.values) 
-				{
-					if(issue.values[i].label == name) return issue.values[i]		
-				}
-				return {label: '', value: ''}
-				
-			},
-			dragstart_card: function(e, el)
+		update_search_query: function(val)
+		{
+			this.search_query = val
+		},
+		search()
+		{
+			query_parser.parse(this.search_query, this.fields)
+		},
+		get_field_by_name: function(issue, name)
+		{
+			//console.log('get_field_by_name', name)
+	
+			for(let i in issue.values) 
 			{
-				console.log('dddddrrrr', el, e)
+				if(issue.values[i].label == name) return issue.values[i]		
+			}
+			return {label: '', value: ''}
 			
-				this.card_draginfo = el
-			},
-			dragend_card: function()
+		},
+		dragstart_card: function(e, el)
+		{
+			console.log('dddddrrrr', el, e)
+		
+			this.card_draginfo = el
+		},
+		dragend_card: function()
+		{
+		
+			console.log('dddddrrrr end')
+			this.card_draginfo = {}
+			this.status_draginfo = {}
+		},
+		move_card: function(el)
+		{
+			//console.log('moving0')
+			if(this.card_draginfo.uuid == undefined) return
+			//console.log('moving1')
+			if(this.card_draginfo.status_uuid != el.uuid)
+			{
+				this.status_draginfo = el
+				console.log('moving2')
+			}
+		},
+		drop_card: function(el)
+		{
+			//console.log('moving0')
+			if(this.card_draginfo.uuid == undefined) return
+			if(this.status_draginfo.uuid == undefined) return
+			//console.log('moving1')
+			if(this.card_draginfo.status_uuid == el.uuid) return
+			
+
+			this.card_draginfo.status_uuid = el.uuid
+			this.card_draginfo.status_name = el.name
+
+			rest.run_method('update_issue', this.card_draginfo)
+			console.log('drop')
+			
+		},
+		get_input_by_id: function(id)
+		{
+			return{values:[]}
+			/*for(let i in this.inputs)
+			{
+				if(this.inputs[i].id == id) return this.inputs[i]
+			}*/
+		},
+		get_field_value(issue, field) //todo add values from dicts
+		{
+			for(let i in issue.values)
 			{
 			
-				console.log('dddddrrrr end')
-				this.card_draginfo = {}
-				this.status_draginfo = {}
-			},
-			move_card: function(el)
-			{
-				//console.log('moving0')
-				if(this.card_draginfo.uuid == undefined) return
-				//console.log('moving1')
-				if(this.card_draginfo.status_uuid != el.uuid)
+				if(issue.values[i].field_uuid == field.uuid)
 				{
-					this.status_draginfo = el
-					console.log('moving2')
+					return issue.values[i].value
 				}
-			},
-			drop_card: function(el)
-			{
-				//console.log('moving0')
-				if(this.card_draginfo.uuid == undefined) return
-				if(this.status_draginfo.uuid == undefined) return
-				//console.log('moving1')
-				if(this.card_draginfo.status_uuid == el.uuid) return
-				
-
-				this.card_draginfo.status_uuid = el.uuid
-				this.card_draginfo.status_name = el.name
-
-				rest.run_method('update_issue', this.card_draginfo)
-				console.log('drop')
-				
-			},
+			}
+		},
+		delete()
+		{
+			this.$store.dispatch('delete_board')
 		}
+	}
 
 	const data = 
   {
+	
+	column_values: [],
 	card_draginfo: {},
 	status_draginfo: {},
     name: 'board',
@@ -135,6 +222,20 @@
 	],
     inputs: [
 		{
+			id: 'estimate_uuid',
+			dictionary: 'fields',
+			type: 'Select',
+		},
+		{
+			id: 'query',
+			type: 'String',
+		},
+		{
+			id: 'boards_columns',
+			dictionary: 'issue_statuses',
+			type: 'User',
+		},
+		{
 			label: 'fields',
 			id: '',
 			dictionary: 'fields',
@@ -146,12 +247,7 @@
 			dictionary: 'users',
 			type: 'User',
 		},
-		{
-			label: 'issue_statuses',
-			id: '',
-			dictionary: 'issue_statuses',
-			type: 'User',
-		}
+		
 		,
 		{
 			label: 'projects',
@@ -168,13 +264,32 @@
      
   const mod = await page_helper.create_module(data, methods)
 
-  mod.mounted = methods.get_issues
+  mod.mounted = methods.init
 
   mod.computed.board_query_info = function(){
 	  let board_query_info = this.search_query
-	  if(this.search_query == '')
-	return this.search_query + ' ' + this.issues.length
+	  if(board_query_info != '') board_query_info += '; '
+	  board_query_info += 'Найдено ' + this.issues.length 
+
+	  let sum = 0
+	  for(let i in this.issues)
+	  {		  
+		let val = Number(this.get_field_value(this.issues[i], this.selected_board.estimate[0]))		
+		if(!isNaN(val))sum += val
+	  }
+
+	  board_query_info += '; Сумма ' + sum
+
+	return board_query_info
   }
+
+  mod.computed.boards_columns = function(){
+	if(this.selected_board == undefined || this.selected_board.boards_columns == undefined) return []
+	return this.selected_board.boards_columns.map((v)=>v.status[0])
+  }
+   
+  
+  
 
 	export default mod
 	
@@ -190,9 +305,11 @@
 		<StringInput 
 		v-if="board != undefined && board[0] != undefined"
 		label=''
+		id="name"
 		key="board_name"
+		:parent_name="'board'"
 		class="board-name-input"
-		:value="board[0].name"
+		:value="get_json_val(selected_board, 'name')"
 		:disabled="!configs_open"
 		>
 		</StringInput>
@@ -209,7 +326,9 @@
 		<i class='bx bx-dots-vertical-rounded top-menu-icon-btn'
 		@click="configs_open=!configs_open"
 		></i>
-		<i class='bx bx-trash top-menu-icon-btn delete-board-btn'></i>
+		<i class='bx bx-trash top-menu-icon-btn delete-board-btn'>
+			@click="delete"
+		</i>
 		
 	
 		
@@ -220,10 +339,10 @@
 
 	
 
-    <div id=board_down_panel class="panel">
+    <div id=board_down_panel class="panel" >
 	 
 	  	<div 
-		  v-for="(status, s_index) in issue_statuses"
+		  v-for="(status, s_index) in boards_columns"
 		:key="s_index"
 		@mousemove="move_card(status)"
 		@mouseup="drop_card(status)"
@@ -252,7 +371,7 @@
 				</div>
 				<label class="issue-card-description">{{get_field_by_name(issue, 'Описание').value.substring(0, 100)}}</label>
 				<div class="issue-board-card-footer">
-					<div><label>{{get_field_by_name(issue, 'Приоритет').label}}: {{get_field_by_name(issue, 'Срок выполнения').value}}</label></div>
+					<div><label>{{get_json_val(issue, 'author_uuid')}}</label></div>
 				</div>
 				
 			</div>
@@ -265,8 +384,10 @@
 		>  
 
 		<IssuesSearchInput
-		label=""
+		v-if="board != undefined"
+		label="Запрос"
 		class='board-issue-search-input'
+		:parent_name="'board'"
 		@update_parent_from_input="update_search_query"
 		:fields="fields"
 		@search_issues="get_issues"
@@ -275,20 +396,57 @@
 		:issue_types="issue_types"
 		:users="users"
 		:disabled="!configs_open"
+		id='query'
+		:parent_query="get_json_val(selected_board, 'query')"
+
 		>
 
 		</IssuesSearchInput>
 		
 		<SelectInput 
-	  		
-			label='Поля'
-			id='fields'
+			v-if="inputs_dict != undefined && !selected_board.is_new"
+			label='Статусы'
+			id='boards_columns'
 			
+			:parent_name="'board'"
+			clearable="false"
+			:value="get_json_val(board[0], 'boards_columns')"
+			:values="column_values"
+			:parameters="{ multiple: true}"
+		></SelectInput>
+
+		
+
+		<SelectInput 
+			v-if="inputs_dict != undefined"
+			label='Суммируемое поле'
+			id='estimate_uuid'
+			:parent_name="'board'"
+			clearable="false"
+			:value="get_json_val(selected_board, 'estimate_uuid')"
+			:values="inputs_dict['estimate_uuid'].values.filter((v)=>v.type[0].code == 'Numeric')" 
+			:parameters="inputs_dict['estimate_uuid']"
+		></SelectInput>
+
+		<SelectInput 
+			label='Поля внизу карточки (функция в разработке)'
+			id='fields'
+			disabled="true"
 			:parent_name="'board'"
 			clearable="false"
 			dictionary= 'fields'
 			:values="[]"
-			multiple: true
+		></SelectInput>
+
+		<SelectInput 
+			label='Поле цвета (функция в разработке)'
+			id='fields'
+			disabled="true"
+			:parent_name="'board'"
+			clearable="false"
+			dictionary= 'fields'
+			:values="[]"
+			multiple: false
 		></SelectInput>
 
 	
@@ -296,6 +454,8 @@
 		<KButton 
 		name="Сохранить"
 		id="save-board-config-btn"
+		:func="'save_board'"
+		@click="configs_open=false"
 		/>
 		<KButton 
 		name="Отменить"
@@ -347,7 +507,7 @@
 
 
   .status-board-collumn{
-	width: calc((100vw - $main-menu-width) / v-bind('issue_statuses.length'));
+	width: calc((100vw - $main-menu-width) / v-bind('boards_columns.length'));
 	height: 150px;
 	
 	margin: 2px;

@@ -159,9 +159,7 @@ page_helper.create_module = async function(data, methods)
 
 			this.$store.state[this.name]['filtered_' + this.name]  = [instance]
 			
-			this.$store.state[this.name][this.name] = [instance]
-			
-			
+			this.$store.state[this.name][this.name] = [instance]		
 		}
 
 		console.log('ttt', this.$store.state[this.name][this.name])
@@ -170,12 +168,16 @@ page_helper.create_module = async function(data, methods)
 		console.log("this.$store.state[this.name]['selected_' + this.name]", this.$store.state[this.name]['selected_' + this.name])
 		this.$store.state[this.name]['instance_' + this.name] =  tools.obj_clone(instance)
 
+
+		this.inputs_dict = {}
 		for(let i in this.inputs)
 		{
 			//console.log('iiiii00', this.inputs[i].values)
 			if(typeof this.inputs[i].values != undefined && typeof this.inputs[i].values == 'string' && this.inputs[i].values.split('.')[0] == 'this')
 			this.inputs[i].values = this[this.inputs[i].values.split('.')[1]]
 
+
+			this.inputs_dict[this.inputs[i].id] = this.inputs[i]
 			//this[this.inputs[i].dictionary] = this.$store.state[this.inputs[i].dictionary]
 
 		}

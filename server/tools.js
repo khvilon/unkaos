@@ -5,10 +5,12 @@ tools.obj_length = function(obj)
     return Object.keys(obj).length
 }
 
+
 tools.obj_clone = function(obj)
 {
 	return JSON.parse(JSON.stringify(obj))
 }
+
 
 tools.obj_join = function(obj0, obj1)
 {

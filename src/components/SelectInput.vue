@@ -27,8 +27,18 @@ export default {
           if(this.values[i].uuid == val) {val_obj = this.values[i]; break}
         }
         
-        console.log(val, oldVal, this.id, val_obj)
+        console.log('vue_select', val, oldVal, this.id, val_obj)
         console.log('pname', this.parent_name)
+
+        if(val != undefined && val[0] != undefined && val[0].num != undefined)
+        {
+          let num = 1
+          for(let i in val)
+          {
+            val[i].num = num;
+            num++
+          }
+        }
 
 
         this.$emit('update_parent_from_input', val, this.parent_name)
@@ -46,6 +56,11 @@ export default {
   },
   props:
     {
+      name_path:
+      {
+        type: String,
+        default: ''
+      },
       values: {
         type: Array,
         default: () => [],
@@ -94,6 +109,7 @@ export default {
       if(this == undefined) return true
       console.log('this.value', this.value + '')
       if(!(this.value instanceof Array)) return true
+      
       for(let i in this.value)
       {
         if(this.value[i].uuid == undefined && this.value[i] == val.uuid) return false
@@ -164,7 +180,9 @@ export default {
 }
 
  .select-input .vs__dropdown-toggle{
-  height: $input-height;
+  min-height: $input-height;
+  height: auto;
+
 }
 
  .select-input .vs__clear,
@@ -228,6 +246,7 @@ export default {
 {
   fill: $disabled-bg-color;
 }
+
 
 
 </style>

@@ -33,7 +33,7 @@ tools.uuidv4 = function() {
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
-
+/*
 tools.obj_clone = function(obj)
 {
 	return JSON.parse(JSON.stringify(obj))
@@ -42,6 +42,38 @@ tools.obj_clone = function(obj)
 tools.clone_obj = function(obj)
 {
 	return JSON.parse(JSON.stringify(obj))
+}*/
+
+
+tools.clone_obj = tools.obj_clone = function(obj)
+{
+    if(obj.boards_columns != undefined) console.log('cloneclone', JSON.stringify(obj))
+    if(obj.toBuffer != undefined) return obj.clone()
+
+	var clone = {};
+    if(Array.isArray(obj))
+    {
+        clone = []
+        for(var i in obj) {
+            if(obj[i] != null &&  typeof(obj[i])=="object" && obj[i].naturalHeight == undefined)
+                clone.push(tools.obj_clone(obj[i]))
+            else
+            clone.push(obj[i])
+            
+        }
+    }
+    else
+    {
+        for(var i in obj) {
+            if(obj[i] != null &&  typeof(obj[i])=="object" && obj[i].naturalHeight == undefined)
+                clone[i] = tools.obj_clone(obj[i]);
+            else
+                clone[i] = obj[i];
+        }
+    }
+    
+    if(obj.boards_columns != undefined) console.log('cloneclone2', JSON.stringify(clone))
+    return clone;
 }
 
 tools.obj_length = function(obj)
@@ -82,7 +114,7 @@ tools.obj_set_val = function(obj, path, val)
 tools.obj_attr_by_path = function(obj, path)
 {
   if(obj == undefined) return ''
-  //console.log('obj_attr_by_path', obj, path)
+  console.log('obj_attr_by_path0', JSON.stringify(obj), path)
   if(Array.isArray(path))
   {
     let ans = ''
@@ -100,7 +132,7 @@ tools.obj_attr_by_path = function(obj, path)
   let path_parts = path.split('.')
   let data_part = obj
 
-  console.log('j', path_parts, data_part)
+  console.log('obj_attr_by_path1', path_parts, data_part)
 
   if(path_parts[0] == 'values')
   {
@@ -113,10 +145,12 @@ tools.obj_attr_by_path = function(obj, path)
 
   for(let i in path_parts)
   {
+    console.log('obj_attr_by_path11', data_part, path_parts[i])
     data_part = data_part[path_parts[i]]
     if(data_part == undefined) return ''
   }
 
+  console.log('obj_attr_by_path2', path, data_part)
   return data_part
 }
 
