@@ -324,7 +324,9 @@ crud.make_query = {
             if(keys != ''){keys += ', '; values += ', '}
 
             keys += i
-            values += "'" + params[i].toString().replaceAll("'", "`") + "'"
+            let val = params[i]
+            if(val != null) val = val.toString().replaceAll("'", "\'")
+            values += "'" + val + "'"
         }
 
         query = query.replace('$1',  keys)
@@ -362,7 +364,9 @@ crud.make_query = {
 
             if(set != '') set += ', '
 
-            set += i + "='" + params[i].toString().replaceAll("'", "`") + "'"
+            let val = params[i]
+            if(val != null) val = val.toString().replaceAll("'", "\'")
+            set += i + "='" + val + "'"
         }
 
         query = query.replace('$2', set)

@@ -293,7 +293,7 @@
           console.log('pospos', e, this.position)
           this.value = e.target.innerText.replace(' ', ' ')
 
-          this.$emit( 'update_parent_from_input', this.value)
+          this.emit_changes()
 
 
           if(this.value == undefined) return ''
@@ -395,7 +395,7 @@
            nextTick(() => {
             this.convert_query(this.value)
             setTimeout(this.set_focus_true, 300)
-            this.$emit( 'update_parent_from_input', this.value)
+            this.emit_changes()
            })
         })
 
@@ -403,6 +403,17 @@
 
         //this.color_text(this.$refs.issues_search_input, this.str_start_idx, this.str_start_idx + suggestion.length, 'red')        
       },
+
+      emit_changes()
+      {
+        this.$emit( 'update_parent_from_input', this.value)
+        if(this.parent_name == undefined || this.parent_name == '') return;
+
+        
+        this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:this.value})
+      },
+
+     
 
       createClass(name,rules)
       {
@@ -703,7 +714,6 @@
     font-weight: 300;
     transition: all 0.5s ease;
     background:  rgb(30, 35, 38);
-    width: 50%;
 
      border-color: $border-color;
     border-style:groove;
@@ -715,6 +725,10 @@
 
     height: 200px;
     overflow: auto;
+
+    width: 300px;
+    position: fixed;
+    z-index: 10;
   }
 
   .suggestion-area::-webkit-scrollbar{
