@@ -12,14 +12,14 @@ dict.set_lang(lang)
 
 const beforeCreate = function()
 {
-	console.log('before create 5555555555555555', store.state['common'])
+	//console.log('before create 5555555555555555', store.state['common'])
 	store.state['common']['loading'] = true;
 	//store.state['common']['is_router_view_visible'] = false
 }
 
 const beforeUnmount = function()
 {
-	console.log('beforeUnmount 5555555555555555', store.state['common'])
+	//console.log('beforeUnmount 5555555555555555', store.state['common'])
 	this.visible = false
 	//store.state['common']['is_router_view_visible'] = false
 }
@@ -35,7 +35,7 @@ const beforeMount = function()
 
 const register_store_module_if_not_exists = async function(name, params)
 {
-	console.log('mename', name)
+	//console.log('mename', name)
 	if (!store.getters['get_' + name])
 	{
 		const store_module = store_helper.create_module(name)
@@ -45,15 +45,17 @@ const register_store_module_if_not_exists = async function(name, params)
 	if(name=='issue' && params == undefined ) return
 
 	if(name=='issues') return
+
+	if(name=='board' && params == undefined ) return
 	
 	await store.dispatch('get_' + name, params);
 
-	console.log('meeeeeeeeeeeee.$store.state[name]', name, JSON.stringify(store.getters['get_' + name]))
+	//console.log('meeeeeeeeeeeee.$store.state[name]', name, JSON.stringify(store.getters['get_' + name]))
 }
 
 const register_computed = async function(computed, name)
 {
-	console.log('mename computed', name)
+	//console.log('mename computed', name)
 
 	computed[name] = function(){ 
 		if(this.$store.state[name] == undefined) return []; 
@@ -115,7 +117,7 @@ page_helper.create_module = async function(data, methods)
 		//store.state['common']['is_router_view_visible'] = false
 		let params
 
-		console.log('thisthis', this)
+		//console.log('thisthis', this)
 		if(this.id != undefined && this.id != '')
 		{
 			let [proj_short, num] = this.id.split('-')
@@ -126,7 +128,7 @@ page_helper.create_module = async function(data, methods)
 		}
 		else if(this.uuid != undefined && this.uuid != '')
 		{
-			console.log('thisthis uuuuuuiiiiid', this.uuid)
+		//	console.log('thisthis uuuuuuiiiiid', this.uuid)
 
 			params = {uuid: this.uuid} 
 		}
@@ -139,7 +141,7 @@ page_helper.create_module = async function(data, methods)
 			await register_store_module_if_not_exists(this.inputs[i].dictionary)
 		}
 		
-		console.log('created')
+		//console.log('created')
 
 		for(let i in this.inputs)
 		{
@@ -161,11 +163,17 @@ page_helper.create_module = async function(data, methods)
 			
 			this.$store.state[this.name][this.name] = [instance]		
 		}
+		else if (this.name=='board' && params == undefined )
+		{
+			this.$store.state[this.name]['filtered_' + this.name]  = [instance]
+			
+			this.$store.state[this.name][this.name] = [instance]
+		}
 
-		console.log('ttt', this.$store.state[this.name][this.name])
+		//console.log('ttt', this.$store.state[this.name][this.name])
 		this.$store.state[this.name]['selected_' + this.name] = instance
 
-		console.log("this.$store.state[this.name]['selected_' + this.name]", this.$store.state[this.name]['selected_' + this.name])
+		//console.log("this.$store.state[this.name]['selected_' + this.name]", this.$store.state[this.name]['selected_' + this.name])
 		this.$store.state[this.name]['instance_' + this.name] =  tools.obj_clone(instance)
 
 
@@ -182,19 +190,19 @@ page_helper.create_module = async function(data, methods)
 
 		}
 
-		console.log('cr', this.$store.state[this.name])
+		//console.log('cr', this.$store.state[this.name])
 
 		//this[this.name] = this.$store.getters['get_' + this.name]
 		//this['selected_' + this.name] = this.$store.getters['selected_' + this.name]
 
 		this.loaded = true
-		console.log('meee loaaaaadeeeeeddd')
+		//console.log('meee loaaaaadeeeeeddd')
 
 		this.$store.state['common']['loading'] = false
 
 		if(this.name == 'issue') 
 		{
-			console.log('selilili', this[this.name][0].uuid)
+			//console.log('selilili', this[this.name][0].uuid)
 			this.$store.commit('select_issue', this[this.name][0].uuid);
 		}
 		

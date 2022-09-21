@@ -62,6 +62,7 @@
       }
   }
      
+  
   const mod = await page_helper.create_module(data)
 
   export default mod  

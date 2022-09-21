@@ -5,6 +5,8 @@ import tools from './tools.ts'
 
 rest.base_url = 'http://localhost:3001/'
 
+rest.base_url = 'http://unkaos.ru:3001/'
+
 rest.dict = 
 {
 	read: 'get',
@@ -67,7 +69,7 @@ rest.run_method = async function(method, body)
 
 	rest.headers.subdomain = get_subdomain()
 
-	console.log('hhhh', rest.headers)
+	//console.log('hhhh', rest.headers)
 
 	let method_array = tools.split2(method, '_')
 
@@ -87,14 +89,29 @@ rest.run_method = async function(method, body)
 				method += i + '=' + body[i] + '&'
 			}
 		}
-		else options.body = JSON.stringify(body)
+		else 
+		{
+			if((method_array[1] == 'issues' || method_array[1] == 'issue') && body.values!= undefined)
+			{
+				console.log('check null values', body)
+				for(let i in body.values)
+				{
+					if(body.values[i].uuid == null) body.values[i].uuid = tools.uuidv4()
+				}
+
+			}
+
+			options.body = JSON.stringify(body)			
+		}
+		
 	}
+	
 
 	const resp = await fetch(this.base_url + method, options)
 
 	if(resp.status == 401) window.location.href = '/login';
 
-	console.log('resp.status', resp  )
+	//console.log('resp.status', resp  )
 	if(resp.status != 200) 
 	{
 		store.state['alerts'][alert_id].text = resp.statusText + ' >>'
@@ -102,7 +119,7 @@ rest.run_method = async function(method, body)
 		return null
 	}
 
-	console.log('respppppppp', resp)
+	//console.log('respppppppp', resp)
 
 	const data = await resp.json();
 

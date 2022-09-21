@@ -12,7 +12,7 @@
       
     />
     <div id=dashboards_down_panel class="panel">
-     
+      <span>Страница в разработке</span>
   </div>
   </div>
 </template>
@@ -52,6 +52,12 @@
 
   #dashboards_down_panel {
     display: flex;
+    height: calc(100vh - $top-menu-height);
+  }
+
+  #dashboards_down_panel span {
+  font-size: 15px;
+    padding: 20px;
   }
 
 </style>

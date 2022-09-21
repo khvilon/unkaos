@@ -7,6 +7,8 @@ var sql = require('./sql')
 const edited_type_uuid = '1ff12964-4f5c-4be9-8fe3-f3d9a7225300'
 const transition_type_uuid = '4d7d3265-806b-492a-b6c1-636e1fa653a9'
 const author_field_uuid = '733f669a-9584-4469-a41b-544e25b8d91a'
+const name_field_uuid = 'c96966ea-a591-47a9-992c-0a2f6443bc80'
+
 
 const select_limit = 100
 
@@ -127,6 +129,7 @@ crud.load = async function(){
     STATUS_UUID,
     T17.NAME AS STATUS_NAME,
     CASE WHEN COUNT(T18) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T18) END AS ATTACHMENTS
+    
     FROM 
     ISSUES T1
     JOIN
@@ -184,6 +187,22 @@ crud.load = async function(){
         ISSUE_UUID
     FROM ATTACHMENTS) T18
     ON T1.UUID = T18.ISSUE_UUID
+    LEFT JOIN LATERAL
+    ((SELECT
+        ISSUE0_UUID,
+        ISSUE1_UUID,
+        'relations' AS TABLE_NAME,
+        FALSE AS is_reverted
+        FROM RELATIONS WHERE ISSUE0_UUID = T1.UUID)
+    UNION
+    (SELECT
+        ISSUE1_UUID AS ISSUE0_UUID,
+        ISSUE0_UUID AS ISSUE1_UUID,
+        'relations' AS TABLE_NAME,
+        TRUE AS is_reverted
+        FROM RELATIONS WHERE ISSUE1_UUID = T1.UUID)
+    ) T19
+    ON T1.UUID = T19.ISSUE0_UUID
     WHERE T1.DELETED_AT IS NULL $1
     GROUP BY
     T1.UUID,
@@ -214,7 +233,6 @@ crud.load = async function(){
     crud.querys['attachments']['read'] = `SELECT * FROM attachments T1 WHERE TRUE $1`
     crud.querys['attachments']['delete'] = `DELETE FROM attachments WHERE uuid = $1`
 
-
     crud.querys['board'] = {}
     crud.querys['board']['read'] = crud.querys['boards']['read']
     crud.querys['board']['upsert'] = crud.querys['boards']['upsert']
@@ -222,8 +240,56 @@ crud.load = async function(){
     crud.querys['board']['update'] = crud.querys['boards']['update']
     crud.querys['board']['delete'] = crud.querys['boards']['delete']
 
-   
-    
+    crud.querys['short_issue_info'] = {}
+    crud.querys['short_issue_info']['read'] = `SELECT 
+    I.UUID, P.SHORT_NAME || '-' || I.NUM || ' ' || FV.value AS name
+    FROM ISSUES I
+    JOIN PROJECTS P
+    ON P.UUID = I.PROJECT_UUID 
+    JOIN FIELD_VALUES FV
+    ON FV.FIELD_UUID = '` + name_field_uuid + `' AND FV.ISSUE_UUID = I.UUID
+    WHERE I.DELETED_AT IS NULL 
+    AND P.SHORT_NAME || '-' || I.NUM || ' ' || FV.value LIKE '%$2%'
+    LIMIT 20`
+
+    crud.querys['formated_relations'] = {}
+    crud.querys['formated_relations']['read'] = `
+    SELECT * FROM (
+        SELECT 
+        R.UUID, 
+        R.ISSUE0_UUID CURRENT_UUID,
+        R.DELETED_AT,
+        RT.NAME TYPE_NAME,
+        P.SHORT_NAME || '-' || I.NUM  ID,
+        FV.value ISSUE_NAME
+        FROM RELATIONS R
+        LEFT JOIN RELATION_TYPES RT
+        ON RT.UUID = R.TYPE_UUID
+        LEFT JOIN ISSUES I 
+        ON R.ISSUE1_UUID = I.UUID
+        LEFT JOIN PROJECTS P
+        ON P.UUID = I.PROJECT_UUID 
+        LEFT JOIN FIELD_VALUES FV
+        ON FV.FIELD_UUID = '` + name_field_uuid + `' AND FV.ISSUE_UUID = I.UUID
+        UNION
+        SELECT 
+        R.UUID, 
+        R.ISSUE1_UUID CURRENT_UUID,
+        R.DELETED_AT,
+        RT.REVERT_NAME TYPE_NAME,
+        P.SHORT_NAME || '-' || I.NUM  ID,
+        FV.value ISSUE_NAME
+        FROM RELATIONS R
+        LEFT JOIN RELATION_TYPES RT
+        ON RT.UUID = R.TYPE_UUID
+        LEFT JOIN ISSUES I 
+        ON R.ISSUE0_UUID = I.UUID
+        LEFT JOIN PROJECTS P
+        ON P.UUID = I.PROJECT_UUID 
+        LEFT JOIN FIELD_VALUES FV
+        ON FV.FIELD_UUID = '` + name_field_uuid + `' AND FV.ISSUE_UUID = I.UUID
+    ) T1 WHERE DELETED_AT IS NULL $1
+    LIMIT 50`    
     
 }
 
@@ -283,16 +349,22 @@ crud.make_query = {
 
         if(!params || params.length == 0) return query.replace('$1', '')
 
+        console.log(params)
+
         let where = ''
         for(let i in params){
             if(i == 'offset')
             {
                 query += ' OFFSET ' + params[i]
                 continue
-            } 
+            }
+            else if (i == 'like')
+            {
+                query = query.replace('$2', params[i])
+            }
             where += 'AND t1.' + i + "='" + params[i] + "'"
         }
-        return query.replace('$1', where)
+        return query.replaceAll('$1', where)
     },
 
     delete: function(table_name, params){

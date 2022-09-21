@@ -12,7 +12,7 @@
       
     />
     <div id=config_down_panel class="panel">
-     
+     <span>Страница в разработке</span>
   </div>
 </div>
 </template>
@@ -52,6 +52,12 @@
 
   #config_down_panel {
     display: flex;
+    height: calc(100vh - $top-menu-height);
+  }
+
+  #config_down_panel span {
+  font-size: 15px;
+    padding: 20px;
   }
 
 </style>

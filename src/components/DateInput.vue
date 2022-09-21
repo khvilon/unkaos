@@ -1,7 +1,10 @@
 <template>   
   <div class="date">
     <div class="label">{{label}}</div>
-    <input class="date-input" type="text"  :value="format(value)" :disabled="disabled">
+    <input class="date-input" 
+    @input="print"
+    type="date"  :value="format(value)" :disabled="disabled">
+
   </div>
 </template>
 
@@ -40,16 +43,32 @@
     },
     methods:
     {
+      print(e)
+      {
+        console.log(e.srcElement.value)
+        let val = e.srcElement.value
+        this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
+      },
       format(val)
       {
 
+       
             var options = {
               year: 'numeric',
               month: 'numeric',
               day: 'numeric',
-              timezone: 'Moscow',
+            
             };
-            let date =  new Date(val).toLocaleString("ru", options)
+          
+            let date =  new Date(val)
+
+            console.log(date.getFullYear)
+
+            if(date.getFullYear() == 1970) return ''
+            
+            date = date.toISOString().split('T')[0]
+            
+            //toLocaleString("ru", options)
             if(date !== "Invalid Date") return date
             else return ''
       }

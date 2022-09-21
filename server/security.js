@@ -45,6 +45,8 @@ security.check_token = async function(subdomain, token)
 
     let result = await sql.query(subdomain, query);
 
+    if(result == null) return null
+
     if(result.rowCount != 1) return null
     
     let user = result.rows[0]

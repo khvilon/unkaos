@@ -82,7 +82,7 @@
         if(new Date() - this.last_scroll_update < time_diff) return
         this.last_scroll_update = new Date()
         this.$emit('scroll_update')
-        console.log('time to load more')
+   //     console.log('time to load more')
       },
       select_row()
       {
@@ -107,7 +107,7 @@
         if (type == 'date') 
         {   
           
-          console.log('dtval', val)
+        //  console.log('dtval', val)
             var options = {
               year: 'numeric',
               month: 'numeric',
@@ -143,7 +143,7 @@
             }
           }
 
-          console.log('uuu', users, val)
+    //      console.log('uuu', users, val)
           if(user == undefined) return ''
           let avatar
           if(user.avatar != null) avatar = user.avatar
@@ -161,7 +161,9 @@
     emits: ['scroll_update'],
     data()
     {
+      return{
         last_scroll_update: new Date()
+      }
     },
     props: 
     { 
@@ -173,30 +175,14 @@
       collumns: {
         type: Array,
         default: () => [
-          {
-            name: 'столбец 1',
-            id: "aa"
-          },
-          {
-            name: 'столбец 2',
-            id: "bb"
-          },
-          {
-            name: 'столбец 3',
-            id: "cc"
-          },
-          {
-            name: 'столбец 4',
-            id: "dd"
-          },
+         
         ],
       },
       tableData:
       {
         default: () => 
         [
-          {aa: "11", bb: "12", cc: "13", dd: "14" },
-          {aa: "21", bb: "22", cc: "23", dd: "24" }
+          
         ]
       }
     }

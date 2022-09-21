@@ -10,6 +10,7 @@ export default {
   components: {
     Multiselect
   },
+  emits: ['search', 'update_parent_from_input'],
 
   beforeCreate()
   {
@@ -27,8 +28,8 @@ export default {
           if(this.values[i].uuid == val) {val_obj = this.values[i]; break}
         }
         
-        console.log('vue_select', val, oldVal, this.id, val_obj)
-        console.log('pname', this.parent_name)
+     //   console.log('vue_select', val, oldVal, this.id, val_obj)
+     //   console.log('pname', this.parent_name)
 
         if(val != undefined && val[0] != undefined && val[0].num != undefined)
         {
@@ -41,7 +42,7 @@ export default {
         }
 
 
-        this.$emit('update_parent_from_input', val, this.parent_name)
+        this.$emit('update_parent_from_input', val)//val_obj == undefined? val : val_obj)
 
         
 
@@ -103,11 +104,11 @@ export default {
  
     check_selectable: function(val)
     {
-      console.log('this.value0', val + '')
+   //   console.log('this.value0', val + '')
       //console.log('this.value1', value + '')
-       console.log('this.value2', this.value + '')
+   //    console.log('this.value2', this.value + '')
       if(this == undefined) return true
-      console.log('this.value', this.value + '')
+  //    console.log('this.value', this.value + '')
       if(!(this.value instanceof Array)) return true
       
       for(let i in this.value)
@@ -129,7 +130,7 @@ export default {
         {
           val.push(this.value[i].uuid)
         }
-        console.log('vvv2', this.value+'')
+    //    console.log('vvv2', this.value+'')
         this.value = val
       }
 
@@ -146,6 +147,7 @@ export default {
   label="name" :reduce="parameters.reduce" :multiple="parameters.multiple" :clearable="parameters.clearable" :disabled="disabled"
    :options=values 
    :selectable="check_selectable"
+   @search="(text, arg2)=>$emit('search', text)"
    >
     <template 
     v-slot:no-options="{ searching }" >
@@ -153,6 +155,7 @@ export default {
         Ничего не найдено 
       </template>
     </template>
+    
       
 
   </v-select>

@@ -12,30 +12,43 @@ import { computed } from '@vue/runtime-core';
 
 	let methods = {
 
+		init_new: async function()
+		{
+
+		},
 		init: async function()
 		{
-			console.log('sselected_board0')
-
+			this.configs_open = false
+			/*{
+				this.init_new()
+				return;
+			}*/
+			this.boards_issues = []
 			//check loaded
-			if(this.board == undefined || this.board[0] == undefined || 
+			if(this.selected_board == undefined || 
 			this.issue_statuses == undefined || this.inputs_dict == undefined || this.inputs_dict.boards_columns == undefined) 
 			{
 				setTimeout(this.init, 200)
 				return
 			}
 
-			console.log('sselected_board1')
+			
+
+			//console.log('sselected_board1')
 
 			//check not double
 			if(!this.selected_board.is_new) return
 
-			console.log('sselected_board2')
+			//console.log('sselected_board2')
 			//make current board selected
 			if(this.selected_board.uuid != this.board[0].uuid) this.$store.commit('select_board', this.board[0].uuid);
 
-			this.selected_board.boards_columns = this.selected_board.boards_columns.sort((a, b) => { a.num-b.num } )
+			if(this.selected_board.is_new) this.configs_open = true
 
-			console.log('sselected_board3')
+			 
+				this.selected_board.boards_columns = this.selected_board.boards_columns.sort((a, b) => { a.num-b.num } )
+
+			//console.log('sselected_board3')
 			//prapare column values
 			this.column_values = []
 			for(let i in this.inputs_dict['boards_columns'].values)
@@ -61,13 +74,13 @@ import { computed } from '@vue/runtime-core';
 				this.column_values.push(col)
 			}
 
-			console.log('column_values', this.column_values, this.selected_board)
+			//console.log('column_values', this.column_values, this.selected_board)
 			for(let i in this.selected_board.boards_columns)
 			{
 				this.selected_board.boards_columns[i].name = this.selected_board.boards_columns[i].status[0].name
 			}
 
-			console.log('sselected_board4')
+			//console.log('sselected_board4')
 
 			//get_issues()
 
@@ -77,11 +90,11 @@ import { computed } from '@vue/runtime-core';
 			let options = {}
 			if(query != undefined && query != '') options.query = query
 			else return
-			this.issues = await rest.run_method('read_issues', options)
+			this.boards_issues = await rest.run_method('read_issues', options)
 		},
 		filtered_issues: function(status_uuid)
 		{
-			return this.issues != undefined ? this.issues.filter(issue => issue.status_uuid == status_uuid) : [];
+			return this.boards_issues != undefined ? this.boards_issues.filter(issue => issue.status_uuid == status_uuid) : [];
 		},
 		
 		update_search_query: function(val)
@@ -105,14 +118,14 @@ import { computed } from '@vue/runtime-core';
 		},
 		dragstart_card: function(e, el)
 		{
-			console.log('dddddrrrr', el, e)
+		//	console.log('dddddrrrr', el, e)
 		
 			this.card_draginfo = el
 		},
 		dragend_card: function()
 		{
 		
-			console.log('dddddrrrr end')
+		//	console.log('dddddrrrr end')
 			this.card_draginfo = {}
 			this.status_draginfo = {}
 		},
@@ -124,7 +137,7 @@ import { computed } from '@vue/runtime-core';
 			if(this.card_draginfo.status_uuid != el.uuid)
 			{
 				this.status_draginfo = el
-				console.log('moving2')
+		//		console.log('moving2')
 			}
 		},
 		drop_card: function(el)
@@ -140,7 +153,7 @@ import { computed } from '@vue/runtime-core';
 			this.card_draginfo.status_name = el.name
 
 			rest.run_method('update_issue', this.card_draginfo)
-			console.log('drop')
+		//	console.log('drop')
 			
 		},
 		get_input_by_id: function(id)
@@ -153,16 +166,29 @@ import { computed } from '@vue/runtime-core';
 		},
 		get_field_value(issue, field) //todo add values from dicts
 		{
+			
 			for(let i in issue.values)
 			{
 			
 				if(issue.values[i].field_uuid == field.uuid)
 				{
+					console.log('##' + issue.values[i].value + '##')
 					return issue.values[i].value
 				}
 			}
 		},
-		delete()
+		get_card_color(issue)
+		{
+			let p = this.get_field_value(issue, {uuid:'247e7f58-5c9b-4a31-9c27-5d1d4c84669f'})
+
+			if(p == 'Minor') return 'green'
+			else if (p == 'Normal') return 'yellow'
+			else if (p == 'Major') return 'orange'
+			else if (p == 'Critical') return 'pink'
+			else if (p == 'Show-stopper') return 'red'
+			else return 'gray'
+		},
+		delete_board()
 		{
 			this.$store.dispatch('delete_board')
 		}
@@ -170,6 +196,13 @@ import { computed } from '@vue/runtime-core';
 
 	const data = 
   {
+	instance: 
+      {
+        name: '',
+        boards_columns: [],
+        
+      },
+
 	
 	column_values: [],
 	card_draginfo: {},
@@ -177,7 +210,7 @@ import { computed } from '@vue/runtime-core';
     name: 'board',
     label: 'Доска',
 	search_query: '',
-	issues: [],
+	boards_issues: [],
 	colorFromScript: 'green',
 	configs_open: false,
     collumns:[
@@ -262,6 +295,8 @@ import { computed } from '@vue/runtime-core';
     ]
   }
      
+
+  
   const mod = await page_helper.create_module(data, methods)
 
   mod.mounted = methods.init
@@ -269,12 +304,15 @@ import { computed } from '@vue/runtime-core';
   mod.computed.board_query_info = function(){
 	  let board_query_info = this.search_query
 	  if(board_query_info != '') board_query_info += '; '
-	  board_query_info += 'Найдено ' + this.issues.length 
+	  board_query_info += 'Найдено ' + this.boards_issues.length 
+
+	  if(this.selected_board.estimate == undefined || this.selected_board.estimate[0] == undefined ||
+	  	 this.selected_board.estimate[0].uuid == undefined) return board_query_info
 
 	  let sum = 0
-	  for(let i in this.issues)
+	  for(let i in this.boards_issues)
 	  {		  
-		let val = Number(this.get_field_value(this.issues[i], this.selected_board.estimate[0]))		
+		let val = Number(this.get_field_value(this.boards_issues[i], this.selected_board.estimate[0]))		
 		if(!isNaN(val))sum += val
 	  }
 
@@ -287,6 +325,15 @@ import { computed } from '@vue/runtime-core';
 	if(this.selected_board == undefined || this.selected_board.boards_columns == undefined) return []
 	return this.selected_board.boards_columns.map((v)=>v.status[0])
   }
+
+  mod.props =
+    {
+      uuid:
+      {
+        type: String,
+        default: ''
+      }
+    }
    
   
   
@@ -303,7 +350,7 @@ import { computed } from '@vue/runtime-core';
     <div class='panel topbar'>
 		<div style="display: flex ; flex-direction:row; flex-grow: 1; max-height: calc(100% - 60px); ">
 		<StringInput 
-		v-if="board != undefined && board[0] != undefined"
+		v-if="board != undefined && selected_board != undefined"
 		label=''
 		id="name"
 		key="board_name"
@@ -314,7 +361,7 @@ import { computed } from '@vue/runtime-core';
 		>
 		</StringInput>
 		<StringInput class="board-query-info"
-		v-if="board != undefined && board[0] != undefined"
+		v-if="board != undefined && selected_board != undefined"
 		label=''
 		disabled="true"
 		:value="board_query_info"
@@ -326,8 +373,9 @@ import { computed } from '@vue/runtime-core';
 		<i class='bx bx-dots-vertical-rounded top-menu-icon-btn'
 		@click="configs_open=!configs_open"
 		></i>
-		<i class='bx bx-trash top-menu-icon-btn delete-board-btn'>
-			@click="delete"
+		<i class='bx bx-trash top-menu-icon-btn delete-board-btn'
+		@click="delete_board()"
+		>	
 		</i>
 		
 	
@@ -362,7 +410,9 @@ import { computed } from '@vue/runtime-core';
 				
 				@mousedown="dragstart_card($event, issue)"
 				class="issue-board-card">
-				<div class="issue-card-top"></div>
+				<div class="issue-card-top"
+				:style="[  {backgroundColor: get_card_color(issue)} ]"
+				></div>
 				<div class="issue-card-title">
 				<a 
 				:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}} {{issue.type_name}}</a>
@@ -404,13 +454,13 @@ import { computed } from '@vue/runtime-core';
 		</IssuesSearchInput>
 		
 		<SelectInput 
-			v-if="inputs_dict != undefined && !selected_board.is_new"
+			v-if="inputs_dict != undefined && selected_board != undefined"
 			label='Статусы'
 			id='boards_columns'
 			
 			:parent_name="'board'"
 			clearable="false"
-			:value="get_json_val(board[0], 'boards_columns')"
+			:value="get_json_val(selected_board, 'boards_columns')"
 			:values="column_values"
 			:parameters="{ multiple: true}"
 		></SelectInput>
@@ -600,6 +650,7 @@ import { computed } from '@vue/runtime-core';
 	  height: 5px;
 	  border-top-left-radius: $border-radius;
 	  border-top-right-radius: $border-radius;
+	  opacity: 0.4;
 	  background: gray;
   }
 

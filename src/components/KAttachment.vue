@@ -136,7 +136,7 @@
     },
     watch: {
       value: function(val, oldVal) {
-        console.log('vch', val, oldVal, this.id, this.parent_name)
+      //  console.log('vch', val, oldVal, this.id, this.parent_name)
         let data = {}
         data[this.id] = val
         this.$store.commit('push_update_' + this.parent_name, data)

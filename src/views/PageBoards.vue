@@ -2,6 +2,15 @@
   import page_helper from '../page_helper.ts'
   
 
+  const methods=
+  {
+    new_board: function()
+			{
+				this.$router.push('/board')
+			},
+  }
+  
+
 
   const data = 
   {
@@ -50,10 +59,17 @@
         dictionary: 'users',
         type: 'User',
       },
+    ],
+    buttons_route: [
+      {
+        name: 'Создать',
+        route: '/board',
+      }
     ]
   }
+
      
-  const mod = await page_helper.create_module(data)
+  const mod = await page_helper.create_module(data, methods)
 
   export default mod  
 </script>
@@ -63,7 +79,7 @@
 <div>
  
     <TopMenu 
-      :buttons="buttons"
+      :buttons="buttons_route"
       :name="name"
       :label="label"
       :collumns="search_collumns"

@@ -13,22 +13,6 @@
 <script>
   export default 
   {
-
-    /*
-    props: 
-    {
-      name:
-      {
-        type: String,
-        default: 'Хвилон Николай',
-      },
-      logo_src:
-      {
-        type: String,
-        default: "https://oboz.myjetbrains.com/hub/api/rest/avatar/b9b1d87d-568f-4f54-8ee3-44035e1137ff?etag=MjYtMjYwOA%3D%3D&amp;dpr=1.25&amp;size=32",
-      }
-    },*/
-
     data()
     {
       return{
@@ -45,11 +29,13 @@
       //console.log(this.user.avatar)
 
       document.addEventListener('click', this.close_menu)
+
+      this.user = JSON.parse(localStorage.profile)
   
     },
     updated() {
       //console.log('uuuuu')
-      this.user = JSON.parse(localStorage.profile)
+      //this.user = JSON.parse(localStorage.profile)
     },
     methods: {
       logout()

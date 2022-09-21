@@ -21,6 +21,7 @@
           {
             name: 'кнопка 1',
             func: '',
+            route: ''
           }
         ],
       },
@@ -125,6 +126,7 @@
         :key="index"
         :name="button.name"
         :func="button.func"
+        :route="button.route"
         
       />
 
