@@ -35,7 +35,7 @@
 					}
 				}
 
-				console.log('get_fields_exclude_names1', this.issue[0].values[i].label, match)
+			//	console.log('get_fields_exclude_names1', this.issue[0].values[i].label, match)
 				this.issue[0].values[i].idx = i
 				if(!match) 
 				{
@@ -47,7 +47,7 @@
 					fields.push(this.issue[0].values[i])
 				}
 			}
-			console.log('get_fields_exclude_names2', fields)
+		//	console.log('get_fields_exclude_names2', fields)
 			return fields
 		},
 		add_action_to_history: async function(type, val)
@@ -63,10 +63,13 @@
 			}
 			let new_action = {
 				name: action_icons[type], 
-				created_at: new Date, 
+				created_at: new Date(), 
 				value: val,
 				author: JSON.parse(localStorage.profile).name
 			}
+
+
+			console.log('aaaaaction', new_action)
 
 			this.issue[0].actions.unshift(new_action)
 		},
@@ -90,7 +93,7 @@
 		},
 		comment_focus: function(val)
 		{
-			console.log('tyyyyypesffffff', this.$store.state.issue_types)
+		//	console.log('tyyyyypesffffff', this.$store.state.issue_types)
 			this.comment_focused=val
 
 			
@@ -103,7 +106,7 @@
 		},
 		get_types: function()
 		{
-			console.log('tyyyyypes', this.issue_types)
+	//		console.log('tyyyyypes', this.issue_types)
 			if(this.issue_types == undefined) return []
 			this.update_type(this.issue[0].type_uuid)
 			return this.issue_types
@@ -121,14 +124,34 @@
 			
 			return this.issue[0].status_uuid
 		},
+		get_formated_relations: async function()
+		{
+
+			console.log('try iii', this.issue)
+			if(this.issue == undefined || this.issue[0] == undefined)
+			{
+				setTimeout(this.get_formated_relations, 200)
+				console.log('try iii1', JSON.stringify(this.issue), this.issue)
+				return
+			}
+
+			console.log('try iii2', this.issue)
+
+			
+			let uuid = this.issue[0].uuid
+			this.formated_relations = (await rest.run_method('read_formated_relations', {current_uuid: uuid}))
+
+			console.log('this.formated_relations', this.formated_relations)
+			
+		},
 		update_statuses: async function(val)
 		{
-			console.log('uuuupppppaaarrrr', this.issue[0].status_uuid , val )
+	//		console.log('uuuupppppaaarrrr', this.issue[0].status_uuid , val )
 
 			//this.issue[0].status_uuid = val
 			this.current_status = !this.current_status//val + '' + new Date()
 			this.set_status(val)
-			console.log(this.available_transitions)
+	//		console.log(this.available_transitions)
 
 			let status_name
 			for(let i in this.statuses)
@@ -153,7 +176,7 @@
 			if(this.id!= '') return
 
 			this.$store.commit('id_push_update_issues', {id: 'type_uuid', val:type_uuid})
-			console.log('update_type', type_uuid)
+	//		console.log('update_type', type_uuid)
 
 			let issue_type
 			for(let i in this.issue_types)
@@ -165,7 +188,7 @@
 				}
 			}
 
-			console.log('update_type2', issue_type)
+	//		console.log('update_type2', issue_type)
 
 			let values = []
 			for(let i in issue_type.fields)
@@ -189,7 +212,7 @@
 			this.$store.state['issue']['issue'][0].type_uuid = type_uuid
 			this.$store.state['issue']['filtered_issue'][0].type_uuid = type_uuid
 
-			console.log('update_type3', values)
+	//		console.log('update_type3', values)
 		},
 		saved: function(issue)
 		{
@@ -221,7 +244,7 @@
 		},
 		get_available_values: function(field_uuid)
 		{
-			console.log('get_available_values', field_uuid)
+	//		console.log('get_available_values', field_uuid)
 
 			for(let i in this.fields)
 			{
@@ -233,7 +256,29 @@
 				}
 			}
 			return [1,2,3,6]
+		},
+		delete_relation: async function(relation_uuid)
+		{
+			for(let i in this.formated_relations)
+			{
+				if(this.formated_relations[i].uuid == relation_uuid) 
+				{
+					delete this.formated_relations[i]
+				}
+			}
+
+			let ans = await rest.run_method('delete_relations', {uuid: relation_uuid})
+		},
+		add_relation: async function(options)
+		{
+			this.new_relation_modal_visible=false
+
+			await rest.run_method('upsert_relations', options)
+			this.get_formated_relations()
+
 		}
+
+		
 
 	}
 
@@ -242,9 +287,12 @@
   {
     name: 'issue',
     label: 'Поля',
+	new_relation_modal_visible: false,
+	relation_types: [],
     collumns:[
       
     ],
+	formated_relations: [],
     inputs: [
 		{
 			label: 'Воркфлоу',
@@ -329,12 +377,14 @@
 
 	mod.computed.history = function()
 		{
-			console.log('histissue', this.issue.length)
+	//		console.log('histissue', this.issue.length)
 			if(this.issue.length != 1) return ''
-			console.log('histissue2', this.issue.length)
+	//		console.log('histissue2', this.issue.length)
 			let history = ''
 
 			let actions = tools.obj_clone(this.issue[0].actions)
+
+			console.log('aaactions', actions)
 			actions = actions.sort(tools.compare_obj_dt('created_at'))
 			actions = actions.reverse()
 			
@@ -354,7 +404,7 @@
 
 		mod.computed.available_transitions =  function()
 		{
-			if(this.current_status) console.log('aa');
+	//		if(this.current_status) console.log('aa');
 			
 
 			let workflow
@@ -401,7 +451,7 @@
 
 			this.statuses.push(curr_status)
 
-			console.log('this.statuses', this.statuses)
+	//		console.log('this.statuses', this.statuses)
 
 			//TODO
 			//this.issue_types = this.$store.state.issue_types.issue_types
@@ -409,6 +459,29 @@
 			return this.transitions
 
 			//console.log('statusesstatusesstatuses', this.statuses_to)
+		}
+
+		mod.mounted = async function()
+		{
+			console.log('mmmmmmmounted')
+
+
+			let rt = await rest.run_method('read_relation_types')
+
+			
+			this.relation_types = []
+
+			for(let i in rt)
+			{
+				console.log('this.relation_types', rt[i].name == rt[i].revert_name, rt[i].name, rt[i].revert_name)
+				this.relation_types.push({uuid: rt[i].uuid, name: rt[i].name, is_reverted: false})
+				if(rt[i].name == rt[i].revert_name) continue 
+				this.relation_types.push({uuid: rt[i].uuid, name: rt[i].revert_name, is_reverted: true})
+			}
+
+			this.get_formated_relations()
+
+			
 		}
 
 	export default mod
@@ -421,7 +494,11 @@
 
 	<Transition name="element_fade">
 			<KNewRelationModal 
-				v-if="false" 
+				v-if="new_relation_modal_visible" 
+				@close_new_relation_modal="new_relation_modal_visible=false"
+				@relation_added="add_relation"
+				:relation_types="relation_types"
+				:issue0_uuid="issue[0].uuid"
 				
 			/>
 		
@@ -529,7 +606,9 @@
 				v-if="!loading && id!=''"
 				label=''
 				id="issue-relations"
-				
+				@new_relation="new_relation_modal_visible=true"
+				:formated_relations="formated_relations"
+				@relation_deleted="delete_relation"
 			>
 			</KRelations>
 			</Transition>

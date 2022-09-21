@@ -12,7 +12,7 @@ tools.str_contains = function(str, substr)
 
 tools.row_contains = function(row, val, collumns)
 {   
-    console.log('cont', val, collumns, row)
+  //  console.log('cont', val, collumns, row)
     if(collumns == undefined || collumns == [])  collumns = Object.keys(row)
         
     for(let i in collumns)
@@ -33,7 +33,7 @@ tools.uuidv4 = function() {
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
-/*
+
 tools.obj_clone = function(obj)
 {
 	return JSON.parse(JSON.stringify(obj))
@@ -42,12 +42,12 @@ tools.obj_clone = function(obj)
 tools.clone_obj = function(obj)
 {
 	return JSON.parse(JSON.stringify(obj))
-}*/
+}
 
-
+/*
 tools.clone_obj = tools.obj_clone = function(obj)
 {
-    if(obj.boards_columns != undefined) console.log('cloneclone', JSON.stringify(obj))
+  //  if(obj.boards_columns != undefined) console.log('cloneclone', JSON.stringify(obj))
     if(obj.toBuffer != undefined) return obj.clone()
 
 	var clone = {};
@@ -72,10 +72,10 @@ tools.clone_obj = tools.obj_clone = function(obj)
         }
     }
     
-    if(obj.boards_columns != undefined) console.log('cloneclone2', JSON.stringify(clone))
+   // if(obj.boards_columns != undefined) console.log('cloneclone2', JSON.stringify(clone))
     return clone;
 }
-
+*/
 tools.obj_length = function(obj)
 {
 	return Object.keys(obj).length
@@ -114,7 +114,7 @@ tools.obj_set_val = function(obj, path, val)
 tools.obj_attr_by_path = function(obj, path)
 {
   if(obj == undefined) return ''
-  console.log('obj_attr_by_path0', JSON.stringify(obj), path)
+ // console.log('obj_attr_by_path0', JSON.stringify(obj), path)
   if(Array.isArray(path))
   {
     let ans = ''
@@ -132,25 +132,25 @@ tools.obj_attr_by_path = function(obj, path)
   let path_parts = path.split('.')
   let data_part = obj
 
-  console.log('obj_attr_by_path1', path_parts, data_part)
+ // console.log('obj_attr_by_path1', path_parts, data_part)
 
   if(path_parts[0] == 'values')
   {
     for(let i in obj.values)
     {
-      console.log('vaal', obj.values[i].label, path_parts[1])
+    //  console.log('vaal', obj.values[i].label, path_parts[1])
       if(obj.values[i].label == path_parts[1]) return obj.values[i].value
     }
   }
 
   for(let i in path_parts)
   {
-    console.log('obj_attr_by_path11', data_part, path_parts[i])
+  //  console.log('obj_attr_by_path11', data_part, path_parts[i])
     data_part = data_part[path_parts[i]]
     if(data_part == undefined) return ''
   }
 
-  console.log('obj_attr_by_path2', path, data_part)
+ // console.log('obj_attr_by_path2', path, data_part)
   return data_part
 }
 
@@ -158,7 +158,7 @@ tools.compare_obj = function(sort_name)
 {
 	return function(a, b) 
 	{
-		console.log(a, b, sort_name)
+//		console.log(a, b, sort_name)
 	    let fa = a[sort_name].toLowerCase(),
 	        fb = b[sort_name].toLowerCase();
 
@@ -206,7 +206,7 @@ tools.readUploadedFile = (inputFile) =>
       resolve(temporaryFileReader.result);
     };
 
-    console.log(inputFile)
+  //  console.log(inputFile)
     temporaryFileReader.readAsDataURL(inputFile);
   });
 };
@@ -228,7 +228,7 @@ tools.readUploadedFileAsImg = (inputFile) =>
       resolve(temporaryFileReader.result);
     };
 
-    console.log(inputFile)
+   // console.log(inputFile)
     temporaryFileReader.readAsDataURL(inputFile);
   });
 };
@@ -244,10 +244,10 @@ tools.get_uri_param = function(uri, name)
   for (let i in vars)
   {
     let tmp = vars[i].split('=');
-    console.log('u', tmp, name)
+ //   console.log('u', tmp, name)
     if(tmp.length == 2 && tmp[0] === name ) 
     {
-      console.log('u', tmp[1], name,tmp.length )
+  //    console.log('u', tmp[1], name,tmp.length )
 
       return tmp[1]
     }

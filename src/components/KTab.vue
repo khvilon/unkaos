@@ -20,7 +20,7 @@
     computed:
     {
       selected: function() {
-        console.log(this.$parent.selected)
+     //   console.log(this.$parent.selected)
         return this.$parent.selected
         }
     }

@@ -89,13 +89,13 @@ store_helper.create_module = function(name)
 	{
 		if(data.uuid!==undefined && state['selected_' + name].uuid != data.uuid) return
 
-		console.log('data', data)
+		//console.log('data', data)
 		state['updated_' + name] = tools.clone_obj(data)
 		state['selected_' + name] = tools.obj_join(state['selected_' + name], data)
 	}
 	mutations['id_push_update_' + name] = function(state, data)
 	{
-		console.log('treert', name, data)
+		//console.log('treert', name, data)
 		
 		tools.obj_set_val(state['selected_' + name], data.id, data.val)
 	}
@@ -115,7 +115,7 @@ store_helper.create_module = function(name)
 		{		
 			if(JSON.stringify(state[name][num][i]) != JSON.stringify(state['updated_' + name][i]))
 			{
-				console.log('uuu', name, state[name][num][i],'\r\n', state['updated_' + name][i])
+				//console.log('uuu', name, state[name][num][i],'\r\n', state['updated_' + name][i])
 				state[name][num][i] = state['updated_' + name][i]
 				state['filtered_' + name][filtered_num][i] = state['updated_' + name][i]
 				state['selected_' + name][i] = state['updated_' + name][i]
@@ -126,7 +126,7 @@ store_helper.create_module = function(name)
 	mutations['unselect_' + name] = function(state)
 	{
 
-		console.log('iiiii', state['instance_' + name])
+		//console.log('iiiii', state['instance_' + name])
 	  	state['selected_' + name] = tools.obj_clone(state['instance_' + name])
 	  	state['updated_' + name] = tools.obj_clone(state['instance_' + name])
 	  	for(let i in state['filtered_' + name])
@@ -145,7 +145,7 @@ store_helper.create_module = function(name)
 	}
 	mutations['sort_' + name] = function(state, collumn)
 	{
-		console.log('lllll', collumn)
+		//console.log('lllll', collumn)
 		if(state['sorted_' + name].collumn == collumn) 
 			state['sorted_' + name].reverse = !state['sorted_' + name].reverse
 		else
@@ -161,19 +161,19 @@ store_helper.create_module = function(name)
 	const actions = {}
 	actions['get_' + name] = async function(state, params)
 	{
-		console.log('geeeeeet', name, params)
+		//console.log('geeeeeet', name, params)
 		
 		//if(name == 'issue') params = {uuid: 'cf80f5b4-ba05-472e-80ea-4805ffc2f431'}
 		//else params = undefined
 		const data = await rest.run_method('read_' + name, params)
 
-		console.log('got data', data)
+		//console.log('got data', data)
 
 	    this.commit('get_' + name, data);
 	}
 	actions['filter_' + name] = async function(state, {val, collumns})
 	{
-		console.log('ffffiiiiii', val, collumns)
+		//console.log('ffffiiiiii', val, collumns)
 		let data = tools.filter_data(state.state[name], val, collumns)
 
 	    this.commit('filter_' + name, data);
@@ -213,21 +213,21 @@ store_helper.create_module = function(name)
 		//let body = state.state['updated_' + name]
 		//body.uuid = state.state['selected_' + name].uuid
 
-		console.log('uuuuupdate', state.state['selected_' + name])
+		//console.log('uuuuupdate', state.state['selected_' + name])
 
 		return await rest.run_method('update_' + name, state.state['selected_' + name])
 	}
 	actions['save_' + name] = async function(state)
 	{
 		const is_new = state.state['selected_' + name] == undefined || state.state['selected_' + name].uuid == undefined || state.state['selected_' + name].is_new
-		console.log('is_new', is_new)
+		//console.log('is_new', is_new)
 		state.state['selected_' + name].is_new = false
 		if(is_new) return this.dispatch('create_' + name)
 		return this.dispatch('update_' + name)
 	}
 	actions['delete_' + name] = async function(state)
 	{
-		console.log(state.state['selected_' + name])
+		//console.log(state.state['selected_' + name])
 		if(state.state['selected_' + name] == undefined || state.state['selected_' + name].uuid == undefined) 
 			this.commit('unselect_' + name);
 		else

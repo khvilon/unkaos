@@ -14,7 +14,7 @@
 				localStorage.issues_query = this.search_query;
 				localStorage.issues_query_encoded = this.search_query_encoded;
 
-				console.log('get issues with query ', query, localStorage.issues_query)
+				//console.log('get issues with query ', query, localStorage.issues_query)
 				let options = {}
 				this.search_query_encoded = ''
 				if(query != undefined && query != '') options.query = this.search_query_encoded = query
@@ -49,7 +49,7 @@
 			},
 			update_search_query: function(val)
 			{
-				console.log('update_search_query', val)
+				//console.log('update_search_query', val)
 				this.search_query = val
 			},
 			load_more: function()
@@ -152,7 +152,7 @@
 	//this.search_query = ''
 	this.search_query = localStorage.issues_query != undefined ? localStorage.issues_query : ''
 	//this.search_query =  'Проект = Заказ '
-	console.log('this.search_query', this.search_query, localStorage.issues_query)
+//	console.log('this.search_query', this.search_query, localStorage.issues_query)
 	})
 	
 	//this.

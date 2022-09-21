@@ -159,7 +159,7 @@
           for(let i in this.wdata.workflow_nodes)
           {
             let node = this.wdata.workflow_nodes[i]
-            console.log('nn', node)
+        //    console.log('nn', node)
             node.x += event.movementX
             node.y += event.movementY
 
@@ -178,7 +178,7 @@
         if(this.$refs['is_edge_creation_active'].value)
         {
           let d = 'M' + node.x + ',' + node.y + 'L' + event.offsetX + ',' + event.offsetY
-          console.log(this.$refs['dragline'])
+     //     console.log(this.$refs['dragline'])
           this.$refs['dragline'].setAttribute('d' , d)
         }
         else
@@ -186,7 +186,7 @@
           node.x += event.movementX
           node.y += event.movementY
           this.dragged_node.el.setAttribute('transform', 'translate(' + node.x + ',' + node.y + ')')
-          console.log('nnn', this.$store['selected_workflows'])
+//console.log('nnn', this.$store['selected_workflows'])
           this.update_edges(this.dragged_node.issue_statuses[0].uuid)
         }
       },
@@ -369,7 +369,7 @@
         //  this.$store.commit('push_update_workflows', val)
 
           this.$store.commit('id_push_update_workflows', {id: '', val:val} )
-          console.log('wwwww', val)
+      //    console.log('wwwww', val)
         }, 
         deep:true
       }
@@ -385,12 +385,12 @@
     },
     beforeCreate() 
     {
-      console.log('iss1')
+   //   console.log('iss1')
       let name = 'issue_statuses'
         if (!this.$store.state[name])
         {
             const store_module = store_helper.create_module(name, '')
-            console.log('iss1', store_module)
+         //   console.log('iss1', store_module)
             this.$store.registerModule(name, store_module);
         }
     },

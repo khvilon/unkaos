@@ -1,21 +1,24 @@
 <template >
-  <div class="modal-bg" v-show="visible">
+  <div class="modal-bg"
+  @click.self="close()">
   <div
     class="panel modal new-relation-modal"
   >  
   <SelectInput
   label="Тип связи"
-		:value="2"
-		:values="[{uuid:'1', name:'a'},{uuid:'2', name:'b'}]"
-		:parameters="{clearable: false, reduce: obj => obj.uuid}"
+		:value="relation_types[0]"
+		:values="relation_types"
+		:parameters="{clearable: false}"
+    @update_parent_from_input="select_reletion_type"
    >
    </SelectInput>
 
  <SelectInput
+ @search="get_issues_sugestions"
   label="Задача"
-  :value="1"
-		:values="[{uuid:'1', name:'c'},{uuid:'2', name:'d'}]"
+		:values=issues_info
 		:parameters="{clearable: false, reduce: obj => obj.uuid}"
+    @update_parent_from_input="select_issue1"
    >
    </SelectInput>
     
@@ -23,6 +26,7 @@
   <KButton 
   name="Создать"
   id="create-relation-btn"
+  @click="save_relation()"
   />
    <KButton 
   name="Отменить"
@@ -35,27 +39,102 @@
 </template>
 
 <script>
+  
+  import rest from '../rest.ts'
+  import tools from '../tools.ts'
+
   export default {
+
+    
+  
+    emits: ['close_new_relation_modal', 'relation_added'],
+    props:
+    {
+      relation_types:
+      {
+        type: Array,
+        default: []
+      },
+      issue0_uuid:
+      {
+        type: String,
+        default: 'aa'
+      }
+    },
+
     data () {
-      vvisible:true
+      return{
+        issues_info: [],
+        issue1_uuid: '',
+        relation_type: {}
+      }
+      
     },
     created () {
-      this.vvisible=false
+      
     },
     mounted () {
       //this.select_tab(0)
+      if(this.relation_types!= undefined) this.relation_type = this.relation_types[0]
 
+      console.log(this.issue0_uuid)
+      
     },
     computed:
     {
       visible:function(){this.vvisible; return !this.vvisible}
     },
-    methods: {
+    methods:
+    {
+      select_issue1(issue1_uuid)
+      {
+        console.log(issue1_uuid)
+        this.issue1_uuid = issue1_uuid
+      },
+      select_reletion_type(relation_type)
+      {
+        console.log(relation_type)
+        this.relation_type = relation_type
+      },
+    
+    
+      async save_relation(){
+
+        if(this.issue1_uuid == undefined || this.issue1_uuid == null  || this.issue1_uuid == ''
+        || this.issue0_uuid == undefined || this.issue0_uuid == null  || this.issue0_uuid == ''
+        || this.relation_type == undefined || this.relation_type.uuid == null  || this.relation_type.uuid == '')
+        {
+          console.log('error saving relation', '#' + this.issue0_uuid + '#', '#' + this.issue1_uuid + '#', '#' + this.relation_type.uuid + '#')
+          return
+        }
+
+        let options0 = {
+          uuid: tools.uuidv4(),
+          issue0_uuid: this.relation_type.is_revert ? this.issue1_uuid : this.issue0_uuid,
+          issue1_uuid: this.relation_type.is_revert ? this.issue0_uuid : this.issue1_uuid,
+          type_uuid: this.relation_type.uuid
+        }
+
+    
+        this.$emit('relation_added', options0) 
+      },
       close () {
-        this.vvisible = true;
-       // this.$forceUpdate()
-        console.log(this.vvisible, this.visible)
+        this.$emit('close_new_relation_modal')
+      },
+      async get_issues_sugestions(text)
+      {
+        if(text == undefined || text == '') return
+        let options = {}
+        options.like = text
+        let ans = await rest.run_method('read_short_issue_info', options)
+        if(ans == null) return
+        this.issues_info = ans.sort()
+      },
+      search_event_handle(p1, p2)
+      {
+        console.log(p1, p2)
       }
+
     }
   }
 </script>

@@ -1,7 +1,7 @@
 <template>   
   <div class="numeric">
     <div class="label">{{label}}</div>
-    <input class="numeric-input" :type="type"  v-model="value" :disabled="disabled">
+    <input type="number" class="numeric-input" min="1" max="9"  v-model="value" :disabled="disabled">
   </div>
 </template>
 
@@ -109,6 +109,16 @@
   .numeric-input:disabled {
     background: rgb(30, 35, 38);
   }
+
+  input[type="number"] {
+  -webkit-appearance: textfield;
+     -moz-appearance: textfield;
+          appearance: textfield;
+}
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none;
+}
 
 
 

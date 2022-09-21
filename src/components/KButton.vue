@@ -21,6 +21,11 @@
         default: '',
       },
 
+      route: {
+        type: String,
+        default: '',
+      },
+
     },
     emits: ['button_ans'],
     methods:
@@ -31,6 +36,10 @@
           let ans = await this.$store.dispatch(this.func);
           //console.log('btn aaans', ans)
           this.$emit('button_ans', ans)
+        }
+        if(this.route!=undefined && this.route!='')
+        {
+          this.$router.push(this.route)
         }
        }
     }

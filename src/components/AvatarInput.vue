@@ -53,7 +53,7 @@
 
         this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
 
-        console.log(event.path[1].children[2].src=val)
+       // console.log(event.path[1].children[2].src=val)
 
         //this.changed_value = 'aaa'                   
       }

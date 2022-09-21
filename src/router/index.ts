@@ -43,7 +43,8 @@ const router = createRouter({
 	{ path: '/configs', component: PageConfigs },
 	{ path: '/issue/:id', component: PageIssue, props: true },
 	{ path: '/board/:uuid', component: PageBoard, props: true },
-	{ path: '/issue/', component: PageIssue }
+	{ path: '/issue/', component: PageIssue },
+	{ path: '/board/', component: PageBoard },
 /*	{
 		path: "/:catchAll(.*)",
 		name: "NotFound",
@@ -70,13 +71,13 @@ const get_subdomain = function()
 router.afterEach((to, from) => {
 
 	//store.state['common']['is_router_view_visible'] = false
-	console.log('old to', store.state['common'].uri, store.state['common'].is_in_workspace)
+	//console.log('old to', store.state['common'].uri, store.state['common'].is_in_workspace)
 
 
 	store.state['common'].uri = to.fullPath
 	store.state['common'].subdomain = get_subdomain()
 	store.state['common'].is_in_workspace = !store.state['common'].uri.contains('/login') && (store.state['common'].subdomain != '')
-	console.log('too', to.fullPath, store.state['common'].is_in_workspace)
+	//console.log('too', to.fullPath, store.state['common'].is_in_workspace)
 	
   })
 

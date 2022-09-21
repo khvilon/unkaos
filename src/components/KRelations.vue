@@ -1,20 +1,20 @@
 <template>   
   <label class="relations">
-    <div class="label"><i class='bx bx-link'></i><i class='add-relation-btn bx bx-plus'></i>{{label}}</div>
+    <div class="label"><i class='bx bx-link'></i><i class='add-relation-btn bx bx-plus' @click="()=>$emit('new_relation')"></i>{{label}}</div>
     <div class="relation"
-      v-for="(relation, index) in relations"
+      v-for="(relation, index) in formated_relations"
             :key="index"
           >
-          <span>
-            {{relation.type}}
-            <a :href="'/issue/' + relation.id">{{relation.id}} {{relation.name}}</a>
-            <i class='bx bx-unlink' @click="delete_relation(relation)"></i>
+          <span v-if="relation!=undefined">
+            {{relation.type_name}}
+            <a :href="'/issue/' + relation.id">{{relation.id}} {{relation.issue_name}}</a>
+            <i class='bx bx-unlink' @click="()=>$emit('relation_deleted', relation.uuid)"></i>
           </span>
       </div>
       
   </label>
 
-  <input type="file" ref="relations_input"  accept="*" v-on:change="preview_files" style="display: none" />
+  
 </template>
 
 
@@ -25,7 +25,7 @@
   export default 
   {
 
-    emits: ['relation_added', 'relation_deleted'],
+    emits: ['new_relation', 'relation_deleted'],
     props:
     {
       label:
@@ -48,21 +48,26 @@
         type: String,
         default: ''
       },
-      relations:
+      relation_types:
+      {
+        type: Array,
+        default: []
+      },
+      formated_relations:
       {
         type: Array,
         default: [
           {
             uuid: 'aaa',
             id: 'OR-3',
-            name: 'Захватить вселенную',
-            type: "Связана с",
+            issue_name: 'Захватить вселенную',
+            type_name: "Связана с",
           },
           {
             uuid: 'bbb',
             id: 'OR-2',
-            name: 'Выпить пива',
-            type: "Дублирует",
+            issue_name: 'Выпить пива',
+            type_name: "Дублирует",
           }]
       }
 
@@ -71,76 +76,13 @@
       get_src: function(value) 
       {
         if (value) return value
-      },
-      open_file_dialog: function(e)
-      {
-        this.$refs.relations_input.click()
-      },
-      preview_files: async function(event) 
-      {
-        let file = event.target.files[0]
-
-        if(file == undefined) return;
-
-        let name, extention
-        let dot_idx = file.name.lastIndexOf('.')
-        if(dot_idx < 0)
-        {
-          name = file.name
-          extention = ''
-        }
-        else
-        {
-          name = file.name.substr(0, dot_idx)
-          extention = file.name.substr(dot_idx+1)
-        }
-        
-        const val = await tools.readUploadedFile(file)
-
-        let relation = {
-          name: name,
-          extention: extention,
-          uuid: tools.uuidv4(),
-          data: val,
-          type: file.type,
-          table_name: 'relations'
-        }
-        
-        this.$emit('relation_added', relation)
-
-        //this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
-
-        //console.log(event.path[1].children[2].src=val)
-
-        //this.changed_value = 'aaa'                   
-      },
-      download_relation: async function(att){
-
-        let file = await rest.run_method('read_relations', {uuid: att.uuid})
-
-        let file_url = file[0].data
-
-        let file_link = document.createElement('a')
-
-        file_link.href = file_url
-        file_link.setAttribute('download', file[0].name + '.' + file[0].extention)
-
-        document.body.appendChild(file_link)
-        file_link.click()
-      },
-      delete_relation: function(att){
-        this.$emit('relation_deleted', att)
       }
     },
-    watch: {
-      value: function(val, oldVal) {
-        console.log('vch', val, oldVal, this.id, this.parent_name)
-        let data = {}
-        data[this.id] = val
-        this.$store.commit('push_update_' + this.parent_name, data)
-        //event.path[1].children[2].src=val
-      }
-    }
+    
+
+  
+     
+    
   }
 </script>
 

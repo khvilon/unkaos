@@ -43,7 +43,7 @@
     updated() {
       //this.alerts = this.$store.state['alerts']
       const show_timeout = {ok: 200, error: 1000*60*10}
-      console.log(JSON.stringify(this.alerts))
+     // console.log(JSON.stringify(this.alerts))
       for(let i in this.alerts)
       {
         if(this.alerts[i].status == 'new')

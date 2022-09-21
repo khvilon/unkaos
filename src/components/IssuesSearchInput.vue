@@ -179,7 +179,7 @@
       {
         this.value = this.value.replaceAll('\n', '').replaceAll('\r', '')
         let chars = this.value.split('')
-        console.log(chars)
+       // console.log(chars)
         let html = ''
         for(let i in chars)
         {
@@ -189,7 +189,7 @@
         
         let pos0 = this.position
         let pos1 = this.getCaretIndex(this.$refs.issues_search_input)
-        console.log(pos0, pos1)
+     //   console.log(pos0, pos1)
         if(pos0 > 0) this.setCaretIndex(this.$refs.issues_search_input, pos0)
         
         return html
@@ -199,7 +199,7 @@
 
   watch: {
       parent_query: function(val, oldVal) {
-        console.log('parent_query', val)
+      //  console.log('parent_query', val)
         if(val != this.value)
         {
           this.value = val  
@@ -220,7 +220,7 @@
       emit_query()
       {
         
-        console.log('this.fields.length * this.projects.length * this.issue_types.length', this.fields.length , this.projects.length , this.issue_types.length)
+      //  console.log('this.fields.length * this.projects.length * this.issue_types.length', this.fields.length , this.projects.length , this.issue_types.length)
         if(this.fields.length * this.projects.length * this.issue_types.length == 0)
         {
           setTimeout(this.emit_query, 200)
@@ -261,7 +261,7 @@
          nextTick(() => {
         if (isSupported) {
               
-              console.log('popopo', pos-1)
+           //   console.log('popopo', pos-1)
               const node = element.childNodes[pos-1]
               if(node == undefined) return
               const range = document.createRange()
@@ -290,7 +290,7 @@
         
      
           this.position = this.getCaretIndex(e.target)
-          console.log('pospos', e, this.position)
+     //     console.log('pospos', e, this.position)
           this.value = e.target.innerText.replace(' ', ' ')
 
           this.emit_changes()
@@ -303,7 +303,7 @@
 
     focus(e)
     {
-      console.log('fff', e)
+  
       this.$emit('input_focus', true);
       this.is_in_focus=true;
       if(this.value=='') this.fill_suggestions(0)
@@ -320,7 +320,7 @@
       blur(e)
       {
         this.$emit('input_focus', false)
-        console.log('blur', e)
+        //console.log('blur', e)
         //this.is_in_focus=false
         setTimeout(this.set_focus_false, 300)
       },
@@ -330,7 +330,7 @@
         word = word.replaceAll(' ', ' ')
         let word_in_text = arr.substr(idx, word.length).replaceAll(' ', ' ')
         let found = word_in_text == word
-        console.log('have_word_at2', found, '#' + arr.substr(idx, word.length) + '#', '#' + word + '#')
+      //  console.log('have_word_at2', found, '#' + arr.substr(idx, word.length) + '#', '#' + word + '#')
         return found
       },
 
@@ -345,7 +345,7 @@
 
       fill_suggestions(waits_for_idx, field_type)
       {
-        console.log('fill_suggestions', waits_for_idx)
+       // console.log('fill_suggestions', waits_for_idx)
         this.suggestions = []
         if(waits_for_idx == 0)
         {
@@ -371,7 +371,7 @@
           }        
         }
         else if(waits_for_idx == 3)  this.suggestions = this.logic_operators
-        console.log('this.suggestions', this.suggestions)
+       // console.log('this.suggestions', this.suggestions)
       },
 
 
@@ -380,13 +380,13 @@
       use_suggestion(suggestion, e)
       {
         
-        console.log('use_suggestion', this.str_start_idx, this.str_end_idx)
+     //   console.log('use_suggestion', this.str_start_idx, this.str_end_idx)
         if(this.str_start_idx > 0 && this.value[this.str_start_idx] != ' ') suggestion = ' ' + suggestion
         suggestion += ' '
-        console.log('ssss', suggestion + '#')
+    //    console.log('ssss', suggestion + '#')
         this.value = this.value.substring(0, this.str_start_idx) + suggestion + this.value.substring(this.str_end_idx+1)
         this.position = this.str_start_idx + suggestion.length
-        console.log('ssss2', this.value + '#')
+      //  console.log('ssss2', this.value + '#')
         this.$refs.issues_search_input.focus();
 
         nextTick(() => {
@@ -428,7 +428,7 @@
         
         style.innerHTML = '.' + name + ' ' + rules;
          
-        console.log(name)    
+      //  console.log(name)    
       },
 
 
@@ -509,7 +509,7 @@
           found = false
           qd.name = ''
           
-          console.log('aaaaaaaaaa', qd, qd.query[qd.i])
+         // console.log('aaaaaaaaaa', qd, qd.query[qd.i])
 
           while (qd.query.indexOf(' ') < -1) 
           {
@@ -518,12 +518,12 @@
 
           if(qd.query[qd.i] == ' ' || qd.query[qd.i] == ' ') 
           {
-            console.log('void')
+          //  console.log('void')
             //this.fill_suggestions(waits_for_idx, qd.field_type)
             continue
           }
         
-          console.log('waits_for_idx', waits_for_idx, qd.i)
+       //   console.log('waits_for_idx', waits_for_idx, qd.i)
 
           if(waits_for_idx == 0)
           {
@@ -542,6 +542,7 @@
             {
               if(this.have_word_at(qd.query, this.operations[j], qd.i))
               {
+                if(qd.field_type == 'Numeric') qd.converted_query += '::numeric'
                 qd.converted_query += this.operations[j]
                 qd.name = this.operations[j]
                 found = true;
@@ -555,11 +556,11 @@
             {
               
               let vals = this.vals_dict[qd.field_type].map((p) => p.name)
-              console.log(this.vals_dict)
-              console.log('search infields values dits', qd, vals)
+           //   console.log(this.vals_dict)
+          //    console.log('search infields values dits', qd, vals)
               for(let j in vals)
               {
-                console.log(qd.query, vals[j], qd.i)
+            //    console.log(qd.query, vals[j], qd.i)
                 if(this.have_word_at(qd.query, vals[j], qd.i))
                 {
                   qd.converted_query += "'" + this.vals_dict[qd.field_type][j].uuid + "'#"
@@ -568,7 +569,7 @@
                   break;
                 }
               }
-              console.log('end search infields values dits', found)
+           //   console.log('end search infields values dits', found)
             }
             else if (qd.field_type == 'Select')
             {
@@ -589,11 +590,11 @@
               else
               {
                 let end_idx0 =  qd.query.indexOf(' ', qd.i+1)
-                console.log('end_idx 0 ', qd.query, qd.i, end_idx0)
+           //     console.log('end_idx 0 ', qd.query, qd.i, end_idx0)
                 end_idx0 =  qd.query.indexOf(' ', qd.i+1)
-                console.log('end_idx 00 ', qd.query, qd.i, end_idx0)
+           //     console.log('end_idx 00 ', qd.query, qd.i, end_idx0)
                 let end_idx1 =  qd.query.indexOf(')', qd.i+1)
-                console.log('end_idx 01 ', qd.query, qd.i, end_idx0, end_idx1)
+           //     console.log('end_idx 01 ', qd.query, qd.i, end_idx0, end_idx1)
                 if(end_idx0 > 0 && end_idx1 > 0) end_idx = Math.min(end_idx0, end_idx1)
                 else if(end_idx0 > 0) end_idx = end_idx0
                 else if(end_idx1 > 0) end_idx = end_idx1
@@ -603,7 +604,7 @@
                 found = true
                 qd.name = qd.query.substring(qd.i, end_idx)
                 qd.converted_query += qd.name + '#'
-                console.log('found val ', qd.query.name)
+             //   console.log('found val ', qd.query.name)
               }
             }
           }
@@ -655,7 +656,7 @@
 
       let query_valid = (qd.i == qd.query.length && qd.query.length > 0 && waits_for_idx == 3) || qd.query.length == 0
 
-      console.log('convvvvvvvvvvv query', query_valid, qd)
+      //console.log('convvvvvvvvvvv query', query_valid, qd)
 
       return (query_valid)
 

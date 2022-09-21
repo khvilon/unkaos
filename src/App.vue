@@ -17,19 +17,21 @@
   export default 
   {
 
+
   data()
   {
-    return
+    let data =
     {
-      is_in_workspace = false;
+      is_in_workspace: false
     }
+    return data
   },
 
    created ()
     {
       
 
-      console.log('localStorage.tic', localStorage.tic)
+     // console.log('localStorage.tic', localStorage.tic)
 
       let uri = window.location.href
       let uri_parts = uri.split('.')
@@ -80,7 +82,7 @@
         if(uri_parts.length!=3)
         {
           this.is_in_workspace = false
-          this.$router.push('/issues')
+          this.$router.push('/')
           return 
         }
 
