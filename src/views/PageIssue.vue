@@ -320,6 +320,13 @@
 			dictionary: 'fields',
 			type: 'Select',
 			clearable:"false"
+		},
+		{
+			label: 'Спринты',
+			id: 'sprint_uuid',
+			dictionary: 'sprints',
+			type: 'Select',
+			clearable:"true"
 		}
     ],
 	comment: '',
@@ -664,6 +671,19 @@
       <div id="issue_card" class="panel">
 		  <Transition name="element_fade">
 		  <div id="issue_card_scroller" v-if="!loading">
+
+			<SelectInput label="Спринт"
+			  	v-if="!loading && id!=''"
+				class="issue-sprint-input"
+				:value="issue[0].sprint_uuid"
+				:parent_name="'issue'"
+				:values="sprints"
+				:parameters="{clearable: true, reduce: obj => obj.uuid}"
+				id="sprint_uuid"
+			>
+			</SelectInput>
+
+
 		<component  v-bind:is="input.type + 'Input'"
 	  			v-for="(input, index) in get_fields_exclude_names(['Название', 'Описание', 'Автор'])"
 				

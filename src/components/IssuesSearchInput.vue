@@ -146,6 +146,11 @@
             type: 'Status',
             field: 'status_uuid'
           },
+          {
+            name: 'Спринт',
+            type: 'Sprint',
+            field: 'sprint_uuid'
+          }
         ],
         brackets: ['(', ')'],
         operations: ['=', '<', '>'],

@@ -131,6 +131,11 @@ export default
 		{
 			en: 'Boards'
 		}
+		,
+		"Спринты":
+		{
+			en: 'Sprints'
+		}
 		
 
 

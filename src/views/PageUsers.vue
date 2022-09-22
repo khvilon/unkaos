@@ -6,6 +6,7 @@
 
 	const data = 
   {
+	new_pass: '',
     name: 'users',
     label: 'Пользователи',
     collumns:[
@@ -13,8 +14,8 @@
 	    	name: 'ФИО',
 	        id: "uuid",
 	        type: 'user',
-			search: true
 	    },
+		
 	    {
 	        name: 'Логин',
 	        id: "login",
@@ -83,11 +84,24 @@
 	return (this.selected_users.uuid == user.uuid)
   }
 
+  mod.methods.update_password = function()
+  {
+	  if(this.selected_users == undefined || this.selected_users.uuid == undefined || this.new_pass == '') return
+	rest.run_method('update_password', {user: this.selected_users, password: this.new_pass})
+  }
+
   mod.methods.change_password = function()
   {
 	  if(this.selected_users == undefined || this.selected_users.uuid == undefined ) return
-	rest.run_method('update_password_rand', {uuid: this.selected_users.uuid})
+	rest.run_method('update_password_rand', {user: this.selected_users})
   }
+
+  mod.methods.change_pass_var = function(val)
+  {
+	  console.log(val)
+	  this.new_pass = val
+  }
+  
 
 
   
@@ -132,9 +146,13 @@
 	  			:disabled="input.disabled"
 	  		></component>
 			<div class="change-pass-div" v-if="is_this_user()">
-				<StringInput label="Пароль"></StringInput>
+				<StringInput label="Пароль"
+				@update_parent_from_input="change_pass_var">
+					
+				</StringInput>
 				<KButton
 			  			:name="'Изменить'"
+						  @click="update_password"
 			  	/>
 				  
 			</div>

@@ -16,6 +16,7 @@ import PageBoards from '../views/PageBoards.vue'
 import PageBoard from '../views/PageBoard.vue'
 import PageNotifications from '../views/PageNotifications.vue'
 import PageRoles from '../views/PageRoles.vue'
+import PageSprints from '../views/PageSprints.vue'
 
 
 
@@ -34,6 +35,7 @@ const router = createRouter({
   	{ path: '/issues', component: PageIssues},
   	{ path: '/notifications', component: PageNotifications },
   	{ path: '/projects', component: PageProjects },
+	{ path: '/configs/sprints', component: PageSprints },
   	{ path: '/configs/roles', component: PageRoles },
   	{ path: '/configs/issue_types', component: PageIssueTypes },
   	{ path: '/configs/workflows', component: PageWorkflows },

@@ -60,6 +60,7 @@
             
             };
           
+            if(val == undefined || val == null || val == '') return ''
             let date =  new Date(val)
 
             console.log(date.getFullYear)
