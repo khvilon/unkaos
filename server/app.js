@@ -77,16 +77,16 @@ async function init()
             return
         }
 
-        if(user.uuid != params.uuid)
+        if(user.uuid != params.user.uuid)
         {
-            es.status(403);
+            res.status(403);
             res.send({message: 'you dont have permission to change other users password'});
             return
         }
         
-        await security.set_password(subdomain, params.uuid, params.password)
+        await security.set_password(subdomain, params.user.uuid, params.password)
         
-        res.send('done')
+        res.send({text: 'done'})
     })
 
     app.post('/upsert_password_rand', async (req, res) => {   
@@ -95,9 +95,9 @@ async function init()
 
         let token = req.headers.token
 
-        let user = await security.check_token(subdomain, token)
+        let curr_user = await security.check_token(subdomain, token)
 
-        if(user == null)
+        if(curr_user == null)
         {
             res.status(401);
             res.send({message: 'wrong token'});
@@ -122,13 +122,15 @@ async function init()
             password += pass_chars.substring(rand_num, rand_num +1);
         }
         
-        await security.set_password(subdomain, params.uuid, password)
+        await security.set_password(subdomain, params.user.uuid, password)
+
 
         
-
-        mail.send('n@khvilon.ru', 'new pass', 'your new pass is ' + password, '')
         
-        res.send('done')
+
+        mail.send(params.user.mail, 'Сброс пароля Unkaos', 'Уважаемый ' + params.user.name + ', ваш новый пароль ' + password + '. Вход на http://unkaos.ru/login', '')
+        
+        res.send({text: 'done'})
     })
 
     

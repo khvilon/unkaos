@@ -10,7 +10,7 @@ const author_field_uuid = '733f669a-9584-4469-a41b-544e25b8d91a'
 const name_field_uuid = 'c96966ea-a591-47a9-992c-0a2f6443bc80'
 
 
-const select_limit = 100
+const select_limit = 200
 
 const atob = require('atob');
 
@@ -128,8 +128,9 @@ crud.load = async function(){
     CASE WHEN COUNT(T15) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T15) END AS ACTIONS,
     STATUS_UUID,
     T17.NAME AS STATUS_NAME,
-    CASE WHEN COUNT(T18) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T18) END AS ATTACHMENTS
-    
+    CASE WHEN COUNT(T18) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T18) END AS ATTACHMENTS,
+    T1.SPRINT_UUID,
+    T20.NAME AS SPRINT_NAME
     FROM 
     ISSUES T1
     JOIN
@@ -203,6 +204,8 @@ crud.load = async function(){
         FROM RELATIONS WHERE ISSUE1_UUID = T1.UUID)
     ) T19
     ON T1.UUID = T19.ISSUE0_UUID
+    LEFT JOIN SPRINTS T20
+    ON T20.UUID = T1.SPRINT_UUID
     WHERE T1.DELETED_AT IS NULL $1
     GROUP BY
     T1.UUID,
@@ -217,6 +220,7 @@ crud.load = async function(){
     PROJECT_SHORT_NAME,
     T1.STATUS_UUID,
     T17.NAME,
+    T20.NAME,
     T11.WORKFLOW_UUID 
     LIMIT 
     ` + select_limit

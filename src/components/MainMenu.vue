@@ -52,6 +52,12 @@
             level: 1
           },
           {
+            link: '/configs/sprints',
+            name: dict['Спринты'],
+            icon: 'bx-timer',
+            level: 2
+          },
+          {
             link: '/configs/users',
             name: dict['Пользователи'],
             icon: 'bx-user',

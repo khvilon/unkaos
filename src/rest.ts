@@ -5,7 +5,7 @@ import tools from './tools.ts'
 
 rest.base_url = 'http://localhost:3001/'
 
-rest.base_url = 'http://unkaos.ru:3001/'
+//rest.base_url = 'http://unkaos.ru:3001/'
 
 rest.dict = 
 {

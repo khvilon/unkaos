@@ -6,6 +6,50 @@ migrations.get_query =
 BEGIN;
 
 
+
+
+
+
+
+
+CREATE TABLE IF NOT EXISTS public.sprints
+(
+    uuid uuid NOT NULL,
+    name text COLLATE pg_catalog."default" NOT NULL,
+    start_date timestamp with time zone NOT NULL DEFAULT now(),
+    end_date timestamp with time zone NOT NULL DEFAULT now(),
+    color text COLLATE pg_catalog."default",
+    archived_at timestamp with time zone,
+    resolved_at timestamp with time zone,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    CONSTRAINT "Sprints_pkey" PRIMARY KEY (uuid)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.sprints
+    OWNER to postgres;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 CREATE TABLE IF NOT EXISTS oboz.field_types
 (
     uuid uuid NOT NULL,
