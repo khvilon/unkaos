@@ -12,6 +12,7 @@ import PageLogin from '../views/PageLogin.vue'
 import PageLanding from '../views/PageLanding.vue'
 import PageConfigs from '../views/PageConfigs.vue'
 import PageDashboards from '../views/PageDashboards.vue'
+import PageDashboard from '../views/PageDashboard.vue'
 import PageBoards from '../views/PageBoards.vue'
 import PageBoard from '../views/PageBoard.vue'
 import PageNotifications from '../views/PageNotifications.vue'
@@ -47,6 +48,7 @@ const router = createRouter({
 	{ path: '/board/:uuid', component: PageBoard, props: true },
 	{ path: '/issue/', component: PageIssue },
 	{ path: '/board/', component: PageBoard },
+	{ path: '/dashboard/', component: PageDashboard },
 /*	{
 		path: "/:catchAll(.*)",
 		name: "NotFound",

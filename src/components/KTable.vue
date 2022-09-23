@@ -19,8 +19,8 @@
         <tr
             v-for="(row, index) in tableData"
             :key="index"
-            :uuid="row.uuid" 
-            v-bind:class="{ selected_row: row.selected }"       
+            :uuid="row.uuid"   
+            :class="{ 'selected_row': row.selected, 'hidden-row': (tree_view && row.parent_uuid != null && !all_parents_expended(row.parent_uuid)) }"   
         >
           <td
             v-for="(collumn, index) in collumns"
@@ -28,12 +28,36 @@
             @click="select_row($event)"
             
           >
-            <span v-if="collumn.type!='link'"  v-html="format_val(row, collumn)"></span>
+            <span
+            v-if="tree_view && collumn.type=='link'"
+            >
+            {{'    '.repeat(row.ch_level)}}
+            </span>
+
+            <span  class='expander'
+            v-if="tree_view && collumn.type=='link' && row.children != undefined && row.children.length > 0"
+            @click="row.expanded=!row.expanded"
+            >
+            {{ row.expanded ? '⯆ ' : '⯈ '}}
+            </span>
+
+            <span v-if="tree_view && collumn.type=='link' && row.parent_uuid!=null && (row.children == undefined || row.children.length == 0)">{{'● '}}</span>
+            
+            <span v-if="collumn.type!='link' && collumn.id != 'parent_uuid'"  v-html="format_val(row, collumn)"></span>
+
             <router-link v-if="collumn.type=='link'" 
-            :to="collumn.link + get_json_val(row, collumn.link_id)" tag="li">{{get_json_val(row, collumn.id)}}
+            :to="collumn.link + get_json_val(row, collumn.link_id)" tag="li"
+            :style="[  {whiteSpace: 'nowrap'} ]"
+            >
+
+            {{get_json_val(row, collumn.id)}} 
             </router-link>
+            
           </td>     
         </tr>
+
+
+
       </tbody>
     </table>
 
@@ -90,10 +114,27 @@
         this.$store.commit('select_' + this.name, uuid);
         //console.log("sel", this.name)
       },
+      get_row_by_uuid(uuid)
+      {
+          for(let i in this.tableData)
+          {
+            if(this.tableData[i].uuid == uuid) return  this.tableData[i]
+          }
+      },
+      all_parents_expended(uuid)
+      {
+          if(uuid == null) return true
+
+          let parent = this.get_row_by_uuid(uuid)
+          if(!parent.expanded) return false
+
+          return this.all_parents_expended(parent.parent_uuid)
+      },
       get_json_val: tools.obj_attr_by_path,
       format_val(row, collumn)
       {
-        
+        const max_length = 100
+
         let type = collumn.type
         //let val = row[collumn.id]
 
@@ -103,7 +144,11 @@
 
         //(collumn.id.indexOf('.') > -1) val = row[collumn.id.split('.')[0]][0][collumn.id.split('.')[1]]
 
-        if (type == undefined) return val
+        if (type == undefined) 
+        {
+          if(val != undefined && val.toString() != undefined && val.toString().length > 100) val = val.toString().substring(0, max_length) + '...'
+          return val
+        }
         if (type == 'date') 
         {   
           
@@ -162,11 +207,16 @@
     data()
     {
       return{
-        last_scroll_update: new Date()
+        last_scroll_update: new Date(),
+        children_padding: 10
       }
     },
     props: 
     { 
+      tree_view: {
+        type: Boolean,
+        default: false,
+      },
       name: {
         type: String,
         default: '',
@@ -254,6 +304,16 @@ td:last-child {
 
   .user{
 margin-top: -5px;
+  }
+
+  .expander
+  {
+    cursor: pointer;
+  }
+
+  .hidden-row
+  {
+    display:none;
   }
 
 
