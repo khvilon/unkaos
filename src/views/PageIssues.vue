@@ -9,6 +9,24 @@
 	console.log('d', d['Название'],d)
 
 	let methods = {
+		add_with_children: function(obj, arr, ch_level){
+
+			if(ch_level > 10) return arr
+
+			obj.ch_level = ch_level
+
+			arr.push(obj)
+
+			if(obj.children == undefined) return arr
+
+			for(let i in obj.children)
+			{
+				console.log(obj, ch_level)
+				arr = this.add_with_children(obj.children[i], arr, ch_level+1)
+			}
+
+			return arr
+		},
 		get_issues: async function(query, offset)
 			{
 				localStorage.issues_query = this.search_query;
@@ -19,17 +37,61 @@
 				this.search_query_encoded = ''
 				if(query != undefined && query != '') options.query = this.search_query_encoded = query
 				if(offset != undefined) options.offset = offset
+
+				//options.tree_view = tree_view
 				
 				let issues = (await rest.run_method('read_issues', options))
+
+				console.log('this.loaded_issues0', issues)
 
 				if(offset != undefined) 
 				{
 					for(let i in issues)
 					{
+						
 						this.loaded_issues.push(issues[i])
 					}
 				}
 				else this.loaded_issues = issues
+
+				this.loaded_issues.map((issue)=>issue.children=[])
+
+				for(let i in this.loaded_issues)
+				{
+					this.loaded_issues[i].children = []
+				}
+
+				
+				for(let i in this.loaded_issues)
+				{
+					if(this.loaded_issues[i].parent_uuid != null && this.loaded_issues[i].parent_uuid != undefined)
+					{
+						for(let j in this.loaded_issues)
+						{
+							
+							if(this.loaded_issues[j].uuid == this.loaded_issues[i].parent_uuid)
+							{
+								this.loaded_issues[j].children.push(this.loaded_issues[i])
+							}
+							
+						}
+					}
+				}
+
+				console.log('this.loaded_issues0', this.loaded_issues)
+				
+				this.loaded_issues_tree = []
+				
+				for(let i in this.loaded_issues)
+				{
+					if(this.loaded_issues[i].parent_uuid == null) 
+						this.loaded_issues_tree = this.add_with_children(this.loaded_issues[i], this.loaded_issues_tree, 0)
+				}
+				
+							
+				console.log('this.loaded_issues1', this.loaded_issues, this.loaded_issues_tree)
+
+				//this.loaded_issues = issues
 				//console.log(this.loaded_issues[0], this.issues[0])
 			},
 		get_field_path_by_name: function(name)
@@ -62,11 +124,17 @@
 	const data = 
   {
 	loaded_issues: [],
+	loaded_issues_tree: [],
     name: 'issues',
     label: 'Задачи',
 	search_query: undefined,
 	search_query_encoded: '',
+	tree_view: true,
     collumns:[
+		{
+			name: '',
+			id: 'parent_uuid',
+		},
 		{
 	        name: '№',
 	        id: ["project_short_name","'-'", "num"],
@@ -200,6 +268,12 @@
 		>
 
 		</IssuesSearchInput>
+
+		<i 
+		:class="{ 'bx-subdirectory-right' : !tree_view, 'bx-list-ul' : tree_view }"
+		class='bx top-menu-icon-btn'
+		@click="tree_view=!tree_view"
+		></i>
 		
 
 		<KButton 
@@ -217,9 +291,10 @@
 				<KTable v-if="!loading"
 					@scroll_update="load_more"
 					:collumns="collumns"
-					:table-data="loaded_issues"
+					:table-data="tree_view? loaded_issues_tree : loaded_issues"
 					:name="'issues'"
 					:dicts="{users: users}"
+					:tree_view="tree_view"
 				/>
 			</Transition>
 	  	</div>

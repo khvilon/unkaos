@@ -8,9 +8,10 @@ const edited_type_uuid = '1ff12964-4f5c-4be9-8fe3-f3d9a7225300'
 const transition_type_uuid = '4d7d3265-806b-492a-b6c1-636e1fa653a9'
 const author_field_uuid = '733f669a-9584-4469-a41b-544e25b8d91a'
 const name_field_uuid = 'c96966ea-a591-47a9-992c-0a2f6443bc80'
+const parent_relation_type_uuid = '73b0a22e-4632-453d-903b-09804093ef1b'
 
 
-const select_limit = 200
+const select_limit = 100
 
 const atob = require('atob');
 
@@ -130,6 +131,7 @@ crud.load = async function(){
     T17.NAME AS STATUS_NAME,
     CASE WHEN COUNT(T18) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T18) END AS ATTACHMENTS,
     T1.SPRINT_UUID,
+    T19.PARENT_UUID,
     T20.NAME AS SPRINT_NAME
     FROM 
     ISSUES T1
@@ -189,21 +191,14 @@ crud.load = async function(){
     FROM ATTACHMENTS) T18
     ON T1.UUID = T18.ISSUE_UUID
     LEFT JOIN LATERAL
-    ((SELECT
-        ISSUE0_UUID,
-        ISSUE1_UUID,
-        'relations' AS TABLE_NAME,
-        FALSE AS is_reverted
-        FROM RELATIONS WHERE ISSUE0_UUID = T1.UUID)
-    UNION
     (SELECT
-        ISSUE1_UUID AS ISSUE0_UUID,
-        ISSUE0_UUID AS ISSUE1_UUID,
-        'relations' AS TABLE_NAME,
-        TRUE AS is_reverted
-        FROM RELATIONS WHERE ISSUE1_UUID = T1.UUID)
+        ISSUE0_UUID PARENT_UUID,
+        ISSUE1_UUID
+        FROM RELATIONS WHERE ISSUE1_UUID = T1.UUID
+        AND TYPE_UUID = '` + parent_relation_type_uuid + `'
+        AND DELETED_AT IS NULL
     ) T19
-    ON T1.UUID = T19.ISSUE0_UUID
+    ON T1.UUID = T19.ISSUE1_UUID
     LEFT JOIN SPRINTS T20
     ON T20.UUID = T1.SPRINT_UUID
     WHERE T1.DELETED_AT IS NULL $1
@@ -220,6 +215,7 @@ crud.load = async function(){
     PROJECT_SHORT_NAME,
     T1.STATUS_UUID,
     T17.NAME,
+    T19.PARENT_UUID,
     T20.NAME,
     T11.WORKFLOW_UUID 
     LIMIT 

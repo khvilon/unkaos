@@ -110,8 +110,8 @@
 
         let options0 = {
           uuid: tools.uuidv4(),
-          issue0_uuid: this.relation_type.is_revert ? this.issue1_uuid : this.issue0_uuid,
-          issue1_uuid: this.relation_type.is_revert ? this.issue0_uuid : this.issue1_uuid,
+          issue0_uuid: this.relation_type.is_reverted ? this.issue1_uuid : this.issue0_uuid,
+          issue1_uuid: this.relation_type.is_reverted ? this.issue0_uuid : this.issue1_uuid,
           type_uuid: this.relation_type.uuid
         }
 

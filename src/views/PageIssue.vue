@@ -480,11 +480,13 @@
 
 			for(let i in rt)
 			{
-				console.log('this.relation_types', rt[i].name == rt[i].revert_name, rt[i].name, rt[i].revert_name)
+				
 				this.relation_types.push({uuid: rt[i].uuid, name: rt[i].name, is_reverted: false})
 				if(rt[i].name == rt[i].revert_name) continue 
 				this.relation_types.push({uuid: rt[i].uuid, name: rt[i].revert_name, is_reverted: true})
 			}
+
+			console.log('this.relation_types', this.relation_types)
 
 			this.get_formated_relations()
 
