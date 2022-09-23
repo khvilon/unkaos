@@ -46,7 +46,8 @@ import { computed } from '@vue/runtime-core';
 			if(this.selected_board.is_new) this.configs_open = true
 
 			 
-				this.selected_board.boards_columns = this.selected_board.boards_columns.sort((a, b) => { a.num-b.num } )
+			this.selected_board.boards_columns = this.selected_board.boards_columns.sort((a, b) => { return a.num-b.num } )
+			console.log('this.selected_board.boards_columns',JSON.stringify(this.selected_board.boards_columns))
 
 			//console.log('sselected_board3')
 			//prapare column values
