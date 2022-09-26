@@ -388,9 +388,6 @@ import { computed } from '@vue/runtime-core';
 	
 
     <div id=dashboard_down_panel class="panel" >
-	 
-	  
-
 
 		  
 	</div>

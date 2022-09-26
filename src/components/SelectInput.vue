@@ -28,8 +28,9 @@ export default {
           if(this.values[i].uuid == val) {val_obj = this.values[i]; break}
         }
         
-     //   console.log('vue_select', val, oldVal, this.id, val_obj)
+        console.log('vue_select', val, oldVal, this.id, val_obj)
      //   console.log('pname', this.parent_name)
+        
 
         if(val != undefined && val[0] != undefined && val[0].num != undefined)
         {
@@ -42,13 +43,16 @@ export default {
         }
 
 
-        this.$emit('update_parent_from_input', val)//val_obj == undefined? val : val_obj)
+        
 
         
 
-        if(this.parent_name == undefined || this.parent_name == '') return;
+      
 
-        this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
+         if(this.parent_name != undefined && this.parent_name != '') 
+          this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
+
+        this.$emit('update_parent_from_input', val)//val_obj == undefined? val : val_obj)
       }
     },
   computed:

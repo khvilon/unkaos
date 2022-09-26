@@ -132,8 +132,7 @@ async function init()
         
         res.send({text: 'done'})
     })
-
-    
+  
 
     for(let table in crud.querys)
     {
@@ -159,7 +158,6 @@ async function init()
                 }
 
                 console.log('checked user ', user)
-           
 
                 let [method, table_name] = tools.split2(func_name, '_')
 
