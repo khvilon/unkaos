@@ -9,7 +9,7 @@
 <script>
   export default 
   {
-
+    emits: ['update_parent_from_input'],
     props:
     {
        disabled:
@@ -41,8 +41,10 @@
     },
     watch: {
       value: function(val, oldVal) {
+        
         console.log(val, oldVal, this.id, this.parent_name)
         this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
+        this.$emit('update_parent_from_input', val)//val_obj == undefined? val : val_obj)
       }
     }
   }

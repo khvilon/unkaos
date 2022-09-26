@@ -27,10 +27,19 @@ CREATE TABLE IF NOT EXISTS public.sprints
     CONSTRAINT "Sprints_pkey" PRIMARY KEY (uuid)
 )
 
-TABLESPACE pg_default;
-
 ALTER TABLE IF EXISTS public.sprints
-    OWNER to postgres;
+    OWNER to khvilon3;
+
+ALTER TABLE public.boards 
+ADD COLUMN swimlanes_field_uuid uuid,
+ADD COLUMN swimlanes_by_root boolean NOT NULL DEFAULT true,
+ADD COLUMN no_swimlanes boolean NOT NULL DEFAULT false,
+ADD COLUMN use_sprint_filter boolean NOT NULL DEFAULT true;
+
+
+
+    
+    
 
 
 
