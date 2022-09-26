@@ -307,23 +307,27 @@ crud.make_query = {
             //console.log('user_query', user_query)
 
             let uuids_query = `WITH uuids AS (
-                SELECT DISTINCT issue_uuid 
-                FROM field_values FV
-                JOIN fields F
-                ON FV.field_uuid = F.uuid
-                JOIN issues I
-                ON FV.issue_uuid = I.uuid
+                SELECT DISTINCT I.uuid issue_uuid
+                FROM issues I
                 WHERE `
+
+
+                let f1 =
+                `EXISTS (SELECT 1 
+                    FROM field_values FV
+                    LEFT JOIN fields F
+                    ON FV.field_uuid = F.uuid
+                    WHERE 
+                    FV.issue_uuid = I.uuid AND
+                    F.uuid = '`
+                
+                let f2 = `' AND FV.value `
+
+               
+                   
 
                 //"fields#733f669a-9584-4469-a41b-544e25b8d91a#='Х'andfields#247e7f58-5c9b-4a31-9c27-5d1d4c84669f#='ШС'"
 
-                while(user_query.indexOf('fields#') > -1)
-                {
-                    let start = user_query.indexOf('fields#')
-                    user_query = user_query.replaceFrom('fields#', "(F.uuid = '", start )
-                    user_query = user_query.replaceFrom('#', "' AND FV.value" , start )
-                    user_query = user_query.replaceFrom('#', ")" , start )
-                }
                 while(user_query.indexOf('attr#') > -1)
                 {
                     let start = user_query.indexOf('attr#')
@@ -331,6 +335,14 @@ crud.make_query = {
                     user_query = user_query.replaceFrom('#', "" , start )
                     user_query = user_query.replaceFrom('#', "" , start )
                 }
+                while(user_query.indexOf('fields#') > -1)
+                {
+                    let start = user_query.indexOf('fields#')
+                    user_query = user_query.replaceFrom('fields#', f1, start )
+                    user_query = user_query.replaceFrom('#', f2 , start )
+                    user_query = user_query.replaceFrom('#', ")" , start )
+                }
+                
 
 
                 query = uuids_query + user_query + ')' + query.replace('$1', 'AND T1.uuid in (SELECT issue_uuid FROM uuids) $1')

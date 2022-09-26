@@ -153,7 +153,7 @@
           }
         ],
         brackets: ['(', ')'],
-        operations: ['=', '<', '>'],
+        operations: ['=', '!=', '<', '>', 'like'],
         logic_operators: ['and', 'or'],
         fields_and_attributes: [],
         value: '',
