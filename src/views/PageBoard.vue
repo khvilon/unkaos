@@ -250,6 +250,8 @@ import { computed } from '@vue/runtime-core';
 			this.card_draginfo.status_name = el.name
 
 			rest.run_method('update_issue', this.card_draginfo)
+
+			this.make_swimlanes()
 		//	console.log('drop')
 			
 		},

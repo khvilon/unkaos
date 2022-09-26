@@ -19,6 +19,7 @@ const comment_type_uuid = 'f53d8ecc-c26e-4909-a070-5c33e6f7a196'
 
 
 var bodyParser = require('body-parser');
+const { user } = require('./mail');
 //const { user } = require('./mail');
 
 const dict =
@@ -141,14 +142,23 @@ async function init()
             console.log('add ', method)
             let func_name = method + '_' + table
             console.log('d', dict[method])
-            app[dict[method]]('/' + func_name, async (req, res) => {                
+            app[dict[method]]('/' + func_name, async (req, res) => {
+                
+
+                let req_uuid = tools.uuidv4()
+                req_values= "'" + req_uuid + "','" + req.method + "','" + req.url+ "','" + JSON.stringify(req.headers)+ "','" + JSON.stringify(req.body)   + "'"
+
+                sql.query('admin', `INSERT INTO admin.logs_incoming (uuid, method, url, headers, body) VALUES(` + req_values + `)`)
+                
+                console.log(req)
+                
                 let params = req.query
 
                 let subdomain = req.headers.subdomain
 
                 let token = req.headers.token
 
-                user = await security.check_token(subdomain, token)
+                let user = await security.check_token(subdomain, token)
 
                 if(user == null)
                 {
@@ -200,6 +210,13 @@ async function init()
                 {
                     res.status(ans.http_code != undefined ? ans.http_code : '400');
                 } 
+
+                if(method!='read')
+                {
+                    let params_str = '' //JSON.stringify(params)
+                    let req_done_values= "'" + req_uuid + "','" + user.uuid + "','" + table_name + "','" + method + "','" + params.uuid + "','" + params_str + "'"
+                    sql.query(subdomain, `INSERT INTO logs_done (uuid, user_uuid, table_name, method, target_uuid, parameters) VALUES(` + req_done_values + `)`)
+                }
 
                 res.send(ans)
             })
