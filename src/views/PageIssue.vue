@@ -221,6 +221,8 @@
 			
 			//this.$router.push('/issue/' + issue[0].project_short_name + '-' + issue[0].num)
 			window.location.href = '/issue/' + issue[0].project_short_name + '-' + issue[0].num
+
+			//setTimeout(this.init, 1000)
 		},
 		deleted: function(issue)
 		{
@@ -276,7 +278,25 @@
 			await rest.run_method('upsert_relations', options)
 			this.get_formated_relations()
 
+		},
+		init: async function(delay)
+		{
+			if(this.issue==undefined || this.issue[0] == undefined )
+			{
+				setTimeout(this.init, 200)
+				return
+			}
+
+			let ans = await rest.run_method('read_watcher', {issue_uuid: this.issue[0].uuid})
+			this.watch = ans.length > 0
+		},
+		togle_watch: function()
+		{
+			if(this.watch) rest.run_method('delete_watcher', {issue_uuid: this.issue[0].uuid})	
+			else rest.run_method('upsert_watcher', {issue_uuid: this.issue[0].uuid})	
+			this.watch = !this.watch
 		}
+
 
 		
 
@@ -330,6 +350,7 @@
 		}
     ],
 	comment: '',
+	watch: false,
 	comment_focused: false,
 	transitions: [],
 	statuses_to: [],
@@ -470,27 +491,20 @@
 
 		mod.mounted = async function()
 		{
-			console.log('mmmmmmmounted')
-
-
 			let rt = await rest.run_method('read_relation_types')
 
-			
 			this.relation_types = []
 
 			for(let i in rt)
 			{
-				
 				this.relation_types.push({uuid: rt[i].uuid, name: rt[i].name, is_reverted: false})
 				if(rt[i].name == rt[i].revert_name) continue 
 				this.relation_types.push({uuid: rt[i].uuid, name: rt[i].revert_name, is_reverted: true})
 			}
 
-			console.log('this.relation_types', this.relation_types)
-
 			this.get_formated_relations()
 
-			
+			this.init()	
 		}
 
 	export default mod
@@ -568,6 +582,36 @@
 		
 		</Transition >
 
+		<Transition name="element_fade">
+		<div v-if="!loading && id!=''" style="display: flex;" class="clone-btn">
+		<KButton
+		
+		name="🐑➠🐑"	
+		/>
+		</div>	
+		</Transition >
+
+
+		<Transition name="element_fade">
+		<div v-if="!loading && id!=''" style="display: flex;" class="new-issue-btn">
+		<KButton
+		@click="$router.push('/issue')"
+		name="➕"	
+		/>
+		</div>	
+		</Transition >
+
+		<Transition name="element_fade">
+		<div v-if="!loading && id!=''" style="display: flex;" class="watch" :class="{'watch-active' : watch}"
+		@click="togle_watch">
+			👁
+		</div>	
+		</Transition >
+
+		
+		
+		
+
 	</div>
 
 
@@ -580,11 +624,13 @@
 		  <StringInput label='Название'
 			:value="get_field_by_name('Название').value"
 			  class="issue-name-input"
+			  :class="{'issue-name-input-full': id!=''}"
               :id="'values.'+ get_field_by_name('Название').idx+'.value'"
               parent_name='issue'
 			>
 			</StringInput>
 			<SelectInput
+			v-if="id==''"
 			label='Проект'
 			key="issue_project_input"
 			:value="issue[0].project_uuid"
@@ -666,6 +712,9 @@
 			</TextInput>
 
 			</Transition>
+
+
+			
 
 
 
@@ -831,6 +880,11 @@
 	width: calc(100% -  $project-input-width)
 }
 
+.issue-name-input-full
+{
+	width: 100%
+}
+
 .issue-author-input{
 	
 }
@@ -904,6 +958,29 @@
 	 #issue-attachments{
 		 width: 100%;
 	 }
+
+.clone-btn input{
+	width: calc(2*$input-height) !important;
+    margin: 10px 20px 10px 20px;
+}
+	 
+.watch
+{
+
+	display: flex;
+    font-size: 35px;
+    margin-left: 20px;
+    margin-top: 2px;
+    color: $table-row-color-selected;
+	cursor: pointer;
+}
+
+.watch-active
+{
+	color: $text-color
+}
+
+
 
 
 /*

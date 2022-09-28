@@ -18,6 +18,9 @@ import PageBoard from '../views/PageBoard.vue'
 import PageNotifications from '../views/PageNotifications.vue'
 import PageRoles from '../views/PageRoles.vue'
 import PageSprints from '../views/PageSprints.vue'
+import PageFavourites from '../views/PageFavourites.vue'
+
+
 
 
 
@@ -36,6 +39,7 @@ const router = createRouter({
   	{ path: '/issues', component: PageIssues},
   	{ path: '/notifications', component: PageNotifications },
   	{ path: '/projects', component: PageProjects },
+	{ path: '/favourites', component: PageFavourites },
 	{ path: '/configs/sprints', component: PageSprints },
   	{ path: '/configs/roles', component: PageRoles },
   	{ path: '/configs/issue_types', component: PageIssueTypes },
@@ -64,9 +68,10 @@ const get_subdomain = function()
 
 	let uri_parts = uri.split('.')
 
-	if(uri_parts.length!=3) return ''
+	if(uri_parts.length<3) return ''
 
-	return uri_parts[0].replace('http://', '')
+	if(uri_parts[1] == 'unkaos') return uri_parts[0].replace('http://', '').replace('https://', '')
+	else return uri_parts[1]
 }
        
 

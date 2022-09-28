@@ -36,6 +36,20 @@ app.use(bodyParser.json({limit: '20mb'}));
 app.use(bodyParser.raw({limit: '20mb'}));
 app.use(bodyParser.urlencoded({limit: '20mb', extended: true}));
 
+
+async function notify(issue_uuid, user_uuid)
+{
+    /*let watchers = await sql.query(subdomain, 
+        `SELECT U.NAME
+     FROM watchers WHERE user_uuid = '` + user.uuid + `' AND issue_uuid = '` + issue_uuid + `'`)
+
+    for(let i in watchers)
+    {
+        if()
+    }*/
+
+}
+
 async function init()
 {
     await sql.init()
@@ -126,12 +140,74 @@ async function init()
         await security.set_password(subdomain, params.user.uuid, password)
 
 
-        
-        
-
-        mail.send(params.user.mail, 'Сброс пароля Unkaos', 'Уважаемый ' + params.user.name + ', ваш новый пароль ' + password + '. Вход на http://unkaos.ru/login', '')
+        mail.send(params.user.mail, 'Сброс пароля Unkaos', 'Уважаемый ' + params.user.name + ', ваш новый пароль ' + password + '. Вход на https://unkaos.oboz.tech/login', '')
         
         res.send({text: 'done'})
+    })
+
+
+    app.post('/upsert_watcher', async (req, res) => {   
+        let subdomain = req.headers.subdomain
+    
+        let token = req.headers.token
+
+        let user = await security.check_token(subdomain, token)
+
+        if(user == null)
+        {
+            res.status(401);
+            res.send({message: 'wrong token'});
+            return
+        }
+
+        let issue_uuid = req.body.issue_uuid
+
+        ans = await sql.query(subdomain, `INSERT INTO watchers SET (user_uuid, issue_uuid) VALUES('` + user.uuid + `','` + issue_uuid + `') ON CONFLICT DO NOTHING`)
+
+        res.send(ans)
+    })
+
+    app.delete('/delete_watcher', async (req, res) => {   
+        let subdomain = req.headers.subdomain
+    
+        let token = req.headers.token
+
+        let user = await security.check_token(subdomain, token)
+
+        if(user == null)
+        {
+            res.status(401);
+            res.send({message: 'wrong token'});
+            return
+        }
+
+        let issue_uuid = req.body.issue_uuid
+
+        ans = await sql.query(subdomain, `DELETE FROM watchers WHERE user_uuid = '` + user.uuid + `' AND issue_uuid = '` + issue_uuid + `'`)
+
+        res.send(ans)
+    })
+
+
+    app.get('/read_watcher', async (req, res) => {   
+        let subdomain = req.headers.subdomain
+    
+        let token = req.headers.token
+
+        let user = await security.check_token(subdomain, token)
+
+        if(user == null)
+        {
+            res.status(401);
+            res.send({message: 'wrong token'});
+            return
+        }
+
+        let issue_uuid = req.query.issue_uuid
+
+        ans = await sql.query(subdomain, `SELECT * FROM watchers WHERE user_uuid = '` + user.uuid + `' AND issue_uuid = '` + issue_uuid + `'`)
+
+        res.send(ans)
     })
   
 
@@ -150,7 +226,7 @@ async function init()
 
                 sql.query('admin', `INSERT INTO admin.logs_incoming (uuid, method, url, headers, body) VALUES(` + req_values + `)`)
                 
-                console.log(req)
+                //console.log(req)
                 
                 let params = req.query
 
@@ -211,12 +287,20 @@ async function init()
                     res.status(ans.http_code != undefined ? ans.http_code : '400');
                 } 
 
+                //add log
                 if(method!='read')
                 {
                     let params_str = '' //JSON.stringify(params)
                     let req_done_values= "'" + req_uuid + "','" + user.uuid + "','" + table_name + "','" + method + "','" + params.uuid + "','" + params_str + "'"
                     sql.query(subdomain, `INSERT INTO logs_done (uuid, user_uuid, table_name, method, target_uuid, parameters) VALUES(` + req_done_values + `)`)
                 }
+
+                //add watcher
+                if(method!='read' && table_name == 'issue')
+                {
+                    sql.query(subdomain, `INSERT INTO watchers (user_uuid, issue_uuid) VALUES('` + user.uuid + "','" + params.uuid + `') ON CONFLICT DO NOTHING`)
+                }
+                
 
                 res.send(ans)
             })

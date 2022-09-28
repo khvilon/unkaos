@@ -25,7 +25,7 @@
           <td
             v-for="(collumn, index) in collumns"
             :key="index"
-            @click="select_row($event)"
+            @click="select_row(row)"
             
           >
             <span
@@ -43,14 +43,25 @@
 
             <span v-if="tree_view && collumn.type=='link' && row.parent_uuid!=null && (row.children == undefined || row.children.length == 0)">{{'● '}}</span>
             
-            <span v-if="collumn.type!='link' && collumn.id != 'parent_uuid'"  v-html="format_val(row, collumn)"></span>
+            <span v-if="collumn.type!='link' && collumn.type!='user' && collumn.id != 'parent_uuid'" 
+            @click="select_row(row)"
+            >{{format_val(row, collumn)}}</span>
+
+            <div class='user' v-if="collumn.type == 'user'"
+            @click="select_row(row)"
+            >  
+                <img :src="format_val(row, collumn).avatar">
+                {{format_val(row, collumn).name}}
+            </div>
 
             <router-link v-if="collumn.type=='link'" 
             :to="collumn.link + get_json_val(row, collumn.link_id)" tag="li"
             :style="[  {whiteSpace: 'nowrap'} ]"
             >
 
-            {{get_json_val(row, collumn.id)}} 
+              
+
+              {{get_json_val(row, collumn.id)}}
             </router-link>
             
           </td>     
@@ -108,9 +119,10 @@
         this.$emit('scroll_update')
    //     console.log('time to load more')
       },
-      select_row()
+      select_row(row)
       {
-        let uuid = event.path[1].getAttribute('uuid');
+
+        let uuid = row.uuid//event.path[1].getAttribute('uuid');
         this.$store.commit('select_' + this.name, uuid);
         //console.log("sel", this.name)
       },
@@ -131,6 +143,23 @@
           return this.all_parents_expended(parent.parent_uuid)
       },
       get_json_val: tools.obj_attr_by_path,
+      get_user(uuid)
+      {
+        let users = this.dicts['users']
+        let user
+        for(let i in users)
+        {
+          if(users[i].uuid == uuid)
+          {
+            user = users[i]
+            continue
+          }
+        }
+
+        if(user == undefined) return {avatar: this.default_avatar, name:'-'}
+        if(user.avatar == null || user.avatar == '' || user.avatar == undefined) user.avatar = this.default_avatar
+        return user
+      },
       format_val(row, collumn)
       {
         const max_length = 100
@@ -172,32 +201,12 @@
         }
         if(type == 'boolean')
         {
-          if(val == 'true' || val == true || val =='t') return '&#10004;'
-          else return '&#10006;'
+          if(val == 'true' || val == true || val =='t') return '✓'
+          else return '✗'
         }
         if(type == 'user')
         {
-          let users = this.dicts['users']
-          let user
-          for(let i in users)
-          {
-            if(users[i].uuid == val)
-            {
-              user = users[i]
-              continue
-            }
-          }
-
-    //      console.log('uuu', users, val)
-          if(user == undefined) return ''
-          let avatar
-          if(user.avatar != null) avatar = user.avatar
-          else avatar = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAe9JREFUSEvlVtFRHTEQkyqADggVABWEdAAdQAVABSQVABWkBOgAqACoAEqACsRoZp05fPZ5j8kMH+zPvbnzW3m18srEFwW/CBefApa0D2AnNv1I8n5tAauAJR0A+AtgswJ6BXBM8ia7gTSwpEsAJ4PEZyS9bhgp4KD2NrKZVie/I/kaLJwC+Bnff5G8GyFngR+jp08kd1tJJb0A2ALgnu/9L2BFoi6Vkn4DOPc6ksOChgsqmrs0ZtcVJjLAPwA8xx8Oe8qVdBSK99Jtkqa+G0Ng/1OSj8sGgCuSFtIsJqp/I1kft9n6LPD0KM3ormjubm6KngV2BT4iZVr5t5VuJjxUitK7qq9LTgEH3e61J1MBr3P5fB+NepsWV51dkns8rdKV32Qn1qeBR4Mh+z1FtST30BT72Zxc0XNX7z77uRiLwJIsKruRqV0T1oLdyuJrRhe4Y4FvUVkrmZnwWS+xaJVN4KD2YZLkyo40UqwkK9/im9rnXov6HnBxI1d4kLG5KQXB1nW8a7rVDHjqMgDSxt45dhfx/g9Ju9e/aAF7KtnU01OoJyBJhbl7kr6nLQIX753tco2svXbJoz9UXImqa4HZDVS9/iCyGth0lLtV6u60tImly0EN7IFRJpPV2B0AmapjADXzpUZmBmTtmu8H/A4J79EfjfUqWAAAAABJRU5ErkJggg=='
-
-          val = '<div class=user><img src="' + avatar + '">' + user.name + '</div>'
-          
-         // if(row.avatar != null) val = btoa('<img src="' + row.avatar + '"/>') + val
-          return val
+          return this.get_user(val)
         }
         return val
       }
@@ -208,7 +217,8 @@
     {
       return{
         last_scroll_update: new Date(),
-        children_padding: 10
+        children_padding: 10,
+        default_avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAe9JREFUSEvlVtFRHTEQkyqADggVABWEdAAdQAVABSQVABWkBOgAqACoAEqACsRoZp05fPZ5j8kMH+zPvbnzW3m18srEFwW/CBefApa0D2AnNv1I8n5tAauAJR0A+AtgswJ6BXBM8ia7gTSwpEsAJ4PEZyS9bhgp4KD2NrKZVie/I/kaLJwC+Bnff5G8GyFngR+jp08kd1tJJb0A2ALgnu/9L2BFoi6Vkn4DOPc6ksOChgsqmrs0ZtcVJjLAPwA8xx8Oe8qVdBSK99Jtkqa+G0Ng/1OSj8sGgCuSFtIsJqp/I1kft9n6LPD0KM3ormjubm6KngV2BT4iZVr5t5VuJjxUitK7qq9LTgEH3e61J1MBr3P5fB+NepsWV51dkns8rdKV32Qn1qeBR4Mh+z1FtST30BT72Zxc0XNX7z77uRiLwJIsKruRqV0T1oLdyuJrRhe4Y4FvUVkrmZnwWS+xaJVN4KD2YZLkyo40UqwkK9/im9rnXov6HnBxI1d4kLG5KQXB1nW8a7rVDHjqMgDSxt45dhfx/g9Ju9e/aAF7KtnU01OoJyBJhbl7kr6nLQIX753tco2svXbJoz9UXImqa4HZDVS9/iCyGth0lLtV6u60tImly0EN7IFRJpPV2B0AmapjADXzpUZmBmTtmu8H/A4J79EfjfUqWAAAAABJRU5ErkJggg==',
       }
     },
     props: 

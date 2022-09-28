@@ -32,25 +32,14 @@
       
 
      // console.log('localStorage.tic', localStorage.tic)
-
+/*
       let uri = window.location.href
-      let uri_parts = uri.split('.')
-
-      this.check_is_in_workspace()
-
-      let subdomain = 'public'
-
+     
       if(!uri.contains('?lang='))
       { 
         console.log('select lang') 
         window.location.href += '?lang=ru'     
-      }
-
-      if(uri_parts.length == 3) subdomain = uri_parts[0].replace('http://', '')
-       // console.log('ddd', this.$store.state['domain'])
-      
-      
-
+      }*/
      
     },
     updated() {
@@ -435,6 +424,14 @@ $loading-bar-width: 200vw;
 .btn-container .btn input
 {
   width: 100%;
+}
+
+
+.new-issue-btn input{
+	width: $input-height !important;
+    margin: 10px 0px 10px 0px;
+    color: green !important;
+    border-radius: $input-height !important;
 }
 
 

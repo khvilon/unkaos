@@ -5,7 +5,9 @@ import tools from './tools.ts'
 
 rest.base_url = 'http://localhost:3001/'
 
-//rest.base_url = 'http://unkaos.ru:3001/'
+//rest.base_url = 'http://unkaos.online:3001/'
+
+//rest.base_url = 'https://unkaos.oboz.tech:3002/'
 
 rest.dict = 
 {
@@ -26,10 +28,12 @@ const get_subdomain = function()
 	let uri = window.location.href
       let uri_parts = uri.split('.')
 
-      if(uri_parts.length == 3) return uri_parts[0].replace('http://', '')
+	  if(uri_parts.length < 3) return 'public'
+
+      if(uri_parts[1] == 'unkaos') return uri_parts[0].replace('http://', '').replace('https://', '')
        // console.log('ddd', this.$store.state['domain'])
       
-      return 'public'   
+      return uri_parts[1] 
 }
 
 rest.get_token = async function(email, pass)
