@@ -122,7 +122,7 @@ export default
 			en: 'The system is free and is made under Apache 2.0 license. You can use it the cloud or install from https://github.com/khvilon/unkaos.'
 		}
 		,
-		"Связаться с автором можно по почте n@khvilon.ru (Николй Хвилон)":
+		"Связаться с автором можно по почте n@khvilon.ru (Николай Хвилон)":
 		{
 			en: 'To contact the author you can use email n@khvilon.ru (Nikolas Khvilon)'
 		}
@@ -135,6 +135,10 @@ export default
 		"Спринты":
 		{
 			en: 'Sprints'
+		},
+		"Избранное":
+		{
+			en: 'Favorites'
 		}
 		
 

@@ -5,16 +5,16 @@
 
 
 
-<template ref='dashboards' v-if="dashboards">
-  <div>
+<template ref='favourites' v-if="favourites">
+<div>
     <TopMenu 
-      :label="'Дашборды'"
+      :label="'Избранное'"
       
     />
-    <div id=dashboards_down_panel class="panel">
-      <span>Страница в разработке</span>
+    <div id=favourites_down_panel class="panel">
+     <span>Страница в разработке</span>
   </div>
-  </div>
+</div>
 </template>
 
 
@@ -24,38 +24,38 @@
 
   $card-width: 400px;
 
-  #dashboards_table_panel, #dashboards_card {
+  #favourites_table_panel, #favourites_card {
     margin: 1px;
     height: calc(100vh - $top-menu-height);
   }
 
-  #dashboards_table_panel {
+  #favourites_table_panel {
     display: flex;
     margin-left: 2px;
     width: calc(100vw - 3px - $card-width);
   }
 
-  #dashboards_card {
+  #favourites_card {
     width:  $card-width;
     margin-left: 0px;
     display: table;
   }
   
-  #save_dashboards_btn, #delete_dashboards_btn {
+  #save_favourites_btn, #delete_favourites_btn {
     padding: 0px 20px 15px 20px;
     width: 50%
   }
 
-  #save_dashboards_btn input, #delete_dashboards_btn input{
+  #save_favourites_btn input, #delete_favourites_btn input{
     width: 100%
   }
 
-  #dashboards_down_panel {
+  #favourites_down_panel {
     display: flex;
     height: calc(100vh - $top-menu-height);
   }
 
-  #dashboards_down_panel span {
+  #favourites_down_panel span {
   font-size: 15px;
     padding: 20px;
   }

@@ -624,7 +624,9 @@ import { computed } from '@vue/runtime-core';
 						
 						<label>{{get_field_by_name(issue, 'Название').value}}</label>
 						</div>
-						<label class="issue-card-description">{{get_field_by_name(issue, 'Описание').value.substring(0, 100)}}</label>
+						<label class="issue-card-description">
+							{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
+						</label>
 						<div class="issue-board-card-footer">
 							<div><label>{{get_json_val(issue, 'author_uuid')}}</label></div>
 						</div>

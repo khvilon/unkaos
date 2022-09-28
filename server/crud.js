@@ -627,6 +627,7 @@ crud.do = async function(subdomain, method, table_name, params)
                 query += ';\r\n' + crud.make_query.create('issue_actions', action_options) + ';'
             }
 
+
             let old_uuids = crud.get_uuids(data.rows[0])
 
             console.log('old_uuids', old_uuids)

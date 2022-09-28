@@ -1,7 +1,8 @@
+
+
 <script>
   import page_helper from '../page_helper.ts'
   
-
   const methods=
   {
     new_board: function()
@@ -10,8 +11,6 @@
 			},
   }
   
-
-
   const data = 
   {
     name: 'dashboards',
@@ -67,10 +66,8 @@
       }
     ]
   }
-
      
   const mod = await page_helper.create_module(data, methods)
-
   export default mod  
 </script>
 
@@ -113,13 +110,10 @@
 <style lang="scss">
   @import '../css/palette.scss';
   @import '../css/global.scss';
-
   $card-width: 400px;
-
   #dashboards_table_panel, #dashboards_card {
     height: calc(100vh - $top-menu-height);
   }
-
   #dashboards_table_panel {
     display: flex;
     width: calc(100%);
@@ -129,13 +123,10 @@
     padding: 0px 20px 15px 20px;
     width: 50%
   }
-
   #save_dashboards_btn input, #delete_dashboards_btn input{
     width: 100%
   }
-
   #dashboards_down_panel {
     display: flex;
   }
-
 </style>

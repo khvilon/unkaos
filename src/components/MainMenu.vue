@@ -16,6 +16,12 @@
         type: Array,
         default: () => [
           {
+            link: '/favourites',
+            name: dict['Избранное'],
+            icon: 'bx-star',
+            level: 1
+          },  
+          {
             link: '/dashboards',
             name: dict['Дашборды'],
             icon: 'bxs-dashboard',
