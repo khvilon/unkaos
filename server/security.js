@@ -13,6 +13,7 @@ const key = 'shhhhh'
 security.set_password = async function(subdomain, user_uuid, password)
 {
     let query = "UPDATE users SET password = MD5('" + password + "') WHERE uuid='" + user_uuid + "';"
+    //UPDATE users SET password = MD5('my_pass') WHERE login='my_login' - for manual update
     await sql.query(subdomain, query);
 }
 

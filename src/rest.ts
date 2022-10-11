@@ -3,11 +3,11 @@ const rest = {}
 import store from './stores/index'
 import tools from './tools.ts'
 
-rest.base_url = 'http://localhost:3001/'
+rest.base_url = 'http://localhost:3002/'
 
 //rest.base_url = 'http://unkaos.online:3001/'
 
-//rest.base_url = 'https://unkaos.oboz.tech:3002/'
+rest.base_url = 'https://unkaos.oboz.tech:3002/'
 
 rest.dict = 
 {
@@ -63,8 +63,8 @@ rest.get_token = async function(email, pass)
 
 rest.run_method = async function(method, body)
 { 
-	let alert_id = new Date()
-    store.state['alerts'][alert_id] = {type: 'loading', status:'new'}
+	let alert_id = tools.uuidv4()//new Date()
+    store.state['alerts'][alert_id] = {type: 'loading', status:'new', start: new Date()}
 
 
 	method = method.replace('create', 'upsert').replace('update', 'upsert')

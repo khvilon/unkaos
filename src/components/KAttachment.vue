@@ -168,11 +168,11 @@
   .attachment-input {
     font-size: 20px;
     font-weight: 400;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     transition: all 0.5s ease;
     background-color: transparent;
     text-align: center;  
-    border-color: $table-row-color;
+    border-color: var(--table-row-color);
     border-width: attachment_input_border_width;
     border-style: solid; 
     display: flex;  
@@ -186,8 +186,8 @@
     
     width: calc(($input-height * 1.6 - $attachment_input_border_width * 2) * 2);
     height: calc($input-height * 1.6 -  $attachment_input_border_width * 2);
-    background-color: $table-row-color;
-    border-radius: $border-radius;
+    background-color: var(--table-row-color);
+    border-radius: var(--border-radius);
     margin-top:$input-height*0.2;
     margin-left:$input-height*0.2;
     margin-bottom:$input-height*0.2;

@@ -55,13 +55,13 @@
   {
     width: 200px;
     height: 35px;
-    color: white;
-    background-color: #333;
+    color: var(--text-color);
+    background-color: var(--button-color);
     border-width: 1px;
-    border-color: white;
+    border-color: var(--text-color);
     border-style: solid;
     font-size: 15px;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     border-style: outset;
     cursor: pointer;
   }

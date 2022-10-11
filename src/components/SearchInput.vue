@@ -43,14 +43,17 @@
 </template>
 
 <style lang="scss">
-  @import '../css/palette.scss';
+
   @import '../css/global.scss';
 
   .search .search-input
   {
     width: 300px;
-
+    height: $input-height;
     padding: 0 20px 0 10px;
+    
   }
+
+ 
 
 </style>

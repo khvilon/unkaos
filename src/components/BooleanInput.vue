@@ -50,16 +50,15 @@
   }
 </script>
 
-<style lang="scss">
+<style  lang="scss">
 
-@import '../css/palette.scss';
 @import '../css/global.scss';
 
   .boolean .boolean-input
   {
     width: 35px;
     height: 35px;
-    color: $text-color;
+    color: var(--text-color);
   }
 
   .boolean
@@ -71,14 +70,14 @@
   .boolean-input {
     font-size: 20px;
     font-weight: 400;
-    border-radius: $border-radius;
+    border-radius: var(--border-radius);
     transition: all 0.5s ease;
-    background: $input-bg-color;
+    background: var(--input-bg-color);
     display: inline-block;
     text-align: center;  
-    border-color: $border-color;
-    border-width: 2px;
-    border-style: inset;   
+    border-color: var(--border-color);
+    border-width: var(--border-width);
+    border-style: var(--border-style); 
   }
 
   [type=checkbox] {
@@ -96,7 +95,7 @@
   }
 
    .boolean .disabled {
-    background: $disabled-bg-color
+    background: var(--disabled-bg-color)
   }
           
 

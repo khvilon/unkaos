@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "d3": "^7.4.3",
+    "markdown-it": "^13.0.1",
+    "marked": "^4.1.1",
     "pinia": "^2.0.11",
     "vue": "^3.2.31",
     "vue-multiselect": "^3.0.0-alpha.2",

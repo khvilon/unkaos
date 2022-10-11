@@ -20,11 +20,11 @@
 
   data()
   {
-    return 
+    let data =
     {
       is_in_workspace: false
     }
-    
+    return data
   },
 
    created ()
@@ -32,14 +32,25 @@
       
 
      // console.log('localStorage.tic', localStorage.tic)
-/*
+
       let uri = window.location.href
-     
+      let uri_parts = uri.split('.')
+
+      this.check_is_in_workspace()
+
+      let subdomain = 'public'
+
       if(!uri.contains('?lang='))
       { 
         console.log('select lang') 
         window.location.href += '?lang=ru'     
-      }*/
+      }
+
+      if(uri_parts.length == 3) subdomain = uri_parts[0].replace('http://', '')
+       // console.log('ddd', this.$store.state['domain'])
+      
+      
+
      
     },
     updated() {
@@ -48,9 +59,6 @@
     mounted()
     {
       console.log('app mounted')
-      if(localStorage.theme == undefined) localStorage.theme = "dark"
-      let htmlElement = document.documentElement;
-      htmlElement.setAttribute('theme', localStorage.theme);
     },
     computed:
     {
@@ -64,10 +72,6 @@
       }
     },
     methods: {
-      pasted: function(e)
-		{
-			console.log(e)
-		},
       check_is_in_workspace()
       {
         console.log('check_is_in_workspace')
@@ -115,7 +119,7 @@
  
  >
 
- <router-view v-slot="{ Component }" :key="$route.fullPath">
+ <router-view v-slot="{ Component }">
     <transition name="ffade" mode="out-in">
       <component :is="Component" ></component>
     </transition>
@@ -139,56 +143,85 @@
 
   @import url('https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css');
   @import url(./css/palette.css);
-
   @import './css/palette.scss';
-   
   @import './css/global.scss';
 
      //$font-family:'Poppins', sans-serif;
   body 
   { 
-    background-color: var(--body-bg-color);
-    transition: all 0.5s ease;
+    background-color: $body-bg-color;
   }
 
 
 
+@font-face {
+  font-family: 'Segoe UI Local';
+  src: local('Segoe UI Light');
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Local';
+  src: local('Segoe UI Semilight');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Local';
+  src: local('Segoe UI');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Local';
+  src: local('Segoe UI Semibold');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Web (West European)';
+  src: url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-light.woff2') format('woff2'), url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-light.woff') format('woff');
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Web (West European)';
+  src: url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-semilight.woff2') format('woff2'), url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-semilight.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Web (West European)';
+  src: url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-regular.woff2') format('woff2'), url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI Web (West European)';
+  src: url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-semibold.woff2') format('woff2'), url('https://static2.sharepointonline.com/files/fabric/assets/fonts/segoeui-westeuropean/segoeui-semibold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+}
 
   *
   {
-    color: var(--text-color);
+    color: $text-color;
     font-size: $font-size;
-    //font-family: 'Segoe UI Local';//segoiui;//var(--font-family);
-
-    font-family: Inter, system-ui,Roboto,sans-serif;
+    font-family: 'Segoe UI Local';//segoiui;//var(--font-family);
 
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     transition: all 0.2s ease;
     opacity: 1;
-
-   // font-family: 'Poppins', sans-serif;
   }
-
-  [draggable] {
-      -moz-user-select: none;
-      -khtml-user-select: none;
-      -webkit-user-select: none;
-      user-select: none;
-      /* Required to make elements draggable in old WebKit */
-      -khtml-user-drag: element;
-      -webkit-user-drag: element;
-
-      cursor:grab;
-    }
-
-    [draggable]:active{
-      cursor:grabbing;
-    }
-
-
-
 
   .no-menu-container
   {
@@ -198,7 +231,7 @@
   #router-view-container
   {
     position: absolute;
-    background-color: var(--body-bg-color);
+    background-color: $body-bg-color;
     top: 0px;
     left: $main-menu-width;
     width: calc(100vw - $main-menu-width);
@@ -214,12 +247,12 @@
 
   .panel
   {
-    background: var(--panel-bg-color);
-    border-radius: var(--panel-border-radius);
+    background: $panel-bg-color;
+    border-radius: 10px;
     margin: 0px;
     border-style:ridge;
     border-width: $border-width;
-    border-color: var(--body-bg-color);
+    border-color: $body-bg-color;
     //box-shadow: 1px 0px 1px $body-bg-color;
   }
 
@@ -227,13 +260,6 @@
   .hidden
   {
     opacity: 0;
-  }
-
-  input
-  {
-    border-color: var(--border-color);
-    border-style: var(--border-style);
-    border-width: var(--border-width);
   }
   
 
@@ -301,7 +327,7 @@ $loading-bar-width: 200vw;
   height: 100vh;
   background: rgba(0,00,0,0.15);
   overflow: hidden;
-  border-radius: var(--panel-border-radius);
+  border-radius: 10px;
   z-index: 10;
 }
 
@@ -410,9 +436,6 @@ $loading-bar-width: 200vw;
 {
   width: 100%;
 }
-
-
-
 
 
 

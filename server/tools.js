@@ -42,11 +42,11 @@ String.prototype.contains = function(substr)
 String.prototype.replaceAll = function(old_substr, new_substr)
 {
     let str = this
-    console.log('while replaceAll', str)
+ //   console.log('while replaceAll', str)
     str_parts = str.split(old_substr)
-    console.log('while replaceAll2', str_parts)
+ //   console.log('while replaceAll2', str_parts)
     str = str_parts.join(new_substr)
-    console.log('while replaceAll3', str)
+ //   console.log('while replaceAll3', str)
     
     return str
 }
@@ -88,6 +88,31 @@ tools.uuidv4 = function() {
   {
     return new Date(dt).toLocaleString("ru", dt_options)
   }
+
+
+  tools.write_at_same_line = function(text)
+  {
+    process.stdout.clearLine();  // clear current text
+    process.stdout.cursorTo(0);  // move cursor to beginning of line
+    process.stdout.write(text);
+  }
+
+ 
+ 
+  tools.map_with_key = function(arr, key_path, func)
+  {
+      if(func == undefined) func = (o)=>o
+
+      let arr_obj = {}
+      for(let i in arr)
+      {
+          let key 
+          if((typeof key_path) == 'string') key = arr[i][key_path]
+          else key = key_path(arr[i])
+          arr_obj[key] = func(arr[i]) 
+      }
+      return arr_obj
+  }  
 
  
 

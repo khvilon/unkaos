@@ -118,6 +118,7 @@
     },
     methods: {
       move_hover(e) {
+        if(localStorage.lock_main_menu != 'true') this.is_opened = true
         this.hover_opacity = 1
         this.hover_offset_x = e.target.offsetLeft
         this.hover_offset_y = e.target.offsetTop
@@ -157,16 +158,18 @@
     v-if="common.is_in_workspace"
     @mouseout="exit_menu($event)" 
   >
-    <div class="logo-details">
+    <div class="logo-details"
+    >
       <i
         class="bx icon bx-hive"
+        @click="is_opened = true"
       />
       <div class="logo_name">
         unkaos
       </div>
     </div>
 
-    <div class="main-menu-list" @mouseenter="is_opened = true" >
+    <div class="main-menu-list"  >
       <div class="main-menu-element-bg-hover" :style="{ opacity: hover_opacity, top: hover_offset_y + 'px',  left: hover_offset_x + 'px'}"></div>
       <div class="main-menu-element-bg-select" :style="{ opacity: select_opacity, top: select_offset_y + 'px',  left: select_offset_x + 'px'}"></div>
       <div class="main-menu-element"
@@ -174,12 +177,16 @@
           :key="index">
         <router-link :to="menuItem.link"> 
           <div class="main-menu-element-bg" 
-          @mouseenter="move_hover($event)"
+          @mouseenter="move_hover($event); "
           @mouseout="hide_hover($event)"
           @click="move_select($event)"
+          
           ></div> 
-          <div  :class="'main-menu-link main-menu-element-' + menuItem.level">
+          <div  :class="'main-menu-link main-menu-element-' + menuItem.level"
+          
+          >
             <i
+            
               class="bx"
               :class="menuItem.icon || 'bx-square-rounded'"
             />
@@ -194,7 +201,6 @@
 
 <style lang="scss">
 
-@import '../css/palette.scss';
 @import '../css/global.scss';
 
 
@@ -244,7 +250,8 @@
    .sidebar .logo-details i {
      font-size: $logo-icon-size;
      padding-right: $main-menu-selection-offset/2;
-     padding-top:8px
+     padding-top:8px;
+     cursor: pointer;
    }
 
    .sidebar.open .logo-details i {
@@ -360,14 +367,14 @@
 
   .main-menu-element-bg-select
   {
-    background-color: $table-row-color-selected;
+    background-color: var(--table-row-color-selected);
     transition: all $main-menu-open-time ease;
   }
   
 
   .main-menu-element-bg-hover
   {
-    background: $table-row-color;
+    background: var(--table-row-color);
     transition: all $main-menu-selection-time ease;
   }
 

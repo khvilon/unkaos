@@ -160,11 +160,14 @@
 
 
 
-<style>
+<style lang="scss">
+
+  @import '../css/palette.scss';
+  @import '../css/global.scss';
   #issue_statuses_table_panel, #issue_statuses_card {
-    background-color: rgb(35, 39, 43);
-    border-radius: 8px;
-    color: white;
+    background-color: var(--panel-bg-color);
+    border-radius: var(--border-radiusr);
+    color: var(--text-color);
     min-height: calc(100vh - 77px);
     height: calc(100vh - 100px);
   }

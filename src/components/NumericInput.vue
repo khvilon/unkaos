@@ -82,12 +82,14 @@
   }
 </script>
 
-<style>
+<style lang="scss">
+
+  @import '../css/global.scss';
   .numeric .numeric-input
   {
     width: 100%;
     height: 35px;
-    color: white;
+    color: var(--text-color);
     padding: 0 10px 0 10px;
   }
 
@@ -100,14 +102,14 @@
   .numeric-input {
     font-size: 14px;
     font-weight: 400;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     transition: all 0.5s ease;
-    background: rgb(29, 27, 49);
+    background: var(--input-bg-color);
     width: 100%;
   }
 
   .numeric-input:disabled {
-    background: rgb(30, 35, 38);
+    background: var(--disabled-bg-color);
   }
 
   input[type="number"] {

@@ -18,11 +18,7 @@
       buttons: {
         type: Array,
         default: () => [
-          {
-            name: 'кнопка 1',
-            func: '',
-            route: ''
-          }
+          
         ],
       },
 
@@ -45,62 +41,11 @@
       },
 
       //! Styles
-      bgColor: {
-        type: String,
-        default: 'rgb(35, 39, 43)',
-      },
-      secondaryColor: {
-        type: String,
-        default: '#1d1b31',
-      },
-      homeSectionColor: {
-        type: String,
-        default: '#e4e9f7',
-      },
-      logoTitleColor: {
-        type: String,
-        default: '#fff',
-      },
-      iconsColor: {
-        type: String,
-        default: '#fff',
-      },
-      itemsTooltipColor: {
-        type: String,
-        default: '#e4e9f7',
-      },
-      menuItemsHoverColor: {
-        type: String,
-        default: '#fff',
-      },
-      menuItemsTextColor: {
-        type: String,
-        default: '#fff',
-      },
-      menuFooterTextColor: {
-        type: String,
-        default: '#fff',
-      },
+    
     },
 
 
-    computed: {
-      cssVars() {
-        console.log('col1', this.collumns)
-        return {
-          // '--padding-left-body': this.isOpened ? this.menuOpenedPaddingLeftBody : this.menuClosedPaddingLeftBody,
-          '--bg-color': this.bgColor,
-          '--secondary-color': this.secondaryColor,
-          '--home-section-color': this.homeSectionColor,
-          '--logo-title-color': this.logoTitleColor,
-          '--icons-color': this.iconsColor,
-          '--items-tooltip-color': this.itemsTooltipColor,
-          '--menu-items-hover-color': this.menuItemsHoverColor,
-          '--menu-items-text-color': this.menuItemsTextColor,
-          '--menu-footer-text-color': this.menuFooterTextColor,
-        }
-      },
-    }
+    
   }
 </script>
 
@@ -108,7 +53,6 @@
 <template>
   <div
     class="topbar panel"
-    :style="cssVars"
   >
 
     <div style="display: flex ; flex-direction:row; flex-grow: 1; max-height: calc(100% - 60px); ">
@@ -135,7 +79,7 @@
 </template>
 
 
-<style lang="scss">
+<style  lang="scss">
   @import '../css/palette.scss';
   @import '../css/global.scss';
 
@@ -170,7 +114,7 @@
   .topbar input {
     font-size: 15px;
     font-weight: 400;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     transition: all 0.5s ease;
     //background: var(--secondary-color);
     margin-left:10px;
@@ -179,7 +123,7 @@
 
   .search-input
   {
-    background: var(--secondary-color);
+    background: var(--input-bg-color);
   }
  
   .topbar span

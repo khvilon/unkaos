@@ -6,11 +6,34 @@
 	import d from '../dict.ts'
 	import rest from '../rest';
 	import tools from '../tools.ts'
-import { computed } from '@vue/runtime-core';
+	import { computed } from '@vue/runtime-core';
 
 	console.log('d', d['Название'],d)
 
 	let methods = {
+		get_favourite_uuid()
+		{
+			
+			if(this.favourites == undefined || this.selected_board == undefined || this.selected_board.is_new) 
+			{
+				setTimeout(this.get_favourite_uuid, 200)
+				return
+			}
+
+
+			for(let i = 0; i < this.favourites.length; i++)
+			{
+	
+				if('/board/' + this.selected_board.uuid == this.favourites[i].link) 
+				{
+
+					this.favourite_uuid = this.favourites[i].uuid
+			
+					return 
+				}
+			}
+		},
+		
 
 		init_new: async function()
 		{
@@ -50,11 +73,14 @@ import { computed } from '@vue/runtime-core';
 
 			//console.log('sselected_board1')
 
+			this.get_favourite_uuid()
+
 			//check not double
 			if(!this.selected_board.is_new) return
 
 			this.sprints = (await rest.run_method('read_sprints', {})).sort((a, b)=> new Date(a.start_date) - new Date(b.start_date) )
 			let curr_date = new Date()
+			this.curr_sprint_num = 0
 			for(let i in this.sprints)
 			{
 				console.log(this.sprints.name, curr_date, new Date(this.sprints[i].start_date), new Date(this.sprints[i].end_date))
@@ -62,6 +88,17 @@ import { computed } from '@vue/runtime-core';
 				{
 					this.curr_sprint_num = Number(i)
 					break
+				}
+			}
+			if(this.curr_sprint_num == 0)
+			{
+				for(let i in this.sprints)
+				{
+					if(curr_date < new Date(this.sprints[i].end_date))
+					{
+						this.curr_sprint_num = Number(i)
+						break
+					}
 				}
 			}
 
@@ -112,36 +149,162 @@ import { computed } from '@vue/runtime-core';
 		},
 		get_root: function(issue)
 		{
-			if(issue == undefined) return {name:'Корневая задача не попала в выборку'}
 			if(issue.parent_uuid == undefined || issue.parent_uuid == null) return issue
 			let parent = this.get_issue_by_uuid(issue.parent_uuid)
+			if(parent == undefined) return issue
 			return this.get_root(parent)
 		},
-		sort_swimlanes: function(a, b)
+		compare_swimlanes_to_sort: function(a, b)
 		{
 			if(a[0] == this.void_group_name) return 1
 			if(b[0] == this.void_group_name) return -1
+			if(a[1].position == undefined) a[1].position = -1
+			if(a[1].position == undefined) b[1].position = -1
+			if(a[1].position<b[1].position) return -1
+			if(a[1].position>b[1].position) return 1
 			if(a[0]<b[0]) return -1
 			if(a[0]>b[0]) return 1
 			return 0
+		},
+		sort_swimlanes()
+		{
+			let swimlanes_arr = Object.entries(this.swimlanes)
+
+			swimlanes_arr = swimlanes_arr.sort(this.compare_swimlanes_to_sort)
+
+			this.swimlanes = Object.fromEntries(swimlanes_arr)
+		},	
+		change_swimlane_position(swimlane, new_position)
+		{	
+			
+			let old_position = swimlane.position
+			console.log('swpos1',old_position, new_position)
+			if(new_position == old_position) return
+			for(let i in this.swimlanes)
+			{
+				console.log('swpos2',this.swimlanes[i].position)
+				
+				if(this.swimlanes[i].position < old_position && this.swimlanes[i].position < new_position) continue
+
+				console.log('swpos3',this.swimlanes[i].position)
+
+				if(this.swimlanes[i].position > old_position && this.swimlanes[i].position > new_position) continue
+
+				console.log('swpos4',this.swimlanes[i].position)
+
+				if(this.swimlanes[i].position > old_position && this.swimlanes[i].position < new_position) this.swimlanes[i].position--
+				else if(this.swimlanes[i].position < old_position && this.swimlanes[i].position > new_position) this.swimlanes[i].position++
+				else if(this.swimlanes[i].position == old_position) this.swimlanes[i].position = new_position
+
+				else if(this.swimlanes[i].position == new_position) 
+				{
+					if(old_position < new_position) this.swimlanes[i].position--
+					else this.swimlanes[i].position++
+				} 
+
+			}
+
+			this.sort_swimlanes()
+
+			this.make_conf()
+
+			console.log('swposddd', this.conf.swimlanes)
+			let conf_str = JSON.stringify(this.conf)
+
+			this.$store.commit('id_push_update_board' , {id: 'config', val:conf_str})
+			this.$store.dispatch('save_board');
+		},
+		make_conf()
+		{
+			this.conf.swimlanes = {}
+			for(let i in this.swimlanes)
+			{
+				this.conf.swimlanes[i] = {position: this.swimlanes[i].position }
+			}
+		},
+		move_swimlane(e, swimlane_to)
+		{
+			console.log('swpos1',this.moving_swimlane, swimlane_to)
+			if(!this.moving_swimlane) return
+
+			this.change_swimlane_position(this.moving_swimlane, swimlane_to.position)
+
+		},
+		swimlane_start_dragging(e, swimlane)
+		{
+			console.log('swpos00', e)
+
+			e.dataTransfer.dropEffect = 'move'
+      		e.dataTransfer.effectAllowed = 'move'
+
+			console.log('swpos00a', swimlane)
+
+			swimlane.is_dragged = true; 
+			
+			this.moving_swimlane = swimlane
+
+		},
+		swimlane_stop_dragging(e, swimlane)
+		{
+			swimlane.is_dragged = false; 
+			
+			this.moving_swimlane = null
 		},
 		make_swimlanes()
 		{
 			this.swimlanes = {}
 
+			if(this.selected_board.config != undefined && this.selected_board.config != null && this.selected_board.config != '')
+			{
+				this.conf = JSON.parse(this.selected_board.config)
+			}
+
+			let parent_types_uuids = {}
+			if(this.selected_board.swimlanes_by_root)
+			{
+				for(let i in this.boards_issues)
+				{
+					let type_uuid = this.boards_issues[i].type_uuid
+					if(parent_types_uuids[type_uuid] == undefined) parent_types_uuids[type_uuid] = true
+					let root = this.get_root(this.boards_issues[i])
+
+
+					console.log('tttttrrrroooottt', root.type_name, this.boards_issues[i].type_name, root.num, root.uuid, this.boards_issues[i].uuid)
+					if(this.boards_issues[i].type_uuid != root.type_uuid) 
+					{
+						parent_types_uuids[type_uuid] = false
+					}
+				}
+			}
+
+			console.log('parent_types_uuids',parent_types_uuids)
+
 			for(let i in this.boards_issues)
 			{
 				let x = 0
+				let link
+				let root_num
 				if(this.selected_board.swimlanes_by_root)
 				{
-					if(this.boards_issues[i].parent_uuid == null) continue
+					let type_uuid = this.boards_issues[i].type_uuid
+					//if(parent_types_uuids[type_uuid]) continue
+					
+					
 					let root = this.get_root(this.boards_issues[i])
-					x = this.get_field_by_name(root, 'Название').value
+					if(parent_types_uuids[root.type_uuid]) x = this.get_field_by_name(root, 'Название').value
+					if(root.num!=undefined)
+					{
+						root_num = root.project_short_name + '-' + root.num
+						link = '/issue/' + root_num	
+					}
+					
 				}
 				else if(!this.selected_board.no_swimlanes)
 				{
 					x = this.get_field_value(this.boards_issues[i], {uuid: this.selected_board.swimlanes_field_uuid})
 				}
+
+				
 
 				
 				if(x == '') x = this.void_group_name
@@ -150,8 +313,32 @@ import { computed } from '@vue/runtime-core';
 
 				if(this.swimlanes[x] == undefined) this.swimlanes[x] = {name:x,issues:{},filtered_issues:{},count:0, sum:0}
 
+				console.log('this.swimlanes1', this.swimlanes)
+				
+				let  stored_exp = localStorage[this.selected_board.uuid+'#'+x]
+				if(stored_exp == undefined || stored_exp == 'false') stored_exp = false
+				else stored_exp = true
+				this.swimlanes[x].expanded = stored_exp
+
+
+				if(link!=undefined)
+				{
+					this.swimlanes[x].link = link
+					this.swimlanes[x].num = root_num
+				} 
+
+				if(this.conf != undefined && this.conf.swimlanes != undefined && this.conf.swimlanes[x] != undefined) {
+					
+					this.swimlanes[x].position = this.conf.swimlanes[x].position
+					//console.log('swpos000000sssss--------------------2222222', x, this.swimlanes[x].position)
+					//console.log('swpos000000sssss--------------------3333333', this.conf.swimlanes[x])
+				}
+				
+
 				let status_uuid = this.boards_issues[i].status_uuid
 				if(this.swimlanes[x].issues[status_uuid] == undefined) this.swimlanes[x].issues[status_uuid] = []
+
+				if(x == this.get_field_by_name(this.boards_issues[i], 'Название').value) continue
 
 				this.swimlanes[x].issues[status_uuid].push(this.boards_issues[i])
 
@@ -175,16 +362,70 @@ import { computed } from '@vue/runtime-core';
 					}
 				}
 
-				this.swimlanes = Object.fromEntries(Object.entries(this.swimlanes).sort(this.sort_swimlanes))
+				
+
+				
+
+				
+
+				
 			}
+
+
+			if(tools.obj_length(this.swimlanes) == 0)return
 			
-			console.log('this.swimlanes', this.swimlanes)
+
+
+			this.sort_swimlanes()
+
+			console.log('swpos000000sssss--------------------1111111', this.swimlanes, this.conf.swimlanes)
+
+			let position = 0
+			for(let i in this.swimlanes)
+			{
+				this.swimlanes[i].position = position
+				position++
+				//this.swimlanes[swimlanes_arr[i].name].position = i
+				
+			}
+
+			
+
+			//load saved swimlanes order
+
+
+			
+			//this.make_conf()
+			//let conf_str = JSON.stringify(this.conf)
+
+			//this.$store.commit('id_push_update_board' , {id: 'config', val:conf_str})
+			//rest.run_method('update_board', this.selected_board)
+			//this.$store.dispatch('save_board');
+		
+			//console.log('this.swimlanes', this.swimlanes)
 		},
 		get_issues: async function(query) ///added other things on mount
 		{
 			let options = {}
-			if(query != undefined && query != '') options.query = query
+			if(query != undefined && query != '') 
+			{
+				options.query = query
+				this.encoded_query = query
+			}
+			else if(this.encoded_query != undefined && this.encoded_query != '') 
+			{
+				options.query = this.encoded_query
+			}
 			else return
+
+			if(this.selected_board.use_sprint_filter)
+			{
+				options.query = decodeURIComponent(atob( options.query))
+				options.query = '(' + options.query + ") and attr#sprint_uuid#='" + this.sprints[this.curr_sprint_num].uuid + "'"
+
+				console.log('options.query', options.query)
+				options.query = btoa(encodeURIComponent(options.query))  
+			}
 			this.boards_issues = await rest.run_method('read_issues', options)
 
 			this.make_swimlanes()
@@ -263,19 +504,25 @@ import { computed } from '@vue/runtime-core';
 				if(this.inputs[i].id == id) return this.inputs[i]
 			}*/
 		},
-		get_field_value(issue, field) //todo add values from dicts
+		
+		get_field_value(issue, field, deep) //todo add values from dicts
 		{
-			
 			for(let i in issue.values)
 			{
 			
 				if(issue.values[i].field_uuid == field.uuid)
 				{
 					//console.log('##' + issue.values[i].value + '##')
+					if(!deep) return issue.values[i].value
+
+					if(field.type_name == 'User')
+					{
+						console.log('USERRRR')
+					}
+					console.log('USERRRR field', field, issue.values[i])
 					return issue.values[i].value
 				}
 			}
-			
 		},
 		update_sprint_num(new_num)
 		{
@@ -285,12 +532,27 @@ import { computed } from '@vue/runtime-core';
 
 			this.curr_sprint_num = new_num
 
-			this.make_swimlanes()
+			this.get_issues()
+			//this.make_swimlanes()
 
+		},
+		get_dict_value(val, type)
+		{
+			
+			if(type == 'User')
+			{
+				if(val == null) return 'Не назначен'
+				for(let i in this.users)
+				{
+					//console.log(this.users[i], val)
+					if(this.users[i].uuid == val) return this.users[i].name
+				}
+			}
+			return val
 		},
 		get_card_color(issue)
 		{
-			let p = this.get_field_value(issue, {uuid:'247e7f58-5c9b-4a31-9c27-5d1d4c84669f'})
+			let p = this.get_field_value(issue, {uuid:'b6ddb33f-eea9-40c0-b1c2-d9ab983026a1'})
 
 			if(p == 'Minor') return 'green'
 			else if (p == 'Normal') return 'yellow'
@@ -302,6 +564,11 @@ import { computed } from '@vue/runtime-core';
 		delete_board()
 		{
 			this.$store.dispatch('delete_board')
+		},
+		swimlane_expanded_toogle(swimlane)
+		{
+			swimlane.expanded = !swimlane.expanded
+			localStorage[this.selected_board.uuid+'#'+swimlane.name] = swimlane.expanded
 		},
 		swimlanes_updated(v)
 		{
@@ -325,6 +592,25 @@ import { computed } from '@vue/runtime-core';
 			}
 			
 			this.make_swimlanes()
+		},
+		async add_to_favourites()
+		{
+			this.favourite_uuid = tools.uuidv4()
+			console.log('this.favourite_uuid0', this.favourite_uuid)
+			let favourite = 
+			{
+				uuid: this.favourite_uuid,
+				type_uuid: this.favourite_board_type_uuid,
+				name: this.selected_board.name,
+				link: '/board/' + this.selected_board.uuid
+			}
+
+			await rest.run_method('create_favourites', favourite)
+		},
+		async delete_from_favourites()
+		{
+			await rest.run_method('delete_favourites', {uuid: this.favourite_uuid})
+			this.favourite_uuid = null
 		}
 	}
 
@@ -336,8 +622,12 @@ import { computed } from '@vue/runtime-core';
         boards_columns: [],
         
       },
+	conf: {},
+	favourite_board_type_uuid: '1b6832db-7d94-4423-80f2-10ed989af9f8',
+	favorite_uuid: undefined,
 	void_group_name: 'Без группы',
 	swimlanes: {},
+	moving_swimlane: null,
 	sprints: [],
 	curr_sprint_num: 0,
 	column_values: [],
@@ -346,6 +636,8 @@ import { computed } from '@vue/runtime-core';
     name: 'board',
     label: 'Доска',
 	search_query: '',
+	encoded_query: '',
+	issues_dict: {},
 	boards_issues: [],
 	colorFromScript: 'green',
 	configs_open: false,
@@ -428,6 +720,11 @@ import { computed } from '@vue/runtime-core';
 			id: '',
 			dictionary: 'issue_types'
 		},
+		{
+			label: 'favourites',
+			id: '',
+			dictionary: 'favourites'
+		},
     ]
   }
      
@@ -490,6 +787,8 @@ import { computed } from '@vue/runtime-core';
 	  return sum
   }
 
+ 
+
   
 
   mod.props =
@@ -500,6 +799,9 @@ import { computed } from '@vue/runtime-core';
         default: ''
       }
     }
+
+
+	
    
   
   
@@ -556,11 +858,21 @@ import { computed } from '@vue/runtime-core';
 		</StringInput>
 		
 		
-		<i class='bx bx-dots-vertical-rounded top-menu-icon-btn'
+		<i class='bx bx-dots-horizontal-rounded top-menu-icon-btn'
 		@click="configs_open=!configs_open"
 		></i>
 		<i class='bx bx-trash top-menu-icon-btn delete-board-btn'
 		@click="delete_board()"
+		>	
+		</i>
+		<i class='bx bx-star top-menu-icon-btn'
+		@click="add_to_favourites"
+		v-if="(favourite_uuid == undefined) || (favourite_uuid == null)"
+		>	
+		</i>
+		<i class='bx bxs-star top-menu-icon-btn'
+		@click="delete_from_favourites"
+		v-if="(favourite_uuid != undefined) && (favourite_uuid != null)"
 		>	
 		</i>
 		
@@ -570,7 +882,9 @@ import { computed } from '@vue/runtime-core';
 
 	
 
-    <div id=board_down_panel class="panel" >
+    <div id=board_down_panel class="panel" 
+	
+	>
 
 		<div class="swimlane-total">
 			<span>Всего</span>
@@ -579,19 +893,42 @@ import { computed } from '@vue/runtime-core';
 		</div>
 
 		<div
+		:class="{ 'when-dragged-swimlane': moving_swimlane != null}"
 		class="swimlane"
 		v-for="(swimlane, sw_index) in swimlanes"
 		:key="sw_index"
+		@drop="move_swimlane($event, swimlane)"
+		@dragover.prevent
+		@dragenter.prevent
 		>
 			<div class="swimlane-head"
-			v-if="!selected_board.no_swimlanes && swimlane.count > 0" >
-				<span>{{swimlane.name}}</span>
+			v-if="!selected_board.no_swimlanes" >
+				<div class="swimlane-drag-dots"
+				:id="swimlane.name"
+				@dragstart="swimlane_start_dragging($event, swimlane)" 
+				draggable
+				@dragend="swimlane_stop_dragging($event, swimlane)"
+				v-bind:class="{'dragged-swimlane': swimlane.is_dragged}"
+				>
+					<i class='bx bx-dots-vertical-rounded '
+					></i>
+				</div>
+				<span class="swimlane-expander"
+				@click="swimlane_expanded_toogle(swimlane)"
+				>{{swimlane.expanded ? '⯆' : '⯈'}}</span>
+				<span v-if="swimlane.link==undefined" >{{swimlane.name}}</span>
+				<router-link v-if="swimlane.link!=undefined" 
+				:to="swimlane.link" tag="li"
+				>
+				{{swimlane.num}} {{swimlane.name}}
+				
+				</router-link>
 				<span>{{'кол-во: ' + swimlane.count}}</span>
 				<span>{{'сумма: ' + swimlane.sum}}</span>
 			</div>
 
 			<div class="swimlane-body"
-			v-if="swimlane.count > 0"
+			v-show="swimlane.expanded || selected_board.no_swimlanes"
 			>
 		
 				<div 
@@ -628,7 +965,7 @@ import { computed } from '@vue/runtime-core';
 							{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
 						</label>
 						<div class="issue-board-card-footer">
-							<div><label>{{get_json_val(issue, 'author_uuid')}}</label></div>
+							<div><label>{{'Assignee: ' + get_dict_value(get_field_by_name(issue, 'Assignee').value, 'User')}}</label></div>
 						</div>
 						
 					</div>
@@ -654,6 +991,7 @@ import { computed } from '@vue/runtime-core';
 		:issue_statuses="issue_statuses"
 		:issue_types="issue_types"
 		:users="users"
+		:sprints="sprints"
 		:disabled="!configs_open"
 		id='query'
 		:parent_query="get_json_val(selected_board, 'query')"
@@ -758,6 +1096,8 @@ import { computed } from '@vue/runtime-core';
   @import '../css/palette.scss';
   @import '../css/global.scss';
 
+  $cards_field_left: 20px;
+
 	#boards_table_panel, #boards_card {
     height: calc(100vh - $top-menu-height);    
 	}
@@ -790,7 +1130,7 @@ import { computed } from '@vue/runtime-core';
 
 
   .status-board-collumn{
-	width: calc((100vw - $main-menu-width) / v-bind('boards_columns.length'));
+	width: calc((100vw - $main-menu-width - $cards_field_left * 2) / v-bind('boards_columns.length'));
 	height: 150px;
 	
 	margin: 2px;
@@ -802,14 +1142,14 @@ import { computed } from '@vue/runtime-core';
   {
 	  border-style: solid;
 	  border-width: 1px;
-	  border-radius: $border-radius;
+	  border-radius: var(--border-radius);
   }
 
   .issue-board-cards-container
   {
-	  background: $disabled-bg-color;
-	  border-radius: $border-radius;
-	  border-color: $disabled-bg-color;
+	  background: var(--disabled-bg-color);
+	  border-radius: var(--border-radius);
+	  border-color: var(--disabled-bg-color);
 	  border-width: 5px;
 	  border-style: solid;
 	  overflow:scroll;
@@ -825,11 +1165,11 @@ import { computed } from '@vue/runtime-core';
 	display:flex;
 	flex-direction: column;
 	width: calc(100% );//190px;
-	height: 190px;
+	height: auto;
 
-	background: $panel-bg-color;
-	border-radius: $border-radius;
-	border-color: $border-color;
+	background: var(--panel-bg-color);
+	border-radius: var(--border-radius);
+	border-color: var(--border-color);
 	border-width: 1px;
 	border-style: groove;
 	text-align: left;
@@ -851,38 +1191,42 @@ import { computed } from '@vue/runtime-core';
   }
   .issue-card-title
   {
-	height: 80px;
+	height: auto;
 	display: flex;
     flex-direction: column;
 	
 	overflow: hidden;
+	padding: 5px;
   }
 
   .issue-card-title a
   {
-	color: rgb(128, 146, 157)
+	color: var(--link-color);
+	margin: 0px 0px 4px 0px;
   }
 
   .issue-card-description
   {
-	  height: 80px;
-	  border-top-color: $table-row-color;
-	  border-bottom-color: $table-row-color;
+	  height: auto;
+	  max-height: 100px;
+	  border-top-color: var(--table-row-color);
+	  border-bottom-color: var(--table-row-color);
 	  border-top-width: 2px;
 	  border-top-style: solid;
 	  border-bottom-width: 2px;
 	  border-bottom-style: solid;
-	  color: rgb(128, 146, 157);
+	  color: var(--issue-card-descr-color);
 	  overflow: hidden;
-	  font-size: 10px
+	  font-size: 10px;
+	  padding: 5px;
   }
 
   .issue-card-top
   {
 	  width:100%;
 	  height: 5px;
-	  border-top-left-radius: $border-radius;
-	  border-top-right-radius: $border-radius;
+	  border-top-left-radius: var(--border-radius);
+	  border-top-right-radius: var(--border-radius);
 	  opacity: 0.4;
 	  background: gray;
   }
@@ -890,8 +1234,8 @@ import { computed } from '@vue/runtime-core';
   .issue-board-card-footer
   {
 	  width:100%;
-	  height: 12px;
-	  
+	 // height: 12px;
+	  padding: 5px;
   }
 
   .issue-board-card-footer label
@@ -927,12 +1271,12 @@ import { computed } from '@vue/runtime-core';
   {
 	height: 35px;
     font-size: 25px;
-    border-radius: $border-radius;
+    border-radius: var(--border-radius);
     margin-left: 10px;
-	color: white;
-    background-color: #333;
+	color: var(--text-color);
+    background-color: var(--button-color);
     border-width: 1px;
-    border-color: white;
+    border-color: var(--border-color);
     border-style: solid;
     border-style: outset;
     cursor: pointer;
@@ -988,13 +1332,13 @@ import { computed } from '@vue/runtime-core';
 	cursor: pointer;
 	width: $font-size;
 	height: $input-height;
-	border-radius: $border-radius;
+	border-radius: var(--border-radius);
 	margin: 0px !important;
 	padding-top: 3px;
 }
 
 .board-sprint-filter-btn:hover{
-	background: $table-row-color-selected;
+	background: var(--table-row-color-selected);
 	
 }
 
@@ -1015,23 +1359,26 @@ import { computed } from '@vue/runtime-core';
 {
 	width: 100%;
     display: flex;
-	border-radius: $border-radius;
-	background: $disabled-bg-color;
+	border-radius: var(--border-radius);
+	background: var(--disabled-bg-color);
 	margin: 4px;
+	margin-bottom: 1px;
 }
 
 .swimlane-total
 {
-	height: 2*$input-height;
+	height: 1.2*$input-height;
+	min-height: 1.2*$input-height;
+	max-height: 1.2*$input-height;
 }
 
 .swimlane-head
 {
 	height: $input-height;
-	margin-top: 60px;
+	margin-top: var(--border-width);
 }
 
-.swimlane-head span, .swimlane-total span
+.swimlane-head span, .swimlane-total span, .swimlane-head a
 {
 	padding: 0px 10px 10px 10px;
     margin: 5px;
@@ -1048,6 +1395,43 @@ import { computed } from '@vue/runtime-core';
 {
 	width: 100%;
     display: flex;
+	overflow: hidden;
+	margin-left: $cards_field_left;
+}
+
+
+.swimlane-expander
+{
+	cursor: pointer;
+}
+
+
+.swimlane-drag-dots
+{
+	
+}
+
+.swimlane-drag-dots i
+{
+	font-size: 22px;	
+	margin: 6px;
+}
+
+.dragged-swimlane
+{
+	//cursor: grabbing;
+}
+
+
+
+#issue_types_table_panel {
+	padding: 10px 0px 0px 0px;
+}
+
+
+
+.issue-card-description{
+
 }
 
 

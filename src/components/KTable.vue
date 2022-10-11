@@ -138,6 +138,9 @@
           if(uuid == null) return true
 
           let parent = this.get_row_by_uuid(uuid)
+
+          if(parent == undefined) return true
+          
           if(!parent.expanded) return false
 
           return this.all_parents_expended(parent.parent_uuid)
@@ -249,42 +252,44 @@
   }
 </script>
 
-<style>
-  table
-  {
+<style lang="scss">
+  @import '../css/global.scss';
+
+  table{
     text-align: left;
     width: 100%;
 
     border-collapse: separate; 
     border-spacing: 0 10px; 
-    margin-top: -10px; /* correct offset on first border spacing if desired */
+    margin-top: -10px; //correct offset on first border spacing if desired 
   }
- td {
-  padding-right: 10px;
-  padding-left: 10px
- }
+
+  td {
+    padding-right: 10px;
+    padding-left: 10px
+  }
 
 
 .selected_row td {
-    background-color: rgb(50, 60, 70);
-    border-color: rgb(50, 60, 70);
+    background-color: var(--table-row-color-selected);
+    border-color: var(--table-row-color-selected);
 }
 td {
     border: solid 2px #000;
     border-style: solid none;
     padding: 3px 3px 3px 3px;
-    border-color: rgb(40, 45, 50);
-    background-color: rgb(40, 45, 50);
+    border-color: var(--table-row-color);
+    background-color: var(--table-row-color);
 }
 td:first-child {
     border-left-style: solid;
-    border-top-left-radius: 6px; 
-    border-bottom-left-radius: 6px;
+    border-top-left-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius);
 }
 td:last-child {
     border-right-style: solid;
-    border-bottom-right-radius: 6px; 
-    border-top-right-radius: 6px; 
+    border-bottom-right-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
 }
 /*
  .selected_row

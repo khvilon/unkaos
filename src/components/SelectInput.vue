@@ -101,6 +101,11 @@ export default {
       disabled: {
         type: Boolean,
         default: false
+      },
+      close_on_select:
+      {
+        type: Boolean,
+        default: true
       }
 
     },
@@ -152,6 +157,8 @@ export default {
    :options=values 
    :selectable="check_selectable"
    @search="(text, arg2)=>$emit('search', text)"
+   
+   :close-on-select="close_on_select"
    >
     <template 
     v-slot:no-options="{ searching }" >
@@ -170,20 +177,20 @@ export default {
 
 <style lang="scss">
 
-@import '../css/palette.scss';
+
 @import '../css/global.scss';
 
  .select-input .vs__search::placeholder,
  .select-input .vs__dropdown-toggle,
  .select-input .vs__dropdown-menu {
-  background: $input-bg-color;
+  background: var(--input-bg-color);
   
-  color: $text-color;
+  color: var(--text-color);
 
-  border-color: $border-color;
-    border-style: inset;
-    border-width: 2px;
-    border-radius: $border-radius;
+  border-color: var(--border-color);
+    border-style: var(--border-style);
+    border-width: var(--border-width);
+    border-radius: var(--border-radius);
 }
 
  .select-input .vs__dropdown-toggle{
@@ -194,7 +201,7 @@ export default {
 
  .select-input .vs__clear,
  .select-input .vs__open-indicator {
-  fill: $text-color;
+  fill: var(--text-color);
   
 }
 
@@ -204,7 +211,7 @@ export default {
 
  .select-input .vs__selected
  {
-   color: $text-color;
+   color: var(--text-color);
  }
 
  .select-input
@@ -216,7 +223,7 @@ export default {
     height: 18px;
     width: 18px;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: var(--panel-bg-color);
     margin-right: 10px;
     position: relative;
     top: 5px;
@@ -237,29 +244,29 @@ export default {
 }
 
 .vs__selected {
-  background-color: $table-row-color-selected;
+  background-color: var(--table-row-color-selected);
 }
 
 .vs__deselect {
-  fill: $text-color;
+  fill: var(--text-color);
 }
 
 .vs--disabled .vs__clear, .vs--disabled .vs__dropdown-toggle, .vs--disabled .vs__open-indicator, .vs--disabled .vs__search, .vs--disabled .vs__selected {
-  background-color: $disabled-bg-color;
+  background-color: var(--disabled-bg-color);
   
 }
 
 .vs--disabled .vs__clear, .vs--disabled .vs__open-indicator
 {
-  fill: $disabled-bg-color;
+  fill: var(--disabled-bg-color);
 }
 
 
 
 </style>
 
-<style scoped>
+<style scoped lang="scss">
 >>> {
-  --vs-dropdown-option--active-bg: rgb(50, 60, 70);
+  --vs-dropdown-option--active-bg: var(--table-row-color-selected);
 }
 </style>

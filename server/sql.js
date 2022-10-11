@@ -3,12 +3,24 @@
     const { Pool, Client } = require('pg')
     const { password } = require('pg/lib/defaults')
 
+   /* 
     const host = '127.0.0.1'
     const database = 'unkaos'
     const port = 5432
 
     const admin_name = 'khvilon'
     const admin_pass = 'colaider'
+    */
+
+
+   // const host = 'unkaos.oboz.tech'
+    const host = 'localhost'
+    const database = 'unkaos'
+    const port = 5432
+
+    const admin_name = 'unkaos'
+    const admin_pass = 'RMpXT6sCThMQ0DEJO3vTc3gKSqwrgq34FDG53'
+    
 
 
     var pools = {
@@ -48,20 +60,42 @@
         }
     }
 
-    sql.query = async function(subdomain, query)
+    sql.query = async function(subdomain, query_arr, params_arr)
     {
-        
         if(pools[subdomain] == undefined) return null
-        console.log('q', query)
-        let ans
-        try{
-            ans = await pools[subdomain].query(query)
-        }
-        catch(e)
+
+        if(!Array.isArray(query_arr))
         {
-            console.log('sql error', e)
-            ans = {error: 'Ошибка запроса в БД', http_code: 400}
+            query_arr = [query_arr]
+            params_arr = [params_arr]
         }
+        
+
+        let ans
+        for(let i = 0; i < query_arr.length; i++)
+        {
+            let query = query_arr[i]
+            let params = params_arr[i]
+
+            console.log('sql', query)
+
+            if (typeof query != 'string')
+            {
+                console.log('sql empty query', query+'', '!'+params+'!')
+                continue
+            }
+
+            try{
+                if(params != undefined && params != null && params.length > 0)
+                    ans = await pools[subdomain].query(query, params)
+                else ans = await pools[subdomain].query(query)
+            }
+            catch(e)
+            {
+                console.log('sql error', e, query, params)
+                ans = {error: 'Ошибка запроса в БД', http_code: 400}
+            }
+        }        
         
         return ans
     }
