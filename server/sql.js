@@ -3,23 +3,7 @@
     const { Pool, Client } = require('pg')
     const { password } = require('pg/lib/defaults')
 
-   /* 
-    const host = '127.0.0.1'
-    const database = 'unkaos'
-    const port = 5432
-
-    const admin_name = 'khvilon'
-    const admin_pass = 'colaider'
-    */
-
-
-   // const host = 'unkaos.oboz.tech'
-    const host = 'localhost'
-    const database = 'unkaos'
-    const port = 5432
-
-    const admin_name = 'unkaos'
-    const admin_pass = 'RMpXT6sCThMQ0DEJO3vTc3gKSqwrgq34FDG53'
+   
     
 
 
