@@ -52,6 +52,7 @@ const router = createRouter({
 	{ path: '/board/:uuid', component: PageBoard, props: true },
 	{ path: '/issue/', component: PageIssue },
 	{ path: '/board/', component: PageBoard },
+	{ path: '/dashboard/:uuid', component: PageDashboard, props: true  },
 	{ path: '/dashboard/', component: PageDashboard },
 /*	{
 		path: "/:catchAll(.*)",

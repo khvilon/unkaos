@@ -83,7 +83,7 @@ async function init()
 
         let token = req.headers.token
 
-        user = await security.check_token(subdomain, token)
+        let user = await security.check_token(subdomain, token)
 
         if(user == null)
         {
@@ -222,9 +222,9 @@ async function init()
                 
 
                 let req_uuid = tools.uuidv4()
-                req_values= "'" + req_uuid + "','" + req.method + "','" + req.url+ "','" + JSON.stringify(req.headers)+ "','" + JSON.stringify(req.body)   + "'"
+                req_values= [ req_uuid,  req.method,  req.url, JSON.stringify(req.headers), JSON.stringify(req.body)]
 
-                sql.query('admin', `INSERT INTO admin.logs_incoming (uuid, method, url, headers, body) VALUES(` + req_values + `)`)
+                sql.query('admin', `INSERT INTO admin.logs_incoming (uuid, method, url, headers, body) VALUES($1,$2,$3,$4,$5)`, req_values)
                 
                 //console.log(req)
                 
@@ -243,7 +243,7 @@ async function init()
                     return
                 }
 
-                console.log('checked user ', user)
+                console.log('checked user ', user.name, user.login, user.mail)
 
                 let [method, table_name] = tools.split2(func_name, '_')
 
@@ -263,7 +263,7 @@ async function init()
                     
                 }
 
-                if(method!='read') params.author_uuid = user.uuid;
+                if((method!='read' || table_name == 'favourites') && method!='delete') params.author_uuid = user.uuid;
 
                 if(params.values != undefined)
                 {
@@ -291,8 +291,8 @@ async function init()
                 if(method!='read')
                 {
                     let params_str = '' //JSON.stringify(params)
-                    let req_done_values= "'" + req_uuid + "','" + user.uuid + "','" + table_name + "','" + method + "','" + params.uuid + "','" + params_str + "'"
-                    sql.query(subdomain, `INSERT INTO logs_done (uuid, user_uuid, table_name, method, target_uuid, parameters) VALUES(` + req_done_values + `)`)
+                    let req_done_values= [req_uuid,  user.uuid, table_name, method, params.uuid, params_str]
+                    sql.query(subdomain, `INSERT INTO logs_done (uuid, user_uuid, table_name, method, target_uuid, parameters) VALUES($1,$2,$3,$4,$5,$6)`,req_done_values)
                 }
 
                 //add watcher
@@ -311,8 +311,8 @@ async function init()
     {
         console.log(`Server running on port ${port}`)
 
-        return
-        let new_issues = await imp.search()
+        //return
+        await imp.run()
         //console.log('new_issues', new_issues)
 
           

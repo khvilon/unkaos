@@ -5,6 +5,7 @@
 
 	import d from '../dict.ts'
 	import rest from '../rest';
+	import tools from '../tools.ts'
 	
 	console.log('d', d['Название'],d)
 
@@ -29,6 +30,10 @@
 		},
 		get_issues: async function(query, offset)
 			{
+				let url = 'query=' +    encodeURIComponent(this.search_query) 
+
+				this.$router.replace({})
+				 
 				localStorage.issues_query = this.search_query;
 				localStorage.issues_query_encoded = this.search_query_encoded;
 
@@ -59,6 +64,7 @@
 				for(let i in this.loaded_issues)
 				{
 					this.loaded_issues[i].children = []
+					this.loaded_issues[i].local_parent_uuid = null
 				}
 
 				
@@ -68,12 +74,11 @@
 					{
 						for(let j in this.loaded_issues)
 						{
-							
 							if(this.loaded_issues[j].uuid == this.loaded_issues[i].parent_uuid)
 							{
 								this.loaded_issues[j].children.push(this.loaded_issues[i])
+								this.loaded_issues[i].local_parent_uuid = this.loaded_issues[i].parent_uuid
 							}
-							
 						}
 					}
 				}
@@ -84,7 +89,7 @@
 				
 				for(let i in this.loaded_issues)
 				{
-					if(this.loaded_issues[i].parent_uuid == null) 
+					if(this.loaded_issues[i].local_parent_uuid == null) 
 						this.loaded_issues_tree = this.add_with_children(this.loaded_issues[i], this.loaded_issues_tree, 0)
 				}
 				
@@ -117,12 +122,27 @@
 			load_more: function()
 			{
 				this.get_issues(this.search_query_encoded, this.loaded_issues.length)
+			},
+			add_to_favourites: async function()
+			{
+				this.favourite_uuid = tools.uuidv4()
+				console.log('this.favourite_uuid0', this.favourite_uuid)
+				let favourite = 
+				{
+					uuid: this.favourite_uuid,
+					type_uuid: this.favourite_issues_type_uuid,
+					name: this.search_query,
+					link: '/issues?query=' +    encodeURIComponent(this.search_query)  
+				}
+
+				await rest.run_method('create_favourites', favourite)
 			}
 			
 		}
 
 	const data = 
   {
+	favourite_issues_type_uuid: 'ac367512-c614-4f2a-b7d3-816018f71ad8',
 	loaded_issues: [],
 	loaded_issues_tree: [],
     name: 'issues',
@@ -208,20 +228,44 @@
 			id: '',
 			dictionary: 'issue_types'
 		},
+		{
+			label: 'sprints',
+			id: '',
+			dictionary: 'sprints'
+		},
+
     ]
   }
+
+  //sudo cp -r /var/app/unkaos/dist /srv/docker/nginx/www
+
      
   const mod = await page_helper.create_module(data, methods)
 
   mod.mounted = function()
   {
+
+	console.log('this.url_params', this.url_params)
+
+	
+	if(this.url_params.query != undefined)
+	{
+		console.log('this.url_params', this.url_params.query)
+		let query = decodeURIComponent((this.url_params.query))
+		this.$nextTick(function () {
+			this.search_query = query
+		})
+	}
+	else
+	{
+		this.$nextTick(function () {
+			this.search_query = localStorage.issues_query != undefined ? localStorage.issues_query : ''
+		})
+	}
+
+	
 	  
-	this.$nextTick(function () {
-	//this.search_query = ''
-	this.search_query = localStorage.issues_query != undefined ? localStorage.issues_query : ''
-	//this.search_query =  'Проект = Заказ '
-//	console.log('this.search_query', this.search_query, localStorage.issues_query)
-	})
+	
 	
 	//this.
   }
@@ -264,6 +308,7 @@
 		:issue_statuses="issue_statuses"
 		:issue_types="issue_types"
 		:users="users"
+		:sprints="sprints"
 		:parent_query="search_query"
 		>
 
@@ -274,12 +319,12 @@
 		class='bx top-menu-icon-btn'
 		@click="tree_view=!tree_view"
 		></i>
+		<i class='bx bx-star top-menu-icon-btn'
+		@click="add_to_favourites"
+		>	
+		</i>
 		
 
-		<KButton 
-		:name="'Создать'"
-		@click="new_issue"
-		/>
 			
 		</div>
 	</div>

@@ -65,9 +65,11 @@ data_model.load_columns = async function()
 data_model.load_relations = async function()
 {
     let ans = await sql.query(schema, data_model.querys.forein_keys)
+
     let forein_keys = ans.rows
 
-    for(let i in forein_keys)
+
+    for(let i = 0; i <  forein_keys.length; i++)
     {
         let fk = forein_keys[i]
 

@@ -108,12 +108,12 @@
   .relations-input {
     font-size: 20px;
     font-weight: 400;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     transition: all 0.5s ease;
     background-color: transparent;
     text-align: center;  
-    border-color: $table-row-color;
-    border-width: relation_input_border_width;
+    border-color: var(--table-row-color);
+    border-width: $relation_input_border_width;
     border-style: solid; 
     display: flex;  
   }

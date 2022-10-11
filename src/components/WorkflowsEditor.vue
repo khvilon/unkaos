@@ -536,19 +536,11 @@
 </template>
 
 
-<style>
+<style >
   /* Google Font Link */
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
   
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-  }
-  body {
-    transition: all 0.5s ease;
-  }
+  
 
   .workflows-editor
   {
@@ -594,8 +586,8 @@
 
         
   .svg-workflow, .table-statuses {
-    border-radius: 6px;
-    background-color: rgb(29, 27, 49);
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg-color);
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -605,7 +597,7 @@
 
     transition: all 0.5s ease;
 
-    border-color: rgb(118, 118, 118);
+    border-color: var(--border-color);
     border-width: 2px;
     border-style: inset;
   }  
@@ -682,42 +674,42 @@ p{
 }
 
 marker{
-    fill: rgb(230, 230, 230);
+    fill: var(--workflow-marker-color);
 }
 
 g.conceptG circle{
-    fill: rgb(20, 20, 40);
-    stroke: rgb(230, 230, 230);
+    fill: var(--workflow-g-fill-color);
+    stroke: var(--workflow-marker-color);
     stroke-width: 2px;
-    color: rgb(230, 230, 230);
+    color: var(--workflow-marker-color);
 }
 
 g.conceptG text tspan{
-    fill: rgb(230, 230, 230);
+    fill: var(--workflow-marker-color);
 }
 
 g.conceptG:hover circle{
-    fill: rgb(45, 45, 65);
-    stroke: rgb(200, 200, 255);
+    fill: var(--workflow-g-hover-fill-color);
+    stroke: var(--workflow-g-hover-color);
 }
 
 g.selected circle{
     stroke-width: 4px;
-    stroke: rgb(150, 150, 255);
+    stroke: var(--workflow-g-selected-color);
 }
 g.selected:hover circle{
     stroke-width: 4px;
-    stroke: rgb(150, 150, 255);
+    stroke: var(--workflow-g-selected-color);
 }
 
 #hover-end-arrow
 {
-    fill: rgb(200, 200, 255);
+    fill: var(--workflow-g-hover-color);
 }
 
 path.link {
     fill: none;
-    stroke: rgb(230, 230, 230);
+    stroke: var(--workflow-marker-color);
     stroke-width: 3px;
     cursor: default;
     marker-end: url(#end-arrow);
@@ -730,7 +722,7 @@ path.dragline
 }
 
 path.link:hover{
-    stroke: rgb(200, 200, 255);
+    stroke: var(--workflow-g-hover-color);
     marker-end: url(#hover-end-arrow);
 }
 
@@ -745,13 +737,13 @@ path.link.hidden
 }
 
 path.link.selected {
-    stroke: rgb(150, 150, 255);
+    stroke: var(--workflow-g-selected-color);
     marker-end: url(#selected-end-arrow);
 }
 
 #selected-end-arrow
 {
-    fill: rgb(150, 150, 255);
+    fill: var(--workflow-g-selected-color);
 }
 
 </style>

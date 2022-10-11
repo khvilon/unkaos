@@ -3,8 +3,59 @@
 	import tools from '../tools.ts'
 	import page_helper from '../page_helper.ts'
 	import rest from '../rest.ts'
+	//import marked from 'marked';
+	
+
+	
+
 
 	let methods = {
+		pasted: async function(e)
+		{
+			console.log(e)
+			if (e.clipboardData && e.clipboardData.items) {
+					let items = e.clipboardData.items;
+					for (let i = 0; i < items.length; ++i) {
+					if (items[i].kind == 'file' && items[i].type.indexOf('image/') > -1) {
+						let file = items[i].getAsFile();
+
+						let name, extention
+						let dot_idx = file.name.lastIndexOf('.')
+						if(dot_idx < 0)
+						{
+						name = file.name
+						extention = ''
+						}
+						else
+						{
+						name = file.name.substr(0, dot_idx)
+						extention = file.name.substr(dot_idx+1)
+						}
+						
+						const val = await tools.readUploadedFile(file)
+
+						let attachment = {
+						name: name + tools.uuidv4(),
+						extention: extention,
+						uuid: tools.uuidv4(),
+						data: val,
+						type: file.type,
+						table_name: 'attachments'
+						}
+
+						this.add_attachment(attachment)
+					
+					} else {
+						return;
+					}
+					}
+				} else {
+					return;
+  				}
+			
+		},
+		
+	
 		get_field_by_name: function(name)
 		{
 			console.log('get_field_by_name', name)
@@ -57,9 +108,9 @@
 			if(this.issue[0] == undefined || this.issue[0].actions == undefined) return;
 			const action_icons = 
 			{
-				comment: '🗩',
-				edit: '🖉',
-				transition: '⤞'
+				comment: '💬',
+				edit: '📝',
+				transition: '🔁'
 			}
 			let new_action = {
 				name: action_icons[type], 
@@ -173,9 +224,13 @@
 		},
 		update_type: function(type_uuid)
 		{
+			console.log(type_uuid)
 			if(this.id!= '') return
 
-			this.$store.commit('id_push_update_issues', {id: 'type_uuid', val:type_uuid})
+			if(this.issue[0] == undefined) return
+			if(this.issue[0].type_uuid == type_uuid) return
+
+		//	this.$store.commit('id_push_update_issue', {id: 'type_uuid', val:type_uuid})
 	//		console.log('update_type', type_uuid)
 
 			let issue_type
@@ -193,34 +248,45 @@
 			let values = []
 			for(let i in issue_type.fields)
 			{
+				let field_name = issue_type.fields[i].name
+				let old_field = this.get_field_by_name(field_name)
+				let val = ''
+				if(old_field != undefined && old_field != null) val = old_field.value
+				
 				values.push({
 					type: issue_type.fields[i].type[0].code,
 					uuid: tools.uuidv4(),
-					label: issue_type.fields[i].name,
-					value: '',
+					label: field_name,
+					value: val,
 					field_uuid: issue_type.fields[i].uuid,
 					table_name: "field_values",
 					issue_uuid: this.issue[0].uuid
 				})
 			}
 
-			this.$store.state['issue']['selected_issue'].values = values
-			this.$store.state['issue']['issue'][0].values = values
-			this.$store.state['issue']['filtered_issue'][0].values = values
-
-			this.$store.state['issue']['selected_issue'].type_uuid = type_uuid
-			this.$store.state['issue']['issue'][0].type_uuid = type_uuid
-			this.$store.state['issue']['filtered_issue'][0].type_uuid = type_uuid
-
+			this.set('values', values)
+			this.set('type_uuid', type_uuid)
 	//		console.log('update_type3', values)
+		},
+		set(path, val)
+		{
+			this.$store.state['issue']['selected_issue'][path] = val
+			this.$store.state['issue']['issue'][0].path = val
+			this.$store.state['issue']['filtered_issue'][0].path = val
 		},
 		saved: function(issue)
 		{
+			this.edit_mode = false
 			this.add_action_to_history('edit', '')
+
+			//todo save type and project in localstorage for future issue create 
+
 			if(this.id!='') return
 			
 			//this.$router.push('/issue/' + issue[0].project_short_name + '-' + issue[0].num)
 			window.location.href = '/issue/' + issue[0].project_short_name + '-' + issue[0].num
+
+			//
 
 			//setTimeout(this.init, 1000)
 		},
@@ -233,6 +299,8 @@
 			att.issue_uuid = this.issue[0].uuid
 			this.$store.state['issue']['selected_issue'].attachments.push(att)
 			let ans = await rest.run_method('upsert_attachments', att)
+			
+			if(att.type.indexOf('image') > -1) this.attachments.push(att)
 		},
 		delete_attachment: async function(att)
 		{
@@ -243,6 +311,15 @@
 					this.$store.state['issue']['selected_issue'].attachments.splice(i, 1)
 			}
 			let ans = await rest.run_method('delete_attachments', att)
+
+			if(att.type.indexOf('image') < 0) return 
+			for(let i in this.attachments)
+			{
+				if(this.attachments[i].uuid == att.uuid)
+				{
+					this.attachments.splice(i, 1)
+				}
+			}
 		},
 		get_available_values: function(field_uuid)
 		{
@@ -281,20 +358,107 @@
 		},
 		init: async function(delay)
 		{
-			if(this.issue==undefined || this.issue[0] == undefined )
+			if(this.issue==undefined || this.issue[0] == undefined || this.issue_types == undefined)
 			{
 				setTimeout(this.init, 200)
 				return
 			}
 
+			console.log('this.issue[0]0', this.id, this.issue[0])
+			if((this.id == undefined || this.id == '') && this.url_params.clone == 'true' && localStorage.cloned_params != undefined)
+			{
+				this.url_params = JSON.parse(localStorage.cloned_params)
+
+				if(this.url_params.project_uuid != undefined)  this.set('project_uuid', this.url_params.project_uuid)
+				if(this.url_params.type_uuid != undefined)  this.set('type_uuid', this.url_params.type_uuid)
+
+				let issue_type
+				for(let i in this.issue_types)
+				{
+					if(this.issue_types[i].uuid == this.url_params.type_uuid)
+					{
+						issue_type = this.issue_types[i]
+						continue
+					}
+				}
+
+				
+				let values = []
+				for(let i in issue_type.fields)
+				{
+					let field_uuid = issue_type.fields[i].uuid
+
+					let cloned_field_value = this.url_params[field_uuid]
+
+					if(cloned_field_value == undefined) continue
+
+					//cloned_field_value = (decodeURIComponent(atob(cloned_field_value)))
+					
+					values.push({
+						type: issue_type.fields[i].type[0].code,
+						uuid: tools.uuidv4(),
+						label: issue_type.fields[i].name,
+						value: cloned_field_value,
+						field_uuid: issue_type.fields[i].uuid,
+						table_name: "field_values",
+						issue_uuid: this.issue[0].uuid
+					})
+				}
+
+				this.set('values', values)
+				
+			
+			}
+
 			let ans = await rest.run_method('read_watcher', {issue_uuid: this.issue[0].uuid})
 			this.watch = ans.length > 0
+
+			let attachments = await rest.run_method('read_attachments', {issue_uuid: this.issue[0].uuid})
+			this.attachments = attachments.filter((a)=>a.type.indexOf('image/') > -1)
+
+
+
+		},
+		get_clone_url: function()
+		{
+			let params = {
+				project_uuid: this.issue[0].project_uuid,
+				type_uuid: this.issue[0].type_uuid,
+			}
+
+			for(let i in this.issue[0].values)
+			{
+				let field_value = this.issue[0].values[i]
+				console.log(field_value.field_uuid)
+				params[field_value.field_uuid] = field_value.value// btoa(encodeURIComponent(field_value.value))
+			}
+
+			localStorage.cloned_params = JSON.stringify(params)
+			return '/issue?clone=true'
+
+
+
+			let url = '/issue?t=' + new Date().getTime()
+			for(let i in params)
+			{
+				url += '&' + i + '=' + params[i]
+			}
+
+			url = encodeURI(url)
+
+			//url = this.$router.resolve({path: '/issue', query: params}).href
+			
+
+			return url
 		},
 		togle_watch: function()
 		{
 			if(this.watch) rest.run_method('delete_watcher', {issue_uuid: this.issue[0].uuid})	
 			else rest.run_method('upsert_watcher', {issue_uuid: this.issue[0].uuid})	
 			this.watch = !this.watch
+
+	
+			
 		}
 
 
@@ -305,6 +469,8 @@
 
   const data = 
   {
+	edit_mode: false,
+	attachments: [],
     name: 'issue',
     label: 'Поля',
 	new_relation_modal_visible: false,
@@ -513,10 +679,12 @@
 
 
 <template ref='issue'>
-	<div>
+	<div   >
+
+		
 
 	<Transition name="element_fade">
-			<KNewRelationModal 
+			<KNewRelationModal  
 				v-if="new_relation_modal_visible" 
 				@close_new_relation_modal="new_relation_modal_visible=false"
 				@relation_added="add_relation"
@@ -528,10 +696,11 @@
 
 	</Transition>
 
-    <div id="issue_top_panel" class="panel">
+    <div id="issue_top_panel" class="panel" >
+		
 		<Transition name="element_fade">
 		<StringInput 
-		v-if="!loading"
+		v-if="!loading && issue[0] != undefined"
 		key="issue_code"
 		class='issue-code' 
 		label='' 
@@ -542,7 +711,7 @@
 		</Transition>
 		<Transition name="element_fade">
 		<SelectInput
-		v-if="!loading"
+		v-if="!loading && issue[0] != undefined"
 		label=""
 		key="issue_type_input"
 		:value="get_type_uuid()"
@@ -556,7 +725,7 @@
 		</Transition>
 		<Transition name="element_fade">
 		<SelectInput 
-		v-if="!loading && id!=''"
+		v-if="!loading && issue[0] != undefined && id!=''"
 		label=""
 		:value="get_status()"
 		:values="statuses"
@@ -569,7 +738,7 @@
 		</Transition>
 
 		<Transition name="element_fade">
-		<div v-if="!loading && id!='' && transitions.length <= max_status_buttons_count" style="display: flex;">
+		<div v-if="!loading && id!='' && available_transitions.length <= max_status_buttons_count" style="display: flex;">
 		<KButton
 		v-for="(transition, index) in available_transitions" 
 		:key="index"
@@ -582,24 +751,14 @@
 		
 		</Transition >
 
+
 		<Transition name="element_fade">
-		<div v-if="!loading && id!=''" style="display: flex;" class="clone-btn">
-		<KButton
-		
-		name="🐑➠🐑"	
-		/>
+		<div v-if="!loading && id!=''" style="display: flex;" class="watch" :class="{'watch-active' : edit_mode}"
+		@click="edit_mode = !edit_mode">
+			🖉
 		</div>	
 		</Transition >
 
-
-		<Transition name="element_fade">
-		<div v-if="!loading && id!=''" style="display: flex;" class="new-issue-btn">
-		<KButton
-		@click="$router.push('/issue')"
-		name="➕"	
-		/>
-		</div>	
-		</Transition >
 
 		<Transition name="element_fade">
 		<div v-if="!loading && id!=''" style="display: flex;" class="watch" :class="{'watch-active' : watch}"
@@ -608,6 +767,15 @@
 		</div>	
 		</Transition >
 
+		<Transition name="element_fade">
+		<a 
+		v-if="!loading && id!=''" 
+		class='bx bx-copy clone-btn'
+			:href="get_clone_url()" 
+			>
+      	</a>
+		</Transition>
+
 		
 		
 		
@@ -615,20 +783,28 @@
 	</div>
 
 
-    <div id=issue_down_panel>
+    <div id=issue_down_panel >
       <div id="issue_main_panel" class="panel" >
         
 		<Transition name="element_fade">
 		<div class="issue-line" v-if="!loading">
 
-		  <StringInput label='Название'
+		  <StringInput 
+		  v-if="!loading && (edit_mode || id=='')"
+		  label='Название'
 			:value="get_field_by_name('Название').value"
 			  class="issue-name-input"
 			  :class="{'issue-name-input-full': id!=''}"
               :id="'values.'+ get_field_by_name('Название').idx+'.value'"
               parent_name='issue'
+			
 			>
 			</StringInput>
+			<span class='issue-title-span' v-if="!loading && !edit_mode && id!=''">
+				{{get_field_by_name('Название').value}}
+			</span>
+
+
 			<SelectInput
 			v-if="id==''"
 			label='Проект'
@@ -647,13 +823,41 @@
 		</Transition>
 
 			<Transition name="element_fade">
-			<TextInput label='Описание' v-if="!loading"
+			<TextInput label='Описание' v-if="!loading && (edit_mode || id=='')"
 				:value="get_field_by_name('Описание').value"
 				:id="'values.'+ get_field_by_name('Описание').idx+'.value'"
               	parent_name='issue'
+				ref="issue_descr_filed"
+				@paste="pasted"
+		
 			>
 			</TextInput>
 			</Transition>
+
+			<Transition name="element_fade">
+			<KMarked class="descr-rendered" v-if="!loading && !edit_mode && id!=''"
+			:val="get_field_by_name('Описание').value"
+			:images="attachments"
+			>
+			</KMarked>
+
+			
+			</Transition>
+
+			<Transition name="element_fade">
+			<div class="image-attachments" v-if="false && attachments.length > 0">
+				<div class="image-attachment-div" 
+				v-for="(att, index) in attachments" 
+				:key="index"
+				>
+					<span class="image-attachment-label">{{att.name}}</span>
+					<img class="image-attachment" :src="att.data">
+
+				</div>
+			</div>
+			</Transition>
+
+			
 
 
 			<Transition name="element_fade">
@@ -683,7 +887,7 @@
 
 			<Transition name="element_fade">
 			<TextInput label='Комментарий' v-if="!loading && id!=''"
-				id="comment_input"
+				class="comment_input"
 				@update_parent_from_input="update_comment"
 				:value="comment"
 				@input_focus="comment_focus"
@@ -712,11 +916,6 @@
 			</TextInput>
 
 			</Transition>
-
-
-			
-
-
 
       </div>
       <div id="issue_card" class="panel">
@@ -893,7 +1092,7 @@
 {
 
     padding: 0px 20px 10px 20px;
-    margin-top: -21px;
+    margin-top: -15px;
     border-top-left-radius: 0px;
 }
 #send_comment_btn .btn_input
@@ -903,14 +1102,14 @@
     border-top-left-radius: 0px;
     border-top-right-radius: 0px;
 	border-width: 1px;
-	border-left-color: $border-color;
-    border-top-color: $border-color
+	border-left-color: var(--border-color);
+    border-top-color: var(--border-color);
 }
 
-.comment_input
+.comment_input textarea
 {
-	border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
+	border-bottom-left-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
 }
 
 .outlined input
@@ -959,28 +1158,71 @@
 		 width: 100%;
 	 }
 
-.clone-btn input{
-	width: calc(2*$input-height) !important;
+.clone-btn{
+	
     margin: 10px 20px 10px 20px;
+
+	display: flex;
+    font-size: 35px;
+    
+    /* margin-right: 40px; */
+
+   // cursor: pointer;
+    text-decoration: none;
 }
 	 
 .watch
 {
-
+	border-radius: var(--border-radius);
 	display: flex;
     font-size: 35px;
     margin-left: 20px;
     margin-top: 2px;
-    color: $table-row-color-selected;
+    color: var(--off-button-icon-color);
 	cursor: pointer;
+	
 }
 
 .watch-active
 {
-	color: $text-color
+	color: var(--on-button-icon-color);
+	//font-weight: 600;
+
 }
 
 
+.image-attachments
+{
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+.image-attachment-div
+{
+	display: flex;
+    flex-direction: column;
+	margin-bottom: 20px;
+}
+
+.issue-title-span
+{
+	margin-top: 20px;
+	margin-left: 20px;
+	margin-right: 20px;
+	font-size: 22px;
+	width: 100%;
+	text-align: center;
+	user-select: text;
+}
+
+.descr-rendered
+{
+	margin: 20px;
+}
+.descr-rendered p
+{
+	text-align: left;
+}
 
 
 /*

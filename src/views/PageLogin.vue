@@ -110,6 +110,7 @@
 
 	.wrong-pass-label
 	{
+		
 		color: rgb(124, 0, 0);
 		padding: 10px 20px 10px 20px;
 		height: 20px;

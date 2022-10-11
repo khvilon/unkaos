@@ -41,8 +41,9 @@
   }
 </script>
 
-<style lang="css">
+<style lang="scss">
 
+  @import '../css/global.scss';
 
 .tab-panel {
     display: flex;
@@ -65,8 +66,8 @@
     display: inline-block;
     margin-right: 5px;
     cursor: pointer;
-    border-radius: 6px 6px 0 0;
-    border-color: rgb(118, 118, 118);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    border-color: var(--border-color);
     border-style: groove;
     border-bottom: 0px solid transparent;
   }
@@ -80,25 +81,25 @@
   .tab {
     display: inline-block;
     color: black;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     width: 100%;
     height: 100%;
-    border-width: 2px;
-    border-color: rgb(118, 118, 118);
+    border-width: var(--border-width);
+    border-color: var(--border-color);
     border-style: groove;
     padding: 10px 0px 0px 0px;
   }
 
   .tab-panel .tab{
-    background-color: rgb(35, 39, 43);
+    background-color: var(--panel-bg-color)
   }
 
   .tab-panel li {
-    background-color: rgb(25, 30, 35);
+    background-color: var(--table-row-color)
   }
 
   .tab-panel li.tab__selected {
-    background-color: rgb(35, 39, 43);
+    background-color: var(--panel-bg-color)
     
   }
 </style>

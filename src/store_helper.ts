@@ -125,10 +125,12 @@ store_helper.create_module = function(name)
 	}
 	mutations['unselect_' + name] = function(state)
 	{
-
+		let new_instance = tools.obj_clone(state['instance_' + name])
+		new_instance.uuid = tools.uuidv4()
+		new_instance.is_new = true
 		//console.log('iiiii', state['instance_' + name])
-	  	state['selected_' + name] = tools.obj_clone(state['instance_' + name])
-	  	state['updated_' + name] = tools.obj_clone(state['instance_' + name])
+	  	state['selected_' + name] = new_instance
+	  	state['updated_' + name] = new_instance
 	  	for(let i in state['filtered_' + name])
 		{
 			state['filtered_' + name][i].selected = false

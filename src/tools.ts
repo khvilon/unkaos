@@ -233,6 +233,31 @@ tools.readUploadedFileAsImg = (inputFile) =>
   });
 };
 
+tools.get_uri_params = function(uri)
+{
+  uri = decodeURI(uri)
+  uri = uri.split('?')[1];
+  
+  if (uri == undefined) return {}
+
+  let vars = uri.split('&');
+
+  let params = {}
+
+  for (let i in vars)
+  {
+    let tmp = vars[i].split('=');
+ //   console.log('u', tmp, name)
+ 
+    if(tmp.length == 2 ) 
+    {
+      params[tmp[0]] = tmp[1]
+    }
+  }
+  return params
+}
+
+
 tools.get_uri_param = function(uri, name)
 {
   uri = uri.split('?')[1];
@@ -276,7 +301,9 @@ String.prototype.contains = function(substr)
 String.prototype.replaceAll = function(old_substr, new_substr)
 {
     let str = this
-    while(str.contains(old_substr)) str = str.replace(old_substr, new_substr)
+
+    str = str.split(old_substr).join(new_substr);
+    //while(str.contains(old_substr)) str = str.replace(old_substr, new_substr)
 
     return str
 }

@@ -103,21 +103,20 @@ export default {
 
 <style lang="scss">
 
-@import '../css/palette.scss';
 @import '../css/global.scss';
 
 
  .user-input .vs__search::placeholder,
  .user-input .vs__dropdown-toggle,
  .user-input .vs__dropdown-menu {
-  background: $input-bg-color;
+  background: var(--input-bg-color);
   
-  color: $text-color;
+  color: var(--text-color);
 
-  border-color: $border-color;
-    border-style: inset;
-    border-width: 2px;
-    border-radius: $border-radius;
+  border-color: var(--border-color);
+    border-style: var(--border-style);
+    border-width: var(--border-width);
+    border-radius: var(--border-radius);
 }
 
  .user-input .vs__dropdown-toggle{
@@ -126,7 +125,7 @@ export default {
 
  .user-input .vs__clear,
  .user-input .vs__open-indicator {
-  fill: $text-color;
+  fill: var(--text-color);
   
 }
 
@@ -136,7 +135,7 @@ export default {
 
  .user-input .vs__selected
  {
-   color: $text-color;
+   color: var(--text-color);
  }
 
  .user-input
@@ -171,13 +170,13 @@ export default {
 
 
 .vs--disabled .vs__clear, .vs--disabled .vs__dropdown-toggle, .vs--disabled .vs__open-indicator, .vs--disabled .vs__search, .vs--disabled .vs__selected {
-  background-color: $disabled-bg-color;
+  background-color: var(--disabled-bg-color);
   
 }
 
 .vs--disabled .vs__clear, .vs--disabled .vs__open-indicator
 {
-  fill: $disabled-bg-color;
+  fill: var(--disabled-bg-color);
 }
 
 </style>

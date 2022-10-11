@@ -70,12 +70,15 @@
   }
 </script>
 
-<style>
+<style lang="scss">
+
+  @import '../css/global.scss';
+  
   .avatar .avatar-input
   {
     width: 35px;
     height: 35px;
-    color: white;
+    color: var(--text-color);
   }
 
   .avatar
@@ -87,14 +90,14 @@
   .avatar-input {
     font-size: 20px;
     font-weight: 400;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     transition: all 0.5s ease;
-    background: rgb(29, 27, 49);
+    background: var(--input-bg-color);
     display: inline-block;
     text-align: center;  
-    border-color: rgb(118, 118, 118);
-    border-width: 2px;
-    border-style: inset;   
+    border-color: var(--border-color);
+    border-width: var(--border-width);
+    border-style: var(--border-style);
   }
 
   [type=file] {

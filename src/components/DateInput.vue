@@ -84,12 +84,15 @@
   }
 </script>
 
-<style>
+<style lang="scss">
+
+@import '../css/global.scss';
+
   .date .date-input
   {
     width: 100%;
-    height: 35px;
-    color: white;
+    height: $input-height;
+    color: var(--text-color);
     padding: 0 10px 0 10px;
   }
 
@@ -102,14 +105,14 @@
   .date-input {
     font-size: 15px;
     font-weight: 400;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     transition: all 0.5s ease;
-    background: rgb(29, 27, 49);
+    background: var(--input-bg-color);
     width: 100%;
   }
 
   .date-input:disabled {
-    background: rgb(30, 35, 38);
+    background: var(--disabled-bg-color);
   }
 
 

@@ -46,7 +46,7 @@ const register_store_module_if_not_exists = async function(name, params)
 
 	if(name=='issues') return
 
-	if(name=='board' && params == undefined ) return
+	if((name=='board' || name == 'dashboard') && params == undefined ) return
 	
 	await store.dispatch('get_' + name, params);
 
@@ -78,9 +78,12 @@ page_helper.create_module = async function(data, methods)
 
 	data.visible = false
 	data.loaded = false
+
+	data.url_params = tools.get_uri_params(window.location.href)
 	
 
 	if (data.buttons == undefined) data.buttons= []
+	
 	data.buttons.push(
       {
         name: 'Создать',
@@ -163,7 +166,7 @@ page_helper.create_module = async function(data, methods)
 			
 			this.$store.state[this.name][this.name] = [instance]		
 		}
-		else if (this.name=='board' && params == undefined )
+		else if ((this.name=='board' || this.name=='dashboard') && params == undefined )
 		{
 			this.$store.state[this.name]['filtered_' + this.name]  = [instance]
 			

@@ -1,7 +1,8 @@
 <template>   
-  <div class="text">
+  <div class="text" >
     <div class="label">{{label}}</div>
     <textarea ref="text_input" @focus="$emit('input_focus', true)" @blur="$emit('input_focus', false)"
+    
     class="text-input" :type="type"  v-model="value" :disabled="disabled" ></textarea>
   </div>
 </template>
@@ -54,6 +55,10 @@
         this.$refs.text_input.style.height = "auto";
         this.$refs.text_input.style.height = `${this.$refs.text_input.scrollHeight+4}px`;
       },
+      pasted(e)
+      {
+        console.log(e)
+      }
     },
     updated() {
       //this.resize();
@@ -79,9 +84,8 @@
   }
 </script>
 
-<style lang="scss">
+<style lang="scss" >
 
-@import '../css/palette.scss';
 @import '../css/global.scss';
 
   .text .text-input
@@ -89,7 +93,7 @@
     width: 100%;
     height: $input-height*2;
     min-height: $input-height*2;
-    color: white;
+    color: var(--text-color);
     padding: 0 10px 0 10px;
     resize: none;
   }
@@ -103,19 +107,19 @@
   .text-input {
     font-size: 13px;
     font-weight: 400;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     transition: all 0.5s ease;
-    background: rgb(29, 27, 49);
+    background: var(--input-bg-color);
     width: 100%;
 
-     border-color: $border-color;
+     border-color: var(--border-color);
     border-style: inset;
-    border-width: 2px;
-    border-radius: $border-radius;
+    border-width: var(--border-width);
+    border-radius: var(--border-radius);
   }
 
   .text-input:disabled {
-    background: rgb(30, 35, 38);
+    background: var(--disabled-bg-color);
   }
 
   .text-input::-webkit-scrollbar {

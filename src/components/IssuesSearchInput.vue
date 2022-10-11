@@ -7,8 +7,13 @@
     @input="handleInput"
     class="text-input" :type="type"   :disabled="disabled" 
     v-html="get_html"
-    v-on:keyup.enter="emit_query"
+    @keyup.enter="search_key_enter"
     @keydown.enter.prevent
+    @keydown.down.prevent
+    @keydown.up.prevent
+    @keydown.down="move_suggestion_select(1)"
+    @keydown.up="move_suggestion_select(-1)"
+    @keydown.esc="suggestions = []"
     ></div>
     <KButton 
 		name='bx-search-alt-2'
@@ -25,8 +30,10 @@
       <span
         v-for="(suggestion, index) in get_suggestions()"
         :key="index"
+        :ref="'suggestion' + index"
         @mousedown.prevent
         @click="use_suggestion(suggestion, $event)"
+        v-bind:class="{'selected-suggestion': Number(index)==selected_suggestion_id}"
       >
         {{suggestion}}
       </span>
@@ -99,6 +106,16 @@
         type: Array,
         default: []
       },
+      sprints:
+      {
+        type: Array,
+        default: []
+      },
+      suggestions_on_panel:
+      {
+        type: Number,
+        default: 8
+      },
 
     },
 
@@ -119,6 +136,9 @@
     data() {
       return {
         suggestions: [],
+        selected_suggestion_id: -1,
+        suggestions_offset: 0,
+        suggestions_visible_count: 8,
         is_in_focus: false,
         attributes: [  
           {
@@ -161,9 +181,9 @@
         str_end_idx: 0,
         position: 0,
         waits_for_statuses: ['field', 'oper', 'val', 'logic'],
-        waits_colors: ['green', 'yellow', 'blue', 'orange'],
         converted_query: '',
-        select_values: []
+        select_values: [],
+        resolved_name: 'Решенные'
       }
     },
     computed: {
@@ -175,10 +195,15 @@
         Type: this.issue_types,
           Project: this.projects,
           Status: this.issue_statuses,
-          User: this.users
+          User: this.users,
+          Sprint: this.sprints
       }
+
+      v.Status.push({uuid: '(resolved)', name: this.resolved_name})
+
       return v
     },
+    
 
     get_html()
       {
@@ -208,19 +233,64 @@
         if(val != this.value)
         {
           this.value = val  
-                 
+          this.emit_query()      
         } 
-        this.emit_query() 
+        
 
       }
     },
     mounted()
     {
         this.value = this.parent_query
-        this.emit_query() 
+        //this.emit_query() 
     },
 
      methods: {
+
+      
+      search_key_enter()
+      {
+        let suggestion =  this.suggestions[this.selected_suggestion_id]
+        console.log(this.selected_suggestion_id , this.suggestions)
+          if( suggestion != undefined)
+          {
+            console.log('use suggestion')
+              this.use_suggestion(this.suggestions[this.selected_suggestion_id] )
+          }
+          else
+          {
+            console.log(' emit_query')
+              this.emit_query()
+          }
+      },
+      move_suggestion_select(incr)
+      {
+        let new_selected_suggestion_id = this.selected_suggestion_id + incr
+        console.log(this.selected_suggestion_id, incr)
+        if(new_selected_suggestion_id > (this.suggestions.length-1)) return
+        if(new_selected_suggestion_id < 0) return
+        this.selected_suggestion_id = new_selected_suggestion_id
+
+        const el = this.$refs['suggestion' + new_selected_suggestion_id][0];
+
+        const container = this.$refs['suggestion_area']
+
+        console.log('container.scrollTop', container.scrollTop)
+        console.log('container.clientHeight', container.clientHeight)
+        console.log('el.offsetTop', el.offsetTop)
+        //container.scrollTop = 29
+
+        
+        
+        let min_offset = new_selected_suggestion_id - this.suggestions_visible_count + 1
+        
+        this.suggestions_offset = Math.max(min_offset, this.suggestions_offset)
+        this.suggestions_offset = Math.min(new_selected_suggestion_id, this.suggestions_offset)
+        
+        const suggestion_height = 29
+        container.scrollTop = suggestion_height * this.suggestions_offset
+        
+      },
       get_suggestions(){return this.suggestions},
       emit_query()
       {
@@ -291,7 +361,7 @@
       },
       handleInput(e) 
       {
-
+        this.selected_suggestion_id = -1
         
      
           this.position = this.getCaretIndex(e.target)
@@ -351,6 +421,9 @@
       fill_suggestions(waits_for_idx, field_type)
       {
        // console.log('fill_suggestions', waits_for_idx)
+
+       let project_field_name = 'Проект'
+
         this.suggestions = []
         if(waits_for_idx == 0)
         {
@@ -364,12 +437,26 @@
             this.fields_and_attributes.push(this.attributes[i].name)
           }
           this.fields_and_attributes = this.fields_and_attributes.sort();
+
+          
+          let fast_projects = []
+          for(let i in this.projects)
+          {
+            fast_projects.push(project_field_name + ' = ' + this.projects[i].name)
+          }
+          fast_projects = fast_projects.sort()
+
+          fast_projects.map((o)=>this.fields_and_attributes.push(o))
+
           this.suggestions = this.fields_and_attributes
         }
         else if(waits_for_idx == 1)  this.suggestions = this.operations
         else if(waits_for_idx == 2)
         {
-          if(this.vals_dict[field_type] != undefined) this.suggestions = this.vals_dict[field_type].map((p) => p.name)
+          if(this.vals_dict[field_type] != undefined)
+          {
+            this.suggestions = this.vals_dict[field_type].map((p) => p.name)
+          }
           else if (field_type == 'Select')
           {
             this.suggestions = this.select_values
@@ -384,6 +471,7 @@
 
       use_suggestion(suggestion, e)
       {
+        this.selected_suggestion_id = -1
         
      //   console.log('use_suggestion', this.str_start_idx, this.str_end_idx)
         if(this.str_start_idx > 0 && this.value[this.str_start_idx] != ' ') suggestion = ' ' + suggestion
@@ -520,6 +608,11 @@
           {
             qd.query = qd.query.replace(' ', ' ')
           }
+          while (qd.query.indexOf('\n') < -1) 
+          {
+            qd.query = qd.query.replace('\n', ' ')
+          }
+
 
           if(qd.query[qd.i] == ' ' || qd.query[qd.i] == ' ') 
           {
@@ -527,17 +620,24 @@
             //this.fill_suggestions(waits_for_idx, qd.field_type)
             continue
           }
+
+          let br = this.have_words_at(qd.query, this.brackets, qd.i)
+          if(br)
+          {
+            qd.converted_query += br
+            continue
+          }
         
        //   console.log('waits_for_idx', waits_for_idx, qd.i)
 
           if(waits_for_idx == 0)
           {
-            let br = this.have_words_at(qd.query, this.brackets, qd.i)
+           /* let br = this.have_words_at(qd.query, this.brackets, qd.i)
             if(br)
             {
               qd.converted_query += br
               continue
-            }
+            }*/
 
             found = this.try_find_field(qd)            
           }
@@ -561,6 +661,7 @@
             {
               
               let vals = this.vals_dict[qd.field_type].map((p) => p.name)
+              
            //   console.log(this.vals_dict)
           //    console.log('search infields values dits', qd, vals)
               for(let j in vals)
@@ -615,6 +716,7 @@
           }
           else if(waits_for_idx == 3)
           {
+            
             for(let j in this.logic_operators)
             {
               if(this.have_word_at(qd.query, this.logic_operators[j], qd.i))
@@ -634,7 +736,7 @@
           if(found)
           {
             console.log('found', qd, qd.query.length)
-            this.color_text(qd.i, qd.i + qd.name.length, this.waits_colors[waits_for_idx])
+            this.color_text(qd.i, qd.i + qd.name.length, 'var(--issues-search-idx-' + waits_for_idx + '-color)')
             waits_for_idx = this.update_waits_for_idx(waits_for_idx)           
             if(qd.i == qd.query.length-1) this.fill_suggestions(waits_for_idx, qd.field_type)
             qd.i += qd.name.length-1
@@ -644,7 +746,7 @@
             name = qd.query.substring(qd.i, qd.query.length)
 
             //else this.suggestions = ['aa', 'bb']
-            this.color_text(qd.i, query.length, 'red')
+            this.color_text(qd.i, query.length, 'var(--issues-search-bad-color)')
             break
           }
       }
@@ -653,7 +755,7 @@
       this.str_end_idx = qd.query.length-1
 
       this.fill_suggestions(waits_for_idx, qd.field_type)
-      if(name.length > 0) this.suggestions = this.suggestions.filter((elem)=>elem.includes(name))
+      if(name.length > 0) this.suggestions = this.suggestions.filter((elem)=>elem.toLowerCase().includes(name.toLowerCase()))
 
       this.converted_query = qd.converted_query
 
@@ -677,13 +779,19 @@
 
 <style lang="scss">
 
-@import '../css/palette.scss';
 @import '../css/global.scss';
+
+
+.issue-search-div .text-input{
+  display: inline-block;
+    padding: 5px !important;
+}
 
   .issues-search-char
   {
     margin: 0px !important;
     font-size: 15px !important;
+    margin-top: 5px !important;
   }
 
   .text .text-input
@@ -691,7 +799,7 @@
     width: 100%;
     height: $input-height;
     min-height: $input-height;
-    color: white;
+    color: var(--text-color);
     padding: 0 10px 0 10px;
     resize: none;
   }
@@ -706,35 +814,37 @@
     font-size: 14px;
     font-weight: 400;
     transition: all 0.5s ease;
-    background: rgb(29, 27, 49);
+    background: var(--input-bg-color);
     width: 100%;
 
-     border-color: $border-color;
-    border-style: inset;
-    border-width: 2px;
-    border-radius: $border-radius;
+     border-color: var(--border-color);
+    border-style: var(--border-style);
+    border-width: var(--border-width);
+    border-radius: var(--border-radius);
   }
 
   .suggestion-area {
     font-size: 12px;
     font-weight: 300;
     transition: all 0.5s ease;
-    background:  rgb(30, 35, 38);
+    background:  var(--disabled-bg-color);
 
-     border-color: $border-color;
+     border-color: var(--border-color);
     border-style:groove;
-    border-width: 2px;
-    border-radius: $border-radius;
+    border-width: var(--border-width);
+    border-radius: var(--border-radius);
 
     display: flex;
     flex-direction: column;
 
-    height: 200px;
+    height: calc(29px * 8 + 2px);
     overflow: auto;
 
     width: 300px;
     position: fixed;
     z-index: 10;
+
+    
   }
 
   .suggestion-area::-webkit-scrollbar{
@@ -745,10 +855,20 @@
     cursor: pointer;
     font-size: 15px;
     font-weight: 300;
+    padding: 4px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-left: 10px;
+    height: 28px;
+    min-height:28px
+  }
+
+  .selected-suggestion {
+    background: var(--table-row-color-selected)
   }
 
   .text-input:disabled {
-    background: rgb(30, 35, 38);
+    background: var(--disabled-bg-color);
   }
 
   .text-input::-webkit-scrollbar {
@@ -779,10 +899,10 @@
 	margin-left: -$input-height;
 	width: $input-height !important;
 
-	border-top-width: 0px !important;
-	border-bottom-width: 2px !important;
-	border-left-color: $border-color !important;
-    border-top-color: $border-color !important;
+	border-top-width: var(--issue-search-btn-top-border-width) !important;
+	border-bottom-width: var(--border-width) !important;
+	border-left-color: var(--border-color) !important;
+    border-top-color: var(--border-color) !important;
 	//border-bottom-color: $border-color !important;
 
   }
