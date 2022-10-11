@@ -3,8 +3,17 @@
     const { Pool, Client } = require('pg')
     const { password } = require('pg/lib/defaults')
 
+    var conf = require('./conf')
+
    
-    
+
+    const host = conf.host
+   const database = 'unkaos'
+   const port = 5432
+
+   const admin_name = conf.admin_name
+   const admin_pass = conf.admin_pass
+   
 
 
     var pools = {
