@@ -91,8 +91,14 @@
         }
 
         this.is_in_workspace = true
+      },
+      show()
+      {
+        console.log('alerter', Object.values(this.$store.state['alerts']))
       }
     },
+
+    
 
    
     components: 
@@ -117,14 +123,17 @@
 
  <router-view v-slot="{ Component }" :key="$route.fullPath">
     <transition name="ffade" mode="out-in">
-      <component :is="Component" ></component>
+      <component :is="Component" 
+      class="rv-container"></component>
     </transition>
   </router-view>
 
 </div>
 
 <Transition name="loading_fade" mode="out-in">
-  <div v-show="false"
+  <div v-show=" Object.values($store.state['alerts']).some(o=>
+    (o.type=='loading' || o.type=='ok') && (o.status == 'show' || o.status == 'new')
+    )"
   class="loading-background">
     <div class="loading-bar"></div>
   </div>
@@ -188,21 +197,29 @@
     }
 
 
+  .link
+  {
+    white-space: nowrap;
+  }
 
+
+ 
+
+  #router-view-container
+  {
+    
+    position: absolute;
+    background-color: var(--body-bg-color);
+    top: 0px;
+    left: $main-menu-width !important;
+    width: calc(100vw - $main-menu-width);
+    height: 100vh;
+    
+  }
 
   .no-menu-container
   {
     left: 0px !important;
-  }
-
-  #router-view-container
-  {
-    position: absolute;
-    background-color: var(--body-bg-color);
-    top: 0px;
-    left: $main-menu-width;
-    width: calc(100vw - $main-menu-width);
-    height: 100vh;
   }
 
   .loading
@@ -248,10 +265,11 @@
 }
 
 .loading_fade-enter-active {
-  transition: opacity 5s;
+
+  transition: opacity 0.5s;
 }
 .loading_fade-leave-active {
-  transition: opacity 0.1s;
+  transition: opacity 0.5s;
 }
 
 .element_fade-enter-from,
@@ -295,31 +313,32 @@ $loading-bar-width: 200vw;
   .loading-background {
    // display: none;
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 100%;
-  height: 100vh;
-  background: rgba(0,00,0,0.15);
-  overflow: hidden;
+  top: 2px !important;
+  left: 2px  !important;
+  width: 100% !important;
+  height: 100vh !important;
+  background: var(--loading-bg-color);
+  overflow: hidden !important;
   border-radius: var(--panel-border-radius);
-  z-index: 10;
+  z-index: 10 !important;
 }
 
 
 
 .loading-bar {
-  position: absolute;
+  position: absolute !important;
   //height: 100%;
-  width: 100%;
+  width: 100% !important;
   
-  height: 60vh;
-  top:-50vh;
+  height: 100vh !important;
+  top:-100vh;
+  z-index: 11 !important;
   //width: $loading-bar-width;
   //left:-$loading-bar-width;
   //background: linear-gradient(0.25turn, rgba(200,200,200,0.0), rgba(0,0,0,0.8), rgba(200,200,200,0.0));
   //animation: background 3s infinite ease-in-out;
-  background: linear-gradient( rgba(200,200,200,0.0), rgba(5,10,5,0.5), rgba(200,200,200,0.0));
-  animation: background 2s infinite alternate ease-in-out;
+  background: linear-gradient( rgba(200,200,200,0.0), var(--loading-bar-color), rgba(200,200,200,0.0)) !important;
+  animation: background 0.8s infinite alternate ease-in-out !important;
 }
 
 
@@ -411,6 +430,11 @@ $loading-bar-width: 200vw;
   width: 100%;
 }
 
+
+.resolved-issue
+{
+  text-decoration: line-through;
+}
 
 
 

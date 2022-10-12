@@ -54,15 +54,15 @@
                 {{format_val(row, collumn).name}}
             </div>
 
-            <router-link v-if="collumn.type=='link'" 
-            :to="collumn.link + get_json_val(row, collumn.link_id)" tag="li"
-            :style="[  {whiteSpace: 'nowrap'} ]"
+            <a v-if="collumn.type=='link'" 
+            :href="collumn.link + get_json_val(row, collumn.link_id)" tag="li"
+            class="link"
             >
 
               
 
               {{get_json_val(row, collumn.id)}}
-            </router-link>
+            </a>
             
           </td>     
         </tr>

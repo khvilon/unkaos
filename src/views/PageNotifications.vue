@@ -19,7 +19,6 @@
 
 
 <style lang="scss">
-  @import '../css/palette.scss';
   @import '../css/global.scss';
 
   $card-width: 400px;

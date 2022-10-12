@@ -159,7 +159,7 @@
           {
             name: 'Проект',
             type: 'Project',
-            field: 'project_uuid'
+            field: 'project_uuid',
           },
           {
             name: 'Статус',
@@ -174,13 +174,14 @@
         ],
         brackets: ['(', ')'],
         operations: ['=', '!=', '<', '>', 'like'],
-        logic_operators: ['and', 'or'],
+        logic_operators: ['and', 'or ', 'order by'],
+        order_operators: ['desc', ','],
         fields_and_attributes: [],
         value: '',
         str_start_idx: 0,
         str_end_idx: 0,
         position: 0,
-        waits_for_statuses: ['field', 'oper', 'val', 'logic'],
+        waits_for_statuses: ['field', 'oper', 'val', 'logic', 'order'],
         converted_query: '',
         select_values: [],
         resolved_name: 'Решенные'
@@ -462,7 +463,15 @@
             this.suggestions = this.select_values
           }        
         }
-        else if(waits_for_idx == 3)  this.suggestions = this.logic_operators
+        else if(waits_for_idx == 3) 
+        {
+          this.suggestions = this.logic_operators
+          
+        }
+        else if(waits_for_idx == 4)
+        {
+          this.suggestions=this.attributes.map(a=>a.name)
+        }
        // console.log('this.suggestions', this.suggestions)
       },
 
@@ -567,7 +576,8 @@
 
       update_waits_for_idx(waits_for_idx)
       {
-        if(waits_for_idx == this.waits_for_statuses.length-1) waits_for_idx = 0
+        if(waits_for_idx == this.waits_for_statuses.length-1) return waits_for_idx
+        if(waits_for_idx == this.waits_for_statuses.length-2) waits_for_idx = 0
         else waits_for_idx++
         return waits_for_idx;
       },
@@ -721,12 +731,48 @@
             {
               if(this.have_word_at(qd.query, this.logic_operators[j], qd.i))
               {
+                if(this.logic_operators[j] == 'order by') waits_for_idx++
                 qd.converted_query += ' ' + this.logic_operators[j] + ' '
                 qd.name = this.logic_operators[j]
                 found = true;
                 break;
               }
             }
+          }
+          else if(waits_for_idx == 4)
+          {
+            if(qd.query[qd.i] == ',') 
+            {
+              qd.converted_query += ','
+                qd.name = ','
+                found = true;
+                
+            }
+            else if(this.have_word_at(qd.query, 'desc', qd.i))
+            {
+              qd.converted_query += 'desc'
+                qd.name = 'desc'
+                found = true;
+                
+            }
+            else
+            {
+              let att_names = this.attributes.map(a=>a.name)
+              let att_fields = this.attributes.map(a=>a.field.replace('_uuid', '_name'))
+              for(let j in att_names)
+              {
+                if(this.have_word_at(qd.query, att_names[j], qd.i))
+                {
+                  qd.converted_query += ' ' + att_fields[j] + ' '
+                  qd.name = att_names[j]
+                  found = true;
+                  break;
+                }
+              }
+
+            }
+            
+            
           }
 
 
@@ -761,7 +807,7 @@
 
       
 
-      let query_valid = (qd.i == qd.query.length && qd.query.length > 0 && waits_for_idx == 3) || qd.query.length == 0
+      let query_valid = (qd.i == qd.query.length && qd.query.length > 0 && waits_for_idx >= 3) || qd.query.length == 0
 
       //console.log('convvvvvvvvvvv query', query_valid, qd)
 

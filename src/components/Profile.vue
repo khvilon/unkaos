@@ -4,13 +4,12 @@
     <div class="profile-top">
       <img :src="user.avatar" @click="menu_visible=!menu_visible"><div>{{user.name}}
       </div>
-      <router-link 
+      <a
       class='bx bx-plus-circle new-issue-btn'
-        :to="'/issue?t=' + new Date().getTime()" 
+        :href="'/issue?t=' + new Date().getTime()" 
         tag="i"
-        :style="[  {whiteSpace: 'nowrap'} ]"
         >
-      </router-link>
+      </a>
     </div>
    
     

@@ -219,7 +219,8 @@ crud.load = async function(){
     T19.PARENT_UUID,
     T20.NAME,
     T1.SPRINT_UUID,
-    T11.WORKFLOW_UUID 
+    T11.WORKFLOW_UUID
+    $@order
     LIMIT 
     ` + select_limit
 
@@ -313,19 +314,6 @@ crud.load = async function(){
     LIMIT 50`       
 }
 
-crud.escape = function(string) {
-    var htmlEscapes = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-    };
-
-    return string.replace(/[&<>"']/g, function(match) {
-        return htmlEscapes[match];
-    });
-};
 
 
 crud.push_query = function(query0, params0, query1, params1, is_revert)
@@ -454,13 +442,24 @@ crud.make_query = {
                     user_query = user_query.replaceFrom('#', ")" , start )
                 }
 
+                let order_start = user_query.indexOf('order by ')
+                if (order_start > -1)
+                {
+                    let order_by = user_query.substring(order_start)
+                    user_query = user_query.replace(order_by, '')
+                    query = query.replace('$@order', order_by)
+                }
+                else query = query.replace('$@order', '')
+
                 query = uuids_query + user_query + ')' + query
+
 
                 delete params['query']
         }
         else if(table_name == 'issues' || table_name == 'issue')
         {
             query =  `WITH filtered_issues AS (SELECT * FROM ISSUES) ` + query 
+            query = query.replace('$@order', '')
         }
         
 
@@ -552,9 +551,9 @@ crud.make_query = {
 
         params.updated_at = 'NOW()'
 
-        for(let i in params){
-            if(params[i] == author_field_uuid) return [ 'NOTHING', []]
-        }
+       // for(let i in params){
+      //      if(params[i] == author_field_uuid) return [ 'NOTHING', []]
+      //  }
 
         let pg_params = []
 

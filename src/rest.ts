@@ -3,7 +3,7 @@ const rest = {}
 import store from './stores/index'
 import tools from './tools.ts'
 
-rest.base_url = 'http://localhost:3002/'
+rest.base_url = 'http://localhost:3001/'
 
 //rest.base_url = 'http://unkaos.online:3001/'
 
