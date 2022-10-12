@@ -8,7 +8,7 @@
 	import tools from '../tools.ts'
 	import { computed } from '@vue/runtime-core';
 
-	console.log('d', d['Название'],d)
+
 
 	let methods = {
 		get_favourite_uuid()
@@ -71,6 +71,13 @@
 				return
 			}
 
+
+			for(let i in this.issue_statuses)
+			{
+				this.statuses_ends_dict[this.issue_statuses[i].uuid] = this.issue_statuses[i].is_end
+			}
+			
+
 			//console.log('sselected_board1')
 
 			this.get_favourite_uuid()
@@ -83,7 +90,7 @@
 			this.curr_sprint_num = 0
 			for(let i in this.sprints)
 			{
-				console.log(this.sprints.name, curr_date, new Date(this.sprints[i].start_date), new Date(this.sprints[i].end_date))
+				//console.log(this.sprints.name, curr_date, new Date(this.sprints[i].start_date), new Date(this.sprints[i].end_date))
 				if(curr_date > new Date(this.sprints[i].start_date) &&  curr_date < new Date(this.sprints[i].end_date))
 				{
 					this.curr_sprint_num = Number(i)
@@ -110,7 +117,7 @@
 
 			 
 			this.selected_board.boards_columns = this.selected_board.boards_columns.sort((a, b) => { return a.num-b.num } )
-			console.log('this.selected_board.boards_columns',JSON.stringify(this.selected_board.boards_columns))
+			//console.log('this.selected_board.boards_columns',JSON.stringify(this.selected_board.boards_columns))
 
 			//console.log('sselected_board3')
 			//prapare column values
@@ -178,19 +185,19 @@
 		{	
 			
 			let old_position = swimlane.position
-			console.log('swpos1',old_position, new_position)
+			
 			if(new_position == old_position) return
 			for(let i in this.swimlanes)
 			{
-				console.log('swpos2',this.swimlanes[i].position)
+				
 				
 				if(this.swimlanes[i].position < old_position && this.swimlanes[i].position < new_position) continue
 
-				console.log('swpos3',this.swimlanes[i].position)
+				
 
 				if(this.swimlanes[i].position > old_position && this.swimlanes[i].position > new_position) continue
 
-				console.log('swpos4',this.swimlanes[i].position)
+			
 
 				if(this.swimlanes[i].position > old_position && this.swimlanes[i].position < new_position) this.swimlanes[i].position--
 				else if(this.swimlanes[i].position < old_position && this.swimlanes[i].position > new_position) this.swimlanes[i].position++
@@ -208,7 +215,7 @@
 
 			this.make_conf()
 
-			console.log('swposddd', this.conf.swimlanes)
+
 			let conf_str = JSON.stringify(this.conf)
 
 			this.$store.commit('id_push_update_board' , {id: 'config', val:conf_str})
@@ -224,7 +231,7 @@
 		},
 		move_swimlane(e, swimlane_to)
 		{
-			console.log('swpos1',this.moving_swimlane, swimlane_to)
+		
 			if(!this.moving_swimlane) return
 
 			this.change_swimlane_position(this.moving_swimlane, swimlane_to.position)
@@ -232,12 +239,12 @@
 		},
 		swimlane_start_dragging(e, swimlane)
 		{
-			console.log('swpos00', e)
+	
 
 			e.dataTransfer.dropEffect = 'move'
       		e.dataTransfer.effectAllowed = 'move'
 
-			console.log('swpos00a', swimlane)
+
 
 			swimlane.is_dragged = true; 
 			
@@ -269,7 +276,7 @@
 					let root = this.get_root(this.boards_issues[i])
 
 
-					console.log('tttttrrrroooottt', root.type_name, this.boards_issues[i].type_name, root.num, root.uuid, this.boards_issues[i].uuid)
+					
 					if(this.boards_issues[i].type_uuid != root.type_uuid) 
 					{
 						parent_types_uuids[type_uuid] = false
@@ -277,13 +284,14 @@
 				}
 			}
 
-			console.log('parent_types_uuids',parent_types_uuids)
+			//console.log('parent_types_uuids',parent_types_uuids)
 
 			for(let i in this.boards_issues)
 			{
 				let x = 0
 				let link
 				let root_num
+				let is_resolved = false
 				if(this.selected_board.swimlanes_by_root)
 				{
 					let type_uuid = this.boards_issues[i].type_uuid
@@ -296,12 +304,14 @@
 					{
 						root_num = root.project_short_name + '-' + root.num
 						link = '/issue/' + root_num	
+
+						is_resolved = this.statuses_ends_dict[root.status_uuid]
 					}
 					
 				}
 				else if(!this.selected_board.no_swimlanes)
 				{
-					x = this.get_field_value(this.boards_issues[i], {uuid: this.selected_board.swimlanes_field_uuid})
+					x = this.get_field_value(this.boards_issues[i], {uuid: this.selected_board.swimlanes_field_uuid}, true)
 				}
 
 				
@@ -313,7 +323,7 @@
 
 				if(this.swimlanes[x] == undefined) this.swimlanes[x] = {name:x,issues:{},filtered_issues:{},count:0, sum:0}
 
-				console.log('this.swimlanes1', this.swimlanes)
+		
 				
 				let  stored_exp = localStorage[this.selected_board.uuid+'#'+x]
 				if(stored_exp == undefined || stored_exp == 'false') stored_exp = false
@@ -325,6 +335,7 @@
 				{
 					this.swimlanes[x].link = link
 					this.swimlanes[x].num = root_num
+					this.swimlanes[x].is_resolved = is_resolved
 				} 
 
 				if(this.conf != undefined && this.conf.swimlanes != undefined && this.conf.swimlanes[x] != undefined) {
@@ -348,7 +359,7 @@
 				if(is_is_columns && 
 				(!this.selected_board.use_sprint_filter || this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num].uuid))
 				{
-					console.log(this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num], this.boards_issues[i].sprint_uuid, this.sprints[this.curr_sprint_num])
+					//console.log(this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num], this.boards_issues[i].sprint_uuid, this.sprints[this.curr_sprint_num])
 					if(this.swimlanes[x].filtered_issues[status_uuid] == undefined) this.swimlanes[x].filtered_issues[status_uuid] = []
 
 					this.swimlanes[x].filtered_issues[status_uuid].push(this.boards_issues[i])
@@ -378,8 +389,7 @@
 
 			this.sort_swimlanes()
 
-			console.log('swpos000000sssss--------------------1111111', this.swimlanes, this.conf.swimlanes)
-
+			
 			let position = 0
 			for(let i in this.swimlanes)
 			{
@@ -509,15 +519,17 @@
 		{
 			for(let i in issue.values)
 			{
-			
 				if(issue.values[i].field_uuid == field.uuid)
 				{
-					//console.log('##' + issue.values[i].value + '##')
 					if(!deep) return issue.values[i].value
 
-					if(field.type_name == 'User')
+					if(issue.values[i].type == 'User')
 					{
-						console.log('USERRRR')
+						for(let j in this.users)
+						{
+							if(this.users[j].uuid == issue.values[i].value) return this.users[j].name
+						}
+						console.log('USERRRR', issue.values[i])
 					}
 					console.log('USERRRR field', field, issue.values[i])
 					return issue.values[i].value
@@ -526,7 +538,7 @@
 		},
 		update_sprint_num(new_num)
 		{
-			console.log(this.curr_sprint_num, new_num, this.sprints.length, this.sprints)
+			
 			if(new_num < 0) return
 			if(new_num > this.sprints.length-1) return
 
@@ -622,6 +634,7 @@
         boards_columns: [],
         
       },
+	  statuses_ends_dict:{},
 	conf: {},
 	favourite_board_type_uuid: '1b6832db-7d94-4423-80f2-10ed989af9f8',
 	favorite_uuid: undefined,
@@ -888,7 +901,7 @@
 
 		<div class="swimlane-total">
 			<span>Всего</span>
-			<span>{{'кол-во: ' + total_count + '/' + boards_issues.length}}</span>
+			<span v-if="boards_issues">{{'кол-во: ' + total_count + '/' + boards_issues.length}}</span>
 			<span>{{'сумма: ' + total_sum}}</span>
 		</div>
 
@@ -917,12 +930,13 @@
 				@click="swimlane_expanded_toogle(swimlane)"
 				>{{swimlane.expanded ? '⯆' : '⯈'}}</span>
 				<span v-if="swimlane.link==undefined" >{{swimlane.name}}</span>
-				<router-link v-if="swimlane.link!=undefined" 
-				:to="swimlane.link" tag="li"
+				<a v-if="swimlane.link!=undefined" 
+				:href="swimlane.link" tag="li"
+				:class="{ 'resolved-issue':swimlane.is_resolved, link:true}"
 				>
-				{{swimlane.num}} {{swimlane.name}}
+					{{swimlane.num}} {{swimlane.name}}
 				
-				</router-link>
+				</a>
 				<span>{{'кол-во: ' + swimlane.count}}</span>
 				<span>{{'сумма: ' + swimlane.sum}}</span>
 			</div>
@@ -957,15 +971,19 @@
 						></div>
 						<div class="issue-card-title">
 						<a 
+						
 						:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}} {{issue.type_name}}</a>
 						
-						<label>{{get_field_by_name(issue, 'Название').value}}</label>
+						<label
+						:class="{ 'resolved-issue':statuses_ends_dict[issue.status_uuid]}"
+						>{{get_field_by_name(issue, 'Название').value}}</label>
 						</div>
 						<label class="issue-card-description">
 							{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
 						</label>
 						<div class="issue-board-card-footer">
-							<div><label>{{'Assignee: ' + get_dict_value(get_field_by_name(issue, 'Assignee').value, 'User')}}</label></div>
+							<div><label>{{'Assignee: ' + get_dict_value(get_field_by_name(issue, 'Assignee').value, 'User')}}</label>
+							</div>
 						</div>
 						
 					</div>

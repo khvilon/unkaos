@@ -70,7 +70,7 @@
             let query = query_arr[i]
             let params = params_arr[i]
 
-            console.log('sql', query)
+            console.log('sql', query, params)
 
             if (typeof query != 'string')
             {

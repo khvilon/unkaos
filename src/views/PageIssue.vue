@@ -243,7 +243,7 @@
 				}
 			}
 
-	//		console.log('update_type2', issue_type)
+			console.log('update_type2', this.issue[0])
 
 			let values = []
 			for(let i in issue_type.fields)
@@ -278,6 +278,8 @@
 		{
 			this.edit_mode = false
 			this.add_action_to_history('edit', '')
+
+			localStorage.last_saved_issue_params = this.get_params_for_localstorage()
 
 			//todo save type and project in localstorage for future issue create 
 
@@ -356,58 +358,83 @@
 			this.get_formated_relations()
 
 		},
+		load_params_from_localstorage(storage_path, full)
+		{
+			this.url_params = JSON.parse(localStorage[storage_path])
+
+			console.log('load params from localstore', this.url_params, storage_path, this.issue_types)
+
+			if(this.url_params.project_uuid != undefined)  this.set('project_uuid', this.url_params.project_uuid)
+			if(this.url_params.type_uuid != undefined)  this.set('type_uuid', this.url_params.type_uuid)
+
+			let issue_type
+			for(let i in this.issue_types)
+			{
+				if(this.issue_types[i].uuid == this.url_params.type_uuid)
+				{
+					issue_type = this.issue_types[i]
+					continue
+				}
+			}
+
+			let values = []
+			for(let i in issue_type.fields)
+			{
+				
+				let field_uuid = issue_type.fields[i].uuid
+
+				let cloned_field_value = this.url_params[field_uuid]
+
+				if(!full && (issue_type.fields[i].name == 'Описание' || issue_type.fields[i].name == 'Название')) cloned_field_value = ''
+
+				if(cloned_field_value == undefined) continue
+
+				
+
+				//cloned_field_value = (decodeURIComponent(atob(cloned_field_value)))
+
+				console.log('load', this.issue[0].uuid)
+				
+				values.push({
+					type: issue_type.fields[i].type[0].code,
+					uuid: tools.uuidv4(),
+					label: issue_type.fields[i].name,
+					value: cloned_field_value,
+					field_uuid: issue_type.fields[i].uuid,
+					table_name: "field_values",
+					issue_uuid: this.issue[0].uuid
+				})
+			}
+
+			console.log('loaded', this.issue[0])
+			this.set('values', values)	
+			
+		},
 		init: async function(delay)
 		{
+			
 			if(this.issue==undefined || this.issue[0] == undefined || this.issue_types == undefined)
 			{
 				setTimeout(this.init, 200)
 				return
 			}
 
-			console.log('this.issue[0]0', this.id, this.issue[0])
+	
 			if((this.id == undefined || this.id == '') && this.url_params.clone == 'true' && localStorage.cloned_params != undefined)
 			{
 				this.url_params = JSON.parse(localStorage.cloned_params)
 
-				if(this.url_params.project_uuid != undefined)  this.set('project_uuid', this.url_params.project_uuid)
-				if(this.url_params.type_uuid != undefined)  this.set('type_uuid', this.url_params.type_uuid)
+				this.load_params_from_localstorage('cloned_params', true)
+			}
+			else if((this.id == undefined || this.id == '') && localStorage.last_saved_issue_params != undefined)
+			{
+				this.load_params_from_localstorage('last_saved_issue_params')
+			}
 
-				let issue_type
-				for(let i in this.issue_types)
-				{
-					if(this.issue_types[i].uuid == this.url_params.type_uuid)
-					{
-						issue_type = this.issue_types[i]
-						continue
-					}
-				}
 
-				
-				let values = []
-				for(let i in issue_type.fields)
-				{
-					let field_uuid = issue_type.fields[i].uuid
-
-					let cloned_field_value = this.url_params[field_uuid]
-
-					if(cloned_field_value == undefined) continue
-
-					//cloned_field_value = (decodeURIComponent(atob(cloned_field_value)))
-					
-					values.push({
-						type: issue_type.fields[i].type[0].code,
-						uuid: tools.uuidv4(),
-						label: issue_type.fields[i].name,
-						value: cloned_field_value,
-						field_uuid: issue_type.fields[i].uuid,
-						table_name: "field_values",
-						issue_uuid: this.issue[0].uuid
-					})
-				}
-
-				this.set('values', values)
-				
-			
+			if(this.id == undefined || this.id == '')
+			{
+				console.log('ibiiit issue', this.issue[0])
 			}
 
 			let ans = await rest.run_method('read_watcher', {issue_uuid: this.issue[0].uuid})
@@ -415,11 +442,10 @@
 
 			let attachments = await rest.run_method('read_attachments', {issue_uuid: this.issue[0].uuid})
 			this.attachments = attachments.filter((a)=>a.type.indexOf('image/') > -1)
-
-
-
 		},
-		get_clone_url: function()
+
+
+		get_params_for_localstorage()
 		{
 			let params = {
 				project_uuid: this.issue[0].project_uuid,
@@ -433,7 +459,13 @@
 				params[field_value.field_uuid] = field_value.value// btoa(encodeURIComponent(field_value.value))
 			}
 
-			localStorage.cloned_params = JSON.stringify(params)
+			return JSON.stringify(params)
+		},
+		get_clone_url: function()
+		{
+			
+
+			localStorage.cloned_params = this.get_params_for_localstorage()
 			return '/issue?clone=true'
 
 
@@ -587,7 +619,8 @@
 				if(i > 0) history += '\r\n\r\n'
 				let action = actions[i]
 				let dt = tools.format_dt(action.created_at)
-				history += dt + ' ' + action.author + ' ' + action.name + '\r\n' + action.value
+				history += '------------------------------------------------' + dt + ' ' + action.author + ' ' + action.name + '------------------------------------------------' +
+				'\r\n' + action.value
 			}
 
 			//this.available_transitions()
@@ -836,12 +869,10 @@
 
 			<Transition name="element_fade">
 			<KMarked class="descr-rendered" v-if="!loading && !edit_mode && id!=''"
-			:val="get_field_by_name('Описание').value"
+			:val="get_field_by_name('Описание').value ? get_field_by_name('Описание').value : ''"
 			:images="attachments"
 			>
 			</KMarked>
-
-			
 			</Transition>
 
 			<Transition name="element_fade">

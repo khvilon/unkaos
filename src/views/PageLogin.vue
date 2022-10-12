@@ -87,12 +87,14 @@
 
 
 
-<style>
+<style lang="scss">
+ @import '../css/global.scss';
+
 	.login-panel {
     height: 250px;
 	width: 400px;
 	position: absolute;
-	left: 50vw;
+	left: calc(50vw - $main-menu-width) ;
     top: 40vh;
     transform: translate(-60%, -50%);
 	}
