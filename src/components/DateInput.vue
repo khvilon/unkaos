@@ -3,8 +3,9 @@
     <div class="label">{{label}}</div>
     <input class="date-input" 
     @input="print"
-    type="date"  :value="format(value)" :disabled="disabled">
-
+    type="date"  :value="format(value)" :disabled="disabled"
+    @blur="blur">
+    
   </div>
 </template>
 
@@ -41,6 +42,7 @@
       }
 
     },
+    emits: ['update_parent_from_input', 'updated'],
     methods:
     {
       print(e)
@@ -72,13 +74,20 @@
             //toLocaleString("ru", options)
             if(date !== "Invalid Date") return date
             else return ''
+      },
+      blur()
+      {
+        this.$emit('updated', val)
       }
+
     },
     watch: {
       value: function(val, oldVal) {
         console.log(val, oldVal, this.id, this.parent_name)
         
         this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
+
+      
       }
     }
   }

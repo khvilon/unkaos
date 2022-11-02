@@ -10,7 +10,7 @@ export default {
   components: {
     Multiselect
   },
-  emits: ['search', 'update_parent_from_input'],
+  emits: ['search', 'update_parent_from_input', 'updated'],
 
   beforeCreate()
   {
@@ -41,18 +41,13 @@ export default {
             num++
           }
         }
-
-
-        
-
-        
-
       
 
          if(this.parent_name != undefined && this.parent_name != '') 
           this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
 
         this.$emit('update_parent_from_input', val)//val_obj == undefined? val : val_obj)
+        this.$emit('updated', val)
       }
     },
   computed:

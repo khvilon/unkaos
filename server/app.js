@@ -58,6 +58,15 @@ async function init()
 
     app.get('/get_token', async (req, res) => {   
         let subdomain = req.headers.subdomain
+
+        if(subdomain == undefined || subdomain == null || subdomain == '')
+        {
+            res.status(400);
+            res.send({message: 'need subdomain to use workspace'});
+            return
+        }
+
+
         let email = req.headers.email
         let pass = req.headers.password
 
@@ -79,6 +88,14 @@ async function init()
 
     app.post('/upsert_password', async (req, res) => {   
         let subdomain = req.headers.subdomain
+
+        if(subdomain == undefined || subdomain == null || subdomain == '')
+        {
+            res.status(400);
+            res.send({message: 'need subdomain to use workspace'});
+            return
+        }
+
         let params = req.body
 
         let token = req.headers.token
@@ -106,6 +123,14 @@ async function init()
 
     app.post('/upsert_password_rand', async (req, res) => {   
         let subdomain = req.headers.subdomain
+
+        if(subdomain == undefined || subdomain == null || subdomain == '')
+        {
+            res.status(400);
+            res.send({message: 'need subdomain to use workspace'});
+            return
+        }
+
         let params = req.body
 
         let token = req.headers.token
@@ -148,6 +173,13 @@ async function init()
 
     app.post('/upsert_watcher', async (req, res) => {   
         let subdomain = req.headers.subdomain
+
+        if(subdomain == undefined || subdomain == null || subdomain == '')
+        {
+            res.status(400);
+            res.send({message: 'need subdomain to use workspace'});
+            return
+        }
     
         let token = req.headers.token
 
@@ -232,6 +264,13 @@ async function init()
 
                 let subdomain = req.headers.subdomain
 
+                if(subdomain == undefined || subdomain == null || subdomain == '')
+                {
+                    res.status(400);
+                    res.send({message: 'need subdomain to use workspace'});
+                    return
+                }
+
                 let token = req.headers.token
 
                 let user = await security.check_token(subdomain, token)
@@ -242,6 +281,8 @@ async function init()
                     res.send({message: 'wrong token'});
                     return
                 }
+
+                
 
                 console.log('checked user ', user.name, user.login, user.mail)
 

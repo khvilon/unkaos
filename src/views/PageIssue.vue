@@ -131,11 +131,32 @@
 			params.value = this.comment
 			params.uuid = tools.uuidv4()
 
+			if(this.comment.length < 8 && this.comment.indexOf('>>') == 0)
+			{
+				//const spend_time_field_uuid = '60d53a40-cda9-4cb2-a207-23f8236ee9a7'
+
+				let h = Number(this.comment.substr(2))
+				if(!isNaN(h))
+				{
+					let field = this.get_field_by_name('Spent time')
+					if(field != null)
+					{
+						if(field.value == null) field.value = 0
+						field.value = Number(field.value) + h
+						let ans = await rest.run_method('upsert_field_values', field)
+						console.log('sptime', field)
+						params.value = 'Добавил ' + h + 'ч работы на задачу'
+					}	
+				}
+			}
+
 			let ans = await rest.run_method('upsert_issue_actions', params)
 
 			this.add_action_to_history('comment', params.value)
 
 			this.comment = ''
+
+			
 		},
 		update_comment: function(val)
 		{
@@ -148,6 +169,13 @@
 			this.comment_focused=val
 
 			
+		},
+		get_type_by_uuid: function(type_uuid)
+		{
+			for(let i in this.issue_types)
+			{
+				if(this.issue_types[i].uuid == type_uuid) return this.issue_types[i]
+			}
 		},
 		get_type_uuid: function()
 		{
@@ -292,6 +320,10 @@
 
 			//setTimeout(this.init, 1000)
 		},
+		saved_new: function(issue)
+		{
+			window.location.href = '/issue/' + issue[0].project_short_name + '-' + issue[0].num
+		},
 		deleted: function(issue)
 		{
 			window.location.href = '/issues/'
@@ -377,15 +409,23 @@
 				}
 			}
 
+			if(!full)
+			{
+				console.log('loaded', this.issue[0])
+				return
+			}
+
 			let values = []
 			for(let i in issue_type.fields)
 			{
+
 				
 				let field_uuid = issue_type.fields[i].uuid
 
 				let cloned_field_value = this.url_params[field_uuid]
 
-				if(!full && (issue_type.fields[i].name == 'Описание' || issue_type.fields[i].name == 'Название')) cloned_field_value = ''
+				//if(!full && (issue_type.fields[i].name == 'Описание' || issue_type.fields[i].name == 'Название')) cloned_field_value = ''
+				if(issue_type.fields[i].name == 'Автор') cloned_field_value = this.get_field_by_name('Автор').value;
 
 				if(cloned_field_value == undefined) continue
 
@@ -434,6 +474,15 @@
 
 			if(this.id == undefined || this.id == '')
 			{
+				console.log('ibiiit issue', this.issue[0])
+
+				for(let i in this.issue[0].values)
+				{
+					this.issue[0].values[i].issue_uuid = this.issue[0].uuid
+					this.issue[0].values[i].uuid = tools.uuidv4();
+					if(this.issue[0].values[i].name == 'Автор') this.issue[0].values[i].value = JSON.parse(localStorage.profile).uuid
+				}
+
 				console.log('ibiiit issue', this.issue[0])
 			}
 
@@ -488,10 +537,31 @@
 			if(this.watch) rest.run_method('delete_watcher', {issue_uuid: this.issue[0].uuid})	
 			else rest.run_method('upsert_watcher', {issue_uuid: this.issue[0].uuid})	
 			this.watch = !this.watch
-
-	
+		},
+		enter_edit_mode: function()
+		{
+			if(this.edit_mode) return
+			this.saved_descr = this.get_field_by_name('Описание').value
+			this.saved_name = this.get_field_by_name('Название').value
+			this.edit_mode = true
+			console.log('this.saved_descr', this.saved_name, this.saved_descr)
+		},
+		cancel_edit_mode: function()
+		{
+			this.get_field_by_name('Описание').value = this.saved_descr
+			this.get_field_by_name('Название').value = this.saved_name
+			this.edit_mode = false
+		},
+		field_updated: async function()
+		{
+			console.log('field_updated')
+			if(this.id=='') return;
 			
+			await this.$store.dispatch('save_issue');
+			
+			this.saved()
 		}
+		
 
 
 		
@@ -505,6 +575,8 @@
 	attachments: [],
     name: 'issue',
     label: 'Поля',
+	saved_descr: '',
+	saved_name: '',
 	new_relation_modal_visible: false,
 	relation_types: [],
     collumns:[
@@ -558,7 +630,7 @@
 	instance: {values:[
     {
         "type": "Text",
-        "uuid": "008e6daf-eb79-48c0-bd13-69b779c268ee",
+        "uuid": "",
         "label": "Описание",
         "value": "",
         "field_uuid": "4a095ff5-c1c4-4349-9038-e3c35a2328b9",
@@ -567,7 +639,7 @@
     },
     {
         "type": "String",
-        "uuid": "c5098dbf-0f12-4352-afb6-0a1279dcc1c4",
+        "uuid": "",
         "label": "Название",
         "value": "",
         "field_uuid": "c96966ea-a591-47a9-992c-0a2f6443bc80",
@@ -576,9 +648,9 @@
     },
     {
         "type": "User",
-        "uuid": "d0bd2251-c88a-4731-b608-4d287684c215",
+        "uuid": "",
         "label": "Автор",
-        "value": "9965cb94-17dc-46c4-ac1e-823857289e98",
+        "value": "",
         "field_uuid": "733f669a-9584-4469-a41b-544e25b8d91a",
         "issue_uuid": "",
         "table_name": "field_values",
@@ -787,7 +859,7 @@
 
 		<Transition name="element_fade">
 		<div v-if="!loading && id!=''" style="display: flex;" class="watch" :class="{'watch-active' : edit_mode}"
-		@click="edit_mode = !edit_mode">
+		@click="enter_edit_mode">
 			🖉
 		</div>	
 		</Transition >
@@ -865,6 +937,26 @@
 		
 			>
 			</TextInput>
+			</Transition>
+
+			<Transition name="element_fade">
+			<div class="edit-mode-btn-container">
+			<KButton
+				v-if="!loading && id!='' && (edit_mode || id=='')"
+			  	class="save-issue-edit-mode-btn"
+			  	name='Сохранить'
+			  	:func="'save_issue'"
+				@button_ans="saved"
+				
+			/>
+			<KButton
+				v-if="!loading && id!='' && (edit_mode || id=='')"
+			  	class="cancel-issue-edit-mode-btn"
+			  	name='Отменить'
+			
+				@click="cancel_edit_mode"
+			/>
+			</div>
 			</Transition>
 
 			<Transition name="element_fade">
@@ -954,13 +1046,14 @@
 		  <div id="issue_card_scroller" v-if="!loading">
 
 			<SelectInput label="Спринт"
-			  	v-if="!loading && id!=''"
+			  	v-if="!loading"
 				class="issue-sprint-input"
 				:value="issue[0].sprint_uuid"
 				:parent_name="'issue'"
 				:values="sprints"
 				:parameters="{clearable: true, reduce: obj => obj.uuid}"
 				id="sprint_uuid"
+				@updated="field_updated(val)"
 			>
 			</SelectInput>
 
@@ -975,6 +1068,7 @@
 	  			:parent_name="'issue'"
 	  			:disabled="input.disabled"
 				:values="get_available_values(input.field_uuid)"
+				@updated="field_updated"
 	  		></component>
 
 			
@@ -1002,18 +1096,19 @@
         <div id="issue_card_footer_div" class="footer_div">
 	  			<div id="issue_card_infooter_div">
 			  		<KButton
-					  	v-if="!loading"
+					  	v-if="!loading && id==''"
 			  			id="save_issue_btn"
 			  			:name="'Сохранить'"
 			  			:func="'save_issue'"
-						@button_ans="saved"
+						@button_ans="saved_new"
 			  		/>
 			  		<KButton
-					  	v-if="!loading && id!=''"
+					  	v-if="false && !loading && id!=''"
 			  			id="delete_issue_btn"
 			  			:name="'Удалить'"
 			  			:func="'delete_issue'"
 						@button_ans="deleted"
+						:disabled="true"
 			  		/>
 		  		</div>
 	  		</div>
@@ -1072,7 +1167,7 @@
 
   #save_issue_btn, #delete_issue_btn {
   	padding: 0px 20px 15px 20px;
-  	width: 50%
+  	width: 100%
   }
 
 
@@ -1253,6 +1348,28 @@
 .descr-rendered p
 {
 	text-align: left;
+}
+
+
+.edit-mode-btn-container{
+	display: flex;
+	padding: 0px 20px 10px 20px;
+}
+
+.edit-mode-btn-container .btn{
+	width: 50%;
+}
+
+.edit-mode-btn-container input{
+	height: 25px !important;
+	width: 100% !important;
+}
+
+.save-issue-edit-mode-btn{
+	padding-right: $input-height;
+}
+.cancel-issue-edit-mode-btn{
+	padding-left: $input-height;
 }
 
 

@@ -1,7 +1,8 @@
 <template>   
   <div class="numeric">
     <div class="label">{{label}}</div>
-    <input type="number" class="numeric-input" min="1" max="9"  v-model="value" :disabled="disabled">
+    <input type="number" class="numeric-input" min="1" max="9"  v-model="value" :disabled="disabled"
+    @blur="blur">
   </div>
 </template>
 
@@ -44,7 +45,14 @@
 
     },
 
-    emits: ['update_parent_from_input'],
+    emits: ['update_parent_from_input', 'updated'],
+    methods:
+    {
+      blur()
+      {
+        this.$emit('updated')
+      }
+    },
     
     watch: {
       value: function(val, oldVal) {
