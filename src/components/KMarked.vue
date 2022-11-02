@@ -71,7 +71,7 @@
           {
             if(this.found_img[this.images[i].uuid]) continue
 
-            html += '<img maxWidth="100%" height="auto" src="' + this.images[i].data + '"></img>'
+            html += '<img class="attachment-img" src="' + this.images[i].data + '"></img>'
           }
 
           return html
@@ -116,15 +116,95 @@
 
         let text_color = this.get_palette_param('--text-color')
         let link_color = this.get_palette_param('--link-color')
+        let code_block_bg_color = this.get_palette_param('--code-block-bg-color')
+        let code_scroll_thumb_bg_color = this.get_palette_param('--code-scroll-thumb-bg-color')
+        let code_scroll_track_bg_color = this.get_palette_param('--code-scroll-track-bg-color')
+        let code_scroll_thumb_hover_color = this.get_palette_param('--code-scroll-thumb-hover-color')
+        let code_fragment_text_color = this.get_palette_param('--code-fragment-text-color')
+        let code_fragment_border_color = this.get_palette_param('--code-fragment-border-color')
+        let code_bg_color = this.get_palette_param('--code-bg-color')
         
         const styles = `
         <style>
-          *{
+          * {
             color:` + text_color + `;
             font-family: Inter, system-ui,Roboto,sans-serif;
             font-size: 13px;
           }
-          a{color: ` + link_color + `}
+
+          a {
+            color: ` + link_color + `
+          }
+
+          img {
+            max-width: 1000px;
+            border: 1px solid;
+            border-color:` + text_color + `;  
+          }
+
+          .attachment-img {
+            max-width: 1000px;
+            border: 1px solid;
+            border-color:` + text_color + `;
+          }
+
+          pre {
+              border-radius: 4px;
+              background-color:` + code_block_bg_color + `;
+              border: 10px solid transparent;
+              padding-left: 10px;
+              max-height: 400px;
+              max-width: 965px;
+              overflow: auto;
+              padding: 10px;
+          }
+
+          pre code {
+              position: relative;
+              font-family: Menlo, "Bitstream Vera Sans Mono", "Ubuntu Mono", Consolas, "Courier New", Courier, monospace;
+              font-size: 95%;
+              border: 4px solid transparent;
+              color: inherit;
+          }
+
+          code {
+              padding: 0 2px;
+              color:` + code_fragment_text_color + `; 
+              border-radius: 2.5px;
+              background-color: inherit; 
+              font-family: Menlo, "Bitstream Vera Sans Mono", "Ubuntu Mono", Consolas, "Courier New", Courier, monospace;
+              font-size: 95%;
+              border-color:` + code_fragment_border_color + `; 
+              border-width: 1px;
+              border-style: solid;
+          }
+
+          ::-webkit-scrollbar {
+              width: 7px;
+              height: 7px;
+          }
+
+          ::-webkit-scrollbar-track {
+              background-color:` + code_scroll_track_bg_color + `; 
+              border-radius: 10px;
+          }
+
+          ::-webkit-scrollbar-thumb {
+              background-color:` + code_scroll_thumb_bg_color + `; 
+              border-radius: 10px;
+              border: 40px solid transparent;
+              margin: 10px;
+          }
+
+          ::-webkit-scrollbar-thumb:hover {
+              background-color:` + code_scroll_thumb_hover_color + `; 
+          }
+
+
+          ::-webkit-scrollbar-corner {
+              background:` + code_block_bg_color + `;
+          }
+
         </style>
         `
 
@@ -174,16 +254,14 @@
     cursor: pointer;
   }
 
-.marked-iframe{
+.marked-iframe {
   border-width: 0px;
   width:100%;
   height: v-bind(iframe_height);
 }
   
-.marked-iframe::-webkit-scrollbar{
+.marked-iframe::-webkit-scrollbar {
     display:none;
-  }
-
-
+}
 
 </style>
