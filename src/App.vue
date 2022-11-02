@@ -266,7 +266,7 @@
 
 .loading_fade-enter-active {
 
-  transition: opacity 0.5s;
+  transition: opacity 4s ease;
 }
 .loading_fade-leave-active {
   transition: opacity 0.5s;
@@ -338,7 +338,7 @@ $loading-bar-width: 200vw;
   //background: linear-gradient(0.25turn, rgba(200,200,200,0.0), rgba(0,0,0,0.8), rgba(200,200,200,0.0));
   //animation: background 3s infinite ease-in-out;
   background: linear-gradient( rgba(200,200,200,0.0), var(--loading-bar-color), rgba(200,200,200,0.0)) !important;
-  animation: background 0.8s infinite alternate ease-in-out !important;
+  animation: background 1.5s infinite alternate ease-in-out !important;
 }
 
 

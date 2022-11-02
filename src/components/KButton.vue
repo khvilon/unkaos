@@ -1,6 +1,7 @@
 <template>   
   <div class="btn">
-    <input   v-if="name.substr(0,3) != 'bx-'"  class="btn_input" type="button" :value="name" @click="click(this)">
+    <input   v-if="name.substr(0,3) != 'bx-'"  class="btn_input" type="button" :value="name" @click="click(this)" :disabled="disabled"
+     :class="{'disabled-btn': disabled}">
     <i v-if="name.substr(0,3) == 'bx-'" :class="'btn_input bx ' + name"  @click="click(this)"></i>
   </div>
 </template>
@@ -24,6 +25,11 @@
       route: {
         type: String,
         default: '',
+      },
+
+      disabled: {
+        type: Boolean,
+        default: false,
       },
 
     },
@@ -64,6 +70,12 @@
     border-radius: var(--border-radius);
     border-style: outset;
     cursor: pointer;
+  }
+
+  .btn .disabled-btn
+  {
+     cursor: not-allowed;
+    background-color: var(--input-bg-color-disabled);
   }
 
 .btn i{

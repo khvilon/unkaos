@@ -1,7 +1,8 @@
 <template>   
   <div class="string">
     <div class="label">{{label}}</div>
-    <input class="string-input" :type="type"  v-model="value" :disabled="disabled">
+    <input class="string-input" :type="type"  v-model="value" :disabled="disabled"
+    @blur="blur">
   </div>
 </template>
 
@@ -44,7 +45,7 @@
 
     },
 
-    emits: ['update_parent_from_input'],
+    emits: ['update_parent_from_input', 'updated'],
     
     watch: {
       value: function(val, oldVal) {
@@ -77,7 +78,12 @@
 
         //data[this.id] = val
         //this.$store.commit('push_update_' + this.parent_name, data)
+      },
+      blur()
+      {
+        this.$emit('updated')
       }
+      
     }
   }
 </script>

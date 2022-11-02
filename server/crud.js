@@ -9,6 +9,7 @@ const transition_type_uuid = '4d7d3265-806b-492a-b6c1-636e1fa653a9'
 const author_field_uuid = '733f669a-9584-4469-a41b-544e25b8d91a'
 const name_field_uuid = 'c96966ea-a591-47a9-992c-0a2f6443bc80'
 const parent_relation_type_uuid = '73b0a22e-4632-453d-903b-09804093ef1b'
+const comment_type_uuid = 'f53d8ecc-c26e-4909-a070-5c33e6f7a196'
 
 
 const select_limit = 300
@@ -121,7 +122,9 @@ crud.load = async function(){
     T11.NAME AS TYPE_NAME,
     T11.WORKFLOW_UUID,
     T1.CREATED_AT,
-    T1.UPDATED_AT,
+    `+
+    //T1.UPDATED_AT,
+    `MAX(T15.CREATED_AT) AS UPDATED_AT,
     T1.DELETED_AT,
     T1.PROJECT_UUID,
     T12.NAME AS PROJECT_NAME,
@@ -244,7 +247,6 @@ crud.load = async function(){
     crud.querys['board']['delete'] = crud.querys['boards']['delete']
 
     crud.querys['dashboard'] = {}
-    crud.querys['dashboard']['read'] = crud.querys['dashboards']['read']
     crud.querys['dashboard']['upsert'] = crud.querys['dashboards']['upsert']
     crud.querys['dashboard']['create'] = crud.querys['dashboards']['create']
     crud.querys['dashboard']['update'] = crud.querys['dashboards']['update']
@@ -312,6 +314,42 @@ crud.load = async function(){
         ON FV.FIELD_UUID = '` + name_field_uuid + `' AND FV.ISSUE_UUID = I.UUID
     ) T1 WHERE DELETED_AT IS NULL $@1
     LIMIT 50`       
+
+    crud.querys['dashboard']['read'] = `
+    SELECT 
+        t1.uuid,
+        t1.name,
+        t1.created_at,
+        t1.updated_at,
+        CASE WHEN COUNT(g) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT g) END AS gadgets,
+        JSONB_AGG(DISTINCT u) AS author
+    FROM 
+        dashboards t1
+    LEFT JOIN
+        users u 
+    ON
+        t1.author_uuid = u.uuid
+    LEFT JOIN
+    (
+        SELECT gd.*, 
+        gt.name AS type_name,
+        gt.code AS type_code
+        FROM 
+        gadgets gd
+        LEFT JOIN
+        gadget_types gt ON
+        gt.uuid = gd.type_uuid
+    ) g
+    ON
+        g.dashboard_uuid = t1.uuid
+    WHERE 
+        t1.deleted_at is NULL  $@1
+        GROUP BY 
+        t1.uuid,
+        t1.name,
+        t1.created_at,
+        t1.updated_at`
+
 }
 
 
@@ -413,8 +451,31 @@ crud.make_query = {
             //console.log('user_query', user_query)
 
             let uuids_query = `WITH filtered_issues AS (
-                SELECT *
-                FROM issues I
+                SELECT * FROM
+                (
+                SELECT 
+                ISS.UUID,
+                ISS.NUM,
+                ISS.TYPE_UUID,
+                ISS.CREATED_AT,
+                MAX(IA.CREATED_AT) AS UPDATED_AT,
+                ISS.DELETED_AT,
+                ISS.PROJECT_UUID,
+                ISS.STATUS_UUID,
+                ISS.SPRINT_UUID
+                FROM issues ISS
+                LEFT JOIN issue_actions IA
+                ON IA.ISSUE_UUID = ISS.UUID
+                GROUP BY 
+                ISS.UUID,
+                ISS.NUM,
+                ISS.TYPE_UUID,
+                ISS.CREATED_AT,
+                ISS.DELETED_AT,
+                ISS.PROJECT_UUID,
+                ISS.STATUS_UUID,
+                ISS.SPRINT_UUID
+                ) I
                 WHERE `
 
 
@@ -425,7 +486,8 @@ crud.make_query = {
 
                 let q_resolved_uuids = `(SELECT UUID FROM ISSUE_STATUSES WHERE IS_END)`
                 user_query = user_query.replaceAll("!='(resolved)'", '!=ALL '  + q_resolved_uuids )
-                user_query = user_query.replaceAll("='(resolved)'", '=ANY '  + q_resolved_uuids )
+                //user_query = user_query.replaceAll("='(resolved)'", '=ANY '  + q_resolved_uuids )
+                
                
                 while(user_query.indexOf('attr#') > -1)
                 {
@@ -441,6 +503,11 @@ crud.make_query = {
                     user_query = user_query.replaceFrom('#', f2 , start )
                     user_query = user_query.replaceFrom('#', ")" , start )
                 }
+
+                //user_query = user_query.replaceAll("I.updated_at", "MAX(IA.CREATED_AT)")
+
+             
+                
 
                 let order_start = user_query.indexOf('order by ')
                 if (order_start > -1)
@@ -589,6 +656,7 @@ crud.make_query = {
 
         let upd = crud.make_query.update
        // console.log(upd)
+       
 
         let [query_update, params_update] = upd(table_name, params)
 
@@ -605,7 +673,7 @@ crud.make_query = {
         if(table_name == 'issues' && params.num == undefined)
         {
             let [q, p] = crud.push_query(query, pg_params, 
-                "UPDATE issues SET num = (SELECT COALESCE(MAX(num), 0) + 1 FROM oboz.issues WHERE project_uuid = $1) WHERE uuid = $2", 
+                "UPDATE issues SET num = (SELECT COALESCE(MAX(num), 0) + 1 FROM issues WHERE project_uuid = $1) WHERE uuid = $2", 
                 [params.project_uuid, params.uuid])
 
                 query = q
@@ -743,7 +811,7 @@ crud.do = async function(subdomain, method, table_name, params)
 {
     if(table_name == 'issue') table_name = 'issues'
     else if(table_name == 'board') table_name = 'boards'
-    else if(table_name == 'dashboard') table_name = 'dashboards'
+    //else if(table_name == 'dashboard') table_name = 'dashboards'
     let [query, pg_params] = crud.get_query(method, table_name, params)
 
    // console.log('paraaaaaaaaaaaaaaaaaaaaaams', params)
