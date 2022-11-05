@@ -7,7 +7,7 @@ rest.base_url = 'http://localhost:3001/'
 
 //rest.base_url = 'http://unkaos.online:3001/'
 
-//rest.base_url = 'https://unkaos.oboz.tech:3002/'
+rest.base_url = 'https://unkaos.oboz.tech:3002/'
 
 rest.dict = 
 {

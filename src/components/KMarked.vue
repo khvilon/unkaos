@@ -123,6 +123,12 @@
         let code_fragment_text_color = this.get_palette_param('--code-fragment-text-color')
         let code_fragment_border_color = this.get_palette_param('--code-fragment-border-color')
         let code_bg_color = this.get_palette_param('--code-bg-color')
+        let disabled_bg_color = this.get_palette_param('--disabled-bg-color')
+        let border_color = this.get_palette_param('--border-color')
+        let border_style = this.get_palette_param('--border-style')
+        let border_width = this.get_palette_param('--border-width')
+        let border_radius = this.get_palette_param('--border-radius')
+        
         
         const styles = `
         <style>
@@ -200,9 +206,16 @@
               background-color:` + code_scroll_thumb_hover_color + `; 
           }
 
-
           ::-webkit-scrollbar-corner {
               background:` + code_block_bg_color + `;
+          }
+
+          .issue-comment {
+            background:` + disabled_bg_color + `;
+            border-color:` + border_color + `;
+            border-width:` + border_width + `;
+            border-style:` + border_style + `;
+            border-radius:` + border_radius + `;
           }
 
         </style>
