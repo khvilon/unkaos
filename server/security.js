@@ -5,7 +5,7 @@ var sql = require('./sql')
 
 var jwt = require('jsonwebtoken');
 
-const token_expiration_time_sec = 60 * 60 * 24 //day
+const token_expiration_time_sec = 7 * 60 * 60 * 24 //day
 const token_expiration_duration = token_expiration_time_sec  + " * interval '1 second'"
 
 const key = 'shhhhh'

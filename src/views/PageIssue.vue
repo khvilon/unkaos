@@ -98,6 +98,8 @@
 					fields.push(this.issue[0].values[i])
 				}
 			}
+
+			fields = fields.sort(tools.compare_obj('label'))
 		//	console.log('get_fields_exclude_names2', fields)
 			return fields
 		},
@@ -691,8 +693,9 @@
 				if(i > 0) history += '\r\n\r\n'
 				let action = actions[i]
 				let dt = tools.format_dt(action.created_at)
-				history += '------------------------------------------------' + dt + ' ' + action.author + ' ' + action.name + '------------------------------------------------' +
-				'\r\n' + action.value
+				history += '<p style="margin-bottom: 4px;">' + dt + ' ' + action.author + ' ' + action.name + '</p>'
+				//if(action.value != undefined && action.value != '')
+				history += '<div class="issue-comment">' + action.value + '</div>'
 			}
 
 			//this.available_transitions()
@@ -768,9 +771,16 @@
 
 			for(let i in rt)
 			{
-				this.relation_types.push({uuid: rt[i].uuid, name: rt[i].name, is_reverted: false})
-				if(rt[i].name == rt[i].revert_name) continue 
-				this.relation_types.push({uuid: rt[i].uuid, name: rt[i].revert_name, is_reverted: true})
+				if(rt[i].name == rt[i].revert_name)
+				{
+					this.relation_types.unshift({uuid: rt[i].uuid, name: rt[i].name, is_reverted: false})
+				} 
+				else
+				{
+					this.relation_types.push({uuid: rt[i].uuid, name: rt[i].name, is_reverted: false})
+					this.relation_types.push({uuid: rt[i].uuid, name: rt[i].revert_name, is_reverted: true})
+				}
+				
 			}
 
 			this.get_formated_relations()
@@ -1031,12 +1041,15 @@
 			</Transition>
 
 			<Transition name="element_fade">
-			<TextInput label='История'
+
+
+			<KMarked label='История'
 				v-if="!loading && id!=''"
-				:value="history"
+				:val="history"
 				:disabled="true"
+				class="issue-actions"
 			>
-			</TextInput>
+			</KMarked>
 
 			</Transition>
 
@@ -1126,7 +1139,7 @@
   @import '../css/palette.scss';
   @import '../css/global.scss';
 
-	$card-width: 400px;
+	$card-width: 320px;
   $code-width: 160px;
   $project-input-width: 250px;
 
@@ -1134,6 +1147,7 @@
   {
 	  height: $top-menu-height;
 	  display: flex;
+	  padding-top: 3px;
   }
 
 	#issue_table_panel, #issue_card {
@@ -1303,7 +1317,7 @@
 	display: flex;
     font-size: 35px;
     margin-left: 20px;
-    margin-top: 2px;
+    //margin-top: 2px;
     color: var(--off-button-icon-color);
 	cursor: pointer;
 	
@@ -1370,6 +1384,10 @@
 }
 .cancel-issue-edit-mode-btn{
 	padding-left: $input-height;
+}
+
+.issue-actions{
+	padding: 10px 15px 10px 15px;
 }
 
 

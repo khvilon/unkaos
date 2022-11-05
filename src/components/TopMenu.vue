@@ -99,7 +99,7 @@
     border-bottom-width: 1px;*/
     height: $top-menu-height;
 
-    padding-top: 11px;
+    padding-top: 13px;
     padding-left: 0px;
   }
 
