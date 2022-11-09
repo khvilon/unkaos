@@ -143,15 +143,17 @@
           }
 
           img {
-            max-width: 1000px;
-            border: 1px solid;
-            border-color:` + text_color + `;  
+            max-width: -webkit-fill-available;
+            box-sizing: border-box;
+            outline: 1px solid;
+            outline-color:` + text_color + `;  
           }
 
           .attachment-img {
-            max-width: 1000px;
-            border: 1px solid;
-            border-color:` + text_color + `;
+            max-width: -webkit-fill-available;
+            box-sizing: border-box;
+            outline: 1px solid;
+            outline-color:` + text_color + `;
           }
 
           pre {
@@ -160,7 +162,7 @@
               border: 10px solid transparent;
               padding-left: 10px;
               max-height: 400px;
-              max-width: 965px;
+              max-width: -webkit-fill-available;
               overflow: auto;
               padding: 10px;
           }
@@ -216,6 +218,11 @@
             border-width:` + border_width + `;
             border-style:` + border_style + `;
             border-radius:` + border_radius + `;
+            padding-left: 5px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            margin-top: 4px;
+            margin-bottom: 4px;
           }
 
         </style>
@@ -261,10 +268,8 @@
 
   .marked-container
   {
-    
     border-width: 0px;
     border-style: outset;
-    cursor: pointer;
   }
 
 .marked-iframe {
