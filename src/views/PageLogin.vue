@@ -10,9 +10,9 @@
 	var login_page = {}
 
 	const label = {
-		login_label: d['Электронная почта'],
-		pass_label: d['Пароль'],
-		login_button_label: d['Войти']
+		login_label: d.get('Электронная почта'),
+		pass_label: d.get('Пароль'),
+		login_button_label: d.get('Войти')
 	}
 	let user_name = ''
 	let pass = ''

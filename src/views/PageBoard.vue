@@ -662,7 +662,7 @@
 
 	    },
 	  	{
-	    	name: d['Название'],
+	    	name: d.get('Название'),
 	        id: "values.Название",
 			search: true,
 	    },
@@ -679,17 +679,17 @@
 	        id: "project_name"
 	    },
 		{
-            name: d['Автор'],
+            name: d.get('Автор'),
             id: "values.Автор",
 			type:'user'
         },
 	    {
-	        name: d['Создана'],
+	        name: d.get('Создана'),
 	        id: "created_at",
 	        type: 'date'
 	    },
 	    {
-	        name: d['Изменена'],
+	        name: d.get('Изменена'),
 	        id: "updated_at",
 	        type: 'date'
 	    },
