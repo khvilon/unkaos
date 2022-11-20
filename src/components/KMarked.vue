@@ -1,9 +1,8 @@
 <template>   
 
-				<div class="marked-container marked-iframe"
+				<div class="marked-container"
 				v-html="md(val)"
         scrolling="no"
-        @load="get_iframe_height"
         >
 			</div>
 </template>
@@ -40,13 +39,6 @@
         val = val[1]
         val = val.split(';')[0]
         return val;
-      },
-
-      get_iframe_height(e)
-      {
-        let rect = e.target.contentWindow.document.body.getBoundingClientRect()
-        //console.log('contentWindow.document.body.scrollHeight............', iframe.contentWindow.document.body.getBoundingClientRect())
-        this.iframe_height = Math.ceil( Number(rect.top) + Number(rect.bottom)) + 'px'
       },
 
       inject_images(html, start_search)
@@ -130,7 +122,6 @@
     },
     data () {
       return {
-        iframe_height: 0,
         found_img: {}
       }
     }
@@ -144,28 +135,21 @@
 <style lang="scss">
 @import '../css/global.scss';
 
-.marked-container {
-  border-width: 0;
+a {
+  color: var(--link-color);
 }
 
-.marked-iframe {
-  border-width: 0px;
+.marked-container {
+  user-select: text !important;
+  border-width: 0;
   width:100%;
   color:var(--text-color);
   font-family: Inter, system-ui,Roboto,sans-serif;
   font-size: 13px;
 }
 
-.marked-iframe * {
-  user-select: text !important;
-}
-
-.marked-iframe::-webkit-scrollbar {
+.marked-container::-webkit-scrollbar {
     display:none;
-}
-
-a {
-  color: var(--link-color);
 }
 
 .marked-container img {
