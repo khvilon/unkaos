@@ -7,7 +7,7 @@
 	import rest from '../rest';
 	import tools from '../tools.ts'
 	
-	console.log('d', d['Название'],d)
+	console.log('d', d.get('Название'),d)
 
 	let methods = {
 		add_with_children: function(obj, arr, ch_level){
@@ -148,7 +148,7 @@
 			link_id: ["project_short_name","'-'", "num"]
 	    },
 	  	{
-	    	name: d['Название'],
+	    	name: d.get('Название'),
 	        id: "values.Название",
 			search: true,
 	    },
@@ -165,17 +165,17 @@
 	        id: "project_name"
 	    },
 		{
-            name: d['Автор'],
+            name: d.get('Автор'),
             id: "values.Автор",
 			type:'user'
         },
 	    {
-	        name: d['Создана'],
+	        name: d.get('Создана'),
 	        id: "created_at",
 	        type: 'date'
 	    },
 	    {
-	        name: d['Изменена'],
+	        name: d.get('Изменена'),
 	        id: "updated_at",
 	        type: 'date'
 	    },

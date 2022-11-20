@@ -10,9 +10,9 @@
 	var login_page = {}
 
 	const label = {
-		login_label: d['Электронная почта'],
-		pass_label: d['Пароль'],
-		login_button_label: d['Войти']
+		login_label: d.get('Электронная почта'),
+		pass_label: d.get('Пароль'),
+		login_button_label: d.get('Войти')
 	}
 	let user_name = ''
 	let pass = ''
@@ -62,8 +62,8 @@
 
 
 
-<template ref='issues' >
-	<div class="login-panel panel">
+<template ref='issues'  >
+	<div class="login-panel panel" @keyup.enter="login()">
     <StringInput 
   		:label="label.login_label"
 		v-model:value="user_name"
@@ -79,6 +79,7 @@
 	<KButton 
   		:name="label.login_button_label"
 		@click="login()"
+		
     />
 	<span v-show="wrong" class="wrong-pass-label">Неправильный логин или пароль</span>
 	</div>
@@ -94,9 +95,13 @@
     height: 250px;
 	width: 400px;
 	position: absolute;
-	left: calc(50vw - $main-menu-width) ;
+	left: calc(50vw - $main-menu-width/2) ;
     top: 40vh;
     transform: translate(-60%, -50%);
+	}
+
+	.mobile-view .login-panel {
+		width: 250px;
 	}
 
 	.login-panel .btn
