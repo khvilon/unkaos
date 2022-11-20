@@ -823,7 +823,7 @@
   }
 </script>
 
-<style lang="scss">
+<style  lang="scss">
 
 @import '../css/global.scss';
 

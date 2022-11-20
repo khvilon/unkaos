@@ -45,12 +45,17 @@
     updated() {
       this.check_is_in_workspace()
     },
+
     mounted()
     {
       console.log('app mounted')
       if(localStorage.theme == undefined) localStorage.theme = "dark"
       let htmlElement = document.documentElement;
       htmlElement.setAttribute('theme', localStorage.theme);
+
+      this.$store.state['common']['is_mobile'] = this.is_mobile()
+
+      console.log('this.$store.state[common][is_mobile]', this.$store.state['common']['is_mobile'])
     },
     computed:
     {
@@ -64,6 +69,10 @@
       }
     },
     methods: {
+      is_mobile: function()
+      {
+        return window.innerHeight > window.innerWidth
+      },
       pasted: function(e)
 		{
 			console.log(e)
@@ -112,12 +121,12 @@
 </script>
 
 
-<template>
+<template >
   
     
   <div id="router-view-container" 
 
- v-bind:class="{ 'no-menu-container': !is_in_workspace, 'loading': loading }"
+ v-bind:class="{ 'no-menu-container': !is_in_workspace, 'loading': loading, 'mobile-view': $store.state['common']['is_mobile'] }"
  
  >
 
@@ -138,7 +147,7 @@
     <div class="loading-bar"></div>
   </div>
 </Transition>
-  <MainMenu />
+  <MainMenu v-bind:class="{ 'mobile-sidebar': $store.state['common']['is_mobile'] }" />
   <Profile v-if="is_in_workspace"/>
   <KAlerter />
   
@@ -158,6 +167,9 @@
   { 
     background-color: var(--body-bg-color);
     transition: all 0.5s ease;
+    overflow:hidden;
+    padding: 0px;
+    margin: 0px;
   }
 
 
@@ -171,14 +183,16 @@
 
     font-family: Inter, system-ui,Roboto,sans-serif;
 
-    margin: 0;
-    padding: 0;
+    //margin: 0;
+    //padding: 0;
     box-sizing: border-box;
     transition: all 0.2s ease;
     opacity: 1;
 
    // font-family: 'Poppins', sans-serif;
   }
+
+  
 
   [draggable] {
       -moz-user-select: none;
@@ -211,10 +225,20 @@
     position: absolute;
     background-color: var(--body-bg-color);
     top: 0px;
-    left: $main-menu-width !important;
+    left: $main-menu-width;
     width: calc(100vw - $main-menu-width);
     height: 100vh;
     
+  }
+
+  .mobile-view 
+  {
+    
+    
+    left: 0px !important;
+    width: calc(100vw) !important;
+    height: calc(100vh - $main-menu-width) !important;
+    top: $main-menu-width !important;
   }
 
   .no-menu-container

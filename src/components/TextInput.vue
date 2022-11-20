@@ -1,8 +1,12 @@
 <template>   
   <div class="text" >
     <div class="label">{{label}}</div>
-    <textarea ref="text_input" @focus="$emit('input_focus', true)" @blur="$emit('input_focus', false)"
+    <textarea ref="text_input_shadow" class="text-input text-input-shadow" :type="type" v-model="value"></textarea>
     
+
+    <textarea ref="text_input" @focus="$emit('input_focus', true)" @blur="$emit('input_focus', false)"
+    @keyup="resize"
+    @keydown.ctrl.b="make_bold"
     class="text-input" :type="type"  v-model="value" :disabled="disabled" ></textarea>
   </div>
 </template>
@@ -52,8 +56,42 @@
       resize() {
         console.log('resizing')
         if(this.$refs.text_input == undefined) return;
-        this.$refs.text_input.style.height = "auto";
-        this.$refs.text_input.style.height = `${this.$refs.text_input.scrollHeight+4}px`;
+        //this.$refs.text_input.style.height = "auto";
+        //this.$refs.text_input.style.height = 0
+     
+          this.$refs.text_input.style.height = `${this.$refs.text_input_shadow.scrollHeight+4}px`;
+
+      },
+      getCaretIndex(element) {
+        let position = 0;
+        const isSupported = typeof window.getSelection !== "undefined";
+        if (isSupported) {
+          const selection = window.getSelection();
+          if (selection.rangeCount !== 0) {
+            try{
+              const range = window.getSelection().getRangeAt(0);
+              const preCaretRange = range.cloneRange();
+              preCaretRange.selectNodeContents(element);
+              preCaretRange.setEnd(range.endContainer, range.endOffset);
+              position = preCaretRange.toString().length;
+            }
+            catch(e){}
+          }
+        }
+        return position;
+      },
+      make_bold(e)
+      {
+        
+       // console.log(e)
+        var elInput = e.target//document.getElementById('tempid') // Select the object according to the id selector
+             var startPos = elInput.selectionStart// input the 0th character to the selected character
+             var endPos = elInput.selectionEnd// The selected character to the last character
+
+             console.log(e, startPos, endPos)
+
+             this.value = '**' + this.value;
+
       },
       pasted(e)
       {
@@ -71,7 +109,10 @@
       value: function(val, oldVal) {
         console.log(val, oldVal, this.id, this.parent_name)
 
-        this.resize()
+        
+         // this.resize()
+		   
+        
 
         this.$emit('update_parent_from_input', val)
 
@@ -96,6 +137,7 @@
     color: var(--text-color);
     padding: 0 10px 0 10px;
     resize: none;
+    
   }
 
   .text
@@ -108,14 +150,24 @@
     font-size: 13px;
     font-weight: 400;
     border-radius: var(--border-radius);
-    transition: all 0.5s ease;
     background: var(--input-bg-color);
     width: 100%;
 
-     border-color: var(--border-color);
+    border-color: var(--border-color);
     border-style: inset;
     border-width: var(--border-width);
     border-radius: var(--border-radius);
+
+  }
+
+  .text-input-shadow{
+    height: 0px !important;
+    max-height: 0px !important;
+    min-height: 0px !important;
+    border: none;
+    border-style: none !important;
+    padding: 0px !important;
+    transition: none !important;
   }
 
   .text-input:disabled {

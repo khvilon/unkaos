@@ -61,7 +61,8 @@
             link: '/configs/sprints',
             name: dict['Спринты'],
             icon: 'bx-timer',
-            level: 2
+            level: 2,
+            admin_only: true
           },
           {
             link: '/configs/users',
@@ -73,31 +74,36 @@
             link: '/configs/roles',
             name: dict['Роли'],
             icon: 'bx-group',
-            level: 2
+            level: 2,
+            admin_only: true
           },
           {
             link: '/configs/fields',
             name: dict['Поля'],
             icon: 'bx-bracket',
-            level: 2
+            level: 2,
+            admin_only: true
           },
           {
             link: '/configs/issue_statuses',
             name: dict['Статусы задач'],
             icon: 'bx-flag',
-            level: 2
+            level: 2,
+            admin_only: true
           },
           {
             link: '/configs/workflows',
             name: dict['Воркфлоу задач'],
             icon: 'bx-sitemap',
-            level: 2
+            level: 2,
+            admin_only: true
           },
           {
             link: '/configs/issue_types',
             name: dict['Типы задач'],
             icon: 'bx-category-alt',
-            level: 2
+            level: 2,
+            admin_only: true
           },
           
         ],
@@ -118,6 +124,7 @@
     },
     methods: {
       move_hover(e) {
+        if(this.$store.state['common']['is_mobile']) return;
         if(localStorage.lock_main_menu != 'true') this.is_opened = true
         this.hover_opacity = 1
         this.hover_offset_x = e.target.offsetLeft
@@ -162,7 +169,7 @@
     >
       <i
         class="bx icon bx-hive"
-        @click="is_opened = true"
+        @click="is_opened = !$store.state['common']['is_mobile']"
       />
       <div class="logo_name">
         unkaos
@@ -173,7 +180,7 @@
       <div class="main-menu-element-bg-hover" :style="{ opacity: hover_opacity, top: hover_offset_y + 'px',  left: hover_offset_x + 'px'}"></div>
       <div class="main-menu-element-bg-select" :style="{ opacity: select_opacity, top: select_offset_y + 'px',  left: select_offset_x + 'px'}"></div>
       <div class="main-menu-element"
-          v-for="(menuItem, index) in menuItems"
+          v-for="(menuItem, index) in menuItems.filter((mi)=>!mi.admin_only || !$store.state['common']['is_mobile'])"
           :key="index">
         <router-link :to="menuItem.link"> 
           <div class="main-menu-element-bg" 
@@ -189,8 +196,8 @@
             
               class="bx"
               :class="menuItem.icon || 'bx-square-rounded'"
-            />
-            <span class="links_name">{{ menuItem.name }}</span>
+            ></i>
+            <span v-show="!$store.state['common']['is_mobile']" class="links_name">{{ menuItem.name }}</span>
           </div>   
         </router-link>
       </div>
@@ -218,6 +225,7 @@
     width: $logo-size;
     margin: 0 10px 0 10px;
   }
+  
   .sidebar {
     position: absolute;
     display: flex;
@@ -232,9 +240,18 @@
     
     transition-property: all !important;
     transition-duration: $main-menu-open-time !important;
+    z-index: 0;
 
     margin:1px;
   }
+  .mobile-sidebar{
+    height: $main-menu-width;
+    min-height: $main-menu-width;
+    width: 100vw;
+    
+  }
+
+  
   .sidebar.open {
     width: $main-menu-width-open;
   }
@@ -282,12 +299,23 @@
     width: 100%;
   }
 
+  .mobile-sidebar .main-menu-list
+  {
+  display: flex;
+    top: 6px;
+    left: 40px;
+  }
+
   .main-menu-element
   {
     width: 100%;
     height: $main-menu-element-height;
     left: 0px;
     top: 0px;
+  }
+
+  .mobile-sidebar .main-menu-element{
+    width: auto;
   }
 
   .main-menu-element-bg
@@ -323,6 +351,11 @@
     width: calc(($main-menu-width + $main-menu-icon-size) / 2);
     font-size: $main-menu-icon-size;
     left: calc(($main-menu-width - $main-menu-icon-size) / 2);
+  }
+
+  .mobile-sidebar .main-menu-element i
+  {
+    //font-size: 30px !important;
   }
 
   .main-menu-element span
