@@ -219,16 +219,4 @@ a {
   background: var(--code-block-bg-color);
 }
 
-.issue-comment {
-  background: var(--disabled-bg-color);
-  border-color: var(--border-color);
-  border-width: var(--border-width);
-  border-style: var(--border-style);
-  border-radius: var(--border-radius);
-  padding-left: 5px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  margin-top: 4px;
-  margin-bottom: 4px;
-}
 </style>

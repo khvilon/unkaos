@@ -3,11 +3,6 @@
 	import tools from '../tools.ts'
 	import page_helper from '../page_helper.ts'
 	import rest from '../rest.ts'
-	//import marked from 'marked';
-	
-
-	
-
 
 	let methods = {
 		pasted: async function(e)
@@ -103,9 +98,8 @@
 		//	console.log('get_fields_exclude_names2', fields)
 			return fields
 		},
-		add_action_to_history: async function(type, val)
-		{
 
+		add_action_to_history: async function(type, val) {
 			console.log('add_action_to_history', type, val)
 			if(this.issue[0] == undefined || this.issue[0].actions == undefined) return;
 			const action_icons = 
@@ -120,10 +114,7 @@
 				value: val,
 				author: JSON.parse(localStorage.profile).name
 			}
-
-
 			console.log('aaaaaction', new_action)
-
 			this.issue[0].actions.unshift(new_action)
 		},
 		send_comment: async function()
@@ -687,43 +678,14 @@
       }
     }
 
-	
-		
-	
-
-	mod.computed.history = function()
-		{
-	//		console.log('histissue', this.issue.length)
-			if(this.issue.length != 1) return ''
-	//		console.log('histissue2', this.issue.length)
-			let history = ''
-
-			let actions = tools.obj_clone(this.issue[0].actions)
-
-			console.log('aaactions', actions)
-			actions = actions.sort(tools.compare_obj_dt('created_at'))
-			actions = actions.reverse()
-			
-			for(let i in actions)
-			{
-				if(i > 0) history += '\r\n\r\n'
-				let action = actions[i]
-				let dt = tools.format_dt(action.created_at)
-				history += '<p style="margin-bottom: 4px;">' + dt + ' ' + action.author + ' ' + action.name + '</p>'
-				// do not display comment if it is empty
-				if(action.value != undefined && action.value != '') {
-					history += '<div class="issue-comment">' + action.value + '</div>'
-				} else {
-					history += '<div class="issue-comment" style="display: none;">' + action.value + '</div>'
-				}
-				
-			}
-
-			//this.available_transitions()
-
-			return history
-		}
-
+	mod.computed.sorted_actions = function () {
+    if (this.issue[0] !== undefined) {
+      console.log('sorting actions')
+      console.log(this.issue[0].actions)
+      return tools.obj_clone(this.issue[0].actions).sort(tools.compare_obj_dt('created_at'))
+    }
+    return []
+  }
 
 		mod.computed.available_transitions =  function()
 		{
@@ -1067,18 +1029,19 @@
 			/>
 			</Transition>
 
-			<Transition name="element_fade">
-
-
-			<KMarked label='История'
-				v-if="!loading && id!=''"
-				:val="history"
-				:disabled="true"
-				class="issue-actions"
-			>
-			</KMarked>
-
-			</Transition>
+      <div
+          class="issue-actions"
+          v-if="!loading && !edit_mode"
+      >
+        <TransitionGroup name="element_fade">
+        <KComment
+            v-for="action in sorted_actions"
+            :key="action.uuid"
+            :action="action"
+            style="margin-bottom: 10px"
+        />
+        </TransitionGroup>
+      </div>
 
       </div>
       <div id="issue_card" class="panel" :class="{'hidden-card':!card_open && $store.state['common']['is_mobile']}">
@@ -1490,7 +1453,5 @@
 .v-leave-to {
   opacity: 0;
 }*/
-    
-
 
 </style>
