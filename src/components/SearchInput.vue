@@ -24,7 +24,7 @@
     {
       return {
         searchinput: '',
-        placeholder: d['Поиск...']
+        placeholder: d.get('Поиск...')
       }
     },
     watch: {
