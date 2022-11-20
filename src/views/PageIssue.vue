@@ -710,8 +710,13 @@
 				let action = actions[i]
 				let dt = tools.format_dt(action.created_at)
 				history += '<p style="margin-bottom: 4px;">' + dt + ' ' + action.author + ' ' + action.name + '</p>'
-				//if(action.value != undefined && action.value != '')
-				history += '<div class="issue-comment">' + action.value + '</div>'
+				// do not display comment if it is empty
+				if(action.value != undefined && action.value != '') {
+					history += '<div class="issue-comment">' + action.value + '</div>'
+				} else {
+					history += '<div class="issue-comment" style="display: none;">' + action.value + '</div>'
+				}
+				
 			}
 
 			//this.available_transitions()
