@@ -96,7 +96,7 @@
   .numeric .numeric-input
   {
     width: 100%;
-    height: 35px;
+    height: 30px;
     color: var(--text-color);
     padding: 0 10px 0 10px;
   }
