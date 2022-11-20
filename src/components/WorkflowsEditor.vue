@@ -656,17 +656,8 @@
   }
 
 
-body{
-    margin: 0;
-    padding: 0;
-    overflow:hidden;
-}
 
-p{ 
-     text-align: center; 
-     overflow: overlay;
-     position: relative;
-}
+
 
 .conceptG text{
     pointer-events: none;

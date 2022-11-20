@@ -52,7 +52,7 @@
   }
 </script>
 
-<style  lang="scss">
+<style scoped lang="scss">
 
 @import '../css/global.scss';
 
