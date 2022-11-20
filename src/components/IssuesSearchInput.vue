@@ -586,9 +586,6 @@
 
       convert_query(query, use_to_end){
 
-
-        this.color_text(0, query.length, 'white')
-        
         let waits_for_idx = 0 
 
         //query data
