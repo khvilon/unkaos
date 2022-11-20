@@ -304,6 +304,21 @@
 			this.$store.state['issue']['issue'][0].path = val
 			this.$store.state['issue']['filtered_issue'][0].path = val
 		},
+		save: async function()
+		{
+			let ans = await rest.run_method('read_issue', {uuid: this.issue[0].uuid})
+
+			let ans_is_valid = ans != undefined && ans != null && ans.length > 0
+			if(ans_is_valid && ans[0].updated_at > this.issue[0].updated_at)
+			{
+				alert('Задача была изменена параллельно с вашим редактированием. Скопируйте описание, обновите страницу')
+				return
+			} 
+
+			await this.$store.dispatch('save_issue');
+
+			this.saved()
+		},
 		saved: function(issue)
 		{
 			this.edit_mode = false
@@ -573,6 +588,7 @@
 
   const data = 
   {
+	card_open: false,
 	edit_mode: false,
 	attachments: [],
     name: 'issue',
@@ -816,11 +832,11 @@
 
 	</Transition>
 
-    <div id="issue_top_panel" class="panel" >
+    <div id="issue_top_panel" class="panel"   >
 		
 		<Transition name="element_fade">
 		<StringInput 
-		v-if="!loading && issue[0] != undefined"
+		v-if="!loading && issue[0] != undefined && !$store.state['common']['is_mobile']"
 		key="issue_code"
 		class='issue-code' 
 		label='' 
@@ -831,7 +847,7 @@
 		</Transition>
 		<Transition name="element_fade">
 		<SelectInput
-		v-if="!loading && issue[0] != undefined"
+		v-if="!loading && issue[0] != undefined && !$store.state['common']['is_mobile']"
 		label=""
 		key="issue_type_input"
 		:value="get_type_uuid()"
@@ -845,7 +861,7 @@
 		</Transition>
 		<Transition name="element_fade">
 		<SelectInput 
-		v-if="!loading && issue[0] != undefined && id!=''"
+		v-if="!loading && issue[0] != undefined && id!='' && !$store.state['common']['is_mobile']"
 		label=""
 		:value="get_status()"
 		:values="statuses"
@@ -858,7 +874,7 @@
 		</Transition>
 
 		<Transition name="element_fade">
-		<div v-if="!loading && id!='' && available_transitions.length <= max_status_buttons_count" style="display: flex;">
+		<div v-if="!loading && id!='' && available_transitions.length <= max_status_buttons_count && !$store.state['common']['is_mobile']" style="display: flex;">
 		<KButton
 		v-for="(transition, index) in available_transitions" 
 		:key="index"
@@ -894,6 +910,14 @@
 			:href="get_clone_url()" 
 			>
       	</a>
+		</Transition>
+
+
+		<Transition name="element_fade">
+		<div v-if="!loading && $store.state['common']['is_mobile']"  style="display: flex;" class="watch"
+		@click="card_open = !card_open">
+			{{card_open ? '>>>>>' : '<<<<<'}}
+		</div>	
 		</Transition>
 
 		
@@ -942,7 +966,7 @@
 		</div>
 		</Transition>
 
-			<Transition name="element_fade">
+			
 			<TextInput label='Описание' v-if="!loading && (edit_mode || id=='')"
 				:value="get_field_by_name('Описание').value"
 				:id="'values.'+ get_field_by_name('Описание').idx+'.value'"
@@ -952,7 +976,7 @@
 		
 			>
 			</TextInput>
-			</Transition>
+			
 
 			<Transition name="element_fade">
 			<div class="edit-mode-btn-container">
@@ -960,9 +984,7 @@
 				v-if="!loading && id!='' && (edit_mode || id=='')"
 			  	class="save-issue-edit-mode-btn"
 			  	name='Сохранить'
-			  	:func="'save_issue'"
-				@button_ans="saved"
-				
+			  	@click="save"				
 			/>
 			<KButton
 				v-if="!loading && id!='' && (edit_mode || id=='')"
@@ -1059,9 +1081,51 @@
 			</Transition>
 
       </div>
-      <div id="issue_card" class="panel">
+      <div id="issue_card" class="panel" :class="{'hidden-card':!card_open && $store.state['common']['is_mobile']}">
 		  <Transition name="element_fade">
 		  <div id="issue_card_scroller" v-if="!loading">
+
+			
+			<StringInput 
+			v-if="!loading && issue[0] != undefined && $store.state['common']['is_mobile']"
+			key="issue_code"
+			label='' 
+			:disabled="true"
+			:value="id"
+			>
+			</StringInput>
+			
+
+
+			
+			<SelectInput
+			v-if="!loading && issue[0] != undefined && $store.state['common']['is_mobile']"
+			label=""
+			key="issue_type_input"
+			:value="get_type_uuid()"
+			:values="get_types()"
+			:disabled="id!=''"
+			:parameters="{clearable: false, reduce: obj => obj.uuid}"
+			@update_parent_from_input="update_type"
+			>
+			</SelectInput>
+			
+			<SelectInput 
+			v-if="!loading && issue[0] != undefined && id!='' && $store.state['common']['is_mobile']"
+			label=""
+			:value="get_status()"
+			:values="statuses"
+			:disabled="transitions.length == 0"
+			:parameters="{clearable: false, reduce: obj => obj.uuid}"
+			@update_parent_from_input="update_statuses"
+			>
+			</SelectInput>
+		
+
+			
+			
+		
+	
 
 			<SelectInput label="Спринт"
 			  	v-if="!loading"
@@ -1166,13 +1230,20 @@
 
 	#issue_main_panel
 	{
-		display: block;
+		display: flex;
+		flex-direction: column;
     	width: calc(100% - $card-width);
-		overflow-y: scroll;
+		overflow-y: auto;
+		overflow-anchor: none;
 	}
 	 #issue_main_panel::-webkit-scrollbar{
     display:none;
   }
+
+  .mobile-view #issue_main_panel
+	{
+		width: 100vw !important;
+	}
 
 
   #issue_card {
@@ -1180,6 +1251,18 @@
     margin-left: 0px;
 	display: flex;
     flex-direction: column;
+  }
+
+  .mobile-view #issue_card {
+	position: absolute;
+	width:  100vw;
+	left: 0px
+  }
+
+  .hidden-card
+  {
+	
+	left: 100vw !important;
   }
 
   
@@ -1200,6 +1283,11 @@
 	height: calc(100vh - $top-menu-height);
 	width: calc(100vw - $main-menu-width);
 	position: absolute;
+  }
+
+  .mobile-view #issue_down_panel {
+	height: calc(100vh - $main-menu-width);
+	width: 100vw;
   }
 
 .issue-line
@@ -1362,11 +1450,7 @@
 
 .descr-rendered
 {
-	margin: 20px;
-}
-.descr-rendered p
-{
-	text-align: left;
+	padding: 20px;
 }
 
 

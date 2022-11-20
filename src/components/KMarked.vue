@@ -1,11 +1,10 @@
 <template>   
-  <div class="marked-container"	>
-				<iframe class="marked-iframe"
-				:srcdoc="md(val)"
+
+				<div class="marked-container marked-iframe"
+				v-html="md(val)"
         scrolling="no"
         @load="get_iframe_height"
-				>
-				</iframe>
+        >
 			</div>
 </template>
 
@@ -132,11 +131,7 @@
         
         const styles = `
         <style>
-          * {
-            color:` + text_color + `;
-            font-family: Inter, system-ui,Roboto,sans-serif;
-            font-size: 13px;
-          }
+
 
           a {
             color: ` + link_color + `
@@ -146,7 +141,7 @@
             max-width: -webkit-fill-available;
             box-sizing: border-box;
             outline: 1px solid;
-            outline-color:` + text_color + `;  
+            outline-color:` + text_color + `;
           }
 
           .attachment-img {
@@ -268,18 +263,37 @@
 
   .marked-container
   {
+    
     border-width: 0px;
-    border-style: outset;
+   // border-style: outset;
+   // cursor: pointer;
   }
+
+
 
 .marked-iframe {
   border-width: 0px;
   width:100%;
-  height: v-bind(iframe_height);
+
+  color:var(--text-color);
+  font-family: Inter, system-ui,Roboto,sans-serif;
+  font-size: 13px;
 }
-  
+
+.marked-iframe * {
+
+user-select: text !important;
+}
+
+
 .marked-iframe::-webkit-scrollbar {
     display:none;
 }
+
+.attachment-img {
+            max-width: 1000px;
+            border: 1px solid;
+            border-color: var(--text-color);
+          }
 
 </style>
