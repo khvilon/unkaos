@@ -17,90 +17,90 @@
         default: () => [
           {
             link: '/favourites',
-            name: dict['Избранное'],
+            name: dict.get('Избранное'),
             icon: 'bx-star',
             level: 1
           },  
           {
             link: '/dashboards',
-            name: dict['Дашборды'],
+            name: dict.get('Дашборды'),
             icon: 'bxs-dashboard',
             level: 1
           },
           {
             link: '/boards',
-            name: dict['Доски'],
+            name: dict.get('Доски'),
             icon: 'bx-columns',
             level: 1
           },
           {
             link: '/issues',
-            name: dict['Задачи'],
+            name: dict.get('Задачи'),
             icon: 'bx-detail',
             level: 1
           },
           /*{
             link: '/notifications',
-            name: dict['Уведомления'],
+            name: dict.get('Уведомления'),
             icon: 'bx-envelope',
             level: 1
           },*/
           {
             link: '/projects',
-            name: dict['Проекты'],
+            name: dict.get('Проекты'),
             icon: 'bx-briefcase-alt-2',
             level: 1
           },     
           {
             link: '/configs',
-            name: dict['Настройки'],
+            name: dict.get('Настройки'),
             icon: 'bx-cog',
             level: 1
           },
           {
             link: '/configs/sprints',
-            name: dict['Спринты'],
+            name: dict.get('Спринты'),
             icon: 'bx-timer',
             level: 2,
             admin_only: true
           },
           {
             link: '/configs/users',
-            name: dict['Пользователи'],
+            name: dict.get('Пользователи'),
             icon: 'bx-user',
             level: 2
           },
           {
             link: '/configs/roles',
-            name: dict['Роли'],
+            name: dict.get('Роли'),
             icon: 'bx-group',
             level: 2,
             admin_only: true
           },
           {
             link: '/configs/fields',
-            name: dict['Поля'],
+            name: dict.get('Поля'),
             icon: 'bx-bracket',
             level: 2,
             admin_only: true
           },
           {
             link: '/configs/issue_statuses',
-            name: dict['Статусы задач'],
+            name: dict.get('Статусы задач'),
             icon: 'bx-flag',
             level: 2,
             admin_only: true
           },
           {
             link: '/configs/workflows',
-            name: dict['Воркфлоу задач'],
+            name: dict.get('Воркфлоу задач'),
             icon: 'bx-sitemap',
             level: 2,
             admin_only: true
           },
           {
             link: '/configs/issue_types',
-            name: dict['Типы задач'],
+            name: dict.get('Типы задач'),
             icon: 'bx-category-alt',
             level: 2,
             admin_only: true
