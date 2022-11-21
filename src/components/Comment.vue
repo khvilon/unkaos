@@ -1,6 +1,6 @@
 <template>
   <div class="issue-comment">
-    <div class="issue-comment-header">{{ dt }} {{ action.author }} {{ action.name }}</div>
+    <div class="issue-comment-header">{{ dt }} <strong>{{ action.author }}</strong> {{ action.name }}</div>
     <div class="issue-comment-text" v-if="action.value.length !== 0">
       <KMarked
           :val="action.value"
@@ -34,7 +34,12 @@ export default {
 <style scoped>
 
 .issue-comment {
+  user-select: all;
   margin-bottom: 4px;
+}
+
+.issue-comment-header {
+  margin-bottom: 3px;
 }
 
 .issue-comment-text {
@@ -43,7 +48,7 @@ export default {
   border-width: var(--border-width);
   border-style: var(--border-style);
   border-radius: var(--border-radius);
-  padding: 0 8px 0 8px;
+  padding: 6px 8px 6px 8px;
 }
 
 </style>

@@ -18,13 +18,10 @@
   {
 
 
-  data()
-  {
-    let data =
-    {
+  data() {
+    return {
       is_in_workspace: false
     }
-    return data
   },
 
    created ()

@@ -148,6 +148,14 @@ a {
   font-size: 13px;
 }
 
+.marked-container p:first-child {
+  margin-top: 0;
+}
+
+.marked-container p:last-child {
+  margin-bottom: 0;
+}
+
 .marked-container::-webkit-scrollbar {
     display:none;
 }
@@ -217,6 +225,18 @@ a {
 
 .marked-container pre::-webkit-scrollbar-corner {
   background: var(--code-block-bg-color);
+}
+
+.marked-container ol {
+  padding-left: 20px;
+}
+
+.marked-container ul {
+  padding-left: 20px;
+}
+
+.marked-container dl {
+  padding-left: 20px;
 }
 
 </style>

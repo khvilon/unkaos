@@ -18,13 +18,10 @@
   {
 
 
-  data()
-  {
-    return 
-    {
+  data() {
+    return {
       is_in_workspace: false
     }
-    
   },
 
    created ()
