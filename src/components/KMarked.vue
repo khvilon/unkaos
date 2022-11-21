@@ -239,4 +239,8 @@ a {
   padding-left: 20px;
 }
 
+.marked-container * {
+user-select: text !important;
+}
+
 </style>
