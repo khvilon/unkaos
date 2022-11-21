@@ -38,7 +38,7 @@ import IssuesSearchInput from './components/IssuesSearchInput.vue'
 import KNewRelationModal from './components/KNewRelationModal.vue'
 
 import KMarked from './components/KMarked.vue'
-import KComment from './components/KComment.vue'
+import Comment from './components/Comment.vue'
 
 
 
@@ -77,7 +77,7 @@ app.component('IssuesSearchInput', IssuesSearchInput)
 
 app.component('KNewRelationModal', KNewRelationModal)
 app.component('KMarked', KMarked)
-app.component('KComment', KComment)
+app.component('Comment', Comment)
 
 
 app.mount('#app')

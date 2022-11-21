@@ -14,7 +14,7 @@
 import tools from "../tools";
 
 export default {
-  name: "KComment",
+  name: "Comment",
   props: {
     action: {
       required: true
