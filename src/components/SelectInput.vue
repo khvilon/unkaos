@@ -67,8 +67,8 @@ export default {
       },
       value:
       {
-        type: Object,
-        default: []
+        type: String,
+        default: ''
       },
       label:
       {

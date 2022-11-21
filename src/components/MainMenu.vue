@@ -119,7 +119,8 @@
         hover_opacity: 0,
         select_opacity: 0,
         is_in_login_form: false,
-        common: this.$store.state['common']
+        common: this.$store.state['common'],
+        environment: ''
       }
     },
     methods: {
@@ -143,15 +144,19 @@
       exit_menu(e) {
         if(e != undefined && e.x < 210) return //todo magic number to variable
         this.is_opened = 0
-
       }
-
-
-      
     },
-    created()
-    {
-      
+    mounted() {
+      this.environment = process.env.NODE_ENV
+    },
+    computed: {
+      iconStyle() {
+        if (this.environment === 'development') {
+          return "color: green"
+        } else {
+          return ''
+        }
+      }
     }
   }
 </script>
@@ -170,6 +175,7 @@
       <i
         class="bx icon bx-hive"
         @click="is_opened = !$store.state['common']['is_mobile']"
+        :style="iconStyle"
       />
       <div class="logo_name">
         unkaos
