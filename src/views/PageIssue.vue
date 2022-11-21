@@ -192,10 +192,20 @@
 			this.update_type(this.issue[0].type_uuid)
 			return this.issue_types
 		},
-		set_status: function(status_uuid)
+		set_status: async function(status_uuid)
 		{
 		
-			this.issue[0].status_uuid = status_uuid
+			let ans = await rest.run_method('read_issue', {uuid: this.issue[0].uuid})
+
+			let ans_is_valid = ans != undefined && ans != null && ans.length > 0
+			if(ans_is_valid && ans[0].updated_at > this.issue[0].updated_at)
+			{
+				alert('Задача была изменена параллельно с вашим редактированием. Скопируйте описание, обновите страницу')
+				return
+			} 
+			
+			//this.issue[0].status_uuid = status_uuid
+			this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
 			
 		},
 		get_status: function()
@@ -316,11 +326,13 @@
 			} 
 
 			await this.$store.dispatch('save_issue');
+			
 
 			this.saved()
 		},
-		saved: function(issue)
+		saved: async function(issue)
 		{
+			this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
 			this.edit_mode = false
 			this.add_action_to_history('edit', '')
 
@@ -574,6 +586,17 @@
 			console.log('field_updated')
 			if(this.id=='') return;
 			
+			let ans = await rest.run_method('read_issue', {uuid: this.issue[0].uuid})
+
+			let ans_is_valid = ans != undefined && ans != null && ans.length > 0
+			if(ans_is_valid && ans[0].updated_at > this.issue[0].updated_at)
+			{
+				alert('Задача была изменена параллельно с вашим редактированием. Скопируйте описание, обновите страницу')
+				return
+			} 
+
+
+
 			await this.$store.dispatch('save_issue');
 			
 			this.saved()
