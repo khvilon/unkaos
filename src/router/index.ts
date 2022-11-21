@@ -32,28 +32,28 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
 
-	{ path: '/', component: PageLanding },
-	{ path: '/login', component: PageLogin },
-  	{ path: '/dashboards', component: PageDashboards },
-	{ path: '/boards', component: PageBoards },
-  	{ path: '/issues', component: PageIssues},
-  	{ path: '/notifications', component: PageNotifications },
-  	{ path: '/projects', component: PageProjects },
-	{ path: '/favourites', component: PageFavourites },
-	{ path: '/configs/sprints', component: PageSprints },
-  	{ path: '/configs/roles', component: PageRoles },
-  	{ path: '/configs/issue_types', component: PageIssueTypes },
-  	{ path: '/configs/workflows', component: PageWorkflows },
-	{ path: '/configs/issue_statuses', component: PageIssueStatuses },
-	{ path: '/configs/users', component: PageUsers },
-	{ path: '/configs/fields', component: PageFields },
-	{ path: '/configs', component: PageConfigs },
-	{ path: '/issue/:id', component: PageIssue, props: true },
-	{ path: '/board/:uuid', component: PageBoard, props: true },
-	{ path: '/issue/', component: PageIssue },
-	{ path: '/board/', component: PageBoard },
-	{ path: '/dashboard/:uuid', component: PageDashboard, props: true  },
-	{ path: '/dashboard/', component: PageDashboard },
+	{ path: '/', component: PageLanding, name: 'Unkaos' },
+	{ path: '/login', component: PageLogin, name: 'Вход' },
+  	{ path: '/dashboards', component: PageDashboards, name: 'Дашборды' },
+	{ path: '/boards', component: PageBoards, name: 'Доски' },
+  	{ path: '/issues', component: PageIssues, name: 'Задачи'},
+  	{ path: '/notifications', component: PageNotifications, name: 'Оповещения' },
+  	{ path: '/projects', component: PageProjects, name: 'Проекты' },
+	{ path: '/favourites', component: PageFavourites, name: 'Избранное' },
+	{ path: '/configs/sprints', component: PageSprints, name: 'Спринты' },
+  	{ path: '/configs/roles', component: PageRoles, name: 'Роли' },
+  	{ path: '/configs/issue_types', component: PageIssueTypes, name: 'Типы задач' },
+  	{ path: '/configs/workflows', component: PageWorkflows, name: 'Воркфлоу' },
+	{ path: '/configs/issue_statuses', component: PageIssueStatuses, name: 'Статусы задач' },
+	{ path: '/configs/users', component: PageUsers, name: 'Пользователи' },
+	{ path: '/configs/fields', component: PageFields, name: 'Поля' },
+	{ path: '/configs', component: PageConfigs, name: 'Настройки' },
+	{ path: '/issue/:id', component: PageIssue, props: true, name: 'Задача ' },
+	{ path: '/board/:uuid', component: PageBoard, props: true, name: 'Доска ' },
+	{ path: '/issue/', component: PageIssue, name: 'Новая задача' },
+	{ path: '/board/', component: PageBoard, name: 'Новая доска' },
+	{ path: '/dashboard/:uuid', component: PageDashboard, props: true, name: 'Дашборд '  },
+	{ path: '/dashboard/', component: PageDashboard, name: 'Новый дашборд' },
 /*	{
 		path: "/:catchAll(.*)",
 		name: "NotFound",
@@ -74,7 +74,18 @@ const get_subdomain = function()
 	if(uri_parts[1] == 'unkaos') return uri_parts[0].replace('http://', '').replace('https://', '')
 	else return uri_parts[1]
 }
-       
+     
+
+router.beforeEach((to, from, next) => {
+	console.log(to)
+	document.title = to.name;
+	if(to.matched!= undefined && to.matched[0] != undefined)
+	{
+		if(to.matched[0].path == '/issue/:id') document.title = to.name + to.params.id
+		//else if(to.matched[0].path == '/board/:uuid') document.title = to.name + to.params.uuid
+	}
+	next();
+  });
 
    
 
