@@ -261,12 +261,12 @@
     display: flex;
     align-items: center;
     position: absolute;
-    left: ($main-menu-width - $logo-icon-size) / 2;
+    left: calc(($main-menu-width - $logo-icon-size) / 2);
   }
 
    .sidebar .logo-details i {
      font-size: $logo-icon-size;
-     padding-right: $main-menu-selection-offset/2;
+     padding-right: calc($main-menu-selection-offset/2);
      padding-top:8px;
      cursor: pointer;
    }
@@ -336,7 +336,7 @@
     z-index: 2;
     position: relative;
     left: 0px;
-    top: -1 * ($main-menu-element-height - ($main-menu-element-height - $main-menu-icon-size) / 2); //- $main-menu-icon-size) / 2;
+    top: -1 * calc(($main-menu-element-height - ($main-menu-element-height - $main-menu-icon-size) / 2)); //- $main-menu-icon-size) / 2;
     display: flex;
   }
 
