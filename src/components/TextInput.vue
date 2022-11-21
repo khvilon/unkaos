@@ -1,19 +1,29 @@
 <template>   
   <div class="text" >
     <div class="label">{{label}}</div>
-    <textarea ref="text_input_shadow" class="text-input text-input-shadow" :type="type" v-model="value"></textarea>
+    <textarea ref="text_input_shadow" class="text-input text-input-shadow" :type="type" v-model="val"></textarea>
     
 
     <textarea ref="text_input" @focus="$emit('input_focus', true)" @blur="$emit('input_focus', false)"
     @keyup="resize"
     @keydown.ctrl.b="make_bold"
-    class="text-input" :type="type"  v-model="value" :disabled="disabled" ></textarea>
+    class="text-input" :type="type"  v-model="val" :disabled="disabled" ></textarea>
   </div>
 </template>
 
 <script>
+  import { nextTick } from 'vue'
+
   export default 
   {
+    data()
+    {
+      let d = 
+      {
+        val: ''
+      }
+      return d
+    },
 
     props:
     {
@@ -82,16 +92,24 @@
       },
       make_bold(e)
       {
-        
+        const bold_tag = '**'
+        console.log('make_bold', e.target)
        // console.log(e)
         var elInput = e.target//document.getElementById('tempid') // Select the object according to the id selector
-             var startPos = elInput.selectionStart// input the 0th character to the selected character
-             var endPos = elInput.selectionEnd// The selected character to the last character
+        var startPos = elInput.selectionStart// input the 0th character to the selected character
+        var endPos = elInput.selectionEnd// The selected character to the last character
 
-             console.log(e, startPos, endPos)
+        if(startPos < endPos){
+        //console.log(e, startPos, endPos)
+          this.val = this.val.substring(0, startPos) + bold_tag  + this.val.substring(startPos, endPos) + bold_tag + this.val.substring(endPos);
 
-             this.value = '**' + this.value;
+          nextTick(() => {
+            elInput.selectionStart = endPos + bold_tag.length*2
+          elInput.selectionEnd = endPos + bold_tag.length*2
 
+          })
+          
+        }
       },
       pasted(e)
       {
@@ -102,11 +120,17 @@
       //this.resize();
     },
     mounted() {
+      this.val = this.value
       this.resize();
     },
     
     watch: {
       value: function(val, oldVal) {
+        if(this.val == val) return
+        this.val = val
+      },
+    
+      val: function(val, oldVal) {
         console.log(val, oldVal, this.id, this.parent_name)
 
         
