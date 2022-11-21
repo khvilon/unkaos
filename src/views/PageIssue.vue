@@ -123,7 +123,10 @@
 			params.issue_uuid = this[this.name][0].uuid
 			params.value = this.comment
 			params.uuid = tools.uuidv4()
-			if (this.comment.length < 8 && this.comment.indexOf('>>') == 0) {
+
+			await this.update_data({uuid: this[this.name][0].uuid})
+
+			if(this.comment.length < 8 && this.comment.indexOf('>>') == 0) {
 				//const spend_time_field_uuid = '60d53a40-cda9-4cb2-a207-23f8236ee9a7'
 				let h = Number(this.comment.substr(2))
 				if(!isNaN(h)) {
@@ -137,8 +140,13 @@
 					}	
 				}
 			}
-			let action = await rest.run_method('upsert_issue_actions', params)
-			this.add_action_to_history('comment', this.comment, params.uuid)
+
+			let ans = await rest.run_method('upsert_issue_actions', params)
+
+			this.add_action_to_history('comment', params.value, params.uuid)
+
+			//this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
+
 			this.comment = ''
 		},
 		update_comment: function(val) {
@@ -176,11 +184,11 @@
 			if(ans_is_valid && ans[0].updated_at > this.issue[0].updated_at)
 			{
 				alert('Задача была изменена параллельно с вашим редактированием. Скопируйте описание, обновите страницу')
-				return
+				return false
 			} 
 			
-			//this.issue[0].status_uuid = status_uuid
-			this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
+			this.issue[0].status_uuid = status_uuid
+			return true
 			
 		},
 		get_status: function()
@@ -207,8 +215,9 @@
 	//		console.log('uuuupppppaaarrrr', this.issue[0].status_uuid , val )
 
 			//this.issue[0].status_uuid = val
-			this.current_status = !this.current_status//val + '' + new Date()
-			this.set_status(val)
+			//this.current_status = !this.current_status//val + '' + new Date()
+			let status_changed = await this.set_status(val)
+			if(!status_changed) return
 	//		console.log(this.available_transitions)
 
 			let status_name
@@ -228,6 +237,8 @@
 			this.add_action_to_history('transition', '->' + status_name)
 
 			let ans = await this.$store.dispatch('save_issue');
+
+			this.issue[0].updated_at = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0].updated_at
 		},
 		update_type: function(type_uuid)
 		{
@@ -301,7 +312,6 @@
 		{
 			this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
 			this.edit_mode = false
-      console.log('IN SAVED!!!!!!!!!!!!!!!')
 			this.add_action_to_history('edit', '')
 
 			localStorage.last_saved_issue_params = this.get_params_for_localstorage()
