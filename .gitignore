@@ -38,3 +38,5 @@ server/yt-prod-jsonOnly/
 server/yt-prod-jsonOnly-20220929-2215/
 
 server/conf.js
+
+src/conf.ts
