@@ -2,6 +2,7 @@ let security = {}
 
 
 var sql = require('./sql')
+var tools = require('./tools')
 
 var jwt = require('jsonwebtoken');
 
@@ -31,6 +32,8 @@ security.get_token = async function(subdomain, email, pass)
     let user_data = { uuid: user.uuid }
     let token = jwt.sign(user_data, key)
 
+    query = "INSERT INTO user_sessions(uuid, user_uuid, token) values('" + tools.uuidv4() + "','" + user.uuid + "',MD5('" + token + "'));"
+    await sql.query(subdomain, query);
     query = "UPDATE users SET token = MD5('" + token + "'), token_created_at = NOW() WHERE uuid = '" + user.uuid + "';"
     await sql.query(subdomain, query);
 
@@ -40,9 +43,17 @@ security.get_token = async function(subdomain, email, pass)
 
 security.check_token = async function(subdomain, token)
 {
-    let query = "SELECT * FROM users WHERE token = MD5('" + token + 
+   /* 
+   let query = "SELECT * FROM users WHERE token = MD5('" + token + 
     "') AND token_created_at + " + token_expiration_duration + 
     " > NOW() AND deleted_at IS NULL AND active;"
+    */
+
+    let query = `SELECT u.* FROM user_sessions us JOIN users u ON us.user_uuid = u.uuid
+     WHERE us.token = MD5('` + token + `') AND us.created_at + ` + token_expiration_duration + 
+    ` > NOW() AND u.deleted_at IS NULL AND u.active AND us.deleted_at IS NULL;`
+
+
 
     let result = await sql.query(subdomain, query);
 

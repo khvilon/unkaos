@@ -91,7 +91,13 @@
 
       document.addEventListener('click', this.close_menu)
 
-      this.user = JSON.parse(localStorage.profile)
+      try
+      {
+        this.user = JSON.parse(localStorage.profile)
+      }
+      catch(err)
+      {}
+
   
     },
     updated() {
