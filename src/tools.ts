@@ -17,7 +17,7 @@ export default class tools {
 
   static row_contains(row: any, val: any, columns: any): boolean {
     //console.log('cont', val, columns, row)
-    if (columns == undefined || columns == []) columns = Object.keys(row);
+    if (columns == undefined || columns.length == 0) columns = Object.keys(row);
     for (const i in columns) {
       if (tools.str_contains(row[columns[i]], val)) return true;
     }
