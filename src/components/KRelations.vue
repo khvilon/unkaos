@@ -140,7 +140,7 @@
 
 .relation span{
   white-space: nowrap;
-  line-height: $input-height/2;
+  line-height: calc($input-height/2);
 }
 
 .relation i{
