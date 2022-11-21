@@ -142,7 +142,6 @@
 <style lang="scss">
 
   @import url('https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css');
-  @import url(./css/palette.css);
   @import './css/palette.scss';
   @import './css/global.scss';
 
