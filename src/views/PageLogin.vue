@@ -67,12 +67,12 @@
     <StringInput 
   		:label="label.login_label"
 		v-model:value="user_name"
-		v-on:update_parent_from_input="update_user_name"
+		@update_parent_from_input="update_user_name"
     />
 	<StringInput 
   		:label="label.pass_label"
 		v-model:value="pass"
-		v-on:update_parent_from_input="update_pass"
+		@update_parent_from_input="update_pass"
 		:type="'password'"
     />
 	
