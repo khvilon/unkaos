@@ -63,6 +63,7 @@ store_helper.create_module = function(name)
 		state[name] = []
 		state[name] = payload
 	  	state['filtered_' + name] = tools.clone_obj(payload)
+		state[name + '_updated'] = Date()
 	}
 	mutations['filter_' + name] = function(state, payload)
 	{

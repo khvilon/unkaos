@@ -133,6 +133,8 @@
 			params.value = this.comment
 			params.uuid = tools.uuidv4()
 
+			await this.update_data({uuid: this[this.name][0].uuid})
+
 			if(this.comment.length < 8 && this.comment.indexOf('>>') == 0)
 			{
 				//const spend_time_field_uuid = '60d53a40-cda9-4cb2-a207-23f8236ee9a7'
@@ -155,6 +157,8 @@
 			let ans = await rest.run_method('upsert_issue_actions', params)
 
 			this.add_action_to_history('comment', params.value)
+
+			//this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
 
 			this.comment = ''
 
