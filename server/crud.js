@@ -554,7 +554,7 @@ crud.make_query = {
             else 
             {
                 pg_params.push(params[i])
-                where += 'AND t1.' + i + "=$" + pg_params.length 
+                where += ' AND t1.' + i + "=$" + pg_params.length
             }
         }
         return [query.replaceAll('$@1', where), pg_params]
