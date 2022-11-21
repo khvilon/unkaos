@@ -51,9 +51,7 @@
 		},
 		
 	
-		get_field_by_name: function(name)
-		{
-			console.log('get_field_by_name', name)
+		get_field_by_name: function(name) {
 			if(this.issue == undefined || this.issue.length != 1) return {}
 			for(let i in this.issue[0].values) 
 			{
@@ -99,23 +97,25 @@
 			return fields
 		},
 
-		add_action_to_history: async function(type, val) {
+		add_action_to_history: async function(type, val, uuid) {
 			console.log('add_action_to_history', type, val)
-			if(this.issue[0] === undefined || this.issue[0].actions === undefined) return;
-			const action_icons = 
-			{
-				comment: '💬',
-				edit: '📝',
-				transition: '🔁'
-			}
-			let new_action = {
-        uuid: val.uuid,
-				name: action_icons[type], 
-				created_at: new Date(), 
-				value: val,
-				author_uuid: val.author_uuid
-			}
-			console.log('aaaaaction', new_action)
+      if (uuid === undefined) {
+        uuid = tools.uuidv4()
+      }
+			if (this.issue[0] === undefined || this.issue[0].actions === undefined) return;
+      const action_icons = {
+          comment: '💬',
+          edit: '📝',
+          transition: '🔁'
+      }
+      let new_action = {
+        uuid: uuid,
+        name: action_icons[type],
+        created_at: new Date(),
+        value: val,
+        author: JSON.parse(localStorage.profile).name
+      }
+			console.log('New action added:', new_action)
 			this.issue[0].actions.unshift(new_action)
 		},
 		send_comment: async function() {
@@ -138,8 +138,7 @@
 				}
 			}
 			let action = await rest.run_method('upsert_issue_actions', params)
-      console.log('add action to hist: ')
-			this.add_action_to_history('comment', action[0])
+			this.add_action_to_history('comment', this.comment, params.uuid)
 			this.comment = ''
 		},
 		update_comment: function(val) {
@@ -302,6 +301,7 @@
 		{
 			this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
 			this.edit_mode = false
+      console.log('IN SAVED!!!!!!!!!!!!!!!')
 			this.add_action_to_history('edit', '')
 
 			localStorage.last_saved_issue_params = this.get_params_for_localstorage()
@@ -501,7 +501,7 @@
 			for(let i in this.issue[0].values)
 			{
 				let field_value = this.issue[0].values[i]
-				console.log(field_value.field_uuid)
+				//console.log(field_value.field_uuid)
 				params[field_value.field_uuid] = field_value.value// btoa(encodeURIComponent(field_value.value))
 			}
 
@@ -679,12 +679,11 @@
     }
 
 	mod.computed.sorted_actions = function () {
-    if (this.issue[0] !== undefined && this.issue.length !== 1) {
-      console.log('sorting actions')
-      console.log(this.issue[0].actions)
+    if (this.issue[0].actions !== undefined && this.issue.length === 1) {
       return tools.obj_clone(this.issue[0].actions).sort(tools.compare_obj_dt('created_at'))
+    } else {
+      return []
     }
-    return []
   }
 
 		mod.computed.available_transitions =  function()
@@ -1438,8 +1437,8 @@
 	padding-left: $input-height;
 }
 
-.issue-actions{
-	padding: 10px 15px 10px 15px;
+.issue-actions {
+	padding: 10px 20px 10px 20px;
 }
 
 
