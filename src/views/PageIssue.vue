@@ -201,11 +201,11 @@
 			if(ans_is_valid && ans[0].updated_at > this.issue[0].updated_at)
 			{
 				alert('Задача была изменена параллельно с вашим редактированием. Скопируйте описание, обновите страницу')
-				return
+				return false
 			} 
 			
-			//this.issue[0].status_uuid = status_uuid
-			this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
+			this.issue[0].status_uuid = status_uuid
+			return true
 			
 		},
 		get_status: function()
@@ -240,8 +240,9 @@
 	//		console.log('uuuupppppaaarrrr', this.issue[0].status_uuid , val )
 
 			//this.issue[0].status_uuid = val
-			this.current_status = !this.current_status//val + '' + new Date()
-			this.set_status(val)
+			//this.current_status = !this.current_status//val + '' + new Date()
+			let status_changed = await this.set_status(val)
+			if(!status_changed) return
 	//		console.log(this.available_transitions)
 
 			let status_name
@@ -261,6 +262,8 @@
 			this.add_action_to_history('transition', '->' + status_name)
 
 			let ans = await this.$store.dispatch('save_issue');
+
+			this.issue[0].updated_at = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0].updated_at
 		},
 		update_type: function(type_uuid)
 		{
