@@ -1,10 +1,9 @@
 import store from "./stores/index";
 import tools from "./tools";
+import conf from "./conf";
 
 export default class rest {
-  static base_url = "http://localhost:3001/";
-  //static base_url = "http://unkaos.online:3001/";
-  //static base_url = "https://unkaos.oboz.tech:3002/";
+
   static dict: Map<string, string> = new Map([
     ["read", "get"],
     ["update", "put"],
@@ -35,7 +34,7 @@ export default class rest {
       method: "get",
       headers: rest.headers,
     };
-    const resp = await fetch(rest.base_url + "get_token", options);
+    const resp = await fetch(conf.base_url + "get_token", options);
     if (resp.status != 200) return null;
     const data = await resp.json();
     //rest.headers.token = data.user_token
@@ -81,7 +80,7 @@ export default class rest {
         options.body = JSON.stringify(body);
       }
     }
-    const resp = await fetch(rest.base_url + method, {
+    const resp = await fetch(conf.base_url + method, {
       body: options.body,
       headers: options.headers,
       method: options.method,
