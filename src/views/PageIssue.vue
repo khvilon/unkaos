@@ -3,11 +3,6 @@
 	import tools from '../tools.ts'
 	import page_helper from '../page_helper.ts'
 	import rest from '../rest.ts'
-	//import marked from 'marked';
-	
-
-	
-
 
 	let methods = {
 		pasted: async function(e)
@@ -56,9 +51,7 @@
 		},
 		
 	
-		get_field_by_name: function(name)
-		{
-			console.log('get_field_by_name', name)
+		get_field_by_name: function(name) {
 			if(this.issue == undefined || this.issue.length != 1) return {}
 			for(let i in this.issue[0].values) 
 			{
@@ -103,46 +96,42 @@
 		//	console.log('get_fields_exclude_names2', fields)
 			return fields
 		},
-		add_action_to_history: async function(type, val)
-		{
 
+		add_action_to_history: async function(type, val, uuid) {
 			console.log('add_action_to_history', type, val)
-			if(this.issue[0] == undefined || this.issue[0].actions == undefined) return;
-			const action_icons = 
-			{
-				comment: '💬',
-				edit: '📝',
-				transition: '🔁'
-			}
-			let new_action = {
-				name: action_icons[type], 
-				created_at: new Date(), 
-				value: val,
-				author: JSON.parse(localStorage.profile).name
-			}
-
-
-			console.log('aaaaaction', new_action)
-
+      if (uuid === undefined) {
+        uuid = tools.uuidv4()
+      }
+			if (this.issue[0] === undefined || this.issue[0].actions === undefined) return;
+      const action_icons = {
+          comment: '💬',
+          edit: '📝',
+          transition: '🔁'
+      }
+      let new_action = {
+        uuid: uuid,
+        name: action_icons[type],
+        created_at: new Date(),
+        value: val,
+        author: JSON.parse(localStorage.profile).name
+      }
+			console.log('New action added:', new_action)
 			this.issue[0].actions.unshift(new_action)
 		},
-		send_comment: async function()
-		{
+		send_comment: async function() {
 			let params = {}
 			params.issue_uuid = this[this.name][0].uuid
 			params.value = this.comment
 			params.uuid = tools.uuidv4()
 
-			if(this.comment.length < 8 && this.comment.indexOf('>>') == 0)
-			{
-				//const spend_time_field_uuid = '60d53a40-cda9-4cb2-a207-23f8236ee9a7'
+			await this.update_data({uuid: this[this.name][0].uuid})
 
+			if(this.comment.length < 8 && this.comment.indexOf('>>') == 0) {
+				//const spend_time_field_uuid = '60d53a40-cda9-4cb2-a207-23f8236ee9a7'
 				let h = Number(this.comment.substr(2))
-				if(!isNaN(h))
-				{
+				if(!isNaN(h)) {
 					let field = this.get_field_by_name('Spent time')
-					if(field != null)
-					{
+					if(field != null) {
 						if(field.value == null) field.value = 0
 						field.value = Number(field.value) + h
 						let ans = await rest.run_method('upsert_field_values', field)
@@ -154,23 +143,17 @@
 
 			let ans = await rest.run_method('upsert_issue_actions', params)
 
-			this.add_action_to_history('comment', params.value)
+			this.add_action_to_history('comment', params.value, params.uuid)
+
+			this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
 
 			this.comment = ''
-
-			
 		},
-		update_comment: function(val)
-		{
-			
-			this.comment = val
+		update_comment: function(val) {
+      this.comment = val
 		},
-		comment_focus: function(val)
-		{
-		//	console.log('tyyyyypesffffff', this.$store.state.issue_types)
+		comment_focus: function(val) {
 			this.comment_focused=val
-
-			
 		},
 		get_type_by_uuid: function(type_uuid)
 		{
@@ -215,19 +198,11 @@
 			
 			return this.issue[0].status_uuid
 		},
-		get_formated_relations: async function()
-		{
-
-			console.log('try iii', this.issue)
-			if(this.issue == undefined || this.issue[0] == undefined)
-			{
+		get_formated_relations: async function() {
+			if(this.issue == undefined || this.issue[0] == undefined) {
 				setTimeout(this.get_formated_relations, 200)
-				console.log('try iii1', JSON.stringify(this.issue), this.issue)
 				return
 			}
-
-			console.log('try iii2', this.issue)
-
 			
 			let uuid = this.issue[0].uuid
 			this.formated_relations = (await rest.run_method('read_formated_relations', {current_uuid: uuid}))
@@ -337,7 +312,7 @@
 		{
 			this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
 			this.edit_mode = false
-			this.add_action_to_history('edit', '')
+			//this.add_action_to_history('edit', '')
 
 			localStorage.last_saved_issue_params = this.get_params_for_localstorage()
 
@@ -536,7 +511,7 @@
 			for(let i in this.issue[0].values)
 			{
 				let field_value = this.issue[0].values[i]
-				console.log(field_value.field_uuid)
+				//console.log(field_value.field_uuid)
 				params[field_value.field_uuid] = field_value.value// btoa(encodeURIComponent(field_value.value))
 			}
 
@@ -713,43 +688,13 @@
       }
     }
 
-	
-		
-	
-
-	mod.computed.history = function()
-		{
-	//		console.log('histissue', this.issue.length)
-			if(this.issue.length != 1) return ''
-	//		console.log('histissue2', this.issue.length)
-			let history = ''
-
-			let actions = tools.obj_clone(this.issue[0].actions)
-
-			console.log('aaactions', actions)
-			actions = actions.sort(tools.compare_obj_dt('created_at'))
-			actions = actions.reverse()
-			
-			for(let i in actions)
-			{
-				if(i > 0) history += '\r\n\r\n'
-				let action = actions[i]
-				let dt = tools.format_dt(action.created_at)
-				history += '<p style="margin-bottom: 4px;">' + dt + ' ' + action.author + ' ' + action.name + '</p>'
-				// do not display comment if it is empty
-				if(action.value != undefined && action.value != '') {
-					history += '<div class="issue-comment">' + action.value + '</div>'
-				} else {
-					history += '<div class="issue-comment" style="display: none;">' + action.value + '</div>'
-				}
-				
-			}
-
-			//this.available_transitions()
-
-			return history
-		}
-
+	mod.computed.sorted_actions = function () {
+    if (this.issue[0].actions !== undefined && this.issue.length === 1) {
+      return tools.obj_clone(this.issue[0].actions).sort(tools.compare_obj_dt('created_at'))
+    } else {
+      return []
+    }
+  }
 
 		mod.computed.available_transitions =  function()
 		{
@@ -1093,18 +1038,19 @@
 			/>
 			</Transition>
 
-			<Transition name="element_fade">
-
-
-			<KMarked label='История'
-				v-if="!loading && id!=''"
-				:val="history"
-				:disabled="true"
-				class="issue-actions"
-			>
-			</KMarked>
-
-			</Transition>
+      <div
+          class="issue-actions"
+          v-if="!loading && !edit_mode"
+      >
+        <TransitionGroup name="element_fade">
+        <Comment
+            v-for="action in sorted_actions"
+            :key="action.uuid"
+            :action="action"
+            style="margin-bottom: 10px"
+        />
+        </TransitionGroup>
+      </div>
 
       </div>
       <div id="issue_card" class="panel" :class="{'hidden-card':!card_open && $store.state['common']['is_mobile']}">
@@ -1501,8 +1447,8 @@
 	padding-left: $input-height;
 }
 
-.issue-actions{
-	padding: 10px 15px 10px 15px;
+.issue-actions {
+	padding: 10px 20px 10px 20px;
 }
 
 
@@ -1516,7 +1462,5 @@
 .v-leave-to {
   opacity: 0;
 }*/
-    
-
 
 </style>
