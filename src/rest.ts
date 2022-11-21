@@ -2,9 +2,9 @@ import store from "./stores/index";
 import tools from "./tools";
 
 export default class rest {
-  //static base_url = "http://localhost:3001/";
+  static base_url = "http://localhost:3001/";
   //static base_url = "http://unkaos.online:3001/";
-  static base_url = "https://unkaos.oboz.tech:3002/";
+  //static base_url = "https://unkaos.oboz.tech:3002/";
   static dict: Map<string, string> = new Map([
     ["read", "get"],
     ["update", "put"],
