@@ -148,6 +148,14 @@ a {
   font-size: 13px;
 }
 
+.marked-container p:first-child {
+  margin-top: 0;
+}
+
+.marked-container p:last-child {
+  margin-bottom: 0;
+}
+
 .marked-container::-webkit-scrollbar {
     display:none;
 }
@@ -219,16 +227,16 @@ a {
   background: var(--code-block-bg-color);
 }
 
-.issue-comment {
-  background: var(--disabled-bg-color);
-  border-color: var(--border-color);
-  border-width: var(--border-width);
-  border-style: var(--border-style);
-  border-radius: var(--border-radius);
-  padding-left: 5px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  margin-top: 4px;
-  margin-bottom: 4px;
+.marked-container ol {
+  padding-left: 20px;
 }
+
+.marked-container ul {
+  padding-left: 20px;
+}
+
+.marked-container dl {
+  padding-left: 20px;
+}
+
 </style>
