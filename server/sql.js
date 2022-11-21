@@ -9,7 +9,7 @@
 
     const host = conf.host
    const database = 'unkaos'
-   const port = 5432
+   const port = conf.port
 
    const admin_name = conf.admin_name
    const admin_pass = conf.admin_pass
