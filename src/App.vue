@@ -388,6 +388,7 @@ $loading-bar-width: 200vw;
 
 .footer_div div{
   display: flex;
+  justify-content: space-between;
 }
 
 

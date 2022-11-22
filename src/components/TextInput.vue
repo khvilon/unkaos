@@ -191,6 +191,7 @@
     border-style: none !important;
     padding: 0px !important;
     transition: none !important;
+    display: inherit;
   }
 
   .text-input:disabled {

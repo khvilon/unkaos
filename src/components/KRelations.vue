@@ -99,9 +99,9 @@
     
   }
 
-  .relations
-  {
-        display: block;
+  .relations {
+    display: block;
+    margin-top: 20px;
   }
 
   .relations-input {

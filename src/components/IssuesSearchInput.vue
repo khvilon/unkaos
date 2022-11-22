@@ -832,8 +832,11 @@
 
 
 .issue-search-div .text-input{
+  white-space: nowrap;
+  overflow: auto;
   display: inline-block;
-    padding: 5px !important;
+  padding: 5px !important;
+  margin-right: 30px !important;
 }
 
   .issues-search-char
