@@ -147,8 +147,13 @@
   }
 
   #projects_card {
+    padding: 10px 20px 10px 20px;
     width: $card-width;
     display: table;
+  }
+
+  #projects_card > div {
+    margin: 10px 0 10px 0;
   }
   
 

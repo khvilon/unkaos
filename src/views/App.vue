@@ -414,10 +414,8 @@ $loading-bar-width: 200vw;
   height: 100%;
 }
 
-.btn-container
-{
+.btn-container {
   display: flex;
-  padding: 10px 20px 10px 20px;
   bottom: 0px;
     position: fixed;
     width: -webkit-fill-available;

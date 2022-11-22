@@ -703,14 +703,6 @@
     }
   }
 
-	mod.computed.sorted_actions = function () {
-    if (this.issue[0].actions !== undefined && this.issue.length === 1) {
-      return tools.obj_clone(this.issue[0].actions).sort(tools.compare_obj_dt('created_at'))
-    } else {
-      return []
-    }
-  }
-
 		mod.computed.available_transitions =  function()
 		{
 	//		if(this.current_status) console.log('aa');
@@ -819,46 +811,47 @@
 	</Transition>
 
     <div id="issue_top_panel" class="panel"   >
-		
-		<Transition name="element_fade">
-		<StringInput 
-		v-if="!loading && issue[0] != undefined && !$store.state['common']['is_mobile']"
-		key="issue_code"
-		class='issue-code' 
-		label='' 
-		:disabled="true"
-		:value="id"
-		>
-		</StringInput>
-		</Transition>
-		<Transition name="element_fade">
-		<SelectInput
-		v-if="!loading && issue[0] != undefined && !$store.state['common']['is_mobile']"
-		label=""
-		key="issue_type_input"
-		:value="get_type_uuid()"
-		:values="get_types()"
-		:disabled="id!=''"
-		class="issue-type-input"
-		:parameters="{clearable: false, reduce: obj => obj.uuid}"
-		@update_parent_from_input="update_type"
-		>
-		</SelectInput>
-		</Transition>
-		<Transition name="element_fade">
-		<SelectInput 
-		v-if="!loading && issue[0] != undefined && id!='' && !$store.state['common']['is_mobile']"
-		label=""
-		:value="get_status()"
-		:values="statuses"
-		:disabled="transitions.length <= max_status_buttons_count"
-		class="issue-status-input"
-		:parameters="{clearable: false, reduce: obj => obj.uuid}"
-		@update_parent_from_input="update_statuses"
-		>
-		</SelectInput>
-		</Transition>
 
+    <div class="issue-top-buttons">
+      <Transition name="element_fade">
+      <StringInput
+      v-if="!loading && issue[0] != undefined && !$store.state['common']['is_mobile']"
+      key="issue_code"
+      class='issue-code'
+      label=''
+      :disabled="true"
+      :value="id"
+      >
+      </StringInput>
+      </Transition>
+      <Transition name="element_fade">
+      <SelectInput
+      v-if="!loading && issue[0] != undefined && !$store.state['common']['is_mobile']"
+      label=""
+      key="issue_type_input"
+      :value="get_type_uuid()"
+      :values="get_types()"
+      :disabled="id!=''"
+      class="issue-type-input"
+      :parameters="{clearable: false, reduce: obj => obj.uuid}"
+      @update_parent_from_input="update_type"
+      >
+      </SelectInput>
+      </Transition>
+      <Transition name="element_fade">
+      <SelectInput
+      v-if="!loading && issue[0] != undefined && id!='' && !$store.state['common']['is_mobile']"
+      label=""
+      :value="get_status()"
+      :values="statuses"
+      :disabled="transitions.length <= max_status_buttons_count"
+      class="issue-status-input"
+      :parameters="{clearable: false, reduce: obj => obj.uuid}"
+      @update_parent_from_input="update_statuses"
+      >
+      </SelectInput>
+      </Transition>
+    </div>
 		<Transition name="element_fade">
 		<div v-if="!loading && id!='' && available_transitions.length <= max_status_buttons_count && !$store.state['common']['is_mobile']" style="display: flex;">
 		<KButton
@@ -1053,19 +1046,10 @@
 			/>
 			</Transition>
 
-      <div
-          class="issue-actions"
+      <CommentList
           v-if="!loading && !edit_mode"
-      >
-        <TransitionGroup name="element_fade">
-        <Comment
-            v-for="action in sorted_actions"
-            :key="action.uuid"
-            :action="action"
-            style="margin-bottom: 10px"
-        />
-        </TransitionGroup>
-      </div>
+          v-model:actions="issue[0].actions"
+      />
 
       </div>
       <div id="issue_card" class="panel" :class="{'hidden-card':!card_open && $store.state['common']['is_mobile']}">
@@ -1206,6 +1190,13 @@
 	  padding-top: 3px;
   }
 
+  .issue-top-buttons {
+    width: 680px;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+  }
+
 	#issue_table_panel, #issue_card {
     height: calc(100vh - $top-menu-height);
 	}
@@ -1217,6 +1208,7 @@
 
 	#issue_main_panel
 	{
+    padding: 0 20px 10px 20px;
 		display: flex;
 		flex-direction: column;
     	width: calc(100% - $card-width);
@@ -1282,10 +1274,6 @@
 		display: flex;
 	}
 
-	.status-btn, .status-btn 
-	{
-		padding: 10px 20px 10px 20px;
-	}
   .status-btn, .status-btn .btn_input
 	{
 		height: $input-height !important;
@@ -1308,12 +1296,8 @@
 	
 }
 
-#send_comment_btn
-{
-
-    padding: 0px 20px 10px 20px;
-    margin-top: -15px;
-    border-top-left-radius: 0px;
+#send_comment_btn {
+  margin-top: -4px;
 }
 #send_comment_btn .btn_input
 {
@@ -1324,6 +1308,10 @@
 	border-width: 1px;
 	border-left-color: var(--border-color);
     border-top-color: var(--border-color);
+}
+
+.comment_input {
+  margin-top: 20px;
 }
 
 .comment_input textarea
@@ -1365,11 +1353,17 @@
 	position: relative !important;
 }
 
-	#issue_card_scroller
-	{
-	 height: calc(100vh - $top-menu-height);
-	overflow-y: scroll;
+	#issue_card_scroller {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 20px 10px 20px;
+    height: calc(100vh - $top-menu-height);
+    overflow-y: scroll;
 	}
+  #issue_card_scroller > div {
+    padding-bottom: 10px;
+  }
+
 	 #issue_card_scroller::-webkit-scrollbar{
     display:none;
 	 }
@@ -1381,8 +1375,7 @@
 .clone-btn{
 	
     margin: 10px 20px 10px 20px;
-
-	display: flex;
+	  display: flex;
     font-size: 35px;
     
     /* margin-right: 40px; */
@@ -1462,9 +1455,7 @@
 	padding-left: $input-height;
 }
 
-.issue-actions {
-	padding: 10px 20px 10px 20px;
-}
+
 
 
 /*

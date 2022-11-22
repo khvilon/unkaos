@@ -141,9 +141,7 @@ export default {
    color: var(--text-color);
  }
 
- .user-input
-  {
-    padding: 10px 20px 10px 20px;
+ .user-input {
   }
 
    .user-input img {

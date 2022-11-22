@@ -418,14 +418,9 @@
     transition: all 0.5s ease;
   }
 
-  .workflows-editor
-  {
+  .workflows-editor {
     width: 100%;
     height: calc(100% - 150px);
-    padding: 10px 20px 10px 20px;
-
-    
-
   }
 
   .workflows-command-panel
