@@ -27,7 +27,7 @@
    created ()
     {
       
-
+      this.check_is_in_workspace()
      // console.log('localStorage.tic', localStorage.tic)
 /*
       let uri = window.location.href
@@ -40,7 +40,7 @@
      
     },
     updated() {
-      this.check_is_in_workspace()
+     // this.check_is_in_workspace()
     },
 
     mounted()
