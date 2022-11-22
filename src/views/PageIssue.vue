@@ -976,7 +976,7 @@
 			</Transition>
 
 			<Transition name="element_fade">
-			<KMarked class="descr-rendered" v-if="!loading && !edit_mode && id!=''"
+			<KMarked v-if="!loading && !edit_mode && id!=''"
 			:val="get_field_by_name('Описание').value ? get_field_by_name('Описание').value : ''"
 			:images="attachments"
 			>
@@ -1361,7 +1361,7 @@
     overflow-y: scroll;
 	}
   #issue_card_scroller > div {
-    padding-bottom: 10px;
+    margin-bottom: 20px;
   }
 
 	 #issue_card_scroller::-webkit-scrollbar{
@@ -1427,12 +1427,6 @@
 	text-align: center;
 	user-select: text;
 }
-
-.descr-rendered
-{
-	padding: 20px;
-}
-
 
 .edit-mode-btn-container{
 	display: flex;

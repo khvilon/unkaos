@@ -108,7 +108,6 @@
         ></component>
         
         <div id="sprints_card_footer_div" class="footer_div">
-          <div id="sprints_card_infooter_div">
             <KButton
               id="save_sprints_btn"
               :name="'Сохранить'"
@@ -119,7 +118,6 @@
               :name="'Удалить'"
               :func="'delete_sprints'"
             />
-          </div>
         </div>
       </div>
    
@@ -152,13 +150,17 @@
     display: table;
   }
 
+  #sprints_card > div {
+    margin-bottom: 20px;
+  }
+
   #sprints_card_footer_div {
     display: flex;
-
+    justify-content: space-between;
   }
   
   #save_sprints_btn, #delete_sprints_btn {
-    width: 50%
+    width: 150px;
   }
 
   #save_sprints_btn input, #delete_sprints_btn input{

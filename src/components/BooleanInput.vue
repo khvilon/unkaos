@@ -1,9 +1,11 @@
-<template>   
-  <label class="boolean">
-    <div class="label">{{label}}</div>
-    <input  type="checkbox"  v-model="value" :disabled="disabled"/>
-    <span class="boolean-input" v-bind:class="{ disabled: disabled }" > </span>
-  </label>
+<template>
+  <div class="boolean">
+    <label>
+      <div class="label">{{label}}</div>
+      <input type="checkbox"  v-model="value" :disabled="disabled" style="display: none"/>
+      <span class="boolean-input" v-bind:class="{ disabled: disabled }" > </span>
+    </label>
+  </div>
 </template>
 
 <script>

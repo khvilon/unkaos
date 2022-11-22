@@ -143,7 +143,7 @@
 
   #projects_table_panel {
     display: flex;
-    width: calc(100% - $card-width);
+    width: calc(100vw - $card-width);
   }
 
   #projects_card {
@@ -153,18 +153,15 @@
   }
 
   #projects_card > div {
-    margin: 10px 0 10px 0;
+    margin-bottom: 20px;
   }
-  
 
   #save_projects_btn, #delete_projects_btn {
-  	padding: 0px 20px 15px 20px;
-  	width: 50%
+  	width: 150px;
   }
 
   #save_projects_btn input, #delete_projects_btn input{
   	width: 100%
-
   }
 
   #projects_down_panel {

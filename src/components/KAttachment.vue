@@ -160,7 +160,8 @@
   }
 
   .attachment {
-        display: block;
+    margin-top: 20px;
+    display: block;
   }
 
   .attachment-input {

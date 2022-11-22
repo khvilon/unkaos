@@ -197,8 +197,7 @@
   
 
   #save_issue_statuses_btn, #delete_issue_statuses_btn {
-    padding: 0px 20px 15px 20px;
-    width: 50%
+    width: 150px;
   }
 
 
