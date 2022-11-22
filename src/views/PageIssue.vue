@@ -688,6 +688,21 @@
       }
     }
 
+  mod.computed.title = function () {
+    const name = this.get_field_by_name('Название').value
+    if (
+        this.id !== undefined &&
+        this.id !== '' &&
+        name !== undefined &&
+        name !== {}
+    ) {
+      document.title = this.id + ' ' + name
+      return (this.id + ' ' + name)
+    } else {
+      return 'Задача'
+    }
+  }
+
 	mod.computed.sorted_actions = function () {
     if (this.issue[0].actions !== undefined && this.issue.length === 1) {
       return tools.obj_clone(this.issue[0].actions).sort(tools.compare_obj_dt('created_at'))
