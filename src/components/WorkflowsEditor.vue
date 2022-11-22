@@ -542,13 +542,9 @@
   
   
 
-  .workflows-editor
-  {
+  .workflows-editor {
     width: 100%;
-    padding: 10px 20px 10px 20px;
     height: calc(100% - 65px);
-    
-
   }
 
   .workflows-command-panel

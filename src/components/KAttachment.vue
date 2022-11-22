@@ -159,9 +159,7 @@
     
   }
 
-  .attachment
-  {
-        padding: 10px 20px 10px 20px;
+  .attachment {
         display: block;
   }
 

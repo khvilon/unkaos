@@ -98,9 +98,7 @@
     padding: 0 10px 0 10px;
   }
 
-  .string
-  {
-    padding: 10px 20px 10px 20px;
+  .string {
   }
 
 

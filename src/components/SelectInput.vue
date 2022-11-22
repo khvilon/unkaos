@@ -209,9 +209,7 @@ export default {
    color: var(--text-color);
  }
 
- .select-input
-  {
-    padding: 10px 20px 10px 20px;
+ .select-input {
   }
 
    .select-input img {

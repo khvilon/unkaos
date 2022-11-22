@@ -235,9 +235,7 @@
 	  //width: 100px;
   }
 
-  .change-password 
-  {
-	padding: 10px 20px 10px 20px;
+  .change-password {
 	width: 100%;
   }
   .change-password .btn_input

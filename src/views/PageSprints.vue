@@ -147,12 +147,17 @@
   }
 
   #sprints_card {
+    padding: 10px 20px 10px 20px;
     width:  $card-width;
     display: table;
   }
+
+  #sprints_card_footer_div {
+    display: flex;
+
+  }
   
   #save_sprints_btn, #delete_sprints_btn {
-    padding: 0px 20px 15px 20px;
     width: 50%
   }
 

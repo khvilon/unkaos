@@ -206,9 +206,7 @@
     flex-direction: column;
   }
 
-  #profile-menu div
-  {
-    //padding: 10px 20px 10px 20px;
+  #profile-menu div {
   }
 
   #profile-menu .select-input
@@ -217,13 +215,9 @@
   }
  
 
-  #profile-menu-exit
-  {
+  #profile-menu-exit {
     margin: 0px;
     width: 100%;
-    
-    
-    padding: 10px 20px 10px 20px;
   }
 
   #profile-menu-exit div
