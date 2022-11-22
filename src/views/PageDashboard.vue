@@ -234,6 +234,20 @@ import { computed } from '@vue/runtime-core';
       }
     }
 
+  mod.computed.title = function () {
+    const name = this.dashboard[0].name
+    if (
+        name !== undefined &&
+        name !== {} &&
+        name !== ''
+    ) {
+      document.title = name
+      return (name)
+    } else {
+      return 'Дашборд'
+    }
+  }
+
 	mod.computed.total_height = function()
 	{
 		this.uv

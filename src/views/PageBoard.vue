@@ -721,8 +721,6 @@
 			dictionary: 'users',
 			type: 'User',
 		},
-		
-		,
 		{
 			label: 'projects',
 			id: '',
@@ -740,10 +738,22 @@
 		},
     ]
   }
-     
 
-  
   const mod = await page_helper.create_module(data, methods)
+
+  mod.computed.title = function () {
+    const name = this.board[0].name
+    if (
+        name !== undefined &&
+        name !== {} &&
+        name !== ''
+    ) {
+      document.title = name
+      return (name)
+    } else {
+      return 'Доска'
+    }
+  }
 
   mod.mounted = methods.init
 
