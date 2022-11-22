@@ -105,6 +105,14 @@
             level: 2,
             admin_only: true
           },
+          {
+            link: '/configs/automations',
+            name: dict.get('Автоматизации'),
+            icon: 'bx-bot',
+            level: 2,
+            admin_only: true
+          },
+          
           
         ],
       },      

@@ -611,17 +611,23 @@
           
          // console.log('aaaaaaaaaa', qd, qd.query[qd.i])
 
-          while (qd.query.indexOf(' ') < -1) 
+          while (qd.query.indexOf(' ') > -1) 
           {
             qd.query = qd.query.replace(' ', ' ')
           }
-          while (qd.query.indexOf('\n') < -1) 
+
+          while (qd.query.indexOf('&nbsp;') > -1) 
+          {
+            qd.query = qd.query.replace('&nbsp;', ' ')
+          }
+          
+          while (qd.query.indexOf('\n') > -1) 
           {
             qd.query = qd.query.replace('\n', ' ')
           }
 
 
-          if(qd.query[qd.i] == ' ' || qd.query[qd.i] == ' ') 
+          if(qd.query[qd.i] == ' ') 
           {
           //  console.log('void')
             //this.fill_suggestions(waits_for_idx, qd.field_type)
