@@ -19,6 +19,8 @@ import PageNotifications from '../views/PageNotifications.vue'
 import PageRoles from '../views/PageRoles.vue'
 import PageSprints from '../views/PageSprints.vue'
 import PageFavourites from '../views/PageFavourites.vue'
+import PageAutomations from '../views/PageAutomations.vue'
+
 
 
 
@@ -47,6 +49,7 @@ const router = createRouter({
 	{ path: '/configs/issue_statuses', component: PageIssueStatuses, name: 'Статусы задач' },
 	{ path: '/configs/users', component: PageUsers, name: 'Пользователи' },
 	{ path: '/configs/fields', component: PageFields, name: 'Поля' },
+	{ path: '/configs/automations', component: PageAutomations, name: 'Автоматизации' },
 	{ path: '/configs', component: PageConfigs, name: 'Настройки' },
 	{ path: '/issue/:id', component: PageIssue, props: true, name: 'Задача ' },
 	{ path: '/board/:uuid', component: PageBoard, props: true, name: 'Доска ' },
