@@ -11,8 +11,7 @@
 
 
 	let methods = {
-		get_favourite_uuid()
-		{
+		get_favourite_uuid() {
 			
 			if(this.favourites == undefined || this.selected_board == undefined || this.selected_board.is_new) 
 			{
@@ -67,9 +66,12 @@
 			if(this.selected_board == undefined || 
 			this.issue_statuses == undefined || this.inputs_dict == undefined || this.inputs_dict.boards_columns == undefined) 
 			{
-				setTimeout(this.init, 200)
+				setTimeout(this.init, 50)
 				return
 			}
+
+			this.title
+
 
 
 			for(let i in this.issue_statuses)

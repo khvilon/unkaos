@@ -1,68 +1,48 @@
-<template>   
-  <div class="numeric">
-    <div class="label">{{label}}</div>
-    <input type="number" class="numeric-input" min="1" max="9"  v-model="value" :disabled="disabled"
-    @blur="blur">
-  </div>
-</template>
-
 <script>
-  export default 
-  {
-
-    props:
-    {
-      disabled:
-      {
-        type: Boolean,
-        default: false
-      },
-      label:
-      {
-        type: String,
-        default: 'label'
-      },
-      value:
-      {
-        type: String,
-        default: ''
-      },
-      id:
-      {
-        type: String,
-        default: ''
-      },
-      parent_name:
-      {
-        type: String,
-        default: ''
-      },
-      type:
-      {
-        type: String,
-        default: 'text'
-      },
-
+export default {
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false,
     },
-
-    emits: ['update_parent_from_input', 'updated'],
-    methods:
-    {
-      blur()
-      {
-        this.$emit('updated')
-      }
+    label: {
+      type: String,
+      default: "label",
     },
-    
-    watch: {
-      value: function(val, oldVal) {
-        console.log(val, oldVal, this.id, this.parent_name)
+    value: {
+      type: String,
+      default: "",
+    },
+    id: {
+      type: String,
+      default: "",
+    },
+    parent_name: {
+      type: String,
+      default: "",
+    },
+    type: {
+      type: String,
+      default: "text",
+    },
+  },
 
-        this.$emit('update_parent_from_input', val)
+  emits: ["update_parent_from_input", "updated"],
+  methods: {
+    blur() {
+      this.$emit("updated");
+    },
+  },
 
-        if(this.parent_name == undefined || this.parent_name == '') return;
+  watch: {
+    value: function (val, oldVal) {
+      console.log(val, oldVal, this.id, this.parent_name);
 
-/*
+      this.$emit("update_parent_from_input", val);
+
+      if (this.parent_name == undefined || this.parent_name == "") return;
+
+      /*
         
         let data = val
 
@@ -81,54 +61,65 @@
         }
         */
 
-        this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
+      this.$store.commit("id_push_update_" + this.parent_name, {
+        id: this.id,
+        val: val,
+      });
 
-        //data[this.id] = val
-        //this.$store.commit('push_update_' + this.parent_name, data)
-      }
-    }
-  }
+      //data[this.id] = val
+      //this.$store.commit('push_update_' + this.parent_name, data)
+    },
+  },
+};
 </script>
 
+<template>
+  <div class="numeric">
+    <div class="label">{{ label }}</div>
+    <input
+      type="number"
+      class="numeric-input"
+      min="1"
+      max="9"
+      v-model="value"
+      :disabled="disabled"
+      @blur="blur"
+    />
+  </div>
+</template>
+
 <style lang="scss">
-
-  @import '../css/global.scss';
-  .numeric .numeric-input
-  {
-    width: 100%;
-    height: 30px;
-    color: var(--text-color);
-    padding: 0 10px 0 10px;
-  }
-
-  .numeric
-  {
-  }
-
-
-  .numeric-input {
-    font-size: 14px;
-    font-weight: 400;
-    border-radius: var(--border-radius);
-    transition: all 0.5s ease;
-    background: var(--input-bg-color);
-    width: 100%;
-  }
-
-  .numeric-input:disabled {
-    background: var(--disabled-bg-color);
-  }
-
-  input[type="number"] {
-  -webkit-appearance: textfield;
-     -moz-appearance: textfield;
-          appearance: textfield;
+@import "../css/global.scss";
+.numeric .numeric-input {
+  width: 100%;
+  height: 30px;
+  color: var(--text-color);
+  padding: 0 10px 0 10px;
 }
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { 
+
+.numeric {
+}
+
+.numeric-input {
+  font-size: 14px;
+  font-weight: 400;
+  border-radius: var(--border-radius);
+  transition: all 0.5s ease;
+  background: var(--input-bg-color);
+  width: 100%;
+}
+
+.numeric-input:disabled {
+  background: var(--disabled-bg-color);
+}
+
+input[type="number"] {
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
 }
-
-
-
 </style>
