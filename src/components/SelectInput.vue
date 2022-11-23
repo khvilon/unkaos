@@ -101,6 +101,15 @@ export default {
       {
         type: Boolean,
         default: true
+      },
+      taggable:
+      {
+        type: Boolean,
+        default: false
+      },
+      multiselect:
+      {
+
       }
 
     },
@@ -136,6 +145,15 @@ export default {
         }
     //    console.log('vvv2', this.value+'')
         this.value = val
+      },
+      create_option: function() {
+          
+            newOption = {uuid: tools.uuidv4(), name: this.label}
+          
+
+          this.$emit('option:created', newOption)
+          return newOption
+        
       }
 
   }
@@ -152,8 +170,10 @@ export default {
    :options=values 
    :selectable="check_selectable"
    @search="(text, arg2)=>$emit('search', text)"
-   
+   :taggable="taggable"
    :close-on-select="close_on_select"
+   
+   
    >
     <template 
     v-slot:no-options="{ searching }" >

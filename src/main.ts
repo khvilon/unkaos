@@ -40,6 +40,8 @@ import KNewRelationModal from './components/KNewRelationModal.vue'
 import KMarked from './components/KMarked.vue'
 import Comment from './components/Comment.vue'
 
+import TagInput from './components/TagInput.vue'
+
 
 
 
@@ -78,6 +80,7 @@ app.component('IssuesSearchInput', IssuesSearchInput)
 app.component('KNewRelationModal', KNewRelationModal)
 app.component('KMarked', KMarked)
 app.component('Comment', Comment)
+app.component('TagInput', TagInput)
 
 
 app.mount('#app')
