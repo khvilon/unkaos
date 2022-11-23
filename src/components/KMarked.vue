@@ -25,7 +25,11 @@
       {
         type: Array,
         default: [],
-      }
+      },
+      use_bottom_images: {
+        type: Boolean,
+        default: false,
+      },
 
     },
     methods:
@@ -58,15 +62,20 @@
 
         if(img_start < 0) 
         {
-          for(let i = 0; i < this.images.length; i++)
+          if(this.use_bottom_images)
           {
-            if(this.found_img[this.images[i].uuid]) continue
+            for(let i = 0; i < this.images.length; i++)
+            {
+              if(this.found_img[this.images[i].uuid]) continue
 
-            html += '<img class="attachment-img" src="' + this.images[i].data + '"></img>'
+              html += '<img class="attachment-img" src="' + this.images[i].data + '"></img>'
+            }
           }
 
           return html
         }
+
+        
           
 
         img_start += img_opener.length
