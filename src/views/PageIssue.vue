@@ -43,10 +43,16 @@
 						let start_pos = e.target.selectionStart
 
 						let img_teg = '<img src="' + attachment.name+ '.' + attachment.extention + '">' 
-						let f = this.get_field_by_name('Описание')
 						
-						f.value =  this.current_description.substring(0, start_pos) + img_teg + this.current_description.substring(start_pos)
-					
+						
+						if(e.target.id == 'text_input_values.0.value')
+						{
+							let f = this.get_field_by_name('Описание')
+							f.value =  this.current_description.substring(0, start_pos) + img_teg + this.current_description.substring(start_pos)
+						}
+						else{
+							this.comment =  this.comment.substring(0, start_pos) + img_teg + this.comment.substring(start_pos)
+						}
 						
 
 						this.add_attachment(attachment)
@@ -979,7 +985,7 @@
 				:value="get_field_by_name('Описание').value"
 				:id="'values.'+ get_field_by_name('Описание').idx+'.value'"
               	parent_name='issue'
-				ref="issue_descr_filed"
+				ref="issue_descr_text_inpt"
 				@paste="pasted"
 				@update_parent_from_input="edit_current_description"
 			>
@@ -1008,6 +1014,7 @@
 			<KMarked class="descr-rendered" v-if="!loading && !edit_mode && id!=''"
 			:val="get_field_by_name('Описание').value ? get_field_by_name('Описание').value : ''"
 			:images="attachments"
+			:use_bottom_images="true"
 			>
 			</KMarked>
 			</Transition>
@@ -1045,7 +1052,7 @@
 				@update_parent_from_input="update_comment"
 				:value="comment"
 				@input_focus="comment_focus"
-
+				@paste="pasted"
 			>
 			</TextInput>
 			</Transition>
@@ -1071,6 +1078,7 @@
             :key="action.uuid"
             :action="action"
             style="margin-bottom: 10px"
+			:images="attachments"
         />
         </TransitionGroup>
       </div>

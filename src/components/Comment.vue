@@ -4,6 +4,7 @@
     <div class="issue-comment-text" v-if="action.value.length !== 0">
       <KMarked
           :val="action.value"
+          :images="images"
       >
       </KMarked>
     </div>
@@ -19,6 +20,11 @@ export default {
     action: {
       required: true
     },
+    images:
+      {
+        type: Array,
+        default: [],
+      }
   },
   computed: {
     dt() {

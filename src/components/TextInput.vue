@@ -7,6 +7,7 @@
     <textarea ref="text_input" @focus="$emit('input_focus', true)" @blur="$emit('input_focus', false)"
     @keyup="resize"
     @keydown.ctrl.b="make_bold"
+    :id="'text_input_' + id"
     class="text-input" :type="type"  v-model="val" :disabled="disabled" ></textarea>
   </div>
 </template>
