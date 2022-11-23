@@ -144,13 +144,15 @@
       value: function(val, oldVal) {
         if(this.val == val) return
         this.val = val
+        
+        this.resize()
       },
     
       val: function(val, oldVal) {
         console.log(val, oldVal, this.id, this.parent_name)
 
         
-         // this.resize()
+        this.resize()
 		   
         
 
@@ -208,6 +210,8 @@
     border-style: none !important;
     padding: 0px !important;
     transition: none !important;
+    overflow: scroll !important;
+    scroll-behavior: auto !important;
   }
 
   .text-input:disabled {

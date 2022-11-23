@@ -162,7 +162,8 @@
 
 			this.add_action_to_history('comment', params.value, params.uuid)
 
-			this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
+			await this.update_data({uuid: this[this.name][0].uuid})
+			//this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
 
 			this.comment = ''
 		},
@@ -328,7 +329,8 @@
 		},
 		saved: async function(issue)
 		{
-			this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
+			//this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
+			await this.update_data({uuid: this[this.name][0].uuid})
 			this.edit_mode = false
 			//this.add_action_to_history('edit', '')
 
