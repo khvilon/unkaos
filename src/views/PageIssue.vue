@@ -834,6 +834,7 @@
 <template ref='issue'>
 	<div   >
 
+	
 		
 
 	<Transition name="element_fade">
@@ -949,6 +950,10 @@
         
 		<Transition name="element_fade">
 		<div class="issue-line" v-if="!loading">
+
+			<tagInput>
+				
+			</tagInput>
 
 		  <StringInput 
 		  v-if="!loading && (edit_mode || id=='')"
