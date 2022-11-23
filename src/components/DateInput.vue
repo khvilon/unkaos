@@ -1,129 +1,111 @@
-<template>   
-  <div class="date">
-    <div class="label">{{label}}</div>
-    <input class="date-input" 
-    @input="print"
-    type="date"  :value="format(value)" :disabled="disabled"
-    @blur="blur">
-    
-  </div>
-</template>
-
 <script>
-  export default 
-  {
-
-    props:
-    {
-      disabled:
-      {
-        type: Boolean,
-        default: false
-      },
-      label:
-      {
-        type: String,
-        default: 'label'
-      },
-      value:
-      {
-        type: String,
-        default: ''
-      },
-      id:
-      {
-        type: String,
-        default: ''
-      },
-      parent_name:
-      {
-        type: String,
-        default: ''
-      }
-
+export default {
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false,
     },
-    emits: ['update_parent_from_input', 'updated'],
-    methods:
-    {
-      print(e)
-      {
-        console.log(e.srcElement.value)
-        let val = e.srcElement.value
-        this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
-      },
-      format(val)
-      {
-
-       
-            var options = {
-              year: 'numeric',
-              month: 'numeric',
-              day: 'numeric',
-            
-            };
-          
-            if(val == undefined || val == null || val == '') return ''
-            let date =  new Date(val)
-
-            console.log(date.getFullYear)
-
-            if(date.getFullYear() == 1970) return ''
-            
-            date = date.toISOString().split('T')[0]
-            
-            //toLocaleString("ru", options)
-            if(date !== "Invalid Date") return date
-            else return ''
-      },
-      blur()
-      {
-        this.$emit('updated', val)
-      }
-
+    label: {
+      type: String,
+      default: "label",
     },
-    watch: {
-      value: function(val, oldVal) {
-        console.log(val, oldVal, this.id, this.parent_name)
-        
-        this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
+    value: {
+      type: String,
+      default: "",
+    },
+    id: {
+      type: String,
+      default: "",
+    },
+    parent_name: {
+      type: String,
+      default: "",
+    },
+  },
+  emits: ["update_parent_from_input", "updated"],
+  methods: {
+    print(e) {
+      console.log(e.srcElement.value);
+      let val = e.srcElement.value;
+      this.$store.commit("id_push_update_" + this.parent_name, {
+        id: this.id,
+        val: val,
+      });
+    },
+    format(val) {
+      var options = {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      };
 
-      
-      }
-    }
-  }
+      if (val == undefined || val == null || val == "") return "";
+      let date = new Date(val);
+
+      console.log(date.getFullYear);
+
+      if (date.getFullYear() == 1970) return "";
+
+      date = date.toISOString().split("T")[0];
+
+      //toLocaleString("ru", options)
+      if (date !== "Invalid Date") return date;
+      else return "";
+    },
+    blur() {
+      this.$emit("updated", val);
+    },
+  },
+  watch: {
+    value: function (val, oldVal) {
+      console.log(val, oldVal, this.id, this.parent_name);
+
+      this.$store.commit("id_push_update_" + this.parent_name, {
+        id: this.id,
+        val: val,
+      });
+    },
+  },
+};
 </script>
 
+<template>
+  <div class="date">
+    <div class="label">{{ label }}</div>
+    <input
+      class="date-input"
+      @input="print"
+      type="date"
+      :value="format(value)"
+      :disabled="disabled"
+      @blur="blur"
+    />
+  </div>
+</template>
 <style scoped lang="scss">
+@import "../css/global.scss";
 
-@import '../css/global.scss';
+.date .date-input {
+  width: 100%;
+  height: $input-height;
+  color: var(--text-color);
+  padding: 0 10px 0 10px;
+}
 
-  .date .date-input
-  {
-    width: 100%;
-    height: $input-height;
-    color: var(--text-color);
-    padding: 0 10px 0 10px;
-  }
+.date {
+  padding: 10px 20px 10px 20px;
+}
 
-  .date
-  {
-    padding: 10px 20px 10px 20px;
-  }
+.date-input {
+  font-size: 15px;
+  font-weight: 400;
+  border-radius: var(--border-radius);
+  transition: all 0.5s ease;
+  background: var(--input-bg-color);
+  width: 100%;
+}
 
-
-  .date-input {
-    font-size: 15px;
-    font-weight: 400;
-    border-radius: var(--border-radius);
-    transition: all 0.5s ease;
-    background: var(--input-bg-color);
-    width: 100%;
-  }
-
-  .date-input:disabled {
-    background: var(--disabled-bg-color);
-  }
-
-
-
+.date-input:disabled {
+  background: var(--disabled-bg-color);
+}
 </style>
