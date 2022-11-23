@@ -11,8 +11,7 @@
 
 
 	let methods = {
-		get_favourite_uuid()
-		{
+		get_favourite_uuid() {
 			
 			if(this.favourites == undefined || this.selected_board == undefined || this.selected_board.is_new) 
 			{

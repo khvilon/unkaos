@@ -1,16 +1,3 @@
-<template>
-  <div class="issue-comment">
-    <div class="issue-comment-header">{{ dt }} <strong>{{ action.author }}</strong> {{ action.name }}</div>
-    <div class="issue-comment-text" v-if="action.value.length !== 0">
-      <KMarked
-          :val="action.value"
-          :images="images"
-      >
-      </KMarked>
-    </div>
-  </div>
-</template>
-
 <script>
 import tools from "../tools";
 
@@ -18,27 +5,34 @@ export default {
   name: "Comment",
   props: {
     action: {
-      required: true
+      required: true,
     },
-    images:
-      {
-        type: Array,
-        default: [],
-      }
+    images: {
+      type: Array,
+      default: [],
+    },
   },
   computed: {
     dt() {
-      return tools.format_dt(this.action.created_at)
-    }
+      return tools.format_dt(this.action.created_at);
+    },
   },
-  methods: {
-
-  }
-}
+  methods: {},
+};
 </script>
 
-<style scoped>
+<template>
+  <div class="issue-comment">
+    <div class="issue-comment-header">
+      {{ dt }} <strong>{{ action.author }}</strong> {{ action.name }}
+    </div>
+    <div class="issue-comment-text" v-if="action.value.length !== 0">
+      <KMarked :val="action.value" :images="images"> </KMarked>
+    </div>
+  </div>
+</template>
 
+<style scoped>
 .issue-comment {
   user-select: all;
   margin-bottom: 4px;
@@ -56,5 +50,4 @@ export default {
   border-radius: var(--border-radius);
   padding: 6px 8px 6px 8px;
 }
-
 </style>

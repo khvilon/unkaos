@@ -1,4 +1,6 @@
 /* eslint-env node */
+/*eslint linebreak-style: ["warn", "unix"]*/
+/*eslint max-len: ["error", { "code": 200 }]*/
 require("@rushstack/eslint-patch/modern-module-resolution");
 
 module.exports = {
