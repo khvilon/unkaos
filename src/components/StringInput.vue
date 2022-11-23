@@ -1,61 +1,43 @@
-<template>   
-  <div class="string">
-    <div class="label">{{label}}</div>
-    <input class="string-input" :type="type"  v-model="value" :disabled="disabled"
-    @blur="blur">
-  </div>
-</template>
-
 <script>
-  export default 
-  {
-
-    props:
-    {
-      disabled:
-      {
-        type: Boolean,
-        default: false
-      },
-      label:
-      {
-        type: String,
-        default: 'label'
-      },
-      value:
-      {
-        type: String,
-        default: ''
-      },
-      id:
-      {
-        type: String,
-        default: ''
-      },
-      parent_name:
-      {
-        type: String,
-        default: ''
-      },
-      type:
-      {
-        type: String,
-        default: 'text'
-      },
-
+export default {
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false,
     },
+    label: {
+      type: String,
+      default: "label",
+    },
+    value: {
+      type: String,
+      default: "",
+    },
+    id: {
+      type: String,
+      default: "",
+    },
+    parent_name: {
+      type: String,
+      default: "",
+    },
+    type: {
+      type: String,
+      default: "text",
+    },
+  },
 
-    emits: ['update_parent_from_input', 'updated'],
-    
-    watch: {
-      value: function(val, oldVal) {
-        console.log(val, oldVal, this.id, this.parent_name)
+  emits: ["update_parent_from_input", "updated"],
 
-        this.$emit('update_parent_from_input', val)
+  watch: {
+    value: function (val, oldVal) {
+      console.log(val, oldVal, this.id, this.parent_name);
 
-        if(this.parent_name == undefined || this.parent_name == '') return;
+      this.$emit("update_parent_from_input", val);
 
-/*
+      if (this.parent_name == undefined || this.parent_name == "") return;
+
+      /*
         
         let data = val
 
@@ -74,49 +56,57 @@
         }
         */
 
-        this.$store.commit('id_push_update_' + this.parent_name, {id: this.id, val:val})
+      this.$store.commit("id_push_update_" + this.parent_name, {
+        id: this.id,
+        val: val,
+      });
 
-        //data[this.id] = val
-        //this.$store.commit('push_update_' + this.parent_name, data)
-      },
-      blur()
-      {
-        this.$emit('updated')
-      }
-      
-    }
-  }
+      //data[this.id] = val
+      //this.$store.commit('push_update_' + this.parent_name, data)
+    },
+    blur() {
+      this.$emit("updated");
+    },
+  },
+};
 </script>
 
+<template>
+  <div class="string">
+    <div class="label">{{ label }}</div>
+    <input
+      class="string-input"
+      :type="type"
+      v-model="value"
+      :disabled="disabled"
+      @blur="blur"
+    />
+  </div>
+</template>
+
 <style lang="scss">
-  @import '../css/global.scss';
-  .string .string-input
-  {
-    width: 100%;
-    height: $input-height;
-    color: var(--text-color);
-    padding: 0 10px 0 10px;
-  }
+@import "../css/global.scss";
+.string .string-input {
+  width: 100%;
+  height: $input-height;
+  color: var(--text-color);
+  padding: 0 10px 0 10px;
+}
 
-  .string
-  {
-    padding: 10px 20px 10px 20px;
-  }
+.string {
+  padding: 10px 20px 10px 20px;
+}
 
+.string-input {
+  font-size: 14px;
+  font-weight: 400;
+  border-radius: var(--border-radius);
+  transition: all 0.5s ease;
+  background: var(--input-bg-color);
+  width: 100%;
+}
 
-  .string-input {
-    font-size: 14px;
-    font-weight: 400;
-    border-radius: var(--border-radius);
-    transition: all 0.5s ease;
-    background: var(--input-bg-color);
-    width: 100%;
-  }
-
-  .string-input:disabled {
-    background: var(--disabled-bg-color);
-  }
-
-
-
+.string-input:disabled {
+  background: var(--disabled-bg-color);
+}
 </style>
