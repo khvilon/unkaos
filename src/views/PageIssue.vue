@@ -167,7 +167,8 @@
 			this.comment = ''
 		},
 		update_comment: function(val) {
-      this.comment = val
+			if(this.comment != val)
+      		this.comment = val
 		},
 		comment_focus: function(val) {
 			this.comment_focused=val

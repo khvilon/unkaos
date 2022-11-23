@@ -1,7 +1,7 @@
 <template>   
 
 				<div class="marked-container"
-				v-html="md(val)"
+				v-html="md_value"
         scrolling="no"
         >
 			</div>
@@ -32,6 +32,12 @@
       },
 
     },
+    computed:{
+      md_value: function()
+      {
+        return this.md(this.val)
+      }
+    },
     methods:
     {
       get_palette_param : function(name)
@@ -58,7 +64,9 @@
           this.found_img = {}
         }
 
+        
         let img_start = html.indexOf(img_opener, start_search)
+        console.log(html, start_search, img_start)
 
         if(img_start < 0) 
         {
