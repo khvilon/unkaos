@@ -1,7 +1,7 @@
 <template>   
   <div class="text" >
     <div class="label">{{label}}</div>
-    <textarea ref="text_input_shadow" class="text-input text-input-shadow" :type="type" v-model="val"></textarea>
+    <textarea ref="text_input_shadow" class="text-input text-input-shadow" :type="type" v-model="value"></textarea>
     
 
     <textarea ref="text_input" @focus="$emit('input_focus', true)" @blur="$emit('input_focus', false)"
@@ -123,8 +123,23 @@
       this.val = this.value
       this.resize();
     },
+    computed:
+    {
+      
+        scroll_height: function(){
+          if(this.$refs == undefined || this.$refs.text_input_shadow == undefined) return 0
+          return this.$refs.text_input_shadow.scrollHeight
+        }
+      
+    },
+  
     
     watch: {
+      scroll_height: function()
+      {
+
+        this.resize()
+      },
       value: function(val, oldVal) {
         if(this.val == val) return
         this.val = val

@@ -8,6 +8,8 @@
 		pasted: async function(e)
 		{
 			console.log(e)
+			
+        
 			if (e.clipboardData && e.clipboardData.items) {
 					let items = e.clipboardData.items;
 					for (let i = 0; i < items.length; ++i) {
@@ -37,6 +39,15 @@
 						type: file.type,
 						table_name: 'attachments'
 						}
+
+						let start_pos = e.target.selectionStart
+
+						let img_teg = '<img src="' + attachment.name+ '.' + attachment.extention + '">' 
+						let f = this.get_field_by_name('Описание')
+						
+						f.value =  this.current_description.substring(0, start_pos) + img_teg + this.current_description.substring(start_pos)
+					
+						
 
 						this.add_attachment(attachment)
 					
@@ -317,6 +328,7 @@
 			localStorage.last_saved_issue_params = this.get_params_for_localstorage()
 
 			//todo save type and project in localstorage for future issue create 
+			this.title
 
 			if(this.id!='') return
 			
@@ -498,6 +510,10 @@
 
 			let attachments = await rest.run_method('read_attachments', {issue_uuid: this.issue[0].uuid})
 			this.attachments = attachments.filter((a)=>a.type.indexOf('image/') > -1)
+
+			
+
+			this.title
 		},
 
 
@@ -545,11 +561,16 @@
 			else rest.run_method('upsert_watcher', {issue_uuid: this.issue[0].uuid})	
 			this.watch = !this.watch
 		},
+		edit_current_description: function(val)
+		{
+			this.current_description = val
+		},
 		enter_edit_mode: function()
 		{
 			if(this.edit_mode) return
 			this.saved_descr = this.get_field_by_name('Описание').value
 			this.saved_name = this.get_field_by_name('Название').value
+			this.current_description = this.saved_descr
 			this.edit_mode = true
 			console.log('this.saved_descr', this.saved_name, this.saved_descr)
 		},
@@ -589,6 +610,7 @@
 
   const data = 
   {
+	current_description: '',
 	card_open: false,
 	edit_mode: false,
 	attachments: [],
@@ -959,7 +981,7 @@
               	parent_name='issue'
 				ref="issue_descr_filed"
 				@paste="pasted"
-		
+				@update_parent_from_input="edit_current_description"
 			>
 			</TextInput>
 			
@@ -989,20 +1011,6 @@
 			>
 			</KMarked>
 			</Transition>
-
-			<Transition name="element_fade">
-			<div class="image-attachments" v-if="false && attachments.length > 0">
-				<div class="image-attachment-div" 
-				v-for="(att, index) in attachments" 
-				:key="index"
-				>
-					<span class="image-attachment-label">{{att.name}}</span>
-					<img class="image-attachment" :src="att.data">
-
-				</div>
-			</div>
-			</Transition>
-
 			
 
 
