@@ -143,7 +143,7 @@ $attachment_input_border_width: 2px;
 }
 
 .attachment {
-  padding: 10px 20px 10px 20px;
+  margin-top: 20px;
   display: block;
 }
 

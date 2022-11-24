@@ -94,7 +94,6 @@ export default {
 }
 
 .string {
-  padding: 10px 20px 10px 20px;
 }
 
 .string-input {

@@ -78,8 +78,8 @@ export default mod;
       :label="label"
       :collumns="search_collumns"
     />
-    <div id="projects_down_panel">
-      <div id="projects_table_panel" class="panel">
+    <div class="table_down_panel">
+      <div class="table_panel panel">
         <KTable
           :collumns="collumns"
           :table-data="projects"
@@ -87,7 +87,7 @@ export default mod;
           :dicts="{ users: users }"
         />
       </div>
-      <div id="projects_card" class="panel">
+      <div class="table_card panel">
         <component
           v-bind:is="input.type + 'Input'"
           v-for="(input, index) in inputs"
@@ -99,59 +99,27 @@ export default mod;
           :disabled="input.disabled"
           :clearable="input.clearable"
         ></component>
-
-        <div id="projects_card_footer_div" class="footer_div">
-          <div id="projects_card_infooter_div">
-            <KButton
-              id="save_projects_btn"
-              :name="'Сохранить'"
-              :func="'save_projects'"
-            />
-            <KButton
-              id="delete_projects_btn"
-              :name="'Удалить'"
-              :func="'delete_projects'"
-            />
-          </div>
+        <div class="table_card_footer">
+          <KButton
+            class="table_card_footer_btn"
+            :name="'Сохранить'"
+            :func="'save_projects'"
+          />
+          <KButton
+            class="table_card_footer_btn"
+            :name="'Удалить'"
+            :func="'delete_projects'"
+          />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<style lang="scss">
-@import "../css/palette.scss";
-@import "../css/global.scss";
+<style lang="scss" scoped>
 
-$card-width: 400px;
+@use 'css/table-page' with (
+  $table-panel-width: 70%
+);
 
-#projects_table_panel,
-#projects_card {
-  height: calc(100vh - $top-menu-height);
-}
-
-#projects_table_panel {
-  display: flex;
-  width: calc(100% - $card-width);
-}
-
-#projects_card {
-  width: $card-width;
-  display: table;
-}
-
-#save_projects_btn,
-#delete_projects_btn {
-  padding: 0px 20px 15px 20px;
-  width: 50%;
-}
-
-#save_projects_btn input,
-#delete_projects_btn input {
-  width: 100%;
-}
-
-#projects_down_panel {
-  display: flex;
-}
 </style>

@@ -45,7 +45,7 @@ export default login_page;
   </div>
 </template>
 
-<style>
+<style scoped>
 .landing-panel {
   height: 100vh;
   width: 100vw;

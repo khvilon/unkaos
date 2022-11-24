@@ -122,13 +122,13 @@ export default {
       if (this.val == val) return;
       this.val = val;
 
-  
+
     },
 
     val: function (val, oldVal) {
       console.log(val, oldVal, this.id, this.parent_name);
 
-      
+
 
       this.$emit("update_parent_from_input", val);
 
@@ -180,12 +180,11 @@ export default {
   height: $input-height * 2;
   min-height: $input-height * 2;
   color: var(--text-color);
-  padding: 0 10px 0 10px;
+  padding: 4px 10px 4px 10px;
   resize: none;
 }
 
 .text {
-  padding: 10px 20px 10px 20px;
 }
 
 .text-input {
@@ -209,7 +208,9 @@ export default {
   border-style: none !important;
   padding: 0px !important;
   transition: none !important;
-  overflow: auto !important;
+  overflow: scroll !important;
+  scroll-behavior: auto !important;
+  display: inherit;
 }
 
 .text-input:disabled {

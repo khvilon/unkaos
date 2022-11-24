@@ -92,8 +92,8 @@ $relation_input_border_width: 2px;
 }
 
 .relations {
-  padding: 10px 20px 10px 20px;
   display: block;
+  margin-top: 20px;
 }
 
 .relations-input {

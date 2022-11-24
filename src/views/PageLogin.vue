@@ -70,7 +70,7 @@ export default login_page;
   </div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @import "../css/global.scss";
 
 .login-panel {
@@ -96,7 +96,6 @@ export default login_page;
 
 .wrong-pass-label {
   color: rgb(124, 0, 0);
-  padding: 10px 20px 10px 20px;
   height: 20px;
 }
 </style>

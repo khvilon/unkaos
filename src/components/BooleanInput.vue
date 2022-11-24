@@ -41,7 +41,7 @@ export default {
 <template>
   <label class="boolean">
     <div class="label">{{ label }}</div>
-    <input type="checkbox" v-model="value" :disabled="disabled" />
+    <input type="checkbox" v-model="value" :disabled="disabled" style="display: none"/>
     <span class="boolean-input" v-bind:class="{ disabled: disabled }"> </span>
   </label>
 </template>
@@ -56,7 +56,6 @@ export default {
 }
 
 .boolean {
-  padding: 10px 20px 10px 20px;
   display: block;
 }
 

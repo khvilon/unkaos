@@ -564,7 +564,7 @@ let methods = {
     //await this.$store.dispatch("get_" + this.name, { uuid: this[this.name][0].uuid });
 
     if(!(await this.check_issue_changed())) return
-    
+
 
     this.$store.commit('id_push_update_issue', {id: 'type_uuid', val: new_type_uuid})
     await this.$store.dispatch("save_issue");
@@ -689,16 +689,6 @@ mod.computed.title = function () {
   }
 };
 
-mod.computed.sorted_actions = function () {
-  if (this.issue[0].actions !== undefined && this.issue.length === 1) {
-    return tools
-      .obj_clone(this.issue[0].actions)
-      .sort(tools.compare_obj_dt("created_at"));
-  } else {
-    return [];
-  }
-};
-
 mod.computed.available_transitions = function () {
   //		if(this.current_status) console.log('aa');
 
@@ -800,62 +790,48 @@ export default mod;
       />
     </Transition>
 
-    <div id="issue_top_panel" class="panel">
+    <div id="issue_top_panel" class="panel"   >
+
+    <div class="issue-top-buttons">
       <Transition name="element_fade">
-        <StringInput
-          v-if="
-            !loading &&
-            issue[0] != undefined &&
-            !$store.state['common']['is_mobile']
-          "
-          key="issue_code"
-          class="issue-code"
-          label=""
-          :disabled="true"
-          :value="id"
-        >
-        </StringInput>
-      </Transition>
-     
-      <Transition name="element_fade">
-        <SelectInput
-          v-if="
-            !loading &&
-            issue[0] != undefined &&
-            id != '' &&
-            !$store.state['common']['is_mobile']
-          "
-          label=""
-          :value="get_status()"
-          :values="statuses"
-          :disabled="transitions.length <= max_status_buttons_count"
-          class="issue-status-input"
-          :parameters="{ clearable: false, reduce: (obj) => obj.uuid }"
-          @update_parent_from_input="update_statuses"
-        >
-        </SelectInput>
+      <StringInput
+      v-if="!loading && issue[0] != undefined && !$store.state['common']['is_mobile']"
+      key="issue_code"
+      class='issue-code'
+      label=''
+      :disabled="true"
+      :value="id"
+      >
+      </StringInput>
       </Transition>
 
       <Transition name="element_fade">
-        <div
-          v-if="
-            !loading &&
-            id != '' &&
-            available_transitions.length <= max_status_buttons_count &&
-            !$store.state['common']['is_mobile']
-          "
-          style="display: flex"
-        >
-          <KButton
-            v-for="(transition, index) in available_transitions"
-            :key="index"
-            class="status-btn"
-            :name="transition.name"
-            :func="''"
-            @click="set_status(transition.status_to_uuid)"
-          />
-        </div>
+      <SelectInput
+      v-if="!loading && issue[0] != undefined && id!='' && !$store.state['common']['is_mobile']"
+      label=""
+      :value="get_status()"
+      :values="statuses"
+      :disabled="transitions.length <= max_status_buttons_count"
+      class="issue-status-input"
+      :parameters="{clearable: false, reduce: obj => obj.uuid}"
+      @update_parent_from_input="update_statuses"
+      >
+      </SelectInput>
       </Transition>
+    </div>
+		<Transition name="element_fade">
+		<div v-if="!loading && id!='' && available_transitions.length <= max_status_buttons_count && !$store.state['common']['is_mobile']" style="display: flex;">
+		<KButton
+		v-for="(transition, index) in available_transitions"
+		:key="index"
+		class="status-btn"
+		:name="transition.name"
+		:func="''"
+		@click="set_status(transition.status_to_uuid)"
+		/>
+		</div>
+
+		</Transition >
 
       <Transition name="element_fade">
         <div
@@ -909,7 +885,6 @@ export default mod;
 
         <Transition name="element_fade">
           <div class="issue-line" v-if="!loading">
-            
 
             <StringInput
               v-if="!loading && (edit_mode || id == '')"
@@ -975,20 +950,26 @@ export default mod;
           </div>
         </Transition>
 
-        <Transition name="element_fade">
-          <KMarked
-            class="descr-rendered"
-            v-if="!loading && !edit_mode && id != ''"
-            :val="
-              get_field_by_name('Описание').value
-                ? get_field_by_name('Описание').value
-                : ''
-            "
-            :images="attachments"
-            :use_bottom_images="true"
-          >
-          </KMarked>
-        </Transition>
+			<Transition name="element_fade">
+			<KMarked v-if="!loading && !edit_mode && id!=''"
+			:val="get_field_by_name('Описание').value ? get_field_by_name('Описание').value : ''"
+			:images="attachments"
+			>
+			</KMarked>
+			</Transition>
+
+			<Transition name="element_fade">
+			<div class="image-attachments" v-if="false && attachments.length > 0">
+				<div class="image-attachment-div"
+				v-for="(att, index) in attachments"
+				:key="index"
+				>
+					<span class="image-attachment-label">{{att.name}}</span>
+					<img class="image-attachment" :src="att.data">
+
+				</div>
+			</div>
+			</Transition>
 
         <Transition name="element_fade">
           <KRelations
@@ -1037,17 +1018,10 @@ export default mod;
           />
         </Transition>
 
-        <div class="issue-actions" v-if="!loading && !edit_mode">
-          <TransitionGroup name="element_fade">
-            <Comment
-              v-for="action in sorted_actions"
-              :key="action.uuid"
-              :action="action"
-              style="margin-bottom: 10px"
-              :images="attachments"
-            />
-          </TransitionGroup>
-        </div>
+        <CommentList
+            v-if="!loading && !edit_mode"
+            v-model:actions="issue[0].actions"
+        />
       </div>
       <div
         id="issue_card"
@@ -1181,14 +1155,27 @@ export default mod;
 @import "../css/palette.scss";
 @import "../css/global.scss";
 
-$card-width: 320px;
+$issue-workspace-width: 78%;
+$card-width: calc(100% - $issue-workspace-width);
 $code-width: 160px;
-$project-input-width: 250px;
 
 #issue_top_panel {
   height: $top-menu-height;
   display: flex;
   padding-top: 3px;
+}
+
+.issue-top-buttons {
+  display: flex;
+  padding: 10px 20px;
+}
+
+.issue-top-buttons > div {
+  margin-right: 20px;
+}
+
+.issue-top-buttons > div:last-child {
+  margin-right: 0;
 }
 
 #issue_table_panel,
@@ -1201,21 +1188,19 @@ $project-input-width: 250px;
 }
 
 #issue_main_panel {
+  padding: 20px 8px 10px 20px;
+  border-right: 8px solid var(--panel-bg-color);
   display: flex;
   flex-direction: column;
-  width: calc(100% - $card-width);
+  width: $issue-workspace-width;
   overflow-y: auto;
   overflow-anchor: none;
-
-  border-right: 6px solid var(--panel-bg-color);
-
-
   //scrollbar-color: red;
 }
 
-
-
-
+#issue_main_panel .text {
+  margin-bottom: 10px;
+}
 
 .mobile-view #issue_main_panel {
   width: 100vw !important;
@@ -1263,23 +1248,23 @@ $project-input-width: 250px;
 
 .issue-line {
   display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+#issue_description_textarea {
+  padding: 4px 10px 6px 10px;
 }
 
-.status-btn,
-.status-btn {
-  padding: 10px 20px 10px 20px;
-}
+
 .status-btn,
 .status-btn .btn_input {
   height: $input-height !important;
-
   width: 200px !important;
-
   margin-right: 20px;
 }
 
 .issue-name-input {
-  width: calc(100% - $project-input-width);
+  width: 70%;
 }
 
 .issue-name-input-full {
@@ -1290,9 +1275,6 @@ $project-input-width: 250px;
 }
 
 #send_comment_btn {
-  padding: 0px 20px 10px 20px;
-  margin-top: -15px;
-  border-top-left-radius: 0px;
 }
 #send_comment_btn .btn_input {
   height: 25px;
@@ -1304,21 +1286,28 @@ $project-input-width: 250px;
   border-top-color: var(--border-color);
 }
 
-.comment_input textarea {
-  border-bottom-left-radius: 0px !important;
-  border-bottom-right-radius: 0px !important;
+.comment_input {
+  margin-top: 20px;
+  margin-bottom: -4px !important;
+}
+
+.comment_input {
+
+  textarea {
+    border-bottom-left-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
+  }
+
 }
 
 .outlined input {
   outline: 1px solid;
 }
 
-
-
 .issue-code,
 .issue-status-input {
-  padding-right: 0px !important;
-  width: 200px;
+  padding-right: 0 !important;
+  width: 180px;
 }
 
 
@@ -1327,7 +1316,7 @@ $project-input-width: 250px;
 }
 
 .issue-project-input {
-  width: $project-input-width;
+  width: 27%;
 }
 
 #issue_card_infooter_div {
@@ -1336,9 +1325,21 @@ $project-input-width: 250px;
 }
 
 #issue_card_scroller {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 20px 10px 20px;
   height: calc(100vh - $top-menu-height);
   overflow-y: scroll;
 }
+
+#issue_card_scroller > div {
+  margin-bottom: 20px;
+}
+
+#issue_card_scroller > div:last-child {
+  margin-bottom: 0;
+}
+
 #issue_card_scroller::-webkit-scrollbar {
   display: none;
 }
@@ -1348,13 +1349,9 @@ $project-input-width: 250px;
 }
 
 .clone-btn {
-  margin: 10px 20px 10px 20px;
-
+  margin: 10px 20px 10px 0;
   display: flex;
   font-size: 35px;
-
-  /* margin-right: 40px; */
-
   // cursor: pointer;
   text-decoration: none;
 }
@@ -1363,7 +1360,7 @@ $project-input-width: 250px;
   border-radius: var(--border-radius);
   display: flex;
   font-size: 35px;
-  margin-left: 20px;
+  margin-right: 20px;
   //margin-top: 2px;
   color: var(--off-button-icon-color);
   cursor: pointer;
@@ -1386,9 +1383,6 @@ $project-input-width: 250px;
 }
 
 .issue-title-span {
-  margin-top: 20px;
-  margin-left: 20px;
-  margin-right: 20px;
   font-size: 22px;
   width: 100%;
   text-align: center;
@@ -1402,7 +1396,7 @@ $project-input-width: 250px;
 
 .edit-mode-btn-container {
   display: flex;
-  padding: 0px 20px 10px 20px;
+  justify-content: space-between;
 }
 
 .edit-mode-btn-container .btn {
@@ -1419,10 +1413,6 @@ $project-input-width: 250px;
 }
 .cancel-issue-edit-mode-btn {
   padding-left: $input-height;
-}
-
-.issue-actions {
-  padding: 10px 20px 10px 20px;
 }
 
 /*
