@@ -887,8 +887,7 @@ export default mod;
       <div id="issue_main_panel" class="panel">
         <Transition name="element_fade">
           <div class="issue-line" v-if="!loading">
-            <tagInput> </tagInput>
-
+            <!--<tagInput> </tagInput>-->
             <StringInput
               v-if="!loading && (edit_mode || id == '')"
               label="Название"
@@ -1323,6 +1322,10 @@ $project-input-width: 250px;
   margin-bottom: 20px;
 }
 
+#issue_card_scroller > div:last-child {
+  margin-bottom: 0;
+}
+
 #issue_card_scroller::-webkit-scrollbar {
   display: none;
 }
@@ -1376,8 +1379,9 @@ $project-input-width: 250px;
 }
 
 .edit-mode-btn-container {
+  margin-top: 10px;
   display: flex;
-  padding: 0px 20px 10px 20px;
+  justify-content: space-between;
 }
 
 .edit-mode-btn-container .btn {

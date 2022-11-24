@@ -73,6 +73,7 @@ ul.tabs__header > li.tab__selected {
 }
 
 .tab {
+
   display: inline-block;
   color: black;
   border-radius: var(--border-radius);
@@ -81,7 +82,7 @@ ul.tabs__header > li.tab__selected {
   border-width: var(--border-width);
   border-color: var(--border-color);
   border-style: groove;
-  padding: 10px 0px 0px 0px;
+  padding: 20px;
 }
 
 .tab-panel .tab {

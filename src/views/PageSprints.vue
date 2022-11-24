@@ -71,9 +71,8 @@ export default mod;
         :label="label"
         :collumns="search_collumns"
       />
-
-      <div id="sprints_down_panel">
-        <div id="sprints_table_panel" class="panel">
+      <div class="table_down_panel">
+        <div class="table_panel panel">
           <Transition name="element_fade">
             <KTable
               v-if="!loading"
@@ -83,9 +82,7 @@ export default mod;
             />
           </Transition>
         </div>
-
-
-        <div id="sprints_card" class="panel">
+        <div class="table_card panel">
           <component
             v-bind:is="input.type + 'Input'"
             v-for="(input, index) in inputs"
@@ -102,14 +99,14 @@ export default mod;
             :parameters="input"
             :values="input.values"
           ></component>
-          <div id="sprints_card_footer_div" class="footer_div">
+          <div class="table_card_footer">
             <KButton
-              id="save_sprints_btn"
+              class="table_card_footer_btn"
               :name="'Сохранить'"
               :func="'save_sprints'"
             />
             <KButton
-              id="delete_sprints_btn"
+              class="table_card_footer_btn"
               :name="'Удалить'"
               :func="'delete_sprints'"
             />
@@ -120,48 +117,10 @@ export default mod;
   </div>
 </template>
 
-<style lang="scss">
-@import "../css/palette.scss";
-@import "../css/global.scss";
+<style lang="scss" scoped>
 
-$card-width: 400px;
+@use 'css/table-page' with (
+  $table-panel-width: 75%
+);
 
-#sprints_table_panel,
-#sprints_card {
-  height: calc(100vh - $top-menu-height);
-}
-
-#sprints_table_panel {
-  display: flex;
-  width: calc(100vw - $card-width);
-}
-
-#sprints_card {
-  padding: 10px 20px 10px 20px;
-  width: $card-width;
-  display: table;
-}
-
-#sprints_card > div {
-  margin-bottom: 20px;
-}
-
-#sprints_card_footer_div {
-  display: flex;
-  justify-content: space-between;
-}
-
-#save_sprints_btn,
-#delete_sprints_btn {
-  width: 150px;
-}
-
-#save_sprints_btn input,
-#delete_sprints_btn input {
-  width: 100%;
-}
-
-#sprints_down_panel {
-  display: flex;
-}
 </style>

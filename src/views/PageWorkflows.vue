@@ -38,15 +38,15 @@ export default mod;
       :label="label"
       :collumns="search_collumns"
     />
-    <div id="workflows_down_panel">
-      <div id="workflows_table_panel" class="panel">
+    <div class="table_down_panel">
+      <div class="table_panel panel">
         <KTable
           :collumns="collumns"
           :table-data="workflows"
           :name="'workflows'"
         />
       </div>
-      <div id="workflows_card" class="panel">
+      <div class="table_card panel">
         <KTabPanel>
           <KTab title="Основное">
             <component
@@ -66,62 +66,26 @@ export default mod;
           <KTab title="Статусы">Статусы</KTab>
           <KTab title="Автоматизация">Автоматизация</KTab>
         </KTabPanel>
-        <div id="workflows_card_footer_div" class="footer_div">
-          <div id="workflows_card_infooter_div">
+        <div class="table_card_footer">
             <KButton
-              id="save_workflows_btn"
+              class="table_card_footer_btn"
               :name="'Сохранить'"
               :func="'save_workflows'"
             />
             <KButton
-              id="delete_workflows_btn"
+              class="table_card_footer_btn"
               :name="'Удалить'"
               :func="'delete_workflows'"
             />
-          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<style lang="scss">
-@import "../css/palette.scss";
-@import "../css/global.scss";
+<style lang="scss" scoped>
+@use 'css/table-page' with (
+  $table-panel-width: 15%
+);
 
-$table-width: 290px;
-
-#workflows_table_panel,
-#workflows_card {
-  height: calc(100vh - $top-menu-height);
-}
-
-#workflows_table_panel {
-  display: flex;
-  width: $table-width;
-}
-
-#workflows_card {
-  width: calc(100vw - $table-width);
-  display: table;
-}
-
-#save_workflows_btn,
-#delete_workflows_btn {
-  padding: 0px 20px 15px 20px;
-  width: 50%;
-}
-
-#save_workflows_btn input,
-#delete_workflows_btn input {
-  width: 100%;
-}
-
-#workflows_down_panel {
-  display: flex;
-}
-
-#workflows_card .tab-panel {
-  height: calc(100vh - 77px - 70px);
-}
 </style>
