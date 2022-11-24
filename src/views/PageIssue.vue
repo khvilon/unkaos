@@ -1251,6 +1251,10 @@ $code-width: 160px;
   justify-content: space-between;
   margin-bottom: 20px;
 }
+#issue_description_textarea {
+  padding: 4px 10px 6px 10px;
+}
+
 
 .status-btn,
 .status-btn .btn_input {
@@ -1271,7 +1275,6 @@ $code-width: 160px;
 }
 
 #send_comment_btn {
-  margin-top: -14px;
 }
 #send_comment_btn .btn_input {
   height: 25px;
@@ -1285,11 +1288,16 @@ $code-width: 160px;
 
 .comment_input {
   margin-top: 20px;
+  margin-bottom: -4px !important;
 }
 
-.comment_input textarea {
-  border-bottom-left-radius: 0px !important;
-  border-bottom-right-radius: 0px !important;
+.comment_input {
+
+  textarea {
+    border-bottom-left-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
+  }
+
 }
 
 .outlined input {

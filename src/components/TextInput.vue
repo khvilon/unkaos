@@ -180,7 +180,7 @@ export default {
   height: $input-height * 2;
   min-height: $input-height * 2;
   color: var(--text-color);
-  padding: 0 10px 0 10px;
+  padding: 4px 10px 4px 10px;
   resize: none;
 }
 
