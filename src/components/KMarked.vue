@@ -2,8 +2,10 @@
 import tools from "../tools.ts";
 import { marked } from "marked";
 import palette from "../css/palette.scss?type=style&index=0&lang=scss&module=1";
+import { nextTick } from "vue";
 
 export default {
+  
   props: {
     val: {
       type: String,
@@ -16,11 +18,6 @@ export default {
     use_bottom_images: {
       type: Boolean,
       default: false,
-    },
-  },
-  computed: {
-    md_value: function () {
-      return this.md(this.val);
     },
   },
   methods: {
@@ -105,11 +102,26 @@ export default {
       breaks: true,
       xhtml: true,
     });
+    
+    nextTick(() => {
+      this.md_value = this.md(this.val);
+    })
   },
   data() {
     return {
       found_img: {},
+      md_value: ''
     };
+  },
+  watch: {
+    val: {
+      function (val, oldVal) {
+        this.val.toString()
+      console.log('vvv', val, oldVal)
+      this.md_value = this.md(val);
+    },
+    deep: true
+  },
   },
 };
 </script>
