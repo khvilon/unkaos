@@ -39,7 +39,7 @@ let methods = {
           let img_teg =
             '<img src="' + attachment.name + "." + attachment.extention + '">';
 
-          if (e.target.id == "text_input_values.0.value") {
+          if (e.target.id == "issue_description_textarea") {
             let f = this.get_field_by_name("Описание");
             f.value =
               this.current_description.substring(0, start_pos) +
@@ -183,15 +183,7 @@ let methods = {
     return this.issue_types;
   },
   set_status: async function (status_uuid) {
-    let ans = await rest.run_method("read_issue", { uuid: this.issue[0].uuid });
-
-    let ans_is_valid = ans != undefined && ans != null && ans.length > 0;
-    if (ans_is_valid && ans[0].updated_at > this.issue[0].updated_at) {
-      alert(
-        "Задача была изменена параллельно с вашим редактированием. Скопируйте описание, обновите страницу"
-      );
-      return false;
-    }
+    if(!(await this.check_issue_changed())) return false
 
     this.issue[0].status_uuid = status_uuid;
     return true;
@@ -292,15 +284,7 @@ let methods = {
     this.$store.state["issue"]["filtered_issue"][0].path = val;
   },
   save: async function () {
-    let ans = await rest.run_method("read_issue", { uuid: this.issue[0].uuid });
-
-    let ans_is_valid = ans != undefined && ans != null && ans.length > 0;
-    if (ans_is_valid && ans[0].updated_at > this.issue[0].updated_at) {
-      alert(
-        "Задача была изменена параллельно с вашим редактированием. Скопируйте описание, обновите страницу"
-      );
-      return;
-    }
+    if(!(await this.check_issue_changed())) return
 
     await this.$store.dispatch("save_issue");
 
@@ -336,6 +320,7 @@ let methods = {
   },
   add_attachment: async function (att) {
     att.issue_uuid = this.issue[0].uuid;
+    if (this.$store.state["issue"]["selected_issue"].attachments == undefined) this.$store.state["issue"]["selected_issue"].attachments = []
     this.$store.state["issue"]["selected_issue"].attachments.push(att);
     let ans = await rest.run_method("upsert_attachments", att);
 
@@ -547,10 +532,8 @@ let methods = {
     this.get_field_by_name("Название").value = this.saved_name;
     this.edit_mode = false;
   },
-  field_updated: async function () {
-    console.log("field_updated");
-    if (this.id == "") return;
-
+  check_issue_changed: async function()
+  {
     let ans = await rest.run_method("read_issue", { uuid: this.issue[0].uuid });
 
     let ans_is_valid = ans != undefined && ans != null && ans.length > 0;
@@ -558,13 +541,38 @@ let methods = {
       alert(
         "Задача была изменена параллельно с вашим редактированием. Скопируйте описание, обновите страницу"
       );
-      return;
+      return false;
     }
+    return true
+  },
+  field_updated: async function () {
+    console.log("field_updated");
+    if (this.id == "") return;
+
+    if(!(await this.check_issue_changed())) return
 
     await this.$store.dispatch("save_issue");
 
     this.saved();
   },
+  type_updated: async function (new_type_uuid) {
+    console.log("type_updated", new_type_uuid);
+
+    if(this.id=='') return
+
+    //await this.update_data({ uuid: this[this.name][0].uuid });
+    //await this.$store.dispatch("get_" + this.name, { uuid: this[this.name][0].uuid });
+
+    if(!(await this.check_issue_changed())) return
+
+
+    this.$store.commit('id_push_update_issue', {id: 'type_uuid', val: new_type_uuid})
+    await this.$store.dispatch("save_issue");
+    this.saved();
+
+   //await this.update_data({ uuid: this[this.name][0].uuid });
+
+  }
 };
 
 const data = {
@@ -796,20 +804,7 @@ export default mod;
       >
       </StringInput>
       </Transition>
-      <Transition name="element_fade">
-      <SelectInput
-      v-if="!loading && issue[0] != undefined && !$store.state['common']['is_mobile']"
-      label=""
-      key="issue_type_input"
-      :value="get_type_uuid()"
-      :values="get_types()"
-      :disabled="id!=''"
-      class="issue-type-input"
-      :parameters="{clearable: false, reduce: obj => obj.uuid}"
-      @update_parent_from_input="update_type"
-      >
-      </SelectInput>
-      </Transition>
+
       <Transition name="element_fade">
       <SelectInput
       v-if="!loading && issue[0] != undefined && id!='' && !$store.state['common']['is_mobile']"
@@ -885,9 +880,12 @@ export default mod;
 
     <div id="issue_down_panel">
       <div id="issue_main_panel" class="panel">
+
+        <tagInput v-if="false"> </tagInput>
+
         <Transition name="element_fade">
           <div class="issue-line" v-if="!loading">
-            <!--<tagInput> </tagInput>-->
+
             <StringInput
               v-if="!loading && (edit_mode || id == '')"
               label="Название"
@@ -929,6 +927,7 @@ export default mod;
           :id="'values.' + get_field_by_name('Описание').idx + '.value'"
           parent_name="issue"
           ref="issue_descr_text_inpt"
+          textarea_id="issue_description_textarea"
           @paste="pasted"
           @update_parent_from_input="edit_current_description"
         >
@@ -986,7 +985,7 @@ export default mod;
 
         <Transition name="element_fade">
           <KAttachment
-            v-if="!loading && id != ''"
+            v-if="!loading"
             label=""
             id="issue-attachments"
             :attachments="issue[0].attachments"
@@ -1046,17 +1045,18 @@ export default mod;
             >
             </StringInput>
 
+
             <SelectInput
               v-if="
                 !loading &&
-                issue[0] != undefined &&
-                $store.state['common']['is_mobile']
+                issue[0] != undefined
               "
-              label=""
+              label="Тип задачи"
               key="issue_type_input"
               :value="get_type_uuid()"
               :values="get_types()"
-              :disabled="id != ''"
+              @updated="type_updated"
+              class="issue-type-input"
               :parameters="{ clearable: false, reduce: (obj) => obj.uuid }"
               @update_parent_from_input="update_type"
             >
@@ -1193,10 +1193,16 @@ $code-width: 160px;
   width: calc(100% - $card-width);
   overflow-y: auto;
   overflow-anchor: none;
+
+  border-right: 6px solid var(--panel-bg-color);
+
+
+  //scrollbar-color: red;
 }
-#issue_main_panel::-webkit-scrollbar {
-  display: none;
-}
+
+
+
+
 
 .mobile-view #issue_main_panel {
   width: 100vw !important;
@@ -1292,14 +1298,13 @@ $code-width: 160px;
   outline: 1px solid;
 }
 
-.issue-type-input,
 .issue-code,
 .issue-status-input {
   padding-right: 0 !important;
   width: 180px;
 }
 
-.issue-type-input .vs__dropdown-toggle,
+
 .issue-status-input .vs__dropdown-toggle {
   border-width: 1px !important;
 }
@@ -1379,6 +1384,11 @@ $code-width: 160px;
   width: 100%;
   text-align: center;
   user-select: text;
+}
+
+.descr-rendered {
+  padding: 20px;
+  overflow-wrap: anywhere;
 }
 
 .edit-mode-btn-container {

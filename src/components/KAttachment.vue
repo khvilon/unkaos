@@ -24,11 +24,7 @@ export default {
     attachments: {
       type: Array,
       default: [
-        {
-          name: "Файл 11",
-          type: "txt",
-          link: "lnk 11",
-        },
+       
       ],
     },
   },

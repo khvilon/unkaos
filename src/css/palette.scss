@@ -57,6 +57,9 @@
     --code-fragment-text-color: #E8912D;
     --code-fragment-border-color: #3C3E42;
     --code-bg-color: #29353f;
+
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
 }
 [theme="light"]
 {
@@ -117,6 +120,8 @@
     --code-fragment-border-color: #DADADA;
     --code-bg-color: #F6F6F6;
 
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
 }
 [theme="dark"]
 {
@@ -178,6 +183,8 @@
     --code-fragment-border-color: #3C3E42;
     --code-bg-color: #29353f;
 
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
 }
 [theme="pink"]
 {
@@ -237,4 +244,6 @@
     --code-fragment-border-color: #c692d3;
     --code-bg-color: #b78bc2;
 
+    --scroll-color: rgb(245, 150, 205);
+    --scroll-shadow-color: rgb(205,110,165);
 }
