@@ -208,7 +208,9 @@ export default {
   border-style: none !important;
   padding: 0px !important;
   transition: none !important;
-  overflow: auto !important;
+  overflow: scroll !important;
+  scroll-behavior: auto !important;
+  display: inherit;
 }
 
 .text-input:disabled {
