@@ -71,9 +71,8 @@ export default mod;
         :label="label"
         :collumns="search_collumns"
       />
-
-      <div id="fields_down_panel">
-        <div id="fields_table_panel" class="panel">
+      <div class="table_down_panel">
+        <div class="table_panel panel">
           <Transition name="element_fade">
             <KTable
               v-if="!loading"
@@ -83,8 +82,7 @@ export default mod;
             />
           </Transition>
         </div>
-
-        <div id="fields_card" class="panel">
+        <div class="table_card panel">
           <component
             v-bind:is="input.type + 'Input'"
             v-for="(input, index) in inputs"
@@ -141,19 +139,17 @@ export default mod;
             :value="get_json_val(selected_fields, 'available_values')"
             :parent_name="'fields'"
           ></TextInput>
-          <div id="fields_card_footer_div" class="footer_div">
-            <div id="fields_card_infooter_div">
-              <KButton
-                id="save_fields_btn"
-                :name="'Сохранить'"
-                :func="'save_fields'"
-              />
-              <KButton
-                id="delete_fields_btn"
-                :name="'Удалить'"
-                :func="'delete_fields'"
-              />
-            </div>
+          <div class="table_card_footer">
+            <KButton
+              class="table_card_footer_btn"
+              :name="'Сохранить'"
+              :func="'save_fields'"
+            />
+            <KButton
+              class="table_card_footer_btn"
+              :name="'Удалить'"
+              :func="'delete_fields'"
+            />
           </div>
         </div>
       </div>
@@ -161,39 +157,8 @@ export default mod;
   </div>
 </template>
 
-<style lang="scss">
-@import "../css/palette.scss";
-@import "../css/global.scss";
-
-$card-width: 400px;
-
-#fields_table_panel,
-#fields_card {
-  height: calc(100vh - $top-menu-height);
-}
-
-#fields_table_panel {
-  display: flex;
-  width: calc(100vw - $card-width);
-}
-
-#fields_card {
-  width: $card-width;
-  display: table;
-}
-
-#save_fields_btn,
-#delete_fields_btn {
-  padding: 0px 20px 15px 20px;
-  width: 50%;
-}
-
-#save_fields_btn input,
-#delete_fields_btn input {
-  width: 100%;
-}
-
-#fields_down_panel {
-  display: flex;
-}
+<style lang="scss" scoped>
+@use 'css/table-page' with (
+  $table-panel-width: 75%
+);
 </style>

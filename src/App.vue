@@ -336,6 +336,7 @@ $loading-bar-width: 200vw;
 
 .footer_div div {
   display: flex;
+  justify-content: space-between;
 }
 
 .slide-enter-active,
@@ -397,13 +398,25 @@ $loading-bar-width: 200vw;
 
 ::-webkit-scrollbar-track {
   background: none;        /* цвет дорожки */
- // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.9); 
+ // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.9);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
     border-radius: 10px;
-    background: var(--scroll-color); 
+    background: var(--scroll-color);
     -webkit-box-shadow: inset 0 0 5px var(--scroll-shadow-color);
+}
+
+.table_card_footer_btn {
+  width: 45%;
+
+  input {
+    width: 100% !important;
+  }
+}
+
+.change-password .btn_input {
+  width: 100% !important;
 }
 </style>

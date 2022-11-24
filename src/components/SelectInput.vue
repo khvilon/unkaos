@@ -190,7 +190,6 @@ export default {
 }
 
 .select-input {
-  padding: 10px 20px 10px 20px;
 }
 
 .select-input img {

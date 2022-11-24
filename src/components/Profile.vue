@@ -104,6 +104,7 @@ export default {
         label="Главное меню по логотипу"
         :value="lock_main_menu"
         @update_parent_from_input="update_lock_main_menu"
+        style="margin-bottom: 10px"
       ></BooleanInput>
       <div id="profile-menu-exit" @click="logout()">
         <div>
@@ -162,29 +163,28 @@ export default {
 
 #profile-menu {
   position: absolute;
-  right: 0px;
+  right: 0;
   width: 250px;
 
   top: calc($top-menu-height + 2px);
-  margin: 0px;
+  margin: 0;
+  padding: 20px;
   background: val(--table-row-color);
 
   display: flex;
   flex-direction: column;
 }
 
-#profile-menu div {
-  //padding: 10px 20px 10px 20px;
+#profile-menu > div {
+  margin-bottom: 10px;
 }
 
 #profile-menu .select-input {
 }
 
 #profile-menu-exit {
-  margin: 0px;
   width: 100%;
-
-  padding: 10px 20px 10px 20px;
+  margin-bottom: 0 !important;
 }
 
 #profile-menu-exit div {

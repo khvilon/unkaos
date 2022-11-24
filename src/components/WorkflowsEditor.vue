@@ -510,15 +510,17 @@ export default {
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
 
 .workflows-editor {
-  width: 100%;
-  padding: 10px 20px 10px 20px;
-  height: calc(100% - 65px);
+
 }
 
 .workflows-command-panel {
   display: flex;
   flex-direction: row;
   height: 60px;
+}
+
+.workflows-command-panel > div {
+  margin-right: 20px;
 }
 
 .workflows-command-panel .string,
@@ -540,8 +542,12 @@ export default {
 
 .svg-container {
   display: flex;
-  flex-direction: row;
-  height: 100%;
+  width: 100%;
+}
+
+.svg-workflow,
+.statuses-container {
+  height: 400px !important;
 }
 
 .svg-workflow,
@@ -554,29 +560,26 @@ export default {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-
   transition: all 0.5s ease;
-
   border-color: var(--border-color);
   border-width: 2px;
   border-style: inset;
 }
 
 .svg-workflow {
-  width: calc(100% - 210px);
-  height: 100%;
+  width: 100%;
 }
 
 .statuses-container {
   width: 200px;
-  height: 100%;
   margin-left: 10px;
+  display: grid;
 }
 
 .statuses-container .ktable {
-  margin-left: 0px;
+  margin-left: 0;
+  padding: 2px;
   width: 100%;
-  height: calc(100% - 38px);
 }
 
 .statuses-search-and-add {
@@ -680,4 +683,5 @@ path.link.selected {
 #selected-end-arrow {
   fill: var(--workflow-g-selected-color);
 }
+
 </style>

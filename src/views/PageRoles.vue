@@ -47,14 +47,14 @@ export default mod;
     <TopMenu
       :buttons="buttons"
       :name="name"
-      :label="'Типы задач'"
+      :label="'Роли пользователей'"
       :collumns="search_collumns"
     />
-    <div id="roles_down_panel">
-      <div id="roles_table_panel" class="panel">
+    <div class="table_down_panel">
+      <div class="table_panel panel">
         <KTable :collumns="collumns" :table-data="roles" :name="'roles'" />
       </div>
-      <div id="roles_card" class="panel">
+      <div class="table_card panel">
         <component
           v-bind:is="input.type + 'Input'"
           v-for="(input, index) in inputs"
@@ -68,58 +68,25 @@ export default mod;
           :values="input.values"
           :parameters="input"
         ></component>
-        <div id="roles_card_footer_div" class="footer_div">
-          <div id="roles_card_infooter_div">
-            <KButton
-              id="save_roles_btn"
-              :name="'Сохранить'"
-              :func="'save_roles'"
-            />
-            <KButton
-              id="delete_roles_btn"
-              :name="'Удалить'"
-              :func="'delete_roles'"
-            />
-          </div>
+        <div class="table_card_footer">
+          <KButton
+            class="table_card_footer_btn"
+            :name="'Сохранить'"
+            :func="'save_roles'"
+          />
+          <KButton
+            class="table_card_footer_btn"
+            :name="'Удалить'"
+            :func="'delete_roles'"
+          />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<style lang="scss">
-@import "../css/palette.scss";
-@import "../css/global.scss";
-
-$table-panel-width: 290px;
-
-#roles_table_panel,
-#roles_card {
-  height: calc(100vh - $top-menu-height);
-}
-
-#roles_table_panel {
-  display: flex;
-  width: $table-panel-width;
-}
-
-#roles_card {
-  width: calc(100% - $table-panel-width);
-  display: table;
-}
-
-#save_roles_btn,
-#delete_roles_btn {
-  padding: 0px 20px 15px 20px;
-  width: 50%;
-}
-
-#save_roles_btn input,
-#delete_roles_btn input {
-  width: 100%;
-}
-
-#roles_down_panel {
-  display: flex;
-}
+<style lang="scss" scoped>
+@use 'css/table-page' with (
+  $table-panel-width: 25%
+);
 </style>

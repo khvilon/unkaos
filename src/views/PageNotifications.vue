@@ -9,7 +9,7 @@ import page_helper from "../page_helper.ts";
   </div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @import "../css/global.scss";
 
 $card-width: 400px;
