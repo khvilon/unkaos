@@ -820,7 +820,7 @@ export default mod;
       </Transition>
     </div>
 		<Transition name="element_fade">
-		<div v-if="!loading && id!='' && available_transitions.length <= max_status_buttons_count && !$store.state['common']['is_mobile']" style="display: flex;">
+		<div class="issue-transitions" v-if="!loading && id!='' && available_transitions.length <= max_status_buttons_count && !$store.state['common']['is_mobile']" style="display: flex;">
 		<KButton
 		v-for="(transition, index) in available_transitions"
 		:key="index"
@@ -1176,6 +1176,10 @@ $code-width: 160px;
 
 .issue-top-buttons > div:last-child {
   margin-right: 0;
+}
+
+.issue-transitions {
+  padding: 10px;
 }
 
 #issue_table_panel,
