@@ -1297,13 +1297,12 @@
 	  padding-left: 10px;
   }
 
-  .top-menu-icon-btn
-  {
-	height: 35px;
+  .top-menu-icon-btn {
+	  height: 35px;
     font-size: 25px;
     border-radius: var(--border-radius);
     margin-left: 10px;
-	color: var(--text-color);
+	  color: var(--text-color);
     background-color: var(--button-color);
     border-width: 1px;
     border-color: var(--border-color);
