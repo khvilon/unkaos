@@ -1155,7 +1155,7 @@ export default mod;
 @import "../css/palette.scss";
 @import "../css/global.scss";
 
-$issue-workspace-width: 73%;
+$issue-workspace-width: 78%;
 $card-width: calc(100% - $issue-workspace-width);
 $code-width: 160px;
 
@@ -1188,7 +1188,7 @@ $code-width: 160px;
 }
 
 #issue_main_panel {
-  padding: 20px 8px 20px 20px;
+  padding: 20px 8px 10px 20px;
   border-right: 8px solid var(--panel-bg-color);
   display: flex;
   flex-direction: column;
