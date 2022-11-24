@@ -386,4 +386,24 @@ $loading-bar-width: 200vw;
 .resolved-issue {
   text-decoration: line-through;
 }
+
+::-webkit-scrollbar {
+  //display: none;
+  //color: red;
+  background-color: none;
+  width: 12px;
+  opacity: 0;
+}
+
+::-webkit-scrollbar-track {
+  background: none;        /* цвет дорожки */
+ // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.9); 
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: var(--scroll-color); 
+    -webkit-box-shadow: inset 0 0 5px var(--scroll-shadow-color);
+}
 </style>
