@@ -1155,7 +1155,8 @@ export default mod;
 @import "../css/palette.scss";
 @import "../css/global.scss";
 
-$card-width: 320px;
+$issue-workspace-width: 73%;
+$card-width: calc(100% - $issue-workspace-width);
 $code-width: 160px;
 
 #issue_top_panel {
@@ -1187,22 +1188,19 @@ $code-width: 160px;
 }
 
 #issue_main_panel {
-  padding: 10px 20px;
+  padding: 20px 8px 20px 20px;
+  border-right: 8px solid var(--panel-bg-color);
   display: flex;
   flex-direction: column;
-  width: calc(100% - $card-width);
+  width: $issue-workspace-width;
   overflow-y: auto;
   overflow-anchor: none;
-
-  border-right: 6px solid var(--panel-bg-color);
-
-
   //scrollbar-color: red;
 }
 
-
-
-
+#issue_main_panel .text {
+  margin-bottom: 10px;
+}
 
 .mobile-view #issue_main_panel {
   width: 100vw !important;
@@ -1273,7 +1271,7 @@ $code-width: 160px;
 }
 
 #send_comment_btn {
-  margin-top: -4px;
+  margin-top: -14px;
 }
 #send_comment_btn .btn_input {
   height: 25px;
@@ -1377,9 +1375,6 @@ $code-width: 160px;
 }
 
 .issue-title-span {
-  margin-top: 20px;
-  margin-left: 20px;
-  margin-right: 20px;
   font-size: 22px;
   width: 100%;
   text-align: center;
@@ -1392,7 +1387,6 @@ $code-width: 160px;
 }
 
 .edit-mode-btn-container {
-  margin-top: 10px;
   display: flex;
   justify-content: space-between;
 }
