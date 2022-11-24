@@ -144,8 +144,8 @@ export default {
 
 .new-relation-modal {
   position: absolute;
-  width: 40%;
-  height: $input-height * 6;
+  width: 60%;
+  height: fit-content;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -158,10 +158,14 @@ export default {
 
 .new-relation-modal .btn-container {
   display: flex;
-  padding: 10px 20px 10px 20px;
+  padding: 10px 20px 20px 20px;
+  position: relative;
 }
 
-.new-relation-modal #create-relation-btn {
+.new-relation-modal .btn {
   width: 100%;
+}
+.new-relation-modal #create-relation-btn {
+  padding-right: 20px;
 }
 </style>

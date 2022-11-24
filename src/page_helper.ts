@@ -282,7 +282,7 @@ page_helper.create_module = async function (data, methods) {
   };
 
   methods.update_data = async function (params) {
-    await store.dispatch("get_" + this.name, params);
+    await this.$store.dispatch("get_" + this.name, params);
     if (this.name == "issue") {
       //console.log('selilili', this[this.name][0].uuid)
       this.$store.commit("select_" + this.name, this[this.name][0].uuid);

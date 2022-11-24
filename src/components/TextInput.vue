@@ -34,6 +34,10 @@ export default {
       type: String,
       default: "text",
     },
+    textarea_id: {
+      type: String,
+      default: "",
+    },
   },
 
   emits: ["update_parent_from_input", "input_focus"],
@@ -98,7 +102,9 @@ export default {
   },
   mounted() {
     this.val = this.value;
-    this.resize();
+    nextTick(() => {
+      this.resize();
+    })
   },
   computed: {
     scroll_height: function () {
@@ -116,13 +122,13 @@ export default {
       if (this.val == val) return;
       this.val = val;
 
-      this.resize();
+
     },
 
     val: function (val, oldVal) {
       console.log(val, oldVal, this.id, this.parent_name);
 
-      this.resize();
+
 
       this.$emit("update_parent_from_input", val);
 
@@ -132,6 +138,10 @@ export default {
         id: this.id,
         val: val,
       });
+
+      nextTick(() => {
+        this.resize();
+      })
     },
   },
 };
@@ -153,7 +163,7 @@ export default {
       @blur="$emit('input_focus', false)"
       @keyup="resize"
       @keydown.ctrl.b="make_bold"
-      :id="'text_input_' + id"
+      :id="textarea_id"
       class="text-input"
       :type="type"
       v-model="val"
@@ -198,9 +208,7 @@ export default {
   border-style: none !important;
   padding: 0px !important;
   transition: none !important;
-  overflow: scroll !important;
-  scroll-behavior: auto !important;
-  display: inherit;
+  overflow: auto !important;
 }
 
 .text-input:disabled {
