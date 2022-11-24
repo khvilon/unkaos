@@ -387,4 +387,16 @@ $loading-bar-width: 200vw;
 .resolved-issue {
   text-decoration: line-through;
 }
+
+.table_card_footer_btn {
+  width: 45%;
+
+  input {
+    width: 100% !important;
+  }
+}
+
+.change-password .btn_input {
+  width: 100% !important;
+}
 </style>

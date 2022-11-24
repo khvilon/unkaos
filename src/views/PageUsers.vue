@@ -111,8 +111,8 @@ export default mod;
       :label="'Пользователи'"
       :collumns="search_collumns"
     />
-    <div id="users_down_panel">
-      <div id="users_table_panel" class="panel">
+    <div class="table_down_panel">
+      <div class="table_panel panel">
         <Transition name="element_fade">
           <KTable
             v-if="!loading"
@@ -123,7 +123,7 @@ export default mod;
           />
         </Transition>
       </div>
-      <div id="users_card" class="panel">
+      <div class="table_card panel">
         <component
           v-bind:is="input.type + 'Input'"
           v-for="(input, index) in inputs"
@@ -147,62 +147,27 @@ export default mod;
           :name="'Сбросить пароль'"
           @click="change_password()"
         />
-        <div id="users_card_footer_div" class="footer_div">
-          <div id="users_card_infooter_div">
-            <KButton
-              id="save_users_btn"
-              :name="'Сохранить'"
-              :func="'save_users'"
-            />
-            <KButton
-              id="delete_users_btn"
-              :name="'Удалить'"
-              :func="'delete_users'"
-            />
-          </div>
+        <div class="table_card_footer">
+          <KButton
+            class="table_card_footer_btn"
+            :name="'Сохранить'"
+            :func="'save_users'"
+          />
+          <KButton
+            class="table_card_footer_btn"
+            :name="'Удалить'"
+            :func="'delete_users'"
+          />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<style lang="scss">
-@import "../css/palette.scss";
-@import "../css/global.scss";
-
-$card-width: 400px;
-
-#users_table_panel,
-#users_card {
-  height: calc(100vh - $top-menu-height);
-}
-
-#users_table_panel {
-  display: flex;
-
-  width: calc(100vw - $card-width);
-}
-
-#users_card {
-  width: $card-width;
-  margin-left: 0px;
-  display: table;
-}
-
-#save_users_btn,
-#delete_users_btn {
-  padding: 0px 20px 15px 20px;
-  width: 50%;
-}
-
-#save_users_btn input,
-#delete_users_btn input {
-  width: 100%;
-}
-
-#users_down_panel {
-  display: flex;
-}
+<style lang="scss" scoped>
+@use 'css/table-page' with (
+  $table-panel-width: 75%
+);
 
 .change-pass-div {
   display: flex;
@@ -218,7 +183,5 @@ $card-width: 400px;
 .change-password {
   width: 100%;
 }
-.change-password .btn_input {
-  width: 100% !important;
-}
+
 </style>

@@ -1,6 +1,4 @@
 /* eslint-env node */
-/*eslint linebreak-style: ["warn", "unix"]*/
-/*eslint max-len: ["error", { "code": 200 }]*/
 require("@rushstack/eslint-patch/modern-module-resolution");
 
 module.exports = {
@@ -23,5 +21,9 @@ module.exports = {
         "plugin:cypress/recommended"
       ]
     }
-  ]
+  ],
+  "rules": {
+    "linebreak-style": ["warn", "unix"],
+    "max-len": ["warn", { "code": 100 }]
+  }
 }

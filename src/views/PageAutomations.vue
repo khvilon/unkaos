@@ -3,7 +3,7 @@ import page_helper from "../page_helper.ts";
 
 const data = {
   name: "automations",
-  label: "Типы задач",
+  label: "Автоматизации",
   instance: {
     fields: [],
   },
@@ -55,18 +55,18 @@ export default mod;
     <TopMenu
       :buttons="buttons"
       :name="name"
-      :label="'Типы задач'"
+      :label="'Автоматизации'"
       :collumns="search_collumns"
     />
-    <div id="automations_down_panel">
-      <div id="automations_table_panel" class="panel">
+    <div class="table_down_panel">
+      <div class="table_panel panel">
         <KTable
           :collumns="collumns"
           :table-data="automations"
           :name="'automations'"
         />
       </div>
-      <div id="automations_card" class="panel">
+      <div class="table_card panel">
         <component
           v-bind:is="input.type + 'Input'"
           v-for="(input, index) in inputs"
@@ -80,58 +80,26 @@ export default mod;
           :values="input.values"
           :parameters="input"
         ></component>
-        <div id="automations_card_footer_div" class="footer_div">
-          <div id="automations_card_infooter_div">
-            <KButton
-              id="save_automations_btn"
-              :name="'Сохранить'"
-              :func="'save_automations'"
-            />
-            <KButton
-              id="delete_automations_btn"
-              :name="'Удалить'"
-              :func="'delete_automations'"
-            />
-          </div>
+        <div class="table_card_footer">
+          <KButton
+            class="table_card_footer_btn"
+            :name="'Сохранить'"
+            :func="'save_automations'"
+          />
+          <KButton
+            class="table_card_footer_btn"
+            :name="'Удалить'"
+            :func="'delete_automations'"
+          />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<style lang="scss">
-@import "../css/palette.scss";
-@import "../css/global.scss";
-
-$table-panel-width: 290px;
-
-#automations_table_panel,
-#automations_card {
-  height: calc(100vh - $top-menu-height);
-}
-
-#automations_table_panel {
-  display: flex;
-  width: $table-panel-width;
-}
-
-#automations_card {
-  width: calc(100% - $table-panel-width);
-  display: table;
-}
-
-#save_automations_btn,
-#delete_automations_btn {
-  padding: 0px 20px 15px 20px;
-  width: 50%;
-}
-
-#save_automations_btn input,
-#delete_automations_btn input {
-  width: 100%;
-}
-
-#automations_down_panel {
-  display: flex;
-}
+<style lang="scss" scoped>
+// Table page options
+@use 'css/table-page' with (
+  $table-panel-width: 25%
+);
 </style>
