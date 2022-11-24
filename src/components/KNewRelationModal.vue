@@ -143,6 +143,7 @@ export default {
 }
 
 .new-relation-modal {
+  padding: 20px;
   position: absolute;
   width: 60%;
   height: fit-content;
@@ -151,14 +152,20 @@ export default {
   transform: translate(-50%, -50%);
 }
 
+.new-relation-modal > div {
+  margin-bottom: 10px;
+}
+
 .new-relation-modal SelectInut {
   width: 100%;
   height: $input-height;
 }
 
 .new-relation-modal .btn-container {
+  margin-top: 20px;
+  margin-bottom: 0;
+  padding: 0;
   display: flex;
-  padding: 10px 20px 20px 20px;
   position: relative;
 }
 
