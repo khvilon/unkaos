@@ -1157,7 +1157,6 @@ export default mod;
 
 $card-width: 320px;
 $code-width: 160px;
-$project-input-width: 250px;
 
 #issue_top_panel {
   height: $top-menu-height;
@@ -1166,10 +1165,16 @@ $project-input-width: 250px;
 }
 
 .issue-top-buttons {
-  width: 680px;
   display: flex;
-  justify-content: space-around;
-  padding: 10px;
+  padding: 10px 20px;
+}
+
+.issue-top-buttons > div {
+  margin-right: 20px;
+}
+
+.issue-top-buttons > div:last-child {
+  margin-right: 0;
 }
 
 #issue_table_panel,
@@ -1182,7 +1187,7 @@ $project-input-width: 250px;
 }
 
 #issue_main_panel {
-  padding: 0 20px 10px 20px;
+  padding: 10px 20px;
   display: flex;
   flex-direction: column;
   width: calc(100% - $card-width);
@@ -1239,6 +1244,8 @@ $project-input-width: 250px;
 
 .issue-line {
   display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
 .status-btn,
@@ -1249,7 +1256,7 @@ $project-input-width: 250px;
 }
 
 .issue-name-input {
-  width: calc(100% - $project-input-width);
+  width: 70%;
 }
 
 .issue-name-input-full {
@@ -1285,15 +1292,11 @@ $project-input-width: 250px;
   outline: 1px solid;
 }
 
-.issue-type-input {
-  width: 200px;
-}
-
 .issue-type-input,
 .issue-code,
 .issue-status-input {
-  padding-right: 0px !important;
-  width: 200px;
+  padding-right: 0 !important;
+  width: 180px;
 }
 
 .issue-type-input .vs__dropdown-toggle,
@@ -1302,7 +1305,7 @@ $project-input-width: 250px;
 }
 
 .issue-project-input {
-  width: $project-input-width;
+  width: 27%;
 }
 
 #issue_card_infooter_div {
@@ -1335,7 +1338,7 @@ $project-input-width: 250px;
 }
 
 .clone-btn {
-  margin: 10px 20px 10px 20px;
+  margin: 10px 20px 10px 0;
   display: flex;
   font-size: 35px;
   // cursor: pointer;
@@ -1346,7 +1349,7 @@ $project-input-width: 250px;
   border-radius: var(--border-radius);
   display: flex;
   font-size: 35px;
-  margin-left: 20px;
+  margin-right: 20px;
   //margin-top: 2px;
   color: var(--off-button-icon-color);
   cursor: pointer;
