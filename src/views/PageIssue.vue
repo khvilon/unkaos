@@ -632,6 +632,7 @@ const data = {
   statuses: [],
   max_status_buttons_count: 2,
   current_status: true,
+  is_in_dev_mode: false,
   instance: {
     values: [
       {
@@ -745,6 +746,8 @@ mod.computed.available_transitions = function () {
 };
 
 mod.mounted = async function () {
+  
+  this.is_in_dev_mode = (process.env.NODE_ENV === "development")
   let rt = await rest.run_method("read_relation_types");
 
   this.relation_types = [];
@@ -881,7 +884,7 @@ export default mod;
     <div id="issue_down_panel">
       <div id="issue_main_panel" class="panel">
 
-        <tagInput v-if="false"> </tagInput>
+        <tagInput v-if="is_in_dev_mode"> </tagInput>
 
         <Transition name="element_fade">
           <div class="issue-line" v-if="!loading">
@@ -930,6 +933,7 @@ export default mod;
           textarea_id="issue_description_textarea"
           @paste="pasted"
           @update_parent_from_input="edit_current_description"
+          
         >
         </TextInput>
 
@@ -954,6 +958,7 @@ export default mod;
 			<KMarked v-if="!loading && !edit_mode && id!=''"
 			:val="get_field_by_name('Описание').value ? get_field_by_name('Описание').value : ''"
 			:images="attachments"
+      :use_bottom_images="true"
 			>
 			</KMarked>
 			</Transition>
