@@ -20,6 +20,10 @@ export default {
       default: false,
     },
   },
+  computed:
+  {
+    images_len: function(){return this.images.length}
+  },
   methods: {
     get_palette_param: function (name) {
       let theme = "[theme=" + localStorage.theme + "]";
@@ -43,8 +47,11 @@ export default {
       console.log(html, start_search, img_start);
 
       if (img_start < 0) {
+        console.log('this.use_bottom_images', this.use_bottom_images, this.images_len)
         if (this.use_bottom_images) {
           for (let i = 0; i < this.images.length; i++) {
+
+            console.log(this.images[i].name)
             if (this.found_img[this.images[i].uuid]) continue;
 
             html +=
@@ -102,6 +109,8 @@ export default {
       breaks: true,
       xhtml: true,
     });
+
+    this.images_len
     
     nextTick(() => {
       this.md_value = this.md(this.val);
@@ -115,12 +124,23 @@ export default {
   },
   watch: {
     val: {
-      function (val, oldVal) {
+      handler: function (val, oldVal) {
         this.val.toString()
       console.log('vvv', val, oldVal)
+      nextTick(() => {
       this.md_value = this.md(val);
+      })
     },
     deep: true
+  },
+  images: {
+    handler: function (val, oldVal) {
+        this.val.toString()
+      console.log('viiim', val, oldVal)
+      this.md_value = this.md(this.val);
+    },
+    deep: true,
+      immediate: true
   },
   },
 };
