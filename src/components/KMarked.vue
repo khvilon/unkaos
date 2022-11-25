@@ -158,6 +158,7 @@ a {
 }
 
 .marked-container {
+  overflow-wrap: anywhere;
   user-select: text !important;
   border-width: 0;
   width: 100%;

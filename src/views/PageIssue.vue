@@ -1133,23 +1133,21 @@ export default mod;
         </Transition>
 
         <div id="issue_card_footer_div" class="footer_div">
-          <div id="issue_card_infooter_div">
-            <KButton
-              v-if="!loading && id == ''"
-              id="save_issue_btn"
-              :name="'Сохранить'"
-              :func="'save_issue'"
-              @button_ans="saved_new"
-            />
-            <KButton
-              v-if="false && !loading && id != ''"
-              id="delete_issue_btn"
-              :name="'Удалить'"
-              :func="'delete_issue'"
-              @button_ans="deleted"
-              :disabled="true"
-            />
-          </div>
+          <KButton
+            v-if="!loading && id == ''"
+            id="save_issue_btn"
+            :name="'Сохранить'"
+            :func="'save_issue'"
+            @button_ans="saved_new"
+          />
+          <KButton
+            v-if="false && !loading && id != ''"
+            id="delete_issue_btn"
+            :name="'Удалить'"
+            :func="'delete_issue'"
+            @button_ans="deleted"
+            :disabled="true"
+          />
         </div>
       </div>
     </div>
@@ -1197,7 +1195,7 @@ $code-width: 160px;
 }
 
 #issue_main_panel {
-  padding: 20px 8px 10px 20px;
+  padding: 10px 8px 10px 20px;
   border-right: 8px solid var(--panel-bg-color);
   display: flex;
   flex-direction: column;
@@ -1328,11 +1326,6 @@ $code-width: 160px;
   width: 27%;
 }
 
-#issue_card_infooter_div {
-  width: $card-width;
-  position: relative !important;
-}
-
 #issue_card_scroller {
   display: flex;
   flex-direction: column;
@@ -1392,15 +1385,11 @@ $code-width: 160px;
 }
 
 .issue-title-span {
+  margin-top: 10px;
   font-size: 22px;
   width: 100%;
   text-align: center;
   user-select: text;
-}
-
-.descr-rendered {
-  padding: 20px;
-  overflow-wrap: anywhere;
 }
 
 .edit-mode-btn-container {
