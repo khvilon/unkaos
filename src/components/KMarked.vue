@@ -36,6 +36,49 @@ export default {
     },
 
     inject_images(html, start_search) {
+
+      
+      console.log(html)
+
+      for(let i = 0; i < this.images.length; i++)
+      {
+        let from = ' src="' + this.images[i].name + '.' + this.images[i].extention
+        let to = ' src="' + this.images[i].data
+
+        
+
+        let from_idx = html.indexOf(from)
+
+        let width = 'style="max-width:40%; height:auto"';
+
+        console.log('++++++++++++++++++++++++++0', from_idx)
+        if(from_idx < 0) continue
+
+        const max_img_diff = 10; 
+        const max_w_diff = 20; 
+
+        let img_end = html.indexOf('"', from_idx+max_img_diff);
+
+        let w_start = html.indexOf("{", img_end) + 1;
+
+             
+        console.log('++++++++++++++++++++++++++', from_idx, img_end, w_start)
+
+        if (w_start > 0 && w_start - img_end < max_w_diff) {
+          let w_end = html.indexOf("}", w_start);
+          width = html.substring(w_start, w_end);
+          html = html.replace("{" + width + "}", "");
+        }
+
+       // console.log('froooom', from, to)
+        html = html.replace(from,  ' ' + width + to)
+        html = html.replace(from, '')
+      }
+
+      console.log(html)
+
+      return html
+
       const img_opener = '<img src="';
 
       if (start_search == undefined) {
@@ -48,7 +91,7 @@ export default {
 
       if (img_start < 0) {
         console.log('this.use_bottom_images', this.use_bottom_images, this.images_len)
-        if (this.use_bottom_images) {
+        if (this.use_bottom_images && false) {
           for (let i = 0; i < this.images.length; i++) {
 
             console.log(this.images[i].name)

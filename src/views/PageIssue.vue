@@ -963,18 +963,7 @@ export default mod;
 			</KMarked>
 			</Transition>
 
-			<Transition name="element_fade">
-			<div class="image-attachments" v-if="false && attachments.length > 0">
-				<div class="image-attachment-div"
-				v-for="(att, index) in attachments"
-				:key="index"
-				>
-					<span class="image-attachment-label">{{att.name}}</span>
-					<img class="image-attachment" :src="att.data">
-
-				</div>
-			</div>
-			</Transition>
+		
 
         <Transition name="element_fade">
           <KRelations
@@ -1026,6 +1015,7 @@ export default mod;
         <CommentList
             v-if="!loading && !edit_mode"
             v-model:actions="issue[0].actions"
+            :images="attachments"
         />
       </div>
       <div
@@ -1203,6 +1193,10 @@ $code-width: 160px;
   overflow-y: auto;
   overflow-anchor: none;
   //scrollbar-color: red;
+}
+
+#issue_main_panel * {
+  user-select: text;
 }
 
 #issue_main_panel .text {

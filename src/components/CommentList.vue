@@ -17,6 +17,7 @@
         :key="action.uuid"
         :action="action"
         style="margin-bottom: 10px"
+        :images="images"
       />
     </TransitionGroup>
   </div>
@@ -37,6 +38,10 @@ export default {
   props: {
     actions: {
       required: true,
+    },
+    images: {
+      type: Array,
+      default: [],
     },
   },
   computed: {
