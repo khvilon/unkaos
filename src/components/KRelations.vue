@@ -115,6 +115,10 @@ $relation_input_border_width: 2px;
   margin-bottom: 3px;
 }
 
+.relations * {
+  user-select: text;
+} 
+
 .add-relation-btn {
   margin-top: 5px;
   margin-left: 10px;

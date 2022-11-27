@@ -301,6 +301,10 @@ td:last-child {
   display: none;
 }
 
+.ktable * {
+  user-select: text;
+}
+
 .sort_arrow {
   display: none;
 }
