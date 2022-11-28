@@ -42,6 +42,13 @@ let methods = {
 
     //options.tree_view = tree_view
 
+    if(offset == undefined) {
+      let ans = await rest.run_method("read_issues_count", options);
+      if (ans == null) this.total_count = '-'
+      else if (ans[0] == undefined) this.total_count = '-'
+      else this.total_count = ans[0].count
+    }
+
     let issues = await rest.run_method("read_issues", options);
 
     console.log("this.loaded_issues0", issues);
@@ -130,6 +137,7 @@ let methods = {
 
 const data = {
   favourite_issues_type_uuid: "ac367512-c614-4f2a-b7d3-816018f71ad8",
+  total_count: 0,
   loaded_issues: [],
   loaded_issues_tree: [],
   name: "issues",
@@ -299,6 +307,7 @@ export default mod;
           @click="tree_view = !tree_view"
         ></i>
         <i class="bx bx-star top-menu-icon-btn" @click="add_to_favourites"> </i>
+        <span>{{loaded_issues.length}}/{{total_count}}</span>
       </div>
     </div>
 

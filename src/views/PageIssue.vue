@@ -928,7 +928,7 @@ export default mod;
         <div class="issue-line" v-if="!loading">
           <div class="issue-tags-container">
             <div class="label"><i class='bx bx-purchase-tag'></i></div>
-            <tagInput v-if="is_in_dev_mode"
+            <tagInput v-if="id!=''"
             :values="issue_tags"
             :value="tags"
             @value_selected="tag_selected"
