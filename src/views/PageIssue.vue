@@ -478,6 +478,12 @@ let methods = {
     });
     this.attachments = attachments.filter((a) => a.type.indexOf("image/") > -1);
 
+    this.sprints = this.sprints.sort(tools.compare_obj('start_date')).reverse()
+
+    this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
+
+    await this.read_selected_tags()
+
     this.title;
   },
 
@@ -572,11 +578,66 @@ let methods = {
 
    //await this.update_data({ uuid: this[this.name][0].uuid });
 
+  },
+  format_dt: function(dt){return tools.format_dt(dt)},
+  read_selected_tags: async function()
+  {
+    let tags_uuids = (await rest.run_method("read_issue_tags_selected", {issue_uuid: this.issue[0].uuid})).map((t)=>t.issue_tags_uuid)
+    let tags = this.issue_tags.filter((t)=>tags_uuids.includes(t.uuid))
+    this.tags = tags.sort(tools.compare_obj('name'));
+  },
+  tag_selected: async function(sel_val) {
+    console.log('tag_selectedtag_selected', sel_val)
+
+    
+    this.tags = sel_val
+    let have_new_tags = false
+    for(let i in this.tags) {
+      if(this.tags[i].created_at == undefined) {
+        let ans = await rest.run_method("create_issue_tags", this.tags[i]);
+        
+        this.tags[i].created_at = new Date()
+
+        have_new_tags = true;
+      }
+    }
+
+    this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
+
+    console.log('this.issue_tags', this.issue_tags)
+
+    this.add_tags()
+  },
+  add_tags: async function()
+  {
+    let db_tags = await rest.run_method("read_issue_tags_selected", {issue_uuid: this.issue[0].uuid})
+    let db_tags_uuids = db_tags.map((t)=>t.issue_tags_uuid)
+    let this_tags_uuids = this.tags.map((t)=>t.uuid)
+
+    console.log(db_tags_uuids, typeof db_tags_uuids, db_tags_uuids.contains)
+  
+    for(let i in this_tags_uuids)
+    {
+      if(!db_tags_uuids.includes(this_tags_uuids[i]) ) {
+        let t = {uuid: tools.uuidv4(), issue_uuid: this.issue[0].uuid, issue_tags_uuid: this_tags_uuids[i]}
+        await rest.run_method("create_issue_tags_selected", t);
+      }
+    }
+  },
+  tag_deselected: async function(sel_val)
+  {
+
+    console.log('deselected', sel_val)
+    let d_vals = await rest.run_method("read_issue_tags_selected", {issue_uuid: this.issue[0].uuid, issue_tags_uuid: sel_val.uuid})
+    if(d_vals == null) return
+    if(d_vals[0] == undefined) return
+    await rest.run_method("delete_issue_tags_selected", {uuid: d_vals[0].uuid})
   }
 };
 
 const data = {
   current_description: "",
+  tags: [],
   card_open: false,
   edit_mode: false,
   attachments: [],
@@ -623,8 +684,10 @@ const data = {
       type: "Select",
       clearable: "true",
     },
+    
   ],
   comment: "",
+  issue_tags: [],
   watch: false,
   comment_focused: false,
   transitions: [],
@@ -689,6 +752,8 @@ mod.computed.title = function () {
     return "Задача";
   }
 };
+
+mod.computed.created_at = ()=>tools.format_dt(issue[0].created_at)
 
 mod.computed.available_transitions = function () {
   //		if(this.current_status) console.log('aa');
@@ -808,33 +873,9 @@ export default mod;
       </StringInput>
       </Transition>
 
-      <Transition name="element_fade">
-      <SelectInput
-      v-if="!loading && issue[0] != undefined && id!='' && !$store.state['common']['is_mobile']"
-      label=""
-      :value="get_status()"
-      :values="statuses"
-      :disabled="transitions.length <= max_status_buttons_count"
-      class="issue-status-input"
-      :parameters="{clearable: false, reduce: obj => obj.uuid}"
-      @update_parent_from_input="update_statuses"
-      >
-      </SelectInput>
-      </Transition>
+      
     </div>
-		<Transition name="element_fade">
-		<div class="issue-transitions" v-if="!loading && id!='' && available_transitions.length <= max_status_buttons_count && !$store.state['common']['is_mobile']" style="display: flex;">
-		<KButton
-		v-for="(transition, index) in available_transitions"
-		:key="index"
-		class="status-btn"
-		:name="transition.name"
-		:func="''"
-		@click="set_status(transition.status_to_uuid)"
-		/>
-		</div>
-
-		</Transition >
+		
 
       <Transition name="element_fade">
         <div
@@ -884,7 +925,37 @@ export default mod;
     <div id="issue_down_panel">
       <div id="issue_main_panel" class="panel">
 
-        <tagInput v-if="is_in_dev_mode"> </tagInput>
+        <div class="issue-line" v-if="!loading">
+          <div class="issue-tags-container">
+            <div class="label"><i class='bx bx-purchase-tag'></i></div>
+            <tagInput v-if="is_in_dev_mode"
+            :values="issue_tags"
+            :value="tags"
+            @value_selected="tag_selected"
+            @value_deselected="tag_deselected"
+            @updated="field_updated"
+            > </tagInput>
+          </div>
+
+          <div class="issue-author-container" :v-if="!loading && id != ''">
+            <UserInput
+              label=""
+              v-if="!loading && id != ''"
+              :value="get_field_by_name('Автор').value"
+              :disabled="true"
+              class="issue-author-input"
+            >
+            </UserInput>
+
+            <StringInput
+              label=""
+              :v-if="!loading && id != ''"
+              :value="format_dt(issue[0].created_at)"
+              :disabled="true"
+            >
+            </StringInput>
+          </div>
+        </div>
 
         <Transition name="element_fade">
           <div class="issue-line" v-if="!loading">
@@ -1041,6 +1112,34 @@ export default mod;
             </StringInput>
 
 
+            <Transition name="element_fade">
+            <div class="issue-transitions" v-if="!loading && id!='' && available_transitions.length <= max_status_buttons_count && !$store.state['common']['is_mobile']" style="display: flex;">
+            <KButton
+            v-for="(transition, index) in available_transitions"
+            :key="index"
+            class="status-btn"
+            :name="transition.name"
+            :func="''"
+            @click="set_status(transition.status_to_uuid)"
+            />
+            </div>
+            </Transition >
+
+            <Transition name="element_fade">
+              <SelectInput
+              v-if="!loading && issue[0] != undefined && id!='' && !$store.state['common']['is_mobile']"
+              label="Статус"
+              :value="get_status()"
+              :values="statuses"
+              :disabled="transitions.length <= max_status_buttons_count"
+              class="issue-status-input"
+              :parameters="{clearable: false, reduce: obj => obj.uuid}"
+              @update_parent_from_input="update_statuses"
+              >
+              </SelectInput>
+              </Transition>
+
+
             <SelectInput
               v-if="
                 !loading &&
@@ -1103,22 +1202,7 @@ export default mod;
               @updated="field_updated"
             ></component>
 
-            <UserInput
-              label="Автор"
-              v-if="!loading && id != ''"
-              :value="get_field_by_name('Автор').value"
-              :disabled="true"
-              class="issue-author-input"
-            >
-            </UserInput>
-
-            <DateInput
-              label="Создана"
-              :v-if="id != ''"
-              :value="issue[0].created_at"
-              :disabled="true"
-            >
-            </DateInput>
+            
           </div>
         </Transition>
 
@@ -1172,7 +1256,9 @@ $code-width: 160px;
 }
 
 .issue-transitions {
-  padding: 10px;
+  padding-top: 10px;
+  flex-direction: column;
+  margin-bottom: 0px !important;
 }
 
 #issue_table_panel,
@@ -1250,7 +1336,7 @@ $code-width: 160px;
 .issue-line {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+ // margin-bottom: 20px;
 }
 #issue_description_textarea {
   padding: 4px 10px 6px 10px;
@@ -1260,8 +1346,9 @@ $code-width: 160px;
 .status-btn,
 .status-btn .btn_input {
   height: $input-height !important;
-  width: 200px !important;
-  margin-right: 20px;
+  width: 100% !important;
+  margin-bottom: 10px;
+  //margin-right: 20px;
 }
 
 .issue-name-input {
@@ -1307,8 +1394,8 @@ $code-width: 160px;
 
 .issue-code,
 .issue-status-input {
-  padding-right: 0 !important;
-  width: 180px;
+  //padding-right: 0 !important;
+  //width: 180px;
 }
 
 
@@ -1329,7 +1416,7 @@ $code-width: 160px;
 }
 
 #issue_card_scroller > div {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 #issue_card_scroller > div:last-child {
@@ -1406,6 +1493,42 @@ $code-width: 160px;
 .cancel-issue-edit-mode-btn {
   padding-left: $input-height;
 }
+
+.bx-purchase-tag
+{
+  font-size: 18px;
+  padding-top: 6px;
+}
+
+.issue-tags-container, .issue-author-container{
+  display: inherit;
+}
+
+.issue-tags-container .tag-input{
+  padding-left: 10px;
+}
+
+.issue-author-container *{
+  background: none !important;
+  border: none !important;
+}
+
+.issue-author-container svg{
+  display: none;
+}
+.issue-author-container .vs__actions, .issue-author-container .vs__search{
+  display: none;
+}
+
+.issue-author-container{
+  margin-top: -10px;
+    padding-top: -10px;
+}
+
+.issue-author-container .string-input{
+  width: 130px !important;
+}
+
 
 /*
 .v-enter-active,

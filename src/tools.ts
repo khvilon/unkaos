@@ -217,6 +217,8 @@ export default class tools {
   static format_dt(dt: number | string | Date): string {
     return new Date(dt).toLocaleString("ru", tools.dt_options);
   }
+
+  
 }
 
 declare global {
