@@ -51,6 +51,10 @@ export default {
       type: Array,
       default: [],
     },
+    tags: {
+      type: Array,
+      default: [],
+    },
     suggestions_on_panel: {
       type: Number,
       default: 8,
@@ -109,6 +113,11 @@ export default {
           type: "Sprint",
           field: "sprint_uuid",
         },
+        {
+          name: "Тэг",
+          type: "Tag",
+          field: "tags",
+        },
       ],
       brackets: ["(", ")"],
       operations: ["=", "!=", "<", ">", "like"],
@@ -134,6 +143,7 @@ export default {
         Status: this.issue_statuses,
         User: this.users,
         Sprint: this.sprints,
+        Tag: this.tags,
       };
 
       v.Status.push({ uuid: "(resolved)", name: this.resolved_name });

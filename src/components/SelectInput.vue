@@ -218,10 +218,15 @@ export default {
       #selected-option-container="{ option}"
       >
         
-          <div class="select-input-selected" :style="option.color ? { 'background': option.color } : ''">
+          <div class="select-input-selected" :style="[ 
+              option.color ? { 'background': option.color } : ''
+          ]">
           
           <span
           @click="$emit('tag_clicked', option)"
+          :style="[ 
+              option.text_color ? { 'color' : option.text_color } : ''
+          ]"
           class="vs__selected">
             {{ option.name }}
           </span>

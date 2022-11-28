@@ -14,18 +14,24 @@ export default {
   data() {
     return {
       color: undefined,
+      text_color: undefined,
     };
   },
   created() {},
   mounted() {
     //this.select_tab(0)
+
+    console.log(this.tag.text_color, this.tag.color)
     this.color = this.tag.color
+    this.text_color = this.tag.text_color
   },
   
   methods: {
     async save_tag() {
 
       this.tag.color = this.color
+      this.tag.text_color = this.text_color
+      console.log(this.tag)
       await rest.run_method("update_issue_tags", this.tag);
       this.$emit("tag_edited", this.tag);
       this.close()
@@ -35,7 +41,13 @@ export default {
     },
     color_updated(color){
       this.color = color
+      if(this.text_color == undefined) this.text_color = this.tag.text_color
     },
+    text_color_updated(text_color){
+      this.text_color = text_color
+      if(this.color == undefined) this.color = this.tag.color
+    },
+    
    
   },
 };
@@ -44,12 +56,18 @@ export default {
   
     <div class="panel modal edit-tag-modal">
       <ColorInput
-        label="Цвет"
+        label="Цвет заливки"
         :value="tag.color"
         @updated="color_updated"
       >
       </ColorInput>
 
+      <ColorInput
+        label="Цвет текста"
+        :value="tag.text_color"
+        @updated="text_color_updated"
+      >
+      </ColorInput>
      
 
       <div class="btn-container">

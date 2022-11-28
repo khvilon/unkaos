@@ -226,6 +226,11 @@ const data = {
       id: "",
       dictionary: "sprints",
     },
+    {
+      label: "tags",
+      id: "",
+      dictionary: "issue_tags",
+    },
   ],
 };
 
@@ -294,6 +299,7 @@ export default mod;
           :issue_types="issue_types"
           :users="users"
           :sprints="sprints"
+          :tags="issue_tags"
           :parent_query="search_query"
         >
         </IssuesSearchInput>
