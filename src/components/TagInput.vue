@@ -6,7 +6,8 @@ export default {
   watch: {},
   data() {
     let d = {
-      modal_visible: true,
+      modal_visible: false,
+      edited_tag: {}
     };
     return d;
   },
@@ -17,6 +18,10 @@ export default {
       default: "",
     },
     value: {
+      type: String,
+      default: "",
+    },
+    values: {
       type: String,
       default: "",
     },
@@ -53,15 +58,22 @@ export default {
     tag_clicked: function(tag)
     {
       console.log("tag_clicked",tag.name)
+      this.edited_tag = tag
+      this.modal_visible = true
 
     },
-    tag_selected: function(sel_val)
+    tag_selected: function(tag)
     {
-      this.$emit('value_selected', sel_val)
+      this.$emit('value_selected', tag)
     },
-    tag_deselected: function(sel_val)
+    tag_deselected: function(tag)
     {
-      this.$emit('value_deselected', sel_val)
+      this.$emit('value_deselected', tag)
+    },
+    tag_edited: function(tag)
+    {
+
+      console.log(tag)
     },
   },
 };
@@ -80,10 +92,13 @@ export default {
   >
   </SelectInput>
 
-  <EditTagModal >
-    v-if="modal_visible"
+  <EditTagModal
+  v-show="modal_visible"
         @close_edit_tag_modal="modal_visible = false"
-        @tag_edited=""
+        :tag="edited_tag"
+        @tag_edited="tag_edited"
+         >
+    
 
   </EditTagModal>
 </template>
@@ -118,6 +133,7 @@ export default {
 
 
 
+
 .tag-input .vs__search:hover,
  .tag-input .vs__search:focus,
  .tag-input .vs__search:active{
@@ -125,8 +141,13 @@ export default {
   min-width: 100px;
   width: auto;
   max-width: 500px;
-  
+  border-color: var(--border-color) !important;
+    border-style: var(--border-style) !important;
+    border-width: var(--border-width) !important;
+    border-radius: var(--border-radius) !important;
 }
+
+
 
 
 </style>

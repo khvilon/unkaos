@@ -302,6 +302,9 @@ crud.load = async function () {
   crud.querys["issue"]["update"] = crud.querys["issues"]["update"];
   crud.querys["issue"]["delete"] = crud.querys["issues"]["delete"];
 
+  crud.querys["issues_count"] = {};
+  crud.querys["issues_count"]["read"] = `SELECT COUNT(uuid) FROM filtered_issues WHERE DELETED_AT IS NULL`
+
   crud.querys["issue_actions"][
     "read"
   ] = `SELECT * FROM issue_actions t1 WHERE deleted_at IS NULL $@1`;
@@ -327,7 +330,7 @@ crud.load = async function () {
   crud.querys["dashboard"]["delete"] = crud.querys["dashboards"]["delete"];
 
   crud.querys["short_issue_info"] = {};
-  crud.querys["short_issue_info"]["read"] =
+  crud.querys["short_issue_info"]["read"] = 
     `SELECT 
     I.UUID, P.SHORT_NAME || '-' || I.NUM || ' ' || FV.value AS name
     FROM ISSUES I
@@ -502,11 +505,12 @@ crud.make_query = {
     let query = crud.querys[table_name]["read"];
 
     if (
-      table_name == "issues" &&
+      (table_name == "issues"  &&
       params["query"] != undefined &&
-      params["query"] != ""
-    ) {
-      let user_query = decodeURIComponent(atob(params["query"]));
+      params["query"] != "") || table_name == "issues_count")
+     {
+      let user_query = ' TRUE '
+      if (params["query"]) user_query = decodeURIComponent(atob(params["query"]));
 
       //console.log('user_query', user_query)
 
