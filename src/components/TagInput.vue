@@ -1,9 +1,15 @@
 <script>
 export default {
-  emits: ["search", "update_parent_from_input", "updated"],
+  emits: ["search", "update_parent_from_input", "updated", "value_selected", "value_deselected"],
 
   beforeCreate() {},
   watch: {},
+  data() {
+    let d = {
+      modal_visible: true,
+    };
+    return d;
+  },
   computed: {},
   props: {
     name_path: {
@@ -46,8 +52,17 @@ export default {
   methods: {
     tag_clicked: function(tag)
     {
-      console.log(tag.name)
-    }
+      console.log("tag_clicked",tag.name)
+
+    },
+    tag_selected: function(sel_val)
+    {
+      this.$emit('value_selected', sel_val)
+    },
+    tag_deselected: function(sel_val)
+    {
+      this.$emit('value_deselected', sel_val)
+    },
   },
 };
 </script>
@@ -55,15 +70,22 @@ export default {
 <template>
   <SelectInput
     :taggable="true"
-    :parameters="{ multiple: true }"
-    :values="[
-      { uuid: 1, name: 'rrr', color: 'red' },
-      { uuid: 2, name: 'ggg', color: 'green' },
-    ]"
+    :parameters="{ multiple: true, reduce: (obj) => obj.uuid}"
+    :value="value"
+    :values="values"
     class="tag-input"
     @tag_clicked="tag_clicked"
+    @value_selected="tag_selected"
+    @value_deselected="tag_deselected"
   >
   </SelectInput>
+
+  <EditTagModal >
+    v-if="modal_visible"
+        @close_edit_tag_modal="modal_visible = false"
+        @tag_edited=""
+
+  </EditTagModal>
 </template>
 
 <style lang="scss">

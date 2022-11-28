@@ -22,45 +22,28 @@ export default {
       default: "",
     },
   },
-  emits: ["update_parent_from_input", "updated"],
+  emits: ["upcolor_parent_from_input", "upcolord"],
   methods: {
     print(e) {
       console.log(e.srcElement.value);
       let val = e.srcElement.value;
-      this.$store.commit("id_push_update_" + this.parent_name, {
+      this.$store.commit("id_push_upcolor_" + this.parent_name, {
         id: this.id,
         val: val,
       });
     },
     format(val) {
-      var options = {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-      };
-
-      if (val == undefined || val == null || val == "") return "";
-      let date = new Date(val);
-
-      console.log(date.getFullYear);
-
-      if (date.getFullYear() == 1970) return "";
-
-      date = date.toISOString().split("T")[0];
-
-      //toLocaleString("ru", options)
-      if (date !== "Invalid Date") return date;
-      else return "";
+      return val
     },
     blur() {
-      this.$emit("updated", this.value);
+      this.$emit("upcolord", this.value);
     },
   },
   watch: {
     value: function (val, oldVal) {
       console.log(val, oldVal, this.id, this.parent_name);
 
-      this.$store.commit("id_push_update_" + this.parent_name, {
+      this.$store.commit("id_push_upcolor_" + this.parent_name, {
         id: this.id,
         val: val,
       });
@@ -70,12 +53,12 @@ export default {
 </script>
 
 <template>
-  <div class="date">
+  <div class="color">
     <div class="label">{{ label }}</div>
     <input
-      class="date-input"
+      class="color-input"
       @input="print"
-      type="date"
+      type="color"
       :value="format(value)"
       :disabled="disabled"
       @blur="blur"
@@ -85,17 +68,17 @@ export default {
 <style scoped lang="scss">
 @import "../css/global.scss";
 
-.date .date-input {
+.color .color-input {
   width: 100%;
   height: $input-height;
   color: var(--text-color);
   padding: 0 10px 0 10px;
 }
 
-.date {
+.color {
 }
 
-.date-input {
+.color-input {
   font-size: 15px;
   font-weight: 400;
   border-radius: var(--border-radius);
@@ -104,7 +87,7 @@ export default {
   width: 100%;
 }
 
-.date-input:disabled {
+.color-input:disabled {
   background: var(--disabled-bg-color);
 }
 </style>
