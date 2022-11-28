@@ -712,6 +712,11 @@
 			type: 'User',
 		},
 		{
+			id: 'issue_tags',
+			dictionary: 'issue_tags',
+			type: 'Tag',
+		},
+		{
 			label: 'fields',
 			id: '',
 			dictionary: 'fields',
@@ -1019,6 +1024,7 @@
 		@search_issues="get_issues"
 		:projects="projects"
 		:issue_statuses="issue_statuses"
+		:tags="issue_tags"
 		:issue_types="issue_types"
 		:users="users"
 		:sprints="sprints"

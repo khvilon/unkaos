@@ -286,9 +286,28 @@ let methods = {
   save: async function () {
     if(!(await this.check_issue_changed())) return
 
+    if(this.old_project_uuid && this.old_project_uuid != this.issue[0].project_uuid)
+    {
+      this.$store.commit("id_push_update_issue", {
+        id: 'num',
+        val: undefined,
+      });
+    }
+
     await this.$store.dispatch("save_issue");
 
-    this.saved();
+    if(this.old_project_uuid && this.old_project_uuid != this.issue[0].project_uuid)
+    {
+      //this.saved_new()
+      let ans = await rest.run_method("read_issues", {uuid: this.issue[0].uuid});
+      if(ans != null && ans[0] != undefined)
+      {
+        window.location.href =
+      "/issue/" + ans[0].project_short_name + '-' +  ans[0].num
+      }
+      console.log(ans);
+    }
+    else this.saved();
   },
   saved: async function (issue) {
     //this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
@@ -482,6 +501,8 @@ let methods = {
 
     this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
 
+    this.old_project_uuid = this.issue[0].project_uuid
+
     await this.read_selected_tags()
 
     this.title;
@@ -549,13 +570,31 @@ let methods = {
       );
       return false;
     }
+
+    this.old_project_uuid = ans[0].project_uuid
+
     return true
+  },
+  project_updated: async function(val) {
+
+    console.log(val)
+    return
+
+    this.$store.commit("id_push_update_issue", {
+        id: 'project_uuid',
+        val: '01d4a180-ba1e-43a4-bb1f-a8f3a918cf53',
+      });
+      this.$store.commit("id_push_update_issue", {
+        id: 'num',
+        val: undefined,
+      });
   },
   field_updated: async function () {
     console.log("field_updated");
     if (this.id == "") return;
 
     if(!(await this.check_issue_changed())) return
+    
 
     await this.$store.dispatch("save_issue");
 
@@ -687,6 +726,7 @@ const data = {
     
   ],
   comment: "",
+  old_project_uuid: '',
   issue_tags: [],
   watch: false,
   comment_focused: false,
@@ -978,12 +1018,12 @@ export default mod;
             </span>
 
             <SelectInput
-              v-if="id == ''"
+              v-if="id == '' || edit_mode"
               label="Проект"
               key="issue_project_input"
               :value="issue[0].project_uuid"
               :values="projects"
-              :disabled="id != ''"
+              :disabled="false"
               class="issue-project-input"
               :clearable="false"
               :parameters="{ clearable: false, reduce: (obj) => obj.uuid }"
@@ -1405,6 +1445,7 @@ $code-width: 160px;
 
 .issue-project-input {
   width: 27%;
+  margin-left: 10px;
 }
 
 #issue_card_scroller {

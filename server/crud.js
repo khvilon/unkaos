@@ -526,10 +526,13 @@ crud.make_query = {
                 ISS.DELETED_AT,
                 ISS.PROJECT_UUID,
                 ISS.STATUS_UUID,
-                ISS.SPRINT_UUID
+                ISS.SPRINT_UUID,
+                STRING_AGG(IT.issue_tags_uuid::text, ',') AS TAGS
                 FROM issues ISS
                 LEFT JOIN issue_actions IA
                 ON IA.ISSUE_UUID = ISS.UUID
+                LEFT JOIN issue_tags_selected IT
+                ON IT.ISSUE_UUID = ISS.UUID AND IT.DELETED_AT IS NULL
                 GROUP BY 
                 ISS.UUID,
                 ISS.NUM,
@@ -551,6 +554,8 @@ crud.make_query = {
         "!='(resolved)'",
         "!=ALL " + q_resolved_uuids
       );
+
+      
       //user_query = user_query.replaceAll("='(resolved)'", '=ANY '  + q_resolved_uuids )
 
       while (user_query.indexOf("attr#") > -1) {
@@ -558,13 +563,27 @@ crud.make_query = {
         user_query = user_query.replaceFrom("attr#", "I.", start);
         user_query = user_query.replaceFrom("#", "", start);
         user_query = user_query.replaceFrom("#", "", start);
+        user_query = user_query.replaceFrom("LIKE", '~', start);
+        
       }
       while (user_query.indexOf("fields#") > -1) {
         let start = user_query.indexOf("fields#");
         user_query = user_query.replaceFrom("fields#", f1, start);
         user_query = user_query.replaceFrom("#", f2, start);
         user_query = user_query.replaceFrom("#", ")", start);
+        user_query = user_query.replaceFrom(" like'", " ~ '", start);
       }
+
+      user_query = user_query.replaceAll(
+        "I.tags=",
+        "I.tags~"
+      );
+
+      user_query = user_query.replaceAll(
+        "' '",
+        "' '"
+      );
+      
 
       //user_query = user_query.replaceAll("I.updated_at", "MAX(IA.CREATED_AT)")
 
@@ -733,8 +752,8 @@ crud.make_query = {
       let [q, p] = crud.push_query(
         query,
         pg_params,
-        "UPDATE issues SET num = (SELECT COALESCE(MAX(num), 0) + 1 FROM issues WHERE project_uuid = $1) WHERE uuid = $2",
-        [params.project_uuid, params.uuid]
+        "UPDATE issues SET num = (SELECT COALESCE(MAX(num), 0) + 1 FROM issues WHERE project_uuid = $1 and uuid != $2) WHERE uuid = $3",
+        [params.project_uuid, params.uuid, params.uuid]
       );
 
       query = q;
