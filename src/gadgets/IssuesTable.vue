@@ -277,8 +277,8 @@ export default mod;
       </div>
     </div>
 
-    <div id="issues_down_panel" class="panel">
-      <div class="gadget_issues_table_panel">
+
+      <div class="gadget_issues_table_panel panel">
         <Transition name="element_fade">
           <KTable
             v-if="!loading"
@@ -290,7 +290,7 @@ export default mod;
           />
         </Transition>
       </div>
-    </div>
+
   </div>
 </template>
 
@@ -301,6 +301,7 @@ export default mod;
 .gadget_issues_table_panel {
   height: auto;
   width: 100%;
+  border: none !important;
 }
 
 .gadget_issues_table_panel .ktable {

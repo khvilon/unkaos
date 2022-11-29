@@ -393,6 +393,7 @@ $loading-bar-width: 200vw;
   //color: red;
   background-color: none;
   width: 12px;
+  height: 12px;
   opacity: 0;
 }
 
@@ -419,4 +420,22 @@ $loading-bar-width: 200vw;
 .change-password .btn_input {
   width: 100% !important;
 }
+
+.top-menu-icon-btn {
+	  height: $input-height;
+    width: $input-height;
+    font-size: calc($input-height - 10px);
+    border-radius: var(--border-radius);
+    margin-left: 10px;
+	  color: var(--text-color);
+    background-color: var(--button-color);
+    border-width: 1px;
+    border-color: var(--border-color);
+    border-style: solid;
+    border-style: outset;
+    cursor: pointer;
+	
+    text-align: center;
+	padding-top: 4px;
+  }
 </style>

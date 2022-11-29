@@ -111,7 +111,16 @@ page_helper.create_module = async function (data, methods) {
         short_name: proj_short,
       });
 
-      params = { project_uuid: proj[0].uuid, num: num };
+      params = { project_uuid: proj[0].uuid, num: num }
+
+      let issues = await rest.run_method("read_issue_uuid", params);
+
+      if(issues == null || issues[0] == undefined)
+      {
+        issues = await rest.run_method("read_old_issue_uuid", params);
+      }
+
+      params = { uuid: issues[0].uuid };
     } else if (this.uuid != undefined && this.uuid != "") {
       //	console.log('thisthis uuuuuuiiiiid', this.uuid)
 

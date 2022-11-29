@@ -355,6 +355,20 @@ crud.load = async function () {
     ON P.UUID = I.PROJECT_UUID 
     WHERE I.DELETED_AT IS NULL`;
 
+    crud.querys["issue_uuid"] = {};
+    crud.querys["issue_uuid"]["read"] = `SELECT 
+    UUID
+    FROM ISSUES t1
+    WHERE DELETED_AT IS NULL $@1`;
+
+    
+    crud.querys["old_issue_uuid"] = {};
+    crud.querys["old_issue_uuid"]["read"] = `SELECT 
+    ISSUE_UUID AS UUID
+    FROM OLD_ISSUES_NUM t1
+    WHERE DELETED_AT IS NULL $@1`;
+    
+
   crud.querys["formated_relations"] = {};
   crud.querys["formated_relations"]["read"] =
     `
@@ -752,7 +766,13 @@ crud.make_query = {
       let [q, p] = crud.push_query(
         query,
         pg_params,
-        "UPDATE issues SET num = (SELECT COALESCE(MAX(num), 0) + 1 FROM issues WHERE project_uuid = $1 and uuid != $2) WHERE uuid = $3",
+        `UPDATE issues SET num = 
+          (SELECT COALESCE(MAX(num), 0) + 1 FROM
+           ((SELECT uuid, project_uuid, num FROM issues)
+            UNION 
+           (SELECT uuid, project_uuid, num FROM old_issues_num)) t
+          WHERE project_uuid = $1 and uuid != $2) 
+        WHERE uuid = $3`,
         [params.project_uuid, params.uuid, params.uuid]
       );
 
