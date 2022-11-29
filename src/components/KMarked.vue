@@ -138,6 +138,15 @@ export default {
     },
 
     md: function (input) {
+
+      marked.setOptions({
+      renderer: new marked.Renderer(),
+      gfm: true,
+      breaks: true,
+      xhtml: true,
+    });
+
+
       let html = marked(input);
       html = html.replaceAll('<a href="http', '<a target="_ blank" href="http');
       html = this.inject_images(html);
@@ -226,12 +235,30 @@ a {
   max-width: -webkit-fill-available;
   box-sizing: border-box;
   outline: var(--text-color) solid 1px;
+  cursor: pointer;
 }
 
 .attachment-img {
   max-width: -webkit-fill-available;
   box-sizing: border-box;
   outline: var(--text-color) solid 1px;
+}
+
+.marked-container img:active {
+    max-width: 100% !important; 
+    height: auto;
+    position: fixed ;
+    left: 0px ;
+    top: 0px ;
+    width: 100% ;
+    /* max-width: 100vw; */
+    z-index: 100;
+    border-left-width: 100px;
+    border-right-width: 100px;
+    border-top-width: 30px;
+    border-bottom-width: 30px;
+    border-style: solid;
+    border-color: var(--loading-bar-color);
 }
 
 .marked-container pre {

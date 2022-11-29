@@ -37,7 +37,8 @@ let methods = {
           let start_pos = e.target.selectionStart;
 
           let img_teg =
-            '<img src="' + attachment.name + "." + attachment.extention + '">';
+
+            '![](' + attachment.name + "." + attachment.extention + '){width=x%}';
 
           if (e.target.id == "issue_description_textarea") {
             let f = this.get_field_by_name("Описание");
@@ -180,7 +181,7 @@ let methods = {
     //		console.log('tyyyyypes', this.issue_types)
     if (this.issue_types == undefined) return [];
     this.update_type(this.issue[0].type_uuid);
-    return this.issue_types;
+    return this.issue_types.sort(tools.compare_obj('name'));
   },
   set_status: async function (status_uuid) {
     if(!(await this.check_issue_changed())) return false
@@ -288,6 +289,13 @@ let methods = {
 
     if(this.old_project_uuid && this.old_project_uuid != this.issue[0].project_uuid)
     {
+      let old_issues_num = {
+        num: this.issue[0].num, 
+        project_uuid: this.old_project_uuid, 
+        uuid: tools.uuidv4(), 
+        issue_uuid: this.issue[0].uuid
+      }
+      rest.run_method('create_old_issues_num', old_issues_num)
       this.$store.commit("id_push_update_issue", {
         id: 'num',
         val: undefined,
@@ -463,14 +471,17 @@ let methods = {
       (this.id == undefined || this.id == "") &&
       this.url_params.clone == "true" &&
       localStorage.cloned_params != undefined
-    ) {
+    )
+    {
       this.url_params = JSON.parse(localStorage.cloned_params);
 
       this.load_params_from_localstorage("cloned_params", true);
-    } else if (
+    } 
+    else if (
       (this.id == undefined || this.id == "") &&
       localStorage.last_saved_issue_params != undefined
-    ) {
+    ) 
+    {
       this.load_params_from_localstorage("last_saved_issue_params");
     }
 
@@ -504,6 +515,8 @@ let methods = {
     this.old_project_uuid = this.issue[0].project_uuid
 
     await this.read_selected_tags()
+
+    this.current_description = this.get_field_by_name('Описание').value
 
     this.title;
   },
@@ -574,20 +587,6 @@ let methods = {
     this.old_project_uuid = ans[0].project_uuid
 
     return true
-  },
-  project_updated: async function(val) {
-
-    console.log(val)
-    return
-
-    this.$store.commit("id_push_update_issue", {
-        id: 'project_uuid',
-        val: '01d4a180-ba1e-43a4-bb1f-a8f3a918cf53',
-      });
-      this.$store.commit("id_push_update_issue", {
-        id: 'num',
-        val: undefined,
-      });
   },
   field_updated: async function () {
     console.log("field_updated");
@@ -908,7 +907,7 @@ export default mod;
       class='issue-code'
       label=''
       :disabled="true"
-      :value="id"
+      :value="issue[0].project_short_name + '-' + issue[0].num"
       >
       </StringInput>
       </Transition>
@@ -1066,8 +1065,8 @@ export default mod;
         </Transition>
 
 			<Transition name="element_fade">
-			<KMarked v-if="!loading && !edit_mode && id!=''"
-			:val="get_field_by_name('Описание').value ? get_field_by_name('Описание').value : ''"
+			<KMarked v-if="!loading && id!=''"
+			:val="current_description ? current_description : ''"
 			:images="attachments"
       :use_bottom_images="true"
 			>

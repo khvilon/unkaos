@@ -121,6 +121,8 @@ export default {
   margin-right: 10px;
 }
 
+
+
 @media (max-width: 420px) {
   .topbar li .tooltip {
     display: none;
