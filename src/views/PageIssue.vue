@@ -1279,6 +1279,7 @@ $code-width: 160px;
   height: $top-menu-height;
   display: flex;
   padding-top: 3px;
+  padding-left: 15px;
 }
 
 .issue-top-buttons {
@@ -1310,7 +1311,7 @@ $code-width: 160px;
 }
 
 #issue_main_panel {
-  padding: 10px 8px 10px 20px;
+  padding: 10px 23px 10px 35px;
   border-right: 8px solid var(--panel-bg-color);
   display: flex;
   flex-direction: column;
@@ -1450,7 +1451,7 @@ $code-width: 160px;
 #issue_card_scroller {
   display: flex;
   flex-direction: column;
-  padding: 10px 20px 10px 20px;
+  padding: 10px 25px 10px 25px;
   height: calc(100vh - $top-menu-height);
   overflow-y: scroll;
 }

@@ -24,7 +24,11 @@ export default {
 <template>
   <div class="issue-comment">
     <div class="issue-comment-header">
-      {{ dt }} <strong>{{ action.author }}</strong> {{ action.name }}
+      <span>{{ dt }}</span> <strong>{{ action.author }}</strong> 
+      <div v-if="action.name=='💬'" class="issue-action-icon bx bx-message-dots"></div>
+      <div v-if="action.name=='📝'" class="issue-action-icon bx bx-edit"></div>
+      <div v-if="action.name=='🔁'" class="issue-action-icon bx bx-transfer"></div>
+
     </div>
     <div class="issue-comment-text" v-if="action.value.length !== 0">
       <KMarked :val="action.value" :images="images"> </KMarked>
@@ -39,7 +43,13 @@ export default {
 }
 
 .issue-comment-header {
+  display: flex;
   margin-bottom: 3px;
+  text-align: center;
+}
+
+.issue-comment-header * {
+  margin-right: 5px;
 }
 
 .issue-comment-text {
@@ -49,5 +59,11 @@ export default {
   border-style: var(--border-style);
   border-radius: var(--border-radius);
   padding: 6px 8px 6px 8px;
+}
+
+.issue-action-icon
+{
+  margin-top: 4px;
+  font-size: 14px !important;
 }
 </style>
