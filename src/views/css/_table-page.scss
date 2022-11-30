@@ -21,12 +21,8 @@ $table-card-width: calc(100% - $table-panel-width);
   width: $table-card-width;
   display: inline-block;
 }
-.table_card > div {
-  margin-bottom: 20px;
-}
 
-//TODO remove this when boolean is changed to div
-.table_card > .boolean {
+.table_card > *:not(:last-child) {
   margin-bottom: 20px;
 }
 

@@ -36,9 +36,7 @@ let methods = {
 
           let start_pos = e.target.selectionStart;
 
-          let img_teg =
-
-            '![](' + attachment.name + "." + attachment.extention + '){width=x%}';
+          let img_teg = '![](' + attachment.name + "." + attachment.extention + '){width=x%}';
 
           if (e.target.id == "issue_description_textarea") {
             let f = this.get_field_by_name("Описание");
@@ -330,9 +328,9 @@ let methods = {
 
     if (this.id != "") return;
 
-    //this.$router.push('/issue/' + issue[0].project_short_name + '-' + issue[0].num)
+    //this.$router.push('/issue/' + this.issueProjectNum)
     window.location.href =
-      "/issue/" + issue[0].project_short_name + "-" + issue[0].num;
+      "/issue/" + this.issueProjectNum;
 
     //
 
@@ -340,7 +338,7 @@ let methods = {
   },
   saved_new: function (issue) {
     window.location.href =
-      "/issue/" + issue[0].project_short_name + "-" + issue[0].num;
+      "/issue/" + this.issueProjectNum;
   },
   deleted: function (issue) {
     window.location.href = "/issues/";
@@ -796,7 +794,16 @@ mod.computed.title = function () {
     return "Задача";
   }
 };
-
+mod.computed.issueProjectNum = function () {
+  if (
+    this.issue[0].project_short_name !== undefined &&
+    this.issue[0].num !== undefined
+  ) {
+    return this.issue[0].project_short_name + "-" + this.issue[0].num;
+  } else {
+    return "Новая задача";
+  }
+};
 mod.computed.created_at = ()=>tools.format_dt(issue[0].created_at)
 
 mod.computed.available_transitions = function () {
@@ -907,12 +914,12 @@ export default mod;
     <div class="issue-top-buttons">
       <Transition name="element_fade">
       <StringInput
-      v-if="!loading && issue[0] != undefined && !$store.state['common']['is_mobile']"
-      key="issue_code"
-      class='issue-code'
-      label=''
-      :disabled="true"
-      :value="issue[0].project_short_name + '-' + issue[0].num"
+        v-if="!loading && issue[0] !== undefined && !$store.state['common']['is_mobile']"
+        key="issue_code"
+        class='issue-code'
+        label=''
+        :disabled="true"
+        :value="issueProjectNum"
       >
       </StringInput>
       </Transition>
@@ -969,9 +976,9 @@ export default mod;
     <div id="issue_down_panel">
       <div id="issue_main_panel" class="panel">
 
-        <div class="issue-line" v-if="!loading">
+        <div class="issue-line" v-if="!loading && id !==''">
           <div class="issue-tags-container">
-            <div class="label"><i class='bx bx-purchase-tag'></i></div>
+            <div class="tag-label-container"><i class='bx bx-purchase-tag'></i></div>
             <tagInput v-if="id!=''"
             :values="issue_tags"
             :value="tags"
@@ -981,7 +988,13 @@ export default mod;
             > </tagInput>
           </div>
 
-          <div class="issue-author-container" :v-if="!loading && id != ''">
+          <div class="issue-author-container"
+            :v-if="
+              !loading &&
+              id !== '' &&
+              get_field_by_name('Автор').value !== undefined
+            "
+          >
             <UserInput
               label=""
               v-if="!loading && id != ''"
@@ -996,6 +1009,7 @@ export default mod;
               :v-if="!loading && id != ''"
               :value="format_dt(issue[0].created_at)"
               :disabled="true"
+              v-if="issue[0].created_at!==undefined"
             >
             </StringInput>
           </div>
@@ -1048,20 +1062,29 @@ export default mod;
           textarea_id="issue_description_textarea"
           @paste="pasted"
           @update_parent_from_input="edit_current_description"
-          
+          style="margin-top: 15px"
         >
         </TextInput>
 
+        <div id="issue_footer_buttons"
+             v-if="!loading && id === ''">
+          <KButton
+            id="save_issue_btn"
+            :name="'Создать задачу'"
+            :func="'save_issue'"
+            @button_ans="saved_new"
+          />
+        </div>
+
         <Transition name="element_fade">
-          <div class="edit-mode-btn-container">
+          <div class="edit-mode-btn-container"
+               v-if="!loading && id != '' && (edit_mode || id == '')">
             <KButton
-              v-if="!loading && id != '' && (edit_mode || id == '')"
               class="save-issue-edit-mode-btn"
               name="Сохранить"
               @click="save"
             />
             <KButton
-              v-if="!loading && id != '' && (edit_mode || id == '')"
               class="cancel-issue-edit-mode-btn"
               name="Отменить"
               @click="cancel_edit_mode"
@@ -1070,12 +1093,12 @@ export default mod;
         </Transition>
 
 			<Transition name="element_fade">
-			<KMarked v-if="!loading && id!=''"
-			:val="current_description ? current_description : ''"
-			:images="images"
-      :use_bottom_images="true"
-			>
-			</KMarked>
+        <KMarked v-if="!loading"
+          :val="current_description ? current_description : ''"
+          :images="images"
+          :use_bottom_images="true"
+        >
+        </KMarked>
 			</Transition>
 
 		
@@ -1245,28 +1268,9 @@ export default mod;
               :values="get_available_values(input.field_uuid)"
               @updated="field_updated"
             ></component>
-
             
           </div>
         </Transition>
-
-        <div id="issue_card_footer_div" class="footer_div">
-          <KButton
-            v-if="!loading && id == ''"
-            id="save_issue_btn"
-            :name="'Сохранить'"
-            :func="'save_issue'"
-            @button_ans="saved_new"
-          />
-          <KButton
-            v-if="false && !loading && id != ''"
-            id="delete_issue_btn"
-            :name="'Удалить'"
-            :func="'delete_issue'"
-            @button_ans="deleted"
-            :disabled="true"
-          />
-        </div>
       </div>
     </div>
   </div>
@@ -1292,12 +1296,8 @@ $code-width: 160px;
   padding: 10px 20px;
 }
 
-.issue-top-buttons > div {
+.issue-top-buttons > *:not(:last-child) {
   margin-right: 20px;
-}
-
-.issue-top-buttons > div:last-child {
-  margin-right: 0;
 }
 
 .issue-transitions {
@@ -1316,8 +1316,8 @@ $code-width: 160px;
 }
 
 #issue_main_panel {
-  padding: 10px 23px 10px 35px;
-  border-right: 8px solid var(--panel-bg-color);
+  padding: 10px 30px 10px 35px;
+  border-right: 5px solid var(--panel-bg-color);
   display: flex;
   flex-direction: column;
   width: $issue-workspace-width;
@@ -1338,6 +1338,23 @@ $code-width: 160px;
   width: 100vw !important;
 }
 
+#issue_footer_buttons {
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+
+#save_issue_btn {
+  width: 160px;
+}
+
+#save_issue_btn input {
+  width: 100%;
+  height: 30px;
+}
+
 #issue_card {
   width: $card-width;
   margin-left: 0px;
@@ -1355,16 +1372,6 @@ $code-width: 160px;
   left: 100vw !important;
 }
 
-#save_issue_btn,
-#delete_issue_btn {
-  padding: 0px 20px 15px 20px;
-  width: 100%;
-}
-
-#save_issue_btn input,
-#delete_issue_btn input {
-  width: 100%;
-}
 
 #issue_down_panel {
   display: flex;
@@ -1383,8 +1390,11 @@ $code-width: 160px;
   justify-content: space-between;
  // margin-bottom: 20px;
 }
+
 #issue_description_textarea {
   padding: 4px 10px 6px 10px;
+  min-height: 60px;
+  transition: none;
 }
 
 
@@ -1461,12 +1471,8 @@ $code-width: 160px;
   overflow-y: scroll;
 }
 
-#issue_card_scroller > div {
+#issue_card_scroller > *:not(:last-child) {
   margin-bottom: 15px;
-}
-
-#issue_card_scroller > div:last-child {
-  margin-bottom: 0;
 }
 
 #issue_card_scroller::-webkit-scrollbar {
@@ -1512,14 +1518,15 @@ $code-width: 160px;
 }
 
 .issue-title-span {
-  margin-top: 10px;
+  margin: 10px 0;
   font-size: 22px;
   width: 100%;
-  text-align: center;
   user-select: text;
 }
 
 .edit-mode-btn-container {
+  margin-top: 10px;
+  margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
 }
@@ -1543,7 +1550,7 @@ $code-width: 160px;
 .bx-purchase-tag
 {
   font-size: 18px;
-  padding-top: 6px;
+  padding: 6px 0;
 }
 
 .issue-tags-container, .issue-author-container{
@@ -1551,7 +1558,8 @@ $code-width: 160px;
 }
 
 .issue-tags-container .tag-input{
-  padding-left: 10px;
+  font-size: 10px;
+  padding-left: 5px;
 }
 
 .issue-author-container *{
@@ -1567,8 +1575,6 @@ $code-width: 160px;
 }
 
 .issue-author-container{
-  margin-top: -10px;
-    padding-top: -10px;
 }
 
 .issue-author-container .string-input{
