@@ -351,7 +351,8 @@ let methods = {
     this.$store.state["issue"]["selected_issue"].attachments.push(att);
     let ans = await rest.run_method("upsert_attachments", att);
 
-    if (att.type.indexOf("image") > -1) this.attachments.push(att);
+    this.attachments.push(att);
+    if (att.type.indexOf("image") > -1) this.images.push(att);
   },
   delete_attachment: async function (att) {
     let attachments = this.$store.state["issue"]["selected_issue"].attachments;
@@ -359,13 +360,14 @@ let methods = {
       if (attachments[i].uuid == att.uuid)
         this.$store.state["issue"]["selected_issue"].attachments.splice(i, 1);
     }
-    let ans = await rest.run_method("delete_attachments", att);
+    let ans = await rest.run_method("delete_attachments", {uuid: att.uuid});
 
-    if (att.type.indexOf("image") < 0) return;
     for (let i in this.attachments) {
-      if (this.attachments[i].uuid == att.uuid) {
-        this.attachments.splice(i, 1);
-      }
+      if (this.attachments[i].uuid == att.uuid) this.attachments.splice(i, 1);
+    }
+    if (att.type.indexOf("image") < 0) return;
+    for (let i in this.images) {
+      if (this.images[i].uuid == att.uuid) this.images.splice(i, 1);
     }
   },
   get_available_values: function (field_uuid) {
@@ -503,10 +505,10 @@ let methods = {
     });
     this.watch = ans.length > 0;
 
-    let attachments = await rest.run_method("read_attachments", {
+    this.attachments = await rest.run_method("read_attachments", {
       issue_uuid: this.issue[0].uuid,
     });
-    this.attachments = attachments.filter((a) => a.type.indexOf("image/") > -1);
+    this.images = this.attachments.filter((a) => a.type.indexOf("image/") > -1);
 
     this.sprints = this.sprints.sort(tools.compare_obj('start_date')).reverse()
 
@@ -517,6 +519,8 @@ let methods = {
     await this.read_selected_tags()
 
     this.current_description = this.get_field_by_name('Описание').value
+
+    console.log('aaaaattt', this.issue[0].attachments)
 
     this.title;
   },
@@ -679,6 +683,7 @@ const data = {
   card_open: false,
   edit_mode: false,
   attachments: [],
+  images: [],
   name: "issue",
   label: "Поля",
   saved_descr: "",
@@ -1067,7 +1072,7 @@ export default mod;
 			<Transition name="element_fade">
 			<KMarked v-if="!loading && id!=''"
 			:val="current_description ? current_description : ''"
-			:images="attachments"
+			:images="images"
       :use_bottom_images="true"
 			>
 			</KMarked>
@@ -1092,7 +1097,7 @@ export default mod;
             v-if="!loading"
             label=""
             id="issue-attachments"
-            :attachments="issue[0].attachments"
+            :attachments="attachments"
             @attachment_added="add_attachment"
             @attachment_deleted="delete_attachment"
           >
@@ -1125,7 +1130,7 @@ export default mod;
         <CommentList
             v-if="!loading && !edit_mode"
             v-model:actions="issue[0].actions"
-            :images="attachments"
+            :images="images"
         />
       </div>
       <div

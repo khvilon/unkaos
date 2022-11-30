@@ -317,7 +317,7 @@ async function init()
                     }
                 }
 
-                console.log('ppppppp', params)
+                console.log('ppppppp', params, table_name)
 
 
                 let ans = await crud.do(subdomain, method, table_name, params)

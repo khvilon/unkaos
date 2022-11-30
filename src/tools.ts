@@ -218,6 +218,22 @@ export default class tools {
     return new Date(dt).toLocaleString("ru", tools.dt_options);
   }
 
+  static copy_text_to_clipboard(text) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";  //avoid scrolling to bottom
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+        var successful = document.execCommand('copy');
+    } catch (err) {
+        console.log( err);
+    }
+    document.body.removeChild(textArea)
+    return;
+  }
+
   
 }
 
