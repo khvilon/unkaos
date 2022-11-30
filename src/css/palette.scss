@@ -60,6 +60,8 @@
 
     --scroll-color: rgb(70, 70, 70);
     --scroll-shadow-color: rgb(10,10,10);
+
+    --link-hover-color: green;
 }
 [theme="light"]
 {
@@ -122,6 +124,8 @@
 
     --scroll-color: rgb(235, 246, 255);
     --scroll-shadow-color: rgb(165,176,185);
+
+    --link-hover-color: green;
 }
 [theme="dark"]
 {
@@ -185,6 +189,8 @@
 
     --scroll-color: rgb(65, 70, 73);
     --scroll-shadow-color: rgb(10,15,20);
+
+    --link-hover-color: green;
 }
 [theme="pink"]
 {
@@ -246,4 +252,6 @@
 
     --scroll-color: rgb(245, 150, 205);
     --scroll-shadow-color: rgb(205,110,165);
+
+    --link-hover-color: green;
 }

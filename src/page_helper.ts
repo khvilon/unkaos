@@ -218,7 +218,7 @@ page_helper.create_module = async function (data, methods) {
   methods.init_part2 = function (params) {
     for (const i in this.inputs) {
       const name = this.inputs[i].dictionary;
-      console.log(name);
+      //console.log(name);
       if (name == undefined) continue;
       if (this.$store.state[name][name + "_updated"] == undefined) {
         setTimeout(this.init_part2, 50, params);

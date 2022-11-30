@@ -111,28 +111,41 @@ export default {
 }
 
 .tag-input .vs__dropdown-toggle{
+  display: flex;
+  align-items: center;
   background: none;
   border: none;
+  padding: 0;
 }
 
 .tag-input .vs__selected{
-  margin: 0;
-    padding-top: 0;
+  margin: 0 0 0 5px;
+  padding-top: 0;
   background: none;
   cursor: pointer;
   border: none;
 }
+
+.tag-input .vs__search {
+  margin: 0;
+}
+
+.tag-input .select-input-selected {
+  margin-right: 5px !important;
+  height: 23px;
+}
+
+.tag-input .vs__selected-options {
+  display: flex;
+  align-items: center;
+}
+
 
 .tag-input i{
   margin-top: 4px;
     font-size: 20px;
     cursor: pointer;
 }
-
-
-
-
-
 
 .tag-input .vs__search:hover,
  .tag-input .vs__search:focus,
@@ -146,8 +159,5 @@ export default {
     border-width: var(--border-width) !important;
     border-radius: var(--border-radius) !important;
 }
-
-
-
 
 </style>

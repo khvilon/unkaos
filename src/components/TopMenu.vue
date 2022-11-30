@@ -46,9 +46,7 @@ export default {
         max-height: calc(100% - 60px);
       "
     >
-      <span>
-        {{ label }}
-      </span>
+      <span class="topbar-label">{{ label }}</span>
       <SearchInput :name="name" :collumns="collumns" />
 
       <KButton
@@ -105,7 +103,7 @@ export default {
   background: var(--input-bg-color);
 }
 
-.topbar span {
+.topbar-label {
   font-size: 20px;
   font-weight: 400;
   margin-top: 1px;
@@ -120,8 +118,6 @@ export default {
   margin-left: 20px;
   margin-right: 10px;
 }
-
-
 
 @media (max-width: 420px) {
   .topbar li .tooltip {

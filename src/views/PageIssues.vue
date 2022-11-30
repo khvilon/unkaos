@@ -6,8 +6,6 @@ import d from "../dict.ts";
 import rest from "../rest";
 import tools from "../tools.ts";
 
-console.log("d", d.get("Название"), d);
-
 let methods = {
   add_with_children: function (obj, arr, ch_level) {
     if (ch_level > 10) return arr;
@@ -19,7 +17,6 @@ let methods = {
     if (obj.children == undefined) return arr;
 
     for (let i in obj.children) {
-      console.log(obj, ch_level);
       arr = this.add_with_children(obj.children[i], arr, ch_level + 1);
     }
 
@@ -51,8 +48,6 @@ let methods = {
 
     let issues = await rest.run_method("read_issues", options);
 
-    console.log("this.loaded_issues0", issues);
-
     if (offset != undefined) {
       for (let i in issues) {
         this.loaded_issues.push(issues[i]);
@@ -81,8 +76,6 @@ let methods = {
       }
     }
 
-    console.log("this.loaded_issues0", this.loaded_issues);
-
     this.loaded_issues_tree = [];
 
     for (let i in this.loaded_issues) {
@@ -94,11 +87,11 @@ let methods = {
         );
     }
 
-    console.log(
+   /* console.log(
       "this.loaded_issues1",
       this.loaded_issues,
       this.loaded_issues_tree
-    );
+    );*/
 
     //this.loaded_issues = issues
     //console.log(this.loaded_issues[0], this.issues[0])
@@ -286,7 +279,7 @@ export default mod;
           max-height: calc(100% - 60px);
         "
       >
-        <span>{{ label }}</span>
+        <span class="topbar-label">{{ label }}</span>
 
         <IssuesSearchInput
           label=""
@@ -313,7 +306,7 @@ export default mod;
           @click="tree_view = !tree_view"
         ></i>
         <i class="bx bx-star top-menu-icon-btn" @click="add_to_favourites"> </i>
-        <span>{{loaded_issues.length}}/{{total_count}}</span>
+        <span class="topbar-label">{{loaded_issues.length}}/{{total_count}}</span>
       </div>
     </div>
 
