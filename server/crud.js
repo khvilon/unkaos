@@ -309,12 +309,8 @@ crud.load = async function () {
     "read"
   ] = `SELECT * FROM issue_actions t1 WHERE deleted_at IS NULL $@1`;
 
-  crud.querys["attachments"][
-    "read"
-  ] = `SELECT * FROM attachments T1 WHERE TRUE $@1`;
-  crud.querys["attachments"][
-    "delete"
-  ] = `DELETE FROM attachments WHERE uuid = $@1`;
+  crud.querys["attachments"]["read"] = `SELECT * FROM attachments T1 WHERE TRUE $@1`;
+  crud.querys["attachments"]["delete"] = `DELETE FROM attachments WHERE uuid = $@1`;
 
   crud.querys["board"] = {};
   crud.querys["board"]["read"] = crud.querys["boards"]["read"];
@@ -577,7 +573,7 @@ crud.make_query = {
         user_query = user_query.replaceFrom("attr#", "I.", start);
         user_query = user_query.replaceFrom("#", "", start);
         user_query = user_query.replaceFrom("#", "", start);
-        user_query = user_query.replaceFrom("LIKE", '~', start);
+        user_query = user_query.replaceFrom("like'", " like '", start);
         
       }
       while (user_query.indexOf("fields#") > -1) {
@@ -585,7 +581,7 @@ crud.make_query = {
         user_query = user_query.replaceFrom("fields#", f1, start);
         user_query = user_query.replaceFrom("#", f2, start);
         user_query = user_query.replaceFrom("#", ")", start);
-        user_query = user_query.replaceFrom(" like'", " ~ '", start);
+        user_query = user_query.replaceFrom("like'", " like '", start);
       }
 
       user_query = user_query.replaceAll(
@@ -638,6 +634,8 @@ crud.make_query = {
   },
 
   delete: function (table_name, params) {
+
+    console.log('table_name', table_name)
     let query = crud.querys[table_name]["delete"];
 
     return [query.replace("$@1", "'" + params.uuid + "'"), []];
@@ -849,7 +847,8 @@ crud.make_query = {
 };
 
 crud.get_query = function (method, table_name, params) {
-  //console.log(func_name, 'aa', method, 'bb', table_name)
+  //console.log( method, 'bb', table_name)
+  if (table_name == undefined) return ["", []];
 
   let [query, pg_params] = crud.make_query[method](table_name, params);
 

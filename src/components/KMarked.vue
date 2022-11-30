@@ -235,7 +235,7 @@ a {
   max-width: -webkit-fill-available;
   box-sizing: border-box;
   outline: var(--text-color) solid 1px;
-  cursor: pointer;
+  cursor: zoom-in;
 }
 
 .attachment-img {
@@ -259,6 +259,8 @@ a {
     border-bottom-width: 30px;
     border-style: solid;
     border-color: var(--loading-bar-color);
+    cursor: zoom-out;
+  
 }
 
 .marked-container pre {
