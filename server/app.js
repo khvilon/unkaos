@@ -32,9 +32,9 @@ const dict =
 }
 
 app.use(cors());
-app.use(bodyParser.json({limit: '20mb'}));
-app.use(bodyParser.raw({limit: '20mb'}));
-app.use(bodyParser.urlencoded({limit: '20mb', extended: true}));
+app.use(bodyParser.json({limit: '150mb'}));
+app.use(bodyParser.raw({limit: '150mb'}));
+app.use(bodyParser.urlencoded({limit: '150mb', extended: true}));
 
 
 async function notify(issue_uuid, user_uuid)

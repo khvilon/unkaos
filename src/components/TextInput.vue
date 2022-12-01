@@ -46,11 +46,8 @@ export default {
     resize() {
       console.log("resizing");
       if (this.$refs.text_input == undefined) return;
-      //this.$refs.text_input.style.height = "auto";
-      //this.$refs.text_input.style.height = 0
-
       this.$refs.text_input.style.height = `${
-        this.$refs.text_input_shadow.scrollHeight + 4
+        this.$refs.text_input_shadow.scrollHeight + 10
       }px`;
     },
     getCaretIndex(element) {
@@ -106,18 +103,18 @@ export default {
       this.resize();
     })
   },
-  computed: {
+  /*computed: {
     scroll_height: function () {
       if (this.$refs == undefined || this.$refs.text_input_shadow == undefined)
         return 0;
       return this.$refs.text_input_shadow.scrollHeight;
     },
-  },
+  },*/
 
   watch: {
-    scroll_height: function () {
+    /*scroll_height: function () {
       this.resize();
-    },
+    },*/
     value: function (val, oldVal) {
       if (this.val == val) return;
       this.val = val;
@@ -172,7 +169,7 @@ export default {
   </div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @import "../css/global.scss";
 
 .text .text-input {
@@ -184,20 +181,16 @@ export default {
   resize: none;
 }
 
-.text {
-}
-
 .text-input {
-  font-size: 13px;
-  font-weight: 400;
-  border-radius: var(--border-radius);
-  background: var(--input-bg-color);
   width: 100%;
-
+  font-size: 14px;
+  font-weight: 400;
+  background: var(--input-bg-color);
   border-color: var(--border-color);
-  border-style: inset;
+  border-style: var(--border-style);
   border-width: var(--border-width);
   border-radius: var(--border-radius);
+  overflow: clip;
 }
 
 .text-input-shadow {

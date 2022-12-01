@@ -1,14 +1,10 @@
 <script>
-	
 	import page_helper from '../page_helper.ts'
 	import query_parser from '../query_parser.ts'
 
 	import d from '../dict.ts'
 	import rest from '../rest';
 	import tools from '../tools.ts'
-	import { computed } from '@vue/runtime-core';
-
-
 
 	let methods = {
 		get_favourite_uuid() {
@@ -767,8 +763,6 @@
 
   mod.computed.board_query_info = function(){
 	  let board_query_info = this.search_query
-	  
-
 
 	return board_query_info
   }
@@ -789,17 +783,15 @@
 	return values
   }
 
-  mod.computed.swimlanes_value = function()
-  {
-	if(this.selected_board == undefined) return null
-	if(this.selected_board.no_swimlanes) return null
-	if(this.selected_board.swimlanes_by_root) return '0'
-	else return this.selected_board.swimlanes_field_uuid
+  mod.computed.swimlanes_value = function() {
+    if(this.selected_board == undefined) return null
+    if(this.selected_board.no_swimlanes) return null
+    if(this.selected_board.swimlanes_by_root) return '0'
+    else return this.selected_board.swimlanes_field_uuid
   }
 
 
-  mod.computed.total_count = function()
-  {
+  mod.computed.total_count = function() {
 	  let count = 0
   	for(let i in this.swimlanes)
 	  {
@@ -808,8 +800,7 @@
 	  return count
   }
 
-  mod.computed.total_sum = function()
-  {
+  mod.computed.total_sum = function() {
 	  let sum = 0
   	for(let i in this.swimlanes)
 	  {
@@ -818,12 +809,7 @@
 	  return sum
   }
 
- 
-
-  
-
-  mod.props =
-    {
+  mod.props = {
       uuid:
       {
         type: String,
@@ -831,17 +817,9 @@
       }
     }
 
-
-	
-   
-  
-  
-
 	export default mod
 	
 </script>
-
-
 
 <template ref='board' >
 <div @mouseup="dragend_card()">
@@ -960,7 +938,7 @@
 			</div>
 
 			<div class="swimlane-body" :class="{'swimlane-body-closed': !swimlane.expanded && !selected_board.no_swimlanes}"
-		
+
 			>
 		
 				<div 
@@ -1103,18 +1081,18 @@
 		></SelectInput>
 
 	
-		<div class="btn-container">
-		<KButton 
-		name="Сохранить"
-		id="save-board-config-btn"
-		:func="'save_board'"
-		@click="configs_open=false"
-		/>
-		<KButton 
-		name="Отменить"
-		id="cancel-board-config-btn"
-		@click="configs_open=false"
-		/>
+		<div class="table_card_footer">
+      <KButton
+        name="Сохранить"
+        class="table_card_footer_btn"
+        :func="'save_board'"
+        @click="configs_open=false"
+      />
+      <KButton
+        name="Отменить"
+        class="table_card_footer_btn"
+        @click="configs_open=false"
+      />
 		</div>
 
 		</div>
@@ -1126,9 +1104,6 @@
 
 	</div>
 </template>
-
-
-
 
 <style lang="scss">
   @import '../css/palette.scss';
@@ -1155,15 +1130,37 @@
   }
 
   #board_down_panel {
+    padding-right: 7px;
     display: flex;
-	flex-direction: column;
-	height: calc(100vh - $top-menu-height);
-
-	overflow:scroll;
+	  flex-direction: column;
+	  height: calc(100vh - $top-menu-height);
+	  overflow:scroll;
   }
 
   #board_down_panel::-webkit-scrollbar{
     display:none;
+  }
+
+  .board-config {
+    padding: 20px;
+  }
+
+  .board-config > *:not(:last-child) {
+    margin-bottom: 10px;
+  }
+
+  .table_card_footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .table_card_footer_btn {
+    width: 45%;
+
+    input {
+      width: 100%;
+    }
   }
 
 
@@ -1296,31 +1293,30 @@
 		-ms-user-select: none;
   }
 
-  #save-board-config-btn
-  {
-	  padding-right: 10px;
-  }
-  #cancel-board-config-btn
-  {
-	  padding-left: 10px;
+  .top-menu-icon-btn {
+	  height: 35px;
+    font-size: 25px;
+    border-radius: var(--border-radius);
+    margin-left: 10px;
+	  color: var(--text-color);
+    background-color: var(--button-color);
+    border-width: 1px;
+    border-color: var(--border-color);
+    border-style: solid;
+    border-style: outset;
+    cursor: pointer;
+	width: 35px;
+    text-align: center;
+	padding-top: 4px;
   }
 
-  
-
-  .delete-board-btn
-  {
+  .delete-board-btn {
 	font-size: 23px;
 	padding-top: 5px;
 	color: #d27065
   }
 
-  
-  .board-issue-search-input
-  {
-	padding: 10px 20px 10px 20px !important;
-  }
-
-  .board-issue-search-input span {
+  .panel topbar span {
     font-size: 20px;
     font-weight: 400;
     margin-top: 1px;
@@ -1355,8 +1351,10 @@
 	width: $font-size;
 	height: $input-height;
 	border-radius: var(--border-radius);
-	margin: 0px !important;
-	padding-top: 3px;
+	margin: 0 0 0 2px !important;
+	padding-top: 0px;
+  font-size: 20px;
+  font-weight: 400;
 }
 
 .board-sprint-filter-btn:hover{

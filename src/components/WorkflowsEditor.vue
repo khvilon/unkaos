@@ -519,7 +519,7 @@ export default {
   height: 60px;
 }
 
-.workflows-command-panel > div {
+.workflows-command-panel > *:not(:last-child) {
   margin-right: 20px;
 }
 
