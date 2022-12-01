@@ -166,6 +166,7 @@ $attachment_input_border_width: 2px;
 }
 
 .attachment-input {
+  min-height: 86px;
   font-size: 20px;
   font-weight: 400;
   border-radius: var(--border-radius);
