@@ -92,7 +92,8 @@ data_model.load_relations = async function()
                 if(data_model.model[local_name]['fks'] == undefined) data_model.model[local_name]['fks'] = []
                 data_model.model[local_name]['fks'].push(fk.table_name) 
             }
-        }    
+        }   
+    
     }
 
     console.log(data_model.model. issue_types)
@@ -114,6 +115,7 @@ data_model.load = async function()
     await data_model.load_columns()
     await data_model.load_relations()
     
+    console.log(data_model.model.boards.fks)
 }
 
 module.exports = data_model
