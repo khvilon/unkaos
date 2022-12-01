@@ -326,12 +326,12 @@ export default mod;
           @click="tree_view = !tree_view"
         ></i>
         <i class="bx bx-star top-menu-icon-btn" @click="add_to_favourites"> </i>
-        <i v-if="!loading" class="topbar-label bx bxs-download top-menu-icon-btn"
+        <i v-if="!loading" class="bx bxs-download top-menu-icon-btn"
         @click="get_excel"
         > </i>
 
 
-        <span>{{loaded_issues.length}}/{{total_count}}</span>
+        <span class="topbar-label">{{loaded_issues.length}}/{{total_count}}</span>
       </div>
     </div>
 
