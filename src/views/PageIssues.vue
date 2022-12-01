@@ -124,8 +124,28 @@ let methods = {
       link: "/issues?query=" + encodeURIComponent(this.search_query),
     };
 
+
     await rest.run_method("create_favourites", favourite);
   },
+  get_table_data: function () {
+    if(document.getElementById("issues_table") == undefined) return ''
+    let data = document.getElementById("issues_table").innerHTML.replaceAll('▲', '').replaceAll('▼', '')
+    return data
+  },
+  get_excel: function()
+  {
+    let data = this.get_table_data()
+    //console.log(data)
+    if(data=='') return
+
+    const blob = new Blob([data], { type: "data:application/vnd.ms-excel" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = 'Unkaos экспорт запроса.xls';
+      link.click();
+      URL.revokeObjectURL(link.href);
+      return
+  }
 };
 
 const data = {
@@ -306,14 +326,21 @@ export default mod;
           @click="tree_view = !tree_view"
         ></i>
         <i class="bx bx-star top-menu-icon-btn" @click="add_to_favourites"> </i>
-        <span class="topbar-label">{{loaded_issues.length}}/{{total_count}}</span>
+        <i v-if="!loading" class="topbar-label bx bxs-download top-menu-icon-btn"
+        @click="get_excel"
+        > </i>
+
+
+        <span>{{loaded_issues.length}}/{{total_count}}</span>
       </div>
     </div>
 
     <div id="issues_down_panel" class="panel">
-      <div id="issues_table_panel">
+      <div id="issues_table_panel" ref="issuesTablePanel">
         <Transition name="element_fade">
           <KTable
+            :ref="'issuesTable'"
+            id="issues_table"
             v-if="!loading"
             @scroll_update="load_more"
             :collumns="collumns"
@@ -321,6 +348,7 @@ export default mod;
             :name="'issues'"
             :dicts="{ users: users }"
             :tree_view="tree_view"
+
           />
         </Transition>
       </div>
