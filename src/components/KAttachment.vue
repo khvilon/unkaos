@@ -157,7 +157,7 @@ $attachment_input_border_width: 2px;
 
 .attachment .attachment-input {
   width: 100%;
-  height: $input-height * 3;
+
 }
 
 .attachment {
@@ -173,7 +173,7 @@ $attachment_input_border_width: 2px;
   background-color: transparent;
   text-align: center;
   border-color: var(--table-row-color);
-  border-width: attachment_input_border_width;
+  border-width: $attachment_input_border_width;
   border-style: solid;
   display: flex;
   display:flex;flex-direction:row;flex-wrap:wrap;
