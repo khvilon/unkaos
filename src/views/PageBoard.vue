@@ -171,13 +171,15 @@
 			if(a[1].position == undefined) b[1].position = -1
 			if(a[1].position<b[1].position) return -1
 			if(a[1].position>b[1].position) return 1
-			if(a[0]<b[0]) return -1
-			if(a[0]>b[0]) return 1
+			if(a[1].name<b[1].name) return -1
+			if(a[1].name>b[1].name) return 1
 			return 0
 		},
 		sort_swimlanes()
 		{
 			let swimlanes_arr = Object.entries(this.swimlanes)
+
+			console.log('swimlanes_arr', swimlanes_arr)
 
 			swimlanes_arr = swimlanes_arr.sort(this.compare_swimlanes_to_sort)
 
@@ -293,6 +295,7 @@
 				let x = 0
 				let link
 				let root_num
+				let root_name
 				let is_resolved = false
 				if(this.selected_board.swimlanes_by_root)
 				{
@@ -301,7 +304,8 @@
 					
 					
 					let root = this.get_root(this.boards_issues[i])
-					if(parent_types_uuids[root.type_uuid]) x = this.get_field_by_name(root, 'Название').value
+					if(parent_types_uuids[root.type_uuid]) x = root.uuid//this.get_field_by_name(root, 'Название').value
+					root_name = this.get_field_by_name(root, 'Название').value
 					if(root.num!=undefined)
 					{
 						root_num = root.project_short_name + '-' + root.num
@@ -314,18 +318,15 @@
 				else if(!this.selected_board.no_swimlanes)
 				{
 					x = this.get_field_value(this.boards_issues[i], {uuid: this.selected_board.swimlanes_field_uuid}, true)
+					root_name = x
 				}
 
 				
+				if(x == '') { x = this.void_group_name; root_name = x}
+				else if(x == null) { x = this.void_group_name; root_name = x}
+				else if(x == undefined) { x = this.void_group_name; root_name = x}
 
-				
-				if(x == '') x = this.void_group_name
-				else if(x == null) x = this.void_group_name
-				else if(x == undefined) x = this.void_group_name
-
-				if(this.swimlanes[x] == undefined) this.swimlanes[x] = {name:x,issues:{},filtered_issues:{},count:0, sum:0}
-
-		
+				if(this.swimlanes[x] == undefined) this.swimlanes[x] = {id:x, name:root_name,issues:{},filtered_issues:{},count:0, sum:0}
 				
 				let  stored_exp = localStorage[this.selected_board.uuid+'#'+x]
 				if(stored_exp == undefined || stored_exp == 'false') stored_exp = false
@@ -351,7 +352,7 @@
 				let status_uuid = this.boards_issues[i].status_uuid
 				if(this.swimlanes[x].issues[status_uuid] == undefined) this.swimlanes[x].issues[status_uuid] = []
 
-				if(x == this.get_field_by_name(this.boards_issues[i], 'Название').value) continue
+				if(x == this.get_field_by_name(this.boards_issues[i], 'Название').value  || x == this.boards_issues[i].uuid) continue
 
 				this.swimlanes[x].issues[status_uuid].push(this.boards_issues[i])
 
@@ -582,7 +583,7 @@
 		swimlane_expanded_toogle(swimlane)
 		{
 			swimlane.expanded = !swimlane.expanded
-			localStorage[this.selected_board.uuid+'#'+swimlane.name] = swimlane.expanded
+			localStorage[this.selected_board.uuid+'#'+swimlane.id] = swimlane.expanded
 		},
 		swimlanes_updated(v)
 		{
@@ -958,8 +959,8 @@
 				<span>{{'сумма: ' + swimlane.sum}}</span>
 			</div>
 
-			<div class="swimlane-body"
-			v-show="swimlane.expanded || selected_board.no_swimlanes"
+			<div class="swimlane-body" :class="{'swimlane-body-closed': !swimlane.expanded && !selected_board.no_swimlanes}"
+		
 			>
 		
 				<div 
@@ -1072,13 +1073,14 @@
 		></SelectInput>
 
 		<SelectInput 
-			label='Поля внизу карточки (функция в разработке)'
-			id='fields'
-			disabled="true"
+			label='Поля карточки'
+			id='boards_fields'
 			:parent_name="'board'"
 			clearable="false"
 			dictionary= 'fields'
-			:values="[]"
+			:value="get_json_val(selected_board, 'boards_fields')"
+			:values="fields"
+			:parameters="{ multiple: true}"
 		></SelectInput>
 
 		<BooleanInput 
@@ -1303,22 +1305,7 @@
 	  padding-left: 10px;
   }
 
-  .top-menu-icon-btn {
-	  height: 35px;
-    font-size: 25px;
-    border-radius: var(--border-radius);
-    margin-left: 10px;
-	  color: var(--text-color);
-    background-color: var(--button-color);
-    border-width: 1px;
-    border-color: var(--border-color);
-    border-style: solid;
-    border-style: outset;
-    cursor: pointer;
-	width: 35px;
-    text-align: center;
-	padding-top: 4px;
-  }
+  
 
   .delete-board-btn
   {
@@ -1432,6 +1419,11 @@
     display: flex;
 	overflow: hidden;
 	margin-left: $cards_field_left;
+}
+
+.swimlane-body-closed *
+{
+	height: 0px;
 }
 
 
