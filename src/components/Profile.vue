@@ -175,11 +175,8 @@ export default {
   flex-direction: column;
 }
 
-#profile-menu > div {
+#profile-menu > *:not(:last-child) {
   margin-bottom: 10px;
-}
-
-#profile-menu .select-input {
 }
 
 #profile-menu-exit {

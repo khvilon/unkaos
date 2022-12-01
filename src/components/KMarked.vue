@@ -216,7 +216,7 @@ a {
   width: 100%;
   color: var(--text-color);
   font-family: Inter, system-ui, Roboto, sans-serif;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .marked-container p:first-child {
@@ -229,6 +229,10 @@ a {
 
 .marked-container::-webkit-scrollbar {
   display: none;
+}
+
+.marked-container a:hover {
+  color: var(--link-hover-color);
 }
 
 .marked-container img {
@@ -267,7 +271,7 @@ a {
   border-radius: 4px;
   background-color: var(--code-block-bg-color);
   border: 10px solid transparent;
-  max-height: 400px;
+  max-height: 300px;
   max-width: -webkit-fill-available;
   overflow: auto;
   padding: 10px;
@@ -330,6 +334,12 @@ a {
 
 .marked-container dl {
   padding-left: 20px;
+}
+
+.marked-container blockquote {
+  margin: 4px 0;
+  padding: 0 0 0 16px;
+  box-shadow: inset 2px 0 0;
 }
 
 .marked-container * {

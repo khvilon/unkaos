@@ -6,8 +6,6 @@ import d from "../dict.ts";
 import rest from "../rest";
 import tools from "../tools.ts";
 
-console.log("d", d.get("Название"), d);
-
 let methods = {
   add_with_children: function (obj, arr, ch_level) {
     if (ch_level > 10) return arr;
@@ -258,7 +256,7 @@ export default mod;
           max-height: calc(100% - 60px);
         "
       >
-        <span>{{ label }}</span>
+        <span class="topbar-label">{{ label }}</span>
 
         <IssuesSearchInput
           label=""

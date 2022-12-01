@@ -74,8 +74,9 @@ export default login_page;
 @import "../css/global.scss";
 
 .login-panel {
-  height: 250px;
-  width: 400px;
+  padding: 20px;
+  height: 230px;
+  width: 350px;
   position: absolute;
   left: calc(50vw - $main-menu-width/2);
   top: 40vh;
@@ -86,8 +87,8 @@ export default login_page;
   width: 250px;
 }
 
-.login-panel .btn {
-  padding: 30px 20px 10px 20px;
+.login-panel > *:not(:last-child) {
+  margin-bottom: 10px;
 }
 
 .login-panel .btn Input {

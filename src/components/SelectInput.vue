@@ -230,8 +230,9 @@ export default {
           class="vs__selected">
             {{ option.name }}
           </span>
-          
-          <i class='bx bx-x' @click="deselect(option)"></i>
+          <div class="x-icon-container">
+            <i class='bx bx-x' @click="deselect(option)"></i>
+          </div>
         </div>
       </template>
       <template v-slot:no-options="{ searching }">
@@ -265,13 +266,6 @@ export default {
 .select-input .vs__clear,
 .select-input .vs__open-indicator {
   fill: var(--text-color);
-}
-
-
-.select-input-selected
-{
-  font-weight: 700;
-  margin-right: 10px;
 }
 
 .vs__active {
@@ -314,10 +308,12 @@ export default {
 }
 
 .select-input-selected{
+  font-weight: 700;
+  margin-right: 10px;
   background-color: var(--table-row-color-selected);
   border-radius: var(--border-radius);
   display: flex;
-
+  align-items: center;
 }
 
 .vs__deselect {

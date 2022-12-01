@@ -326,19 +326,6 @@ $loading-bar-width: 200vw;
   margin-right: 20px;
 }
 
-.footer_div {
-  //position: absolute;
-  padding-top: 5px;
-
-  bottom: 0px;
-  //display: table-footer-group;
-}
-
-.footer_div div {
-  display: flex;
-  justify-content: space-between;
-}
-
 .slide-enter-active,
 .slide-leave-active {
   transition: all 0.75s ease-out;
@@ -438,4 +425,29 @@ $loading-bar-width: 200vw;
     text-align: center;
 	padding-top: 4px;
   }
+
+.login-panel .btn_input {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.issue-search-input-btn {
+  padding: 0px;
+  //width: $input-height;
+}
+.issue-search-input-btn .btn_input {
+  padding: 0px;
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+  margin-left: -$input-height;
+  width: $input-height !important;
+  height: $input-height;
+
+  border-top-width: var(--issue-search-btn-top-border-width) !important;
+  border-bottom-width: var(--border-width) !important;
+  border-left-color: var(--border-color) !important;
+  border-top-color: var(--border-color) !important;
+  //border-bottom-color: $border-color !important;
+}
+
 </style>

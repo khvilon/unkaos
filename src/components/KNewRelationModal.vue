@@ -152,7 +152,7 @@ export default {
   transform: translate(-50%, -50%);
 }
 
-.new-relation-modal > div {
+.new-relation-modal > *:not(:last-child) {
   margin-bottom: 10px;
 }
 

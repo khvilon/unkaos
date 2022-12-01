@@ -161,7 +161,10 @@ export default {
         html +=
           '<span class="issues-search-char char-' +
           i +
-          '">' +
+          '" style="  margin: 0 !important;\n' +
+            '  font-size: 15px !important;\n' +
+            '  margin-top: 5px !important;">' +
+          "" +
           chars[i] +
           "</span>";
       }
@@ -720,7 +723,7 @@ export default {
   </div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @import "../css/global.scss";
 
 .issue-search-div .text-input {
@@ -731,12 +734,6 @@ export default {
   margin-right: 30px !important;
 }
 
-.issues-search-char {
-  margin: 0px !important;
-  font-size: 15px !important;
-  margin-top: 5px !important;
-}
-
 .text .text-input {
   width: 100%;
   height: $input-height;
@@ -744,9 +741,6 @@ export default {
   color: var(--text-color);
   padding: 0 10px 0 10px;
   resize: none;
-}
-
-.text {
 }
 
 .text-input {
@@ -823,21 +817,5 @@ export default {
   padding: 0px !important;
   width: 50vw;
 }
-.issue-search-input-btn {
-  padding: 0px;
-  //width: $input-height;
-}
-.issue-search-input-btn .btn_input {
-  padding: 0px;
-  border-top-left-radius: 0px !important;
-  border-bottom-left-radius: 0px !important;
-  margin-left: -$input-height;
-  width: $input-height !important;
 
-  border-top-width: var(--issue-search-btn-top-border-width) !important;
-  border-bottom-width: var(--border-width) !important;
-  border-left-color: var(--border-color) !important;
-  border-top-color: var(--border-color) !important;
-  //border-bottom-color: $border-color !important;
-}
 </style>

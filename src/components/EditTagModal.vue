@@ -102,7 +102,7 @@ export default {
   top: $top-menu-height;
 }
 
-.edit-tag-modal > div {
+.edit-tag-modal > *:not(:last-child) {
   margin-bottom: 10px;
 }
 
