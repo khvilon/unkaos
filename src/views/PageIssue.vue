@@ -1127,18 +1127,40 @@ export default mod;
           </KAttachment>
         </Transition>
 
+        <TextInput
+          label="Комментарий"
+          v-if="!loading && id != ''"
+          class="comment_input"
+
+          @update_parent_from_input="edit_current_description"
+          :value="get_field_by_name('Описание').value"
+          
+          :id="'values.' + get_field_by_name('Описание').idx + '.value'"
+          parent_name="issue"
+          textarea_id="issue_description_textarea"
+          
+          @input_focus="comment_focus"
+          @paste="pasted"
+        >
+        </TextInput>
+
         <Transition name="element_fade">
           <TextInput
             label="Комментарий"
             v-if="!loading && id != ''"
             class="comment_input"
+
             @update_parent_from_input="update_comment"
             :value="comment"
+            textarea_id="issue_description_textarea"
+
             @input_focus="comment_focus"
             @paste="pasted"
           >
           </TextInput>
         </Transition>
+
+        
 
         <Transition name="element_fade">
           <KButton

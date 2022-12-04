@@ -133,6 +133,7 @@ export default {
 .tag-input .select-input-selected {
   margin-right: 5px !important;
   height: 23px;
+  margin-bottom: 5px;
 }
 
 .tag-input .vs__selected-options {
