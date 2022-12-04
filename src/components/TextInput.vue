@@ -44,6 +44,7 @@ export default {
 
   methods: {
     resize() {
+      
       console.log("resizing");
       if (this.$refs.text_input == undefined) return;
       this.$refs.text_input.style.height = `${
@@ -129,6 +130,10 @@ export default {
 
       this.$emit("update_parent_from_input", val);
 
+      nextTick(() => {
+        this.resize();
+      })
+
       if (this.parent_name == undefined || this.parent_name == "") return;
 
       this.$store.commit("id_push_update_" + this.parent_name, {
@@ -136,9 +141,7 @@ export default {
         val: val,
       });
 
-      nextTick(() => {
-        this.resize();
-      })
+      
     },
   },
 };
@@ -158,7 +161,6 @@ export default {
       ref="text_input"
       @focus="$emit('input_focus', true)"
       @blur="$emit('input_focus', false)"
-      @keyup="resize"
       @keydown.ctrl.b="make_bold"
       :id="textarea_id"
       class="text-input"
