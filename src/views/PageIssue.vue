@@ -1127,22 +1127,7 @@ export default mod;
           </KAttachment>
         </Transition>
 
-        <TextInput
-          label="Комментарий"
-          v-if="!loading && id != ''"
-          class="comment_input"
-
-          @update_parent_from_input="edit_current_description"
-          :value="get_field_by_name('Описание').value"
-          
-          :id="'values.' + get_field_by_name('Описание').idx + '.value'"
-          parent_name="issue"
-          textarea_id="issue_description_textarea"
-          
-          @input_focus="comment_focus"
-          @paste="pasted"
-        >
-        </TextInput>
+      
 
         <Transition name="element_fade">
           <TextInput
