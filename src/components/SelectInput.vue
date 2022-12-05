@@ -60,6 +60,7 @@ export default {
       }
 
       if (this.parent_name != undefined && this.parent_name != "")
+        console.log('idpush')
         this.$store.commit("id_push_update_" + this.parent_name, {
           id: this.id,
           val: val,

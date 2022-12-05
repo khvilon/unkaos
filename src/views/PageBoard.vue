@@ -115,6 +115,7 @@
 
 			 
 			this.selected_board.boards_columns = this.selected_board.boards_columns.sort((a, b) => { return a.num-b.num } )
+			this.selected_board.boards_fields = this.selected_board.boards_fields.sort((a, b) => { return a.num-b.num } )
 			//console.log('this.selected_board.boards_columns',JSON.stringify(this.selected_board.boards_columns))
 
 			//console.log('sselected_board3')
@@ -147,6 +148,39 @@
 			for(let i in this.selected_board.boards_columns)
 			{
 				this.selected_board.boards_columns[i].name = this.selected_board.boards_columns[i].status[0].name
+			}
+
+			this.fields_values = []
+
+			for(let i in this.inputs_dict['boards_fields'].values)
+			{
+				
+				let val = this.inputs_dict['boards_fields'].values[i]
+				if(val.name == 'Название') continue
+				let col =  {field:[val], name:val.name}
+				for(let j in this.selected_board.boards_fields)
+				{
+					if (this.selected_board.boards_fields[j].fields[0].uuid == val.uuid)
+					{
+						col = this.selected_board.boards_fields[j] 
+						break
+					}
+				}
+				if(col.uuid == undefined) {
+					col.uuid = tools.uuidv4()
+					col.num = 0
+					col.table_name = 'boards_fields'
+					col.fields_uuid = val.uuid
+					col.boards_uuid = this.selected_board.uuid
+				}
+				
+				this.fields_values.push(col)
+			}
+
+			
+			for(let i in this.selected_board.boards_fields)
+			{
+				this.selected_board.boards_fields[i].name = this.selected_board.boards_fields[i].fields[0].name
 			}
 
 			//console.log('sselected_board4')
@@ -622,7 +656,10 @@
 		{
 			await rest.run_method('delete_favourites', {uuid: this.favourite_uuid})
 			this.favourite_uuid = null
-		}
+		},
+		
+
+
 	}
 
 	const data = 
@@ -631,7 +668,7 @@
       {
         name: '',
         boards_columns: [],
-        
+        boards_fields: [],
       },
 	  statuses_ends_dict:{},
 	conf: {},
@@ -643,6 +680,7 @@
 	sprints: [],
 	curr_sprint_num: 0,
 	column_values: [],
+	fields_values: [],
 	card_draginfo: {},
 	status_draginfo: {},
     name: 'board',
@@ -706,6 +744,11 @@
 		{
 			id: 'boards_columns',
 			dictionary: 'issue_statuses',
+			type: 'User',
+		},
+		{
+			id: 'boards_fields',
+			dictionary: 'fields',
 			type: 'User',
 		},
 		{
@@ -789,6 +832,36 @@
     if(this.selected_board.swimlanes_by_root) return '0'
     else return this.selected_board.swimlanes_field_uuid
   }
+
+
+  mod.computed.display_description = function() {
+	if(this.selected_board == undefined || this.selected_board.boards_fields == undefined) return false
+	for(let i in this.selected_board.boards_fields)
+	{
+		if(this.selected_board.boards_fields[i].name == 'Описание') return true
+	}
+	return false
+  
+  }
+
+  mod.computed.available_values = function (field_uuid) {
+			//		console.log('get_available_values', field_uuid)
+			let av = {}
+			
+			for (let i in this.fields) {
+				if (this.fields[i].available_values == undefined) 
+				{
+					av[this.fields[i].uuid] = []
+					continue;
+				}
+				let available_values = this.fields[i].available_values
+					.split(",")
+					.map((v) => v.replace("\n", "").replace("\r", "").trim());
+				av[this.fields[i].uuid] =  available_values;
+	
+			}
+			return  av
+		}
 
 
   mod.computed.total_count = function() {
@@ -974,13 +1047,33 @@
 						:class="{ 'resolved-issue':statuses_ends_dict[issue.status_uuid]}"
 						>{{get_field_by_name(issue, 'Название').value}}</label>
 						</div>
-						<label class="issue-card-description">
+						<label class="issue-card-description" v-if="display_description">
 							{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
 						</label>
 						<div class="issue-board-card-footer">
-							<div><label>{{'Assignee: ' + get_dict_value(get_field_by_name(issue, 'Assignee').value, 'User')}}</label>
+							
+							<div
+							class="board-card-field"
+							v-for="(f, index) in selected_board.boards_fields"
+							>
+								<label 
+								class="board-card-field-title"
+								v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'">
+								{{f.fields[0].name}}: </label>
+								<component
+									v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
+									v-bind:is="f.fields[0].type[0].code + 'Input'"
+									:value="get_field_value(issue, f.fields[0])"
+									label=""
+									:key="index"
+									:disabled="true"
+									:values="available_values[f.fields_uuid]"
+									class="board-card-field-input"
+								></component>
 							</div>
 						</div>
+
+						
 						
 					</div>
 					</div>
@@ -1051,13 +1144,13 @@
 		></SelectInput>
 
 		<SelectInput 
+			v-if="inputs_dict != undefined && selected_board != undefined"
 			label='Поля карточки'
 			id='boards_fields'
 			:parent_name="'board'"
 			clearable="false"
-			dictionary= 'fields'
 			:value="get_json_val(selected_board, 'boards_fields')"
-			:values="fields"
+			:values="fields_values"
 			:parameters="{ multiple: true}"
 		></SelectInput>
 
@@ -1075,7 +1168,6 @@
 			disabled="true"
 			:parent_name="'board'"
 			clearable="false"
-			dictionary= 'fields'
 			:values="[]"
 			multiple: false
 		></SelectInput>
@@ -1457,6 +1549,62 @@
 
 .issue-card-description{
 
+}
+
+
+.board-card-field{
+	display: flex;
+	padding-bottom: 2px;
+}
+
+.board-card-field .numeric{
+	display: flex;
+}
+
+.board-card-field-input .label{
+	height: 0px !important;
+	max-height: 0px !important;
+	min-height: 0px !important;
+}
+
+.board-card-field-input{
+	height: 15px !important;
+	width: 100%;
+}
+
+.board-card-field-input img{
+	width: 11px !important;
+	height: 11px !important;
+	max-height: 11px !important;
+	min-height: 11px !important;
+}
+
+.board-card-field-input *{
+
+	height: 15px !important;
+	max-height: 15px !important;
+	min-height: 15px !important;
+	font-size: 11px !important;
+	background: none !important;
+	border: none !important;
+}
+
+.board-card-field-input svg{
+	display: none;
+}
+
+.board-card-field-input span{
+	margin: 0px !important;
+}
+
+
+
+.board-card-field-input input{
+	height: 15px !important;
+}
+
+.board-card-field-title{
+	white-space: nowrap;
 }
 
 
