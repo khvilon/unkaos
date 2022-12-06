@@ -43,6 +43,7 @@ import TagInput from "./components/TagInput.vue";
 import ColorInput from "./components/ColorInput.vue";
 
 import EditTagModal from "./components/EditTagModal.vue";
+import KMarkdownInput from "./components/KMarkdownInput.vue";
 
 const app = createApp(App);
 
@@ -80,9 +81,8 @@ app.component("KMarked", KMarked);
 app.component("Comment", Comment);
 app.component("CommentList", CommentList);
 app.component("TagInput", TagInput);
-
 app.component("ColorInput", ColorInput);
-
 app.component("EditTagModal", EditTagModal);
+app.component("KMarkdownInput", KMarkdownInput);
 
 app.mount("#app");
