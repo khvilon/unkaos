@@ -326,6 +326,7 @@
 				let link
 				let root_num
 				let root_name
+				let root_project_uuid
 				let is_resolved = false
 				if(this.selected_board.swimlanes_by_root)
 				{
@@ -340,7 +341,7 @@
 					{
 						root_num = root.project_short_name + '-' + root.num
 						link = '/issue/' + root_num	
-
+						root_project_uuid = root.project_uuid
 						is_resolved = this.statuses_ends_dict[root.status_uuid]
 					}
 					
@@ -356,7 +357,17 @@
 				else if(x == null) { x = this.void_group_name; root_name = x}
 				else if(x == undefined) { x = this.void_group_name; root_name = x}
 
-				if(this.swimlanes[x] == undefined) this.swimlanes[x] = {id:x, name:root_name,issues:{},filtered_issues:{},count:0, sum:0}
+				if(this.swimlanes[x] == undefined) {
+					this.swimlanes[x] = {
+						id:x, 
+						name:root_name,
+						issues:{},
+						filtered_issues:{},
+						count:0, 
+						sum:0, 
+						project_uuid: root_project_uuid
+					}
+				}
 				
 				let  stored_exp = localStorage[this.selected_board.uuid+'#'+x]
 				if(stored_exp == undefined || stored_exp == 'false') stored_exp = false
@@ -657,6 +668,169 @@
 			await rest.run_method('delete_favourites', {uuid: this.favourite_uuid})
 			this.favourite_uuid = null
 		},
+		async edit_card_title(issue, e) {
+			let new_title = e.target.innerText
+			for(let i in issue.values) {
+				if(issue.values[i].label == "Название") {
+					issue.values[i].value = new_title
+				}
+			}
+
+			await rest.run_method('update_issue', issue)
+			
+		},
+		get_children_by_status(swimlane, status) {
+			let ch
+			//console.log('new issue card000', swimlane, status)
+			for(let s in swimlane.issues){
+				for(let i in swimlane.issues[s])
+				{
+					if(s == status.uuid) {
+						return swimlane.issues[s][i];
+					} 
+					ch = swimlane.issues[s][i];
+				}
+			}
+			return ch
+		},
+		async new_issue_card(swimlane, status)
+		{
+			console.log('new issue card', swimlane, status)
+
+			let parent_uuid = swimlane.id
+			let status_uuid = status.uuid
+			let project_uuid = swimlane.project_uuid
+			let author_uuid = JSON.parse(localStorage.profile).uuid
+
+			let query = decodeURIComponent(atob( this.encoded_query))
+			let search_start = 0
+			let field_start
+			const max_count = 100
+			let count = 0
+			const field_text = 'fields#'
+			let query_fields = []
+
+			while(count < max_count)
+			{
+				field_start = query.indexOf(field_text, search_start)
+				if(field_start == -1) break
+				field_start += field_text.length
+				let field_end = query.indexOf("#", field_start)
+				let field_uuid = query.substring(field_start, field_end)
+				query_fields.push(field_uuid)
+				search_start = field_end
+				count++
+			}
+
+			let ch = this.get_children_by_status(swimlane, status)
+
+			if(ch == undefined){
+				for(let i in this.swimlanes)
+				{
+					ch = this.get_children_by_status(this.swimlanes[i], status)
+					if(ch != undefined) break
+				}
+			}
+
+			if(ch == undefined){
+				alert('Невозможно создать карточку. На доске нет ни одной карточки для определения типа')
+				return
+			}
+
+			let type_uuid = ch.type_uuid
+
+			const name = 'Задача с доски'
+
+			let issue = {
+				
+					uuid: tools.uuidv4(),
+					project_uuid: project_uuid,
+					status_uuid: status_uuid,
+					type_uuid: type_uuid,
+					values: [
+					{
+						type: "Text",
+						uuid: "",
+						label: "Описание",
+						value: "",
+						field_uuid: "4a095ff5-c1c4-4349-9038-e3c35a2328b9",
+						issue_uuid: "",
+						table_name: "field_values",
+					},
+					{
+						type: "String",
+						uuid: "",
+						label: "Название",
+						value: name,
+						field_uuid: "c96966ea-a591-47a9-992c-0a2f6443bc80",
+						issue_uuid: "",
+						table_name: "field_values",
+					},
+					{
+						type: "User",
+						uuid: "",
+						label: "Автор",
+						value: author_uuid,
+						field_uuid: "733f669a-9584-4469-a41b-544e25b8d91a",
+						issue_uuid: "",
+						table_name: "field_values",
+					},
+					],
+				
+			}
+
+
+			for(let i in ch.values) {
+				if(query_fields.includes(ch.values[i].field_uuid) &&
+				(ch.values[i].label != 'Описание' && 
+				ch.values[i].label != 'Название' && 
+				ch.values[i].label != 'Автор')) {
+					let new_value = tools.obj_clone(ch.values[i])
+					issue.values.push(new_value)
+				}
+			}
+
+			if(this.selected_board.use_sprint_filter) issue.sprint_uuid = this.sprints[this.curr_sprint_num].uuid
+
+			for (let i in issue.values) {
+				issue.values[i].issue_uuid = issue.uuid;
+				issue.values[i].uuid = tools.uuidv4();
+			}
+			
+
+			console.log(issue)
+			
+			
+			let ans = await rest.run_method('upsert_issue', issue)
+			let created_issue = ans[0]
+
+			if(created_issue.status_uuid != status_uuid) {
+				created_issue.status_uuid = status_uuid
+				ans = await rest.run_method('upsert_issue', created_issue)
+			}
+
+			let relation = {
+				uuid: tools.uuidv4(),
+				issue0_uuid: parent_uuid,
+				issue1_uuid: created_issue.uuid,
+				type_uuid: this.parent_relation_type_uuid,
+			};
+
+			await rest.run_method("upsert_relations", relation);
+
+			console.log(this.boards_issues.length)
+			this.boards_issues.push(created_issue)
+			console.log(this.boards_issues.length)
+			console.log(this.boards_issues)
+			if(swimlane.issues[status.uuid] == undefined) swimlane.issues[status.uuid] = []
+			swimlane.issues[status.uuid].push(created_issue)
+			if(swimlane.filtered_issues[status.uuid] == undefined) swimlane.filtered_issues[status.uuid] = []
+			swimlane.filtered_issues[status.uuid].push(created_issue)
+
+			this.get_issues()
+
+			//console.log(created_issue)
+		}
 		
 
 
@@ -664,6 +838,7 @@
 
 	const data = 
   {
+	parent_relation_type_uuid: "73b0a22e-4632-453d-903b-09804093ef1b",
 	instance: 
       {
         name: '',
@@ -1028,54 +1203,54 @@
 					<div class="issue-board-cards-container"
 					
 					>
-					<div
-						v-for="(issue, i_index) in (swimlane.filtered_issues[status.uuid] != undefined ? swimlane.filtered_issues[status.uuid] : [])"
-						:key="i_index"
-						:class="{ 'dragged-card': issue.uuid ==  card_draginfo.uuid, 'when-dragged-card': card_draginfo.uuid != undefined}"
-						
-						@mousedown="dragstart_card($event, issue)"
-						class="issue-board-card">
-						<div class="issue-card-top"
-						:style="[  {backgroundColor: get_card_color(issue)} ]"
-						></div>
-						<div class="issue-card-title">
-						<a 
-						
-						:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}} {{issue.type_name}}</a>
-						
-						<label
-						:class="{ 'resolved-issue':statuses_ends_dict[issue.status_uuid]}"
-						>{{get_field_by_name(issue, 'Название').value}}</label>
-						</div>
-						<label class="issue-card-description" v-if="display_description">
-							{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
-						</label>
-						<div class="issue-board-card-footer">
+						<div
+							v-for="(issue, i_index) in (swimlane.filtered_issues[status.uuid] != undefined ? swimlane.filtered_issues[status.uuid] : [])"
+							:key="i_index"
+							:class="{ 'dragged-card': issue.uuid ==  card_draginfo.uuid, 'when-dragged-card': card_draginfo.uuid != undefined}"
 							
-							<div
-							class="board-card-field"
-							v-for="(f, index) in selected_board.boards_fields"
-							>
-								<label 
-								class="board-card-field-title"
-								v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'">
-								{{f.fields[0].name}}: </label>
-								<component
-									v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
-									v-bind:is="f.fields[0].type[0].code + 'Input'"
-									:value="get_field_value(issue, f.fields[0])"
-									label=""
-									:key="index"
-									:disabled="true"
-									:values="available_values[f.fields_uuid]"
-									class="board-card-field-input"
-								></component>
+							@mousedown="dragstart_card($event, issue)"
+							class="issue-board-card">
+							<div class="issue-card-top"
+							:style="[  {backgroundColor: get_card_color(issue)} ]"
+							></div>
+							<div class="issue-card-title">
+							<a 
+							
+							:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}} {{issue.type_name}}</a>
+							
+							<label
+							contenteditable="true"
+							@blur="edit_card_title(issue, $event)"
+							:class="{ 'resolved-issue':statuses_ends_dict[issue.status_uuid]}"
+							>{{get_field_by_name(issue, 'Название').value}}</label>
 							</div>
+							<label class="issue-card-description" v-if="display_description">
+								{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
+							</label>
+							<div class="issue-board-card-footer">
+								
+								<div
+								class="board-card-field"
+								v-for="(f, index) in selected_board.boards_fields"
+								>
+									<label 
+									class="board-card-field-title"
+									v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'">
+									{{f.fields[0].name}}: </label>
+									<component
+										v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
+										v-bind:is="f.fields[0].type[0].code + 'Input'"
+										:value="get_field_value(issue, f.fields[0])"
+										label=""
+										:key="index"
+										:disabled="true"
+										:values="available_values[f.fields_uuid]"
+										class="board-card-field-input"
+									></component>
+								</div>
+							</div>	
 						</div>
-
-						
-						
-					</div>
+						<i v-if="selected_board.swimlanes_by_root" class="bx new-issue-card-btn" @click="new_issue_card(swimlane, status)">+</i>
 					</div>
 				</div>
 			</div>
@@ -1274,13 +1449,16 @@
 
   .issue-board-cards-container
   {
-	  background: var(--disabled-bg-color);
-	  border-radius: var(--border-radius);
-	  border-color: var(--disabled-bg-color);
-	  border-width: 5px;
-	  border-style: solid;
-	  overflow:scroll;
-	  height: 100%;
+	background: var(--disabled-bg-color);
+	border-radius: var(--border-radius);
+	border-color: var(--disabled-bg-color);
+	border-width: 5px;
+	border-style: solid;
+	overflow:scroll;
+	height: 100%;
+
+	display: flex;
+    flex-direction: column;
   }
 
   .issue-board-cards-container::-webkit-scrollbar{
@@ -1330,6 +1508,10 @@
   {
 	color: var(--link-color);
 	margin: 0px 0px 4px 0px;
+  }
+
+  .issue-card-title label {
+	cursor: text;
   }
 
   .issue-card-description
@@ -1605,6 +1787,27 @@
 
 .board-card-field-title{
 	white-space: nowrap;
+}
+
+.new-issue-card-btn{
+	font-size: 18px;
+    font-weight: 700 !important;
+    position: relative;
+    text-decoration: none;
+    border-radius: 50%;
+    border-style: solid;
+    border-width: 2px;
+    width: 18px;
+    height: 18px;
+    align-items: center;
+    display: flex !important;
+    padding-left: 2px;
+    align-self: center;
+    margin: 0;
+    align-content: end;
+    flex-wrap: wrap;
+	cursor: pointer;
+	color: var(--link-color);
 }
 
 

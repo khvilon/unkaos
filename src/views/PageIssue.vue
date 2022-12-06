@@ -336,7 +336,7 @@ let methods = {
 
     //setTimeout(this.init, 1000)
   },
-  saved_new: function (issue) {
+  saved_new: function () {
     window.location.href =
       "/issue/" + this.issueProjectNum;
   },
@@ -458,6 +458,8 @@ let methods = {
     this.set("values", values);
   },
   init: async function (delay) {
+
+    let uri_params = tools.obj_clone(this.url_params)
     if (
       this.issue == undefined ||
       this.issue[0] == undefined ||
@@ -484,6 +486,8 @@ let methods = {
     {
       this.load_params_from_localstorage("last_saved_issue_params");
     }
+
+    
 
     if (this.id == undefined || this.id == "") {
       console.log("ibiiit issue", this.issue[0]);
@@ -518,7 +522,29 @@ let methods = {
 
     this.current_description = this.get_field_by_name('Описание').value
 
-    console.log('aaaaattt', this.issue[0].attachments)
+    /*if(this.url_params.status_uuid != undefined)
+    {
+      console.log('preset status', this.url_params.status_uuid)
+    }*/
+
+    console.log('this.url_params', this.url_params)
+    if(uri_params.parent_uuid != undefined)
+    {
+      
+
+      let relation = {
+        uuid: tools.uuidv4(),
+        issue0_uuid: uri_params.parent_uuid,
+        issue1_uuid: this.issue[0].uuid,
+        type_uuid: this.parent_relation_type_uuid,
+      };
+
+      await this.$store.dispatch('save_issue');
+
+      await this.add_relation(relation)
+
+      this.saved_new()
+    }
 
     this.title;
   },
@@ -676,6 +702,7 @@ let methods = {
 };
 
 const data = {
+  parent_relation_type_uuid: "73b0a22e-4632-453d-903b-09804093ef1b",
   current_description: "",
   tags: [],
   card_open: false,
@@ -960,6 +987,16 @@ export default mod;
         >
         </a>
       </Transition>
+
+      <Transition name="element_fade">
+        <a
+          v-if="!loading && id != ''"
+          class="bx bx-subdirectory-right make-child-btn"
+          :href="('/issue?t=' + new Date().getTime() + '&parent_uuid=' + issue[0].uuid)"
+        >
+        </a>
+      </Transition>
+
 
       <Transition name="element_fade">
         <div
@@ -1490,12 +1527,26 @@ $code-width: 160px;
   width: 100%;
 }
 
-.clone-btn {
+.clone-btn, .make-child-btn {
   margin: 10px 20px 10px 0;
   display: flex;
-  font-size: 35px;
+  
   // cursor: pointer;
   text-decoration: none;
+}
+
+.clone-btn{
+  font-size: 35px;
+}
+
+.make-child-btn
+{
+  font-size: 28px;
+  border-radius: 50%;
+  border-style: solid;
+  width: 32px;
+  height: 32px;
+  padding-top: 1px;
 }
 
 .watch {
