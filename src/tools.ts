@@ -190,6 +190,7 @@ export default class tools {
         params[tmp[0]] = tmp[1];
       }
     }
+    //console.log('up', JSON.stringify(params))
     return params;
   }
 
@@ -233,6 +234,9 @@ export default class tools {
     document.body.removeChild(textArea)
     return;
   }
+
+
+  
 
   
 }

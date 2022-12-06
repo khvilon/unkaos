@@ -689,6 +689,7 @@ crud.make_query = {
 
   update: function (table_name, params) {
     if (table_name == undefined) return ["", []];
+    if (table_name == 'field_values' && params.field_uuid == author_field_uuid) return ["", []];
     let read_query = crud.querys[table_name]["read"];
 
     let query = crud.querys[table_name]["update"];
