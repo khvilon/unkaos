@@ -1089,19 +1089,18 @@ export default mod;
           </div>
         </Transition>
 
-        <TextInput
-          label="Описание"
-          v-if="!loading && (edit_mode || id == '')"
-          :value="get_field_by_name('Описание').value"
-          :id="'values.' + get_field_by_name('Описание').idx + '.value'"
-          parent_name="issue"
-          ref="issue_descr_text_inpt"
-          textarea_id="issue_description_textarea"
-          @paste="pasted"
-          @update_parent_from_input="edit_current_description"
-          style="margin-top: 15px"
-        >
-        </TextInput>
+        <KMarkdownInput
+            style="margin-top: 10px"
+            v-if="!loading && (edit_mode || id === '')"
+            :value="get_field_by_name('Описание').value"
+            :id="'values.' + get_field_by_name('Описание').idx + '.value'"
+            @update_parent_from_input="edit_current_description"
+            @paste="pasted"
+            parent_name="issue"
+            placeholder="Описание задачи..."
+            textarea_id="issue_description_textarea"
+            transition="element_fade"
+        />
 
         <div id="issue_footer_buttons"
              v-if="!loading && id === ''">
@@ -1113,9 +1112,8 @@ export default mod;
           />
         </div>
 
-        <Transition name="element_fade">
-          <div class="edit-mode-btn-container"
-               v-if="!loading && id != '' && (edit_mode || id == '')">
+        <div class="edit-mode-btn-container" v-if="!loading && id != '' && (edit_mode || id == '')">
+          <TransitionGroup name="element_fade">
             <KButton
               class="save-issue-edit-mode-btn"
               name="Сохранить"
@@ -1126,8 +1124,8 @@ export default mod;
               name="Отменить"
               @click="cancel_edit_mode"
             />
-          </div>
-        </Transition>
+          </TransitionGroup>
+        </div>
 
 			<Transition name="element_fade">
         <KMarked v-if="!loading"
@@ -1164,35 +1162,45 @@ export default mod;
           </KAttachment>
         </Transition>
 
-      
-
+          <KMarkdownInput
+            class="comment_input"
+            style="margin-top: 20px"
+            v-if="!loading && !edit_mode && id !== ''"
+            :value="comment"
+            :id="'values.' + get_field_by_name('Описание').idx + '.value'"
+            @update_parent_from_input="update_comment"
+            @paste="pasted"
+            placeholder="Комментарий к задаче..."
+            textarea_id="issue_comment_textarea"
+            transition="element_fade"
+          />
+        <Transition name="element_fade">
+          <KButton
+            v-if="!loading && !edit_mode && id !== ''"
+            id="send_comment_btn"
+            name="Отправить"
+            v-bind:class="{ outlined: comment_focused }"
+            @click="send_comment()"
+            :disabled="comment === ''"
+          />
+        </Transition>
+<!--
         <Transition name="element_fade">
           <TextInput
             label="Комментарий"
             v-if="!loading && id != ''"
             class="comment_input"
-
             @update_parent_from_input="update_comment"
             :value="comment"
             textarea_id="issue_description_textarea"
-
             @input_focus="comment_focus"
             @paste="pasted"
           >
           </TextInput>
         </Transition>
+-->
 
-        
 
-        <Transition name="element_fade">
-          <KButton
-            v-if="!loading && id != ''"
-            id="send_comment_btn"
-            name="Отправить"
-            v-bind:class="{ outlined: comment_focused }"
-            @click="send_comment()"
-          />
-        </Transition>
 
         <CommentList
             v-if="!loading && !edit_mode"
@@ -1462,7 +1470,11 @@ $code-width: 160px;
 }
 
 #send_comment_btn {
+  .disabled-btn {
+    background-color: var(--panel-bg-color);
+  }
 }
+
 #send_comment_btn .btn_input {
   height: 25px;
   width: 100%;
@@ -1474,7 +1486,6 @@ $code-width: 160px;
 }
 
 .comment_input {
-  margin-top: 20px;
   margin-bottom: -4px !important;
 }
 
@@ -1584,7 +1595,7 @@ $code-width: 160px;
 
 .edit-mode-btn-container {
   margin-top: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
 }
@@ -1616,7 +1627,7 @@ $code-width: 160px;
 }
 
 .issue-tags-container .tag-input{
-  font-size: 10px;
+  font-size: 13px;
   padding-left: 5px;
 }
 

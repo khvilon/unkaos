@@ -119,23 +119,15 @@ export default {
     value: function (val, oldVal) {
       if (this.val == val) return;
       this.val = val;
-
-
     },
 
     val: function (val, oldVal) {
       console.log(val, oldVal, this.id, this.parent_name);
-
-
-
       this.$emit("update_parent_from_input", val);
-
       nextTick(() => {
         this.resize();
       })
-
       if (this.parent_name == undefined || this.parent_name == "") return;
-
       this.$store.commit("id_push_update_" + this.parent_name, {
         id: this.id,
         val: val,

@@ -150,11 +150,14 @@ body {
   margin: 0px;
 }
 
+html {
+  font-size: $font-size;
+}
+
 * {
   color: var(--text-color);
-  font-size: $font-size;
   //font-family: 'Segoe UI Local';//segoiui;//var(--font-family);
-
+  font-size: $font-size;
   font-family: Inter, system-ui, Roboto, sans-serif;
 
   //margin: 0;
