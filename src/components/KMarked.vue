@@ -35,123 +35,95 @@ export default {
       return val;
     },
 
+    move_width_infos(html)
+    {
+      const w_search_text = '/>{width='
+      const max_val_length = 20
+      const max_image_count = 1000;
+      let search_start = 0
+      let w_start = html.indexOf(w_search_text, search_start)
+      let count = 0
+      while(w_start > -1 && search_start < html.length && count < max_image_count)
+      {
+          count++
+          let w_end = html.indexOf('}', w_start)
+          let substr = html.substring(w_start, w_end+1)
+          let new_substr = substr.replace('/>{', ' ').replace('}', ' />')
+          html =  html.substring(0, w_start) + new_substr + html.substring(w_end + 1)
+          if((w_end < 0) || ((w_end - w_start - w_search_text.length) > max_val_length)) break
+          search_start = w_end + 1
+          w_start = html.indexOf(w_search_text, search_start)
+      }
+      return html
+    },
+
     inject_images(html, start_search) {
 
-      
-      console.log(html)
+      if(this.wait_for_recalc_count > 1)
+      {
+        this.wait_for_recalc_count--
+        return html
+      }
+      html = this.move_width_infos(html)
+      //console.log(html)
+
+      let found_images = []
 
       for(let i = 0; i < this.images.length; i++)
       {
         let from = ' src="' + this.images[i].name + '.' + this.images[i].extention
         let to = ' src="' + this.images[i].data
 
-        
+        let start_idx = html.indexOf(from)
+        if(start_idx < 0) continue
+        let end_idx = start_idx + from.length
 
-        let from_idx = html.indexOf(from)
-
-        let width = 'style="max-width:40%; height:auto"';
-
-        console.log('++++++++++++++++++++++++++0', from_idx)
-        if(from_idx < 0) continue
-
-        const max_img_diff = 10; 
-        const max_w_diff = 20; 
-
-        let img_end = html.indexOf('"', from_idx+max_img_diff);
-
-        let w_start = html.indexOf("{", img_end) + 1;
-
-             
-        console.log('++++++++++++++++++++++++++', from_idx, img_end, w_start)
-
-        if (w_start > 0 && w_start - img_end < max_w_diff) {
-          let w_end = html.indexOf("}", w_start);
-          width = html.substring(w_start, w_end);
-          html = html.replace("{" + width + "}", "");
-        }
-
-       // console.log('froooom', from, to)
-        html = html.replace(from,  ' ' + width + to)
-        html = html.replace(from, '')
-      }
-
-      console.log(html)
-
-      return html
-
-      const img_opener = '<img src="';
-
-      if (start_search == undefined) {
-        start_search = 0;
-        this.found_img = {};
-      }
-
-      let img_start = html.indexOf(img_opener, start_search);
-      console.log(html, start_search, img_start);
-
-      if (img_start < 0) {
-        console.log('this.use_bottom_images', this.use_bottom_images, this.images_len)
-        if (this.use_bottom_images && false) {
-          for (let i = 0; i < this.images.length; i++) {
-
-            console.log(this.images[i].name)
-            if (this.found_img[this.images[i].uuid]) continue;
-
-            html +=
-              '<img class="attachment-img" src="' +
-              this.images[i].data +
-              '"></img>';
+        found_images.push(
+          {
+            from: from,
+            to: to,
+            start_idx: start_idx,
+            end_idx: end_idx
           }
-        }
-
-        return html;
+        )
       }
 
-      img_start += img_opener.length;
+      //console.log('found_images', found_images)
+      found_images.sort(tools.compare_obj('start_idx'))
 
-      let img_end = html.indexOf('"', img_start);
-      let img_name = html.substring(img_start, img_end);
-
-      let w_start = html.indexOf("{", img_end) + 1;
-
-      const max_w_diff = 20;
-      let width = 'maxWidth="70%" height="auto"';
-      console.log(w_start, img_end, "+++++++++++++++++++");
-      if (w_start > 0 && w_start - img_end < max_w_diff) {
-        let w_end = html.indexOf("}", w_start);
-        width = html.substring(w_start, w_end);
-        html = html.replace("{" + width + "}", "");
+      let new_html = ''
+      let old_html = html
+      let last_end_idx = 0
+      for(let i = 0; i < found_images.length; i++)
+      {
+          new_html += old_html.substring(last_end_idx, found_images[i].start_idx) + found_images[i].to
+          last_end_idx = found_images[i].end_idx
       }
+      new_html += old_html.substring(last_end_idx)
 
-      for (let i = 0; i < this.images.length; i++) {
-        if (this.images[i].name + "." + this.images[i].extention == img_name) {
-          html = html.replace(
-            'src="' + img_name,
-            width + ' src="' + this.images[i].data
-          );
-          this.found_img[this.images[i].uuid] = true;
-          break;
-        }
-      }
-
-      return this.inject_images(html, img_end);
+      //console.log(html)
+      this.wait_for_recalc_count--;
+      console.log('recalced')
+      return new_html
     },
 
     md: function (input) {
-
-      marked.setOptions({
-      renderer: new marked.Renderer(),
-      gfm: true,
-      breaks: true,
-      xhtml: true,
-    });
-
-
       let html = marked(input);
       html = html.replaceAll('<a href="http', '<a target="_ blank" href="http');
       html = this.inject_images(html);
       return html;
     },
+    recalc_md: async function(val)
+    {
+      //let start = new Date()
+      this.md_value = this.md(val);
+    
+      //console.log(new Date() - start)
+    }
+
+
+    
+
   },
 
   mounted() {
@@ -171,16 +143,19 @@ export default {
   data() {
     return {
       found_img: {},
-      md_value: ''
+      md_value: '',
+      wait_for_recalc_count: 0
     };
   },
   watch: {
     val: {
       handler: function (val, oldVal) {
-        this.val.toString()
-      console.log('vvv', val, oldVal)
+     //   this.val.toString()
+     // console.log('vvv', val, oldVal)
       nextTick(() => {
-      this.md_value = this.md(val);
+        this.wait_for_recalc_count++;
+    
+        setTimeout(this.recalc_md, 0, val)
       })
     },
     deep: true
@@ -189,7 +164,7 @@ export default {
     handler: function (val, oldVal) {
         this.val.toString()
       console.log('viiim', val, oldVal)
-      this.md_value = this.md(this.val);
+     // this.md_value = this.md(this.val);
     },
     deep: true,
       immediate: true

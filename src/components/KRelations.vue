@@ -132,7 +132,7 @@ $relation_input_border_width: 2px;
 }
 
 .relation span {
-  white-space: nowrap;
+ // white-space: nowrap;
   line-height: calc($input-height/2);
 }
 

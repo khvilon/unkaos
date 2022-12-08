@@ -124,7 +124,7 @@ export default {
     },
 
     val: function (val, oldVal) {
-      console.log(val, oldVal, this.id, this.parent_name);
+      //console.log(val, oldVal, this.id, this.parent_name);
 
 
 
