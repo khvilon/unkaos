@@ -751,6 +751,7 @@ crud.make_query = {
 
     query_update = query_update.replace(table_name, "").split("WHERE")[0];
 
+    if(query_update == '') query_update = 'NOTHING'
     let [query, pg_params] = crud.concat_querys(
       query_create,
       params_create,
