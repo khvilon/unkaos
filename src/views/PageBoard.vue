@@ -1731,14 +1731,16 @@
 	padding-bottom: 30px;
 }
 
-.swimlane-body-closed *
-{
-	height: 0px !important;
+.swimlane-body-closed * {
+	height: 0 !important;
 	overflow:  hidden !important;
 }
 
-
-
+.swimlane-body-closed {
+  height: 0;
+  padding: 0;
+  margin: 0;
+}
 
 .swimlane-expander
 {
