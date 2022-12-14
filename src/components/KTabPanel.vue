@@ -44,6 +44,8 @@ export default {
 .tab-panel {
   display: flex;
   flex-direction: column-reverse;
+  position: relative;
+  height: calc(100% - 60px);
 }
 
 ul.tabs__header {
@@ -52,6 +54,7 @@ ul.tabs__header {
   margin: 0 0 0 20px;
   padding: 0;
   height: 40px;
+  z-index: 1;
 }
 
 ul.tabs__header > li {
@@ -70,6 +73,7 @@ ul.tabs__header > li.tab__selected {
   /* font-weight: bold; */
 
   padding: 8px 10px;
+  
 }
 
 .tab {
@@ -78,11 +82,13 @@ ul.tabs__header > li.tab__selected {
   color: black;
   border-radius: var(--border-radius);
   width: 100%;
-  height: 100%;
+ 
   border-width: var(--border-width);
   border-color: var(--border-color);
   border-style: groove;
   padding: 20px;
+  height: calc(100% - 40px);
+  margin: -5px;
 }
 
 .tab-panel .tab {
@@ -95,5 +101,6 @@ ul.tabs__header > li.tab__selected {
 
 .tab-panel li.tab__selected {
   background-color: var(--panel-bg-color);
+  
 }
 </style>
