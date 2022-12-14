@@ -375,12 +375,15 @@ crud.load = async function () {
         R.DELETED_AT,
         RT.NAME TYPE_NAME,
         P.SHORT_NAME || '-' || I.NUM  ID,
-        FV.value ISSUE_NAME
+        FV.value ISSUE_NAME,
+        IST.IS_END ISSUE_RESOLVED
         FROM RELATIONS R
         LEFT JOIN RELATION_TYPES RT
         ON RT.UUID = R.TYPE_UUID
         LEFT JOIN ISSUES I 
         ON R.ISSUE1_UUID = I.UUID
+        LEFT JOIN ISSUE_STATUSES IST
+        ON I.STATUS_UUID = IST.UUID
         LEFT JOIN PROJECTS P
         ON P.UUID = I.PROJECT_UUID 
         LEFT JOIN FIELD_VALUES FV
@@ -394,12 +397,15 @@ crud.load = async function () {
         R.DELETED_AT,
         RT.REVERT_NAME TYPE_NAME,
         P.SHORT_NAME || '-' || I.NUM  ID,
-        FV.value ISSUE_NAME
+        FV.value ISSUE_NAME,
+        IST.IS_END ISSUE_RESOLVED
         FROM RELATIONS R
         LEFT JOIN RELATION_TYPES RT
         ON RT.UUID = R.TYPE_UUID
         LEFT JOIN ISSUES I 
         ON R.ISSUE0_UUID = I.UUID
+        LEFT JOIN ISSUE_STATUSES IST
+        ON I.STATUS_UUID = IST.UUID
         LEFT JOIN PROJECTS P
         ON P.UUID = I.PROJECT_UUID 
         LEFT JOIN FIELD_VALUES FV
