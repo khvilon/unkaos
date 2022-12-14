@@ -15,6 +15,7 @@ export default {
           id: "name",
         },
       ],
+      scale: 1
     };
   },
 
@@ -409,6 +410,8 @@ export default {
         @mousedown="svg_mousedown($event)"
         @touchend="svg_mouseup($event)"
         @mouseleave="svg_mouseleave($event)"
+       
+        preserveAspectRatio="slice"
       >
         <defs>
           <marker
@@ -478,7 +481,20 @@ export default {
             </g>
           </g>
         </g>
+        
       </svg>
+      <KButton
+            id="graph_zoom_in"
+            name="+"
+            @click="scale+=0.1"
+          >
+        </KButton>
+          <KButton
+            id="graph_zoom_out"
+            name="-"
+            @click="scale-=0.1"
+          >
+      </KButton>
       <div class="statuses-container">
         <div class="statuses-search-and-add">
           <KButton
@@ -505,12 +521,14 @@ export default {
   </div>
 </template>
 
-<style>
+<style lang="scss">
 /* Google Font Link */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
+@import "../css/global.scss";
 
 .workflows-editor {
-
+  display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .workflows-command-panel {
@@ -543,11 +561,13 @@ export default {
 .svg-container {
   display: flex;
   width: 100%;
+  height: 100%;
 }
 
 .svg-workflow,
 .statuses-container {
-  height: 400px !important;
+  height: calc(100% - 40px);
+
 }
 
 .svg-workflow,
@@ -592,14 +612,28 @@ export default {
   padding: 0px;
 }
 
-#add-status-to-graph {
+#add-status-to-graph, #graph_zoom_in, #graph_zoom_out {
   width: 28px;
   height: 28px;
   margin-bottom: 10px;
   margin-right: 5px;
 }
 
-#add-status-to-graph input {
+#graph_zoom_in, #graph_zoom_out {
+position: absolute;
+    right: 200px;
+    top: 115px;
+}
+
+#graph_zoom_in {
+    top: 115px;
+}
+
+#graph_zoom_out {
+    top: 150px;
+}
+
+#add-status-to-graph input, #graph_zoom_in input, #graph_zoom_out input {
   width: 28px;
   height: 28px;
   font-size: 18px;
@@ -682,6 +716,10 @@ path.link.selected {
 
 #selected-end-arrow {
   fill: var(--workflow-g-selected-color);
+}
+
+.graph{
+  scale: v-bind('scale');
 }
 
 </style>
