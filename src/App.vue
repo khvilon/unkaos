@@ -41,11 +41,13 @@ export default {
     let htmlElement = document.documentElement;
     htmlElement.setAttribute("theme", localStorage.theme);
 
-    this.$store.state["common"]["is_mobile"] = this.is_mobile();
+    this.$store.state["common"]["is_mobile"] = this.is_mobile() || this.in_iframe();
+    this.$store.state["common"]["in_iframe"] = this.in_iframe();
+    
 
     console.log(
       "this.$store.state[common][is_mobile]",
-      this.$store.state["common"]["is_mobile"]
+      this.$store.state["common"]["is_mobile"], this.$store.state["common"]["in_iframe"]
     );
   },
   computed: {
@@ -61,6 +63,13 @@ export default {
   methods: {
     is_mobile: function () {
       return window.innerHeight > window.innerWidth;
+    },
+    in_iframe: function () {
+        try {
+            return window.self !== window.top;
+        } catch (e) {
+            return true;
+        }
     },
     pasted: function (e) {
       console.log(e);
@@ -106,6 +115,7 @@ export default {
       'no-menu-container': !is_in_workspace,
       loading: loading,
       'mobile-view': $store.state['common']['is_mobile'],
+      'iframe-view': $store.state['common']['in_iframe'],
     }"
   >
     <router-view v-slot="{ Component }" :key="$route.fullPath">
@@ -130,9 +140,10 @@ export default {
     </div>
   </Transition>
   <MainMenu
+    v-if="$store.state['common'] && !$store.state['common']['in_iframe']"
     v-bind:class="{ 'mobile-sidebar': $store.state['common']['is_mobile'] }"
   />
-  <Profile v-if="is_in_workspace" />
+  <Profile v-if="is_in_workspace && $store.state['common'] && !$store.state['common']['in_iframe']" />
   <KAlerter />
 </template>
 
@@ -203,6 +214,11 @@ html {
   width: calc(100vw) !important;
   height: calc(100vh - $main-menu-width) !important;
   top: $main-menu-width !important;
+}
+
+.iframe-view {
+  height: 100vh !important;
+  top: 0 !important;
 }
 
 .no-menu-container {

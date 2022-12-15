@@ -84,6 +84,8 @@ export default {
   padding-left: 0px;
 }
 
+
+
 .topbar .btn .btn_input {
   width: 100px;
   height: $input-height;

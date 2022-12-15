@@ -7,6 +7,27 @@
 	import tools from '../tools.ts'
 
 	let methods = {
+		ws_init()
+		{
+			const myWs = new WebSocket('ws://localhost:3003');
+			// обработчик проинформирует в консоль когда соединение установится
+			myWs.onopen = function () {
+			console.log('подключился');
+			};
+
+			// обработчик сообщений от сервера
+			myWs.onmessage = function (message) {
+			console.log('Message: %s', message.data);
+			};
+			// функция для отправки echo-сообщений на сервер
+			function wsSendEcho(value) {
+			myWs.send(JSON.stringify({action: 'ECHO', data: value.toString()}));
+			}
+			// функция для отправки команды ping на сервер
+			function wsSendPing() {
+			myWs.send(JSON.stringify({action: 'PING'}));
+			}
+		},
 		get_favourite_uuid() {
 			
 			if(this.favourites == undefined || this.selected_board == undefined || this.selected_board.is_new) 
@@ -182,6 +203,9 @@
 			{
 				this.selected_board.boards_fields[i].name = this.selected_board.boards_fields[i].fields[0].name
 			}
+
+
+			this.ws_init()
 
 			//console.log('sselected_board4')
 			//get_issues()
@@ -830,7 +854,11 @@
 			this.get_issues()
 
 			//console.log(created_issue)
-		}
+		},
+		field_updated: async function () {
+			console.log("field_updated");
+			
+		},
 		
 
 
@@ -838,6 +866,7 @@
 
 	const data = 
   {
+	selected_issue: undefined,
 	parent_relation_type_uuid: "73b0a22e-4632-453d-903b-09804093ef1b",
 	instance: 
       {
@@ -1206,18 +1235,24 @@
 						<div
 							v-for="(issue, i_index) in (swimlane.filtered_issues[status.uuid] != undefined ? swimlane.filtered_issues[status.uuid] : [])"
 							:key="i_index"
-							:class="{ 'dragged-card': issue.uuid ==  card_draginfo.uuid, 'when-dragged-card': card_draginfo.uuid != undefined}"
-							
+							:class="{ 'dragged-card': issue.uuid ==  card_draginfo.uuid, 
+							'when-dragged-card': card_draginfo.uuid != undefined,
+							'selected-board-card': selected_issue != undefined && issue.uuid == selected_issue.uuid}"
+							@dblclick="selected_issue=issue"
 							@mousedown="dragstart_card($event, issue)"
 							class="issue-board-card">
 							<div class="issue-card-top"
 							:style="[  {backgroundColor: get_card_color(issue)} ]"
 							></div>
 							<div class="issue-card-title">
-							<a 
-							
-							:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}} {{issue.type_name}}</a>
-							
+							<div>
+								<a 
+								:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}}</a>
+								<span>{{issue.type_name}}</span> 
+								<i 
+								@click="selected_issue=issue"
+								class='bx bx-window-open' ></i>
+							</div>
 							<label
 							contenteditable="true"
 							@blur="edit_card_title(issue, $event)"
@@ -1243,18 +1278,33 @@
 										:value="get_field_value(issue, f.fields[0])"
 										label=""
 										:key="index"
-										:disabled="true"
+										:disabled="f.fields[0].name == 'Автор'"
 										:values="available_values[f.fields_uuid]"
 										class="board-card-field-input"
+										@updated="field_updated"
 									></component>
 								</div>
 							</div>	
+							
 						</div>
 						<i v-if="selected_board.swimlanes_by_root" class="bx new-issue-card-btn" @click="new_issue_card(swimlane, status)">+</i>
 					</div>
 				</div>
 			</div>
+
 		</div>
+
+			<div class="board-card-frame"  :class="{'board-card-frame-closed': !selected_issue}">
+				<div>
+					<iframe 
+					v-if="selected_issue"
+					:src="('/issue/' + selected_issue.project_short_name + '-' + selected_issue.num)"></iframe>
+					<i 
+					v-if="selected_issue"
+					@click="(selected_issue = undefined)" class='bx bx-x'></i>
+				</div>
+			</div>
+		
 
 		<div class="modal-bg" v-show="configs_open">
 		<div
@@ -1363,6 +1413,7 @@
 		</div>
 
 		</div>
+
   </div>
 		  
 	</div>
@@ -1459,6 +1510,7 @@
 
 	display: flex;
     flex-direction: column;
+	overflow: visible;
   }
 
   .issue-board-cards-container::-webkit-scrollbar{
@@ -1504,14 +1556,26 @@
 	padding: 5px;
   }
 
+  .issue-card-title div{
+	display: flex;
+	width: 100%;
+  }
+
+  .issue-card-title span
+  {
+	width: 100%;
+  }
+
   .issue-card-title a
   {
 	color: var(--link-color);
-	margin: 0px 0px 4px 0px;
+	margin: 0px 4px 4px 4px;
+	white-space: nowrap;
   }
 
   .issue-card-title label {
 	cursor: text;
+	font-weight: 500;
   }
 
   .issue-card-description
@@ -1547,10 +1611,6 @@
 	  padding: 5px;
   }
 
-  .issue-board-card-footer label
-  {
-	font-size: 10px;
-  }
 
   .board-name-input
   {
@@ -1691,13 +1751,20 @@
     display: flex;
 	overflow: hidden;
 	margin-left: $cards_field_left;
+	overflow: visible;
+	padding-bottom: 30px;
 }
 
-.swimlane-body-closed *
-{
-	height: 0px;
+.swimlane-body-closed * {
+	height: 0 !important;
+	overflow:  hidden !important;
 }
 
+.swimlane-body-closed {
+  height: 0;
+  padding: 0;
+  margin: 0;
+}
 
 .swimlane-expander
 {
@@ -1747,6 +1814,7 @@
 	height: 0px !important;
 	max-height: 0px !important;
 	min-height: 0px !important;
+	font-size: 11px !important;
 }
 
 .board-card-field-input{
@@ -1763,12 +1831,11 @@
 
 .board-card-field-input *{
 
-	height: 15px !important;
-	max-height: 15px !important;
-	min-height: 15px !important;
-	font-size: 11px !important;
-	background: none !important;
-	border: none !important;
+	//height: 15px !important;
+	//max-height: 15px !important;
+	//min-height: 15px !important;
+	
+	
 }
 
 .board-card-field-input svg{
@@ -1780,9 +1847,30 @@
 }
 
 
+.board-card-field *{
+	font-size: 11px !important;
+}
 
-.board-card-field-input input{
+
+.board-card-field-input input, .board-card-field-input textarea, .board-card-field-input .vs__dropdown-toggle,
+.board-card-field-input .vs__selected{
 	height: 15px !important;
+	max-height: 15px !important;
+	min-height: 15px !important;
+	font-size: 11px !important;
+	background: none !important;
+	border: none !important;
+}
+
+.board-card-field-input textarea {
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+
+.board-card-field-input .vs__dropdown-menu{
+	//position: absolute !important;
+	z-index: 200;
 }
 
 .board-card-field-title{
@@ -1808,6 +1896,76 @@
     flex-wrap: wrap;
 	cursor: pointer;
 	color: var(--link-color);
+}
+
+
+.board-card-frame{
+	position: absolute;
+	top: $top-menu-height;
+	bottom: 0;
+	right: 0;
+	width: 450px;
+	background: var(--loading-bg-color);
+	border: none;
+	padding: 10px;
+}
+.board-card-frame-closed{
+	width: 0px;
+	padding: 0px;
+}
+
+.board-card-frame div {
+	width: 100%;
+    height: 100%;
+
+	border-radius: var(--border-radius);
+
+	background: var(--panel-bg-color);
+    border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: groove;
+}
+
+
+
+.board-card-frame iframe{
+	width: 100%;
+    height: 100%;
+    z-index: 1;
+    position: relative;
+	
+	background: var(--panel-bg-color);
+    border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: groove;
+
+	border: none;
+}
+
+.board-card-frame i{
+	position: absolute;
+    right: 0;
+    z-index: 1;
+    font-size: 32px;
+    margin: 13px;
+    cursor: pointer;
+	margin-right: 23px;
+}
+
+.issue-board-card .bx-window-open{
+	font-size: 20px;
+	cursor: pointer;
+	opacity: 0;
+}
+
+.issue-board-card:hover .bx-window-open{
+	opacity: 1;
+}
+
+.selected-board-card .bx-window-open{
+	opacity: 0 !important;
 }
 
 
