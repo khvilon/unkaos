@@ -140,8 +140,10 @@ export default class tools {
   static compare_obj(sort_name: string): (a: any, b: any) => number {
     return function (a, b) {
       //console.log(a, b, sort_name)
-      const fa = a[sort_name].toLowerCase(),
-        fb = b[sort_name].toLowerCase();
+      let fa = a[sort_name]
+      if(fa.toLowerCase) fa = fa.toLowerCase()
+      let fb = b[sort_name]
+      if(fb.toLowerCase) fb = fb.toLowerCase()
       if (fa < fb) return -1;
       if (fa > fb) return 1;
       return 0;

@@ -49,6 +49,7 @@ let methods = {
               this.comment.substring(0, start_pos) +
               img_teg +
               this.comment.substring(start_pos);
+             //console.log(this.comment)
           }
 
           this.add_attachment(attachment);
@@ -326,9 +327,17 @@ let methods = {
     //todo save type and project in localstorage for future issue create
     this.title;
 
+    /*
+    if(this.$store.state['common']['in_iframe']) {
+      console.log("this.$store.state['common']['in_iframe']")
+      window.parent.location.reload()
+    }*/
+
     if (this.id != "") return;
 
     //this.$router.push('/issue/' + this.issueProjectNum)
+
+
     window.location.href =
       "/issue/" + this.issueProjectNum;
 
@@ -593,7 +602,10 @@ let methods = {
     this.saved_name = this.get_field_by_name("Название").value;
     this.current_description = this.saved_descr;
     this.edit_mode = true;
-    console.log("this.saved_descr", this.saved_name, this.saved_descr);
+    this.$nextTick(() => {
+      this.$refs.issue_descr_text_inpt.$refs.text_input.focus()
+   })
+    //console.log("this.saved_descr", this.saved_name, this.saved_descr);
   },
   cancel_edit_mode: function () {
     this.get_field_by_name("Описание").value = this.saved_descr;
@@ -981,7 +993,8 @@ export default mod;
 
       <Transition name="element_fade">
         <a
-          v-if="!loading && id != ''"
+          v-if="!loading && id != '' &&
+          !$store.state['common']['is_mobile']"
           class="bx bx-copy clone-btn"
           :href="get_clone_url()"
         >
@@ -990,7 +1003,8 @@ export default mod;
 
       <Transition name="element_fade">
         <a
-          v-if="!loading && id != ''"
+          v-if="!loading && id != '' &&
+          !$store.state['common']['is_mobile']"
           class="bx bx-subdirectory-right make-child-btn"
           :href="('/issue?t=' + new Date().getTime() + '&parent_uuid=' + issue[0].uuid)"
         >
@@ -1005,7 +1019,7 @@ export default mod;
           class="watch"
           @click="card_open = !card_open"
         >
-          {{ card_open ? ">>>>>" : "<<<<<" }}
+          {{ card_open ? ">>>" : "<<<" }}
         </div>
       </Transition>
     </div>
@@ -1184,23 +1198,6 @@ export default mod;
             :disabled="comment === ''"
           />
         </Transition>
-<!--
-        <Transition name="element_fade">
-          <TextInput
-            label="Комментарий"
-            v-if="!loading && id != ''"
-            class="comment_input"
-            @update_parent_from_input="update_comment"
-            :value="comment"
-            textarea_id="issue_description_textarea"
-            @input_focus="comment_focus"
-            @paste="pasted"
-          >
-          </TextInput>
-        </Transition>
--->
-
-
 
         <CommentList
             v-if="!loading && !edit_mode"
@@ -1341,6 +1338,10 @@ $code-width: 160px;
   display: flex;
   padding-top: 3px;
   padding-left: 15px;
+}
+
+.iframe-view #issue_top_panel{
+  border: none;
 }
 
 .issue-top-buttons {

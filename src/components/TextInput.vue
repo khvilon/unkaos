@@ -122,7 +122,7 @@ export default {
     },
 
     val: function (val, oldVal) {
-      console.log(val, oldVal, this.id, this.parent_name);
+      //console.log(val, oldVal, this.id, this.parent_name);
       this.$emit("update_parent_from_input", val);
       nextTick(() => {
         this.resize();
