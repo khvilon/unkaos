@@ -33,25 +33,8 @@ let methods = {
             type: file.type,
             table_name: "attachments",
           };
-
-          let start_pos = e.target.selectionStart;
-
           let img_teg = '![](' + attachment.name + "." + attachment.extention + '){width=x%}';
-
-          if (e.target.id == "issue_description_textarea") {
-            let f = this.get_field_by_name("Описание");
-            f.value =
-              this.current_description.substring(0, start_pos) +
-              img_teg +
-              this.current_description.substring(start_pos);
-          } else {
-            this.comment =
-              this.comment.substring(0, start_pos) +
-              img_teg +
-              this.comment.substring(start_pos);
-             //console.log(this.comment)
-          }
-
+          document.execCommand('insertText', false, img_teg)
           this.add_attachment(attachment);
         } else {
           return;
@@ -1184,20 +1167,22 @@ export default mod;
             :id="'values.' + get_field_by_name('Описание').idx + '.value'"
             @update_parent_from_input="update_comment"
             @paste="pasted"
+            @input_focus="comment_focus"
             placeholder="Комментарий к задаче..."
             textarea_id="issue_comment_textarea"
             transition="element_fade"
           />
         <Transition name="element_fade">
           <KButton
-            v-if="!loading && !edit_mode && id !== ''"
-            id="send_comment_btn"
-            name="Отправить"
-            v-bind:class="{ outlined: comment_focused }"
-            @click="send_comment()"
-            :disabled="comment === ''"
+              v-if="!loading && !edit_mode && id !== ''"
+              id="send_comment_btn"
+              name="Отправить"
+              v-bind:class="{ outlined: comment_focused }"
+              @click="send_comment()"
+              :disabled="comment === ''"
           />
         </Transition>
+
 
         <CommentList
             v-if="!loading && !edit_mode"
