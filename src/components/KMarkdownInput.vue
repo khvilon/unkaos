@@ -30,7 +30,7 @@ export default {
       default: "",
     },
   },
-  emits: ["update_parent_from_input"],
+  emits: ["update_parent_from_input", "input_focus"],
   methods: {
     resize() {
       let element = this.$refs["markdown-textarea-resizable"];
@@ -311,9 +311,12 @@ export default {
             :placeholder="placeholder"
             @input="resize"
             @keydown ="keyEvent"
+            @focus="$emit('input_focus', true)"
+            @blur="$emit('input_focus', false)"
         ></textarea>
       </div>
     </div>
+
   </Transition>
 </template>
 
@@ -369,6 +372,10 @@ export default {
 .md-preview {
   display: inline-block;
   align-self: flex-end;
+}
+
+.markdown-input:focus-within {
+  outline: 1px solid;
 }
 
 </style>
