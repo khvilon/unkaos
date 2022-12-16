@@ -249,17 +249,28 @@ export default {
             @placeholder="placeholder"
 
             @keydown.ctrl.b         ="mdBold"
+            @keydown.ctrl.и         ="mdBold"
             @keydown.ctrl.i         ="mdItalic"
-            @keydown.ctrl.s         ="mdStrike"
+            @keydown.ctrl.ш         ="mdItalic"
+            @keydown.ctrl.shift.s   ="mdStrike"
+            @keydown.ctrl.shift.ы   ="mdStrike"
             @keydown.ctrl.shift.q   ="mdQuote"
+            @keydown.ctrl.shift.й   ="mdQuote"
             @keydown.ctrl.shift.c   ="mdCodeFragment"
+            @keydown.ctrl.shift.с   ="mdCodeFragment"
             @keydown.ctrl.shift.m   ="mdCodeBlock"
+            @keydown.ctrl.shift.ь   ="mdCodeBlock"
             @keydown.ctrl.l         ="mdLink"
+            @keydown.ctrl.д         ="mdLink"
             @keydown.ctrl.u         ="mdListUl"
+            @keydown.ctrl.г         ="mdListUl"
             @keydown.ctrl.o         ="mdListOl"
+            @keydown.ctrl.щ         ="mdListOl"
             @keydown.ctrl.r         ="mdLine"
+            @keydown.ctrl.к         ="mdLine"
 
-            @keydown.ctrl.s.prevent
+            @keydown.ctrl.prevent
+            @keydown.ctrl.shifts.prevent
             @keydown.ctrl.shift.q.prevent
             @keydown.ctrl.shift.m.prevent
             @keydown.ctrl.shift.c.prevent
