@@ -68,29 +68,6 @@ export default {
       }
       return position;
     },
-    make_bold(e) {
-      const bold_tag = "**";
-      console.log("make_bold", e.target);
-      // console.log(e)
-      var elInput = e.target; //document.getElementById('tempid') // Select the object according to the id selector
-      var startPos = elInput.selectionStart; // input the 0th character to the selected character
-      var endPos = elInput.selectionEnd; // The selected character to the last character
-
-      if (startPos < endPos) {
-        //console.log(e, startPos, endPos)
-        this.val =
-          this.val.substring(0, startPos) +
-          bold_tag +
-          this.val.substring(startPos, endPos) +
-          bold_tag +
-          this.val.substring(endPos);
-
-        nextTick(() => {
-          elInput.selectionStart = endPos + bold_tag.length * 2;
-          elInput.selectionEnd = endPos + bold_tag.length * 2;
-        });
-      }
-    },
     pasted(e) {
       console.log(e);
     },
@@ -153,7 +130,6 @@ export default {
       ref="text_input"
       @focus="$emit('input_focus', true)"
       @blur="$emit('input_focus', false)"
-      @keydown.ctrl.b="make_bold"
       :id="textarea_id"
       class="text-input"
       :type="type"

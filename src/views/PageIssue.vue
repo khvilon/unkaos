@@ -33,25 +33,8 @@ let methods = {
             type: file.type,
             table_name: "attachments",
           };
-
-          let start_pos = e.target.selectionStart;
-
           let img_teg = '![](' + attachment.name + "." + attachment.extention + '){width=x%}';
-
-          if (e.target.id == "issue_description_textarea") {
-            let f = this.get_field_by_name("Описание");
-            f.value =
-              this.current_description.substring(0, start_pos) +
-              img_teg +
-              this.current_description.substring(start_pos);
-          } else {
-            this.comment =
-              this.comment.substring(0, start_pos) +
-              img_teg +
-              this.comment.substring(start_pos);
-             //console.log(this.comment)
-          }
-
+          document.execCommand('insertText', false, img_teg)
           this.add_attachment(attachment);
         } else {
           return;

@@ -29,11 +29,8 @@ export default {
       type: String,
       default: "",
     },
-    parent_name: {
-      type: String,
-      default: "",
-    },
   },
+  emits: ["update_parent_from_input"],
   methods: {
     resize() {
       let element = this.$refs["markdown-textarea-resizable"];
@@ -55,11 +52,9 @@ export default {
         if (selectedVal.startsWith(leftSymbols) &&
             selectedVal.endsWith(rightSymbols) ){
           // remove symbols
-          this.val =
-            text.substring(0, startPos) +
-            selectedVal.substring(leftSymbols.length).substring(0, selectedVal.length - symbolsLength) +
-            text.substring(endPos);
+          document.execCommand('insertText', false, selectedVal.substring(leftSymbols.length).substring(0, selectedVal.length - symbolsLength))
           nextTick(() => {
+            // complex selection movement
             if (pushSelectionStart !== undefined) {
               startPos = startPos + pushSelectionStart
             }
@@ -71,10 +66,7 @@ export default {
           });
         } else {
           // add symbols
-          this.val =
-            text.substring(0, startPos) +
-            leftSymbols + selectedVal + rightSymbols +
-            text.substring(endPos);
+          document.execCommand('insertText', false, leftSymbols + selectedVal + rightSymbols)
           nextTick(() => {
             if (pushSelectionStart !== undefined) {
               startPos = startPos + pushSelectionStart
@@ -88,11 +80,8 @@ export default {
         }
       } else {
         // no selection or only point selected
-        // add symbols to selection start, move selection between symbols
-        this.val =
-            text.substring(0, startPos)  +
-            leftSymbols + rightSymbols +
-            text.substring(endPos);
+        // insert symbols, move selection between them
+        document.execCommand('insertText', false, leftSymbols + rightSymbols)
         nextTick(() => {
           textArea.setSelectionRange(startPos + leftSymbols.length, startPos + leftSymbols.length)
           this.resize()
@@ -100,7 +89,7 @@ export default {
       }
 
     },
-    leftPadLineBySymbols(symbols) {
+    leftPadSelectedLinesBySymbols(symbols) {
       // find first /n before selection start, or start of text, insert symbols there and select inserted
       // invert symbols if present
       let { textArea, startPos, endPos } = this.getSelectionVars()
@@ -123,7 +112,7 @@ export default {
           }
         }
       });
-      this.val = lines.join('\n')
+      document.execCommand('insertText', false, lines.join('\n'))
       let selectionStart = textBeforeSelectionStart.lastIndexOf('\n') + 1
       let selectionEnd = textAfterSelectionEnd.contains('\n')
           ? endPos + textAfterSelectionEnd.indexOf('\n') + (symbols.length * editedTimes)
@@ -135,14 +124,73 @@ export default {
     },
     swapSelectionBySymbols(symbols) {
       let { textArea, startPos, endPos } = this.getSelectionVars()
-      this.val =
-          this.val.substring(0, startPos)  +
-          symbols +
-          this.val.substring(endPos);
+      document.execCommand('insertText', false, symbols)
       nextTick(() => {
         textArea.setSelectionRange(startPos, endPos + symbols.length)
         this.resize()
       });
+    },
+    keyEvent(event) {
+      console.log('keyCode: ',event.keyCode,', event:', event)
+      if (event.ctrlKey) {
+        if (!event.shiftKey) { // Ctrl
+          switch (event.keyCode) {
+            case 66: { // Ctrl + B
+              event.preventDefault()
+              this.mdBold()
+              break;
+            }
+            case 73: { // Ctrl + I
+              event.preventDefault()
+              this.mdItalic()
+              break;
+            }
+            case 76: { // Ctrl + L
+              event.preventDefault()
+              this.mdLink()
+              break;
+            }
+            case 85: { // Ctrl + U
+              event.preventDefault()
+              this.mdListUl()
+              break;
+            }
+            case 79: { // Ctrl + O
+              event.preventDefault()
+              this.mdListOl()
+              break;
+            }
+            case 82: { // Ctrl + R
+              event.preventDefault()
+              this.mdLine()
+              break;
+            }
+          }
+        } else { // Ctrl + Shift
+          switch (event.keyCode) {
+            case 83: { // Ctrl + Shift + S
+              event.preventDefault()
+              this.mdStrike()
+              break;
+            }
+            case 81: { // Ctrl + Shift + Q
+              event.preventDefault()
+              this.mdQuote()
+              break;
+            }
+            case 67: { // Ctrl + Shift + C
+              event.preventDefault()
+              this.mdCodeFragment()
+              break;
+            }
+            case 77: { // Ctrl + Shift + M
+              event.preventDefault()
+              this.mdCodeBlock()
+              break;
+            }
+          }
+        }
+      }
     },
     mdBold() {
       this.wrapSelectionBySymbols('**','**')
@@ -158,7 +206,7 @@ export default {
       // todo option selector
     },
     mdQuote() {
-      this.leftPadLineBySymbols('> ')
+      this.leftPadSelectedLinesBySymbols('> ')
     },
     mdCodeFragment() {
       this.wrapSelectionBySymbols('`','`')
@@ -172,13 +220,13 @@ export default {
       this.wrapSelectionBySymbols('[','](https://)',valLength + 3, -1)
     },
     mdListUl() {
-      this.leftPadLineBySymbols('- ')
+      this.leftPadSelectedLinesBySymbols('- ')
     },
     mdListOl() {
-      this.leftPadLineBySymbols('1. ')
+      this.leftPadSelectedLinesBySymbols('1. ')
     },
     mdListCheck() {
-      this.leftPadLineBySymbols('* [ ] ')
+      this.leftPadSelectedLinesBySymbols('* [ ] ')
     },
     mdTable() {
       this.swapSelectionBySymbols('|  |  |\n| --- | --- |\n|  |  |')
@@ -190,6 +238,10 @@ export default {
     },
     mdLine() {
       this.swapSelectionBySymbols('---\n')
+    },
+    previewMd() {
+      // todo
+      // show/hide markdown preview
     }
   },
   watch: {
@@ -208,6 +260,15 @@ export default {
       });
     }
   },
+  computed: {
+    previewDescription() {
+      if (this.textarea_id === 'issue_comment_textarea' ) {
+        return 'Превью комментария'
+      } else {
+        return 'Превью описания'
+      }
+    }
+  },
   mounted() {
     this.val = this.value;
     nextTick(() => {
@@ -221,66 +282,35 @@ export default {
   <Transition :name="transition">
     <div class="markdown-input">
       <div class="markdown-input-buttons" @mousedown.prevent>
-        <div class="markdown-input-button bx bx-bold"               @click="mdBold"         title="Жирный (Ctrl + B)"></div>
-        <div class="markdown-input-button bx bx-italic"             @click="mdItalic"       title="Курсив (Ctrl + I)"></div>
-        <div class="markdown-input-button bx bx-strikethrough"      @click="mdStrike"       title="Перечёркнутый (Ctrl + S)"></div>
+        <div class="markdown-input-button bx bx-bold"                 @click="mdBold"         title="Жирный (Ctrl + B)"></div>
+        <div class="markdown-input-button bx bx-italic"               @click="mdItalic"       title="Курсив (Ctrl + I)"></div>
+        <div class="markdown-input-button bx bx-strikethrough"        @click="mdStrike"       title="Перечёркнутый (Ctrl + Shift + S)"></div>
         <div class="markdown-input-button-separator"></div>
-        <div class="markdown-input-button bx bx-font-size"          @click="mdFontSize"     title="Размер шрифта" style="display: none"></div>
-        <div class="markdown-input-button-separator"                                                         style="display: none"></div>
-        <div class="markdown-input-button bx bxs-quote-right"       @click="mdQuote"        title="Цитата (Ctrl + Shift + Q)"></div>
-        <div class="markdown-input-button bx bx-code-alt"           @click="mdCodeFragment" title="Фрагмент кода (Ctrl + Shift + C)" ></div>
-        <div class="markdown-input-button bx bx-code-block"         @click="mdCodeBlock"    title="Блок кода (Ctrl + Shift + M)" ></div>
-        <div class="markdown-input-button bx bx-link"               @click="mdLink"         title="Ссылка (Ctrl + L)" ></div>
+        <div class="markdown-input-button bx bx-font-size"            @click="mdFontSize"     title="Размер шрифта" style="display: none"></div>
+        <div class="markdown-input-button-separator"                                                                style="display: none"></div>
+        <div class="markdown-input-button bx bxs-quote-right"         @click="mdQuote"        title="Цитата (Ctrl + Shift + Q)"></div>
+        <div class="markdown-input-button bx bx-code-alt"             @click="mdCodeFragment" title="Фрагмент кода (Ctrl + Shift + C)" ></div>
+        <div class="markdown-input-button bx bx-code-block"           @click="mdCodeBlock"    title="Блок кода (Ctrl + Shift + M)" ></div>
+        <div class="markdown-input-button bx bx-link"                 @click="mdLink"         title="Ссылка (Ctrl + L)" ></div>
         <div class="markdown-input-button-separator"></div>
-        <div class="markdown-input-button bx bx-list-ul"            @click="mdListUl"       title="Маркированный список (Ctrl + U)"></div>
-        <div class="markdown-input-button bx bx-list-ol"            @click="mdListOl"       title="Нумерованный список (Ctrl + O)"></div>
-        <div class="markdown-input-button bx bx-list-check"         @click="mdListCheck"    title="Чеклист"></div>
+        <div class="markdown-input-button bx bx-list-ul"              @click="mdListUl"       title="Маркированный список (Ctrl + U)"></div>
+        <div class="markdown-input-button bx bx-list-ol"              @click="mdListOl"       title="Нумерованный список (Ctrl + O)"></div>
+        <div class="markdown-input-button bx bx-list-check"           @click="mdListCheck"    title="Чеклист"></div>
         <div class="markdown-input-button-separator"></div>
-        <div class="markdown-input-button bx bx-table"              @click="mdTable"        title="Таблица"></div>
-        <div class="markdown-input-button bx bx-image"              @click="mdImage"        title="Изображение"   style="display: none"></div>
-        <div class="markdown-input-button bx bx-dots-horizontal"    @click="mdLine"         title="Горизонтальная линия (Ctrl + R)" style="display: none"></div>
+        <div class="markdown-input-button bx bx-table"                @click="mdTable"        title="Таблица"></div>
+        <div class="markdown-input-button bx bx-image"                @click="mdImage"        title="Изображение"   style="display: none"></div>
+        <div class="markdown-input-button bx bx-dots-horizontal"      @click="mdLine"         title="Горизонтальная линия (Ctrl + R)" style="display: none"></div>
+        <div class="markdown-input-button md-preview bx bxl-markdown" @click="previewMd"     :title="previewDescription" style="display: none"></div>
       </div>
       <div class="markdown-input-container">
         <textarea
             ref="markdown-textarea-resizable"
             class="markdown-input-textarea"
-            :id="textarea_id"
-            @input="resize"
-            @placeholder="placeholder"
-
-            @keydown.ctrl.b         ="mdBold"
-            @keydown.ctrl.и         ="mdBold"
-            @keydown.ctrl.i         ="mdItalic"
-            @keydown.ctrl.ш         ="mdItalic"
-            @keydown.ctrl.shift.s   ="mdStrike"
-            @keydown.ctrl.shift.ы   ="mdStrike"
-            @keydown.ctrl.shift.q   ="mdQuote"
-            @keydown.ctrl.shift.й   ="mdQuote"
-            @keydown.ctrl.shift.c   ="mdCodeFragment"
-            @keydown.ctrl.shift.с   ="mdCodeFragment"
-            @keydown.ctrl.shift.m   ="mdCodeBlock"
-            @keydown.ctrl.shift.ь   ="mdCodeBlock"
-            @keydown.ctrl.l         ="mdLink"
-            @keydown.ctrl.д         ="mdLink"
-            @keydown.ctrl.u         ="mdListUl"
-            @keydown.ctrl.г         ="mdListUl"
-            @keydown.ctrl.o         ="mdListOl"
-            @keydown.ctrl.щ         ="mdListOl"
-            @keydown.ctrl.r         ="mdLine"
-            @keydown.ctrl.к         ="mdLine"
-
-            @keydown.ctrl.prevent
-            @keydown.ctrl.shifts.prevent
-            @keydown.ctrl.shift.q.prevent
-            @keydown.ctrl.shift.m.prevent
-            @keydown.ctrl.shift.c.prevent
-            @keydown.ctrl.l.prevent
-            @keydown.ctrl.u.prevent
-            @keydown.ctrl.o.prevent
-            @keydown.ctrl.r.prevent
-
             v-model="val"
+            :id="textarea_id"
             :placeholder="placeholder"
+            @input="resize"
+            @keydown ="keyEvent"
         ></textarea>
       </div>
     </div>
@@ -334,6 +364,11 @@ export default {
   background: var(--input-bg-color);
   outline: none;
   border: none;
+}
+
+.md-preview {
+  display: inline-block;
+  align-self: flex-end;
 }
 
 </style>
