@@ -1167,20 +1167,22 @@ export default mod;
             :id="'values.' + get_field_by_name('Описание').idx + '.value'"
             @update_parent_from_input="update_comment"
             @paste="pasted"
+            @input_focus="comment_focus"
             placeholder="Комментарий к задаче..."
             textarea_id="issue_comment_textarea"
             transition="element_fade"
           />
         <Transition name="element_fade">
           <KButton
-            v-if="!loading && !edit_mode && id !== ''"
-            id="send_comment_btn"
-            name="Отправить"
-            v-bind:class="{ outlined: comment_focused }"
-            @click="send_comment()"
-            :disabled="comment === ''"
+              v-if="!loading && !edit_mode && id !== ''"
+              id="send_comment_btn"
+              name="Отправить"
+              v-bind:class="{ outlined: comment_focused }"
+              @click="send_comment()"
+              :disabled="comment === ''"
           />
         </Transition>
+
 
         <CommentList
             v-if="!loading && !edit_mode"
