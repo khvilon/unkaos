@@ -62,6 +62,7 @@
     --scroll-shadow-color: rgb(10,10,10);
 
     --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, 0.6);
 }
 [theme="light"]
 {
@@ -126,6 +127,7 @@
     --scroll-shadow-color: rgb(165,176,185);
 
     --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, 0.7);
 }
 [theme="dark"]
 {
@@ -191,6 +193,7 @@
     --scroll-shadow-color: rgb(10,15,20);
 
     --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, 0.6);
 }
 [theme="pink"]
 {
@@ -254,4 +257,5 @@
     --scroll-shadow-color: rgb(205,110,165);
 
     --link-hover-color: green;
+    --icon-hover-bg-color: rgba(245, 150, 205, 1);
 }

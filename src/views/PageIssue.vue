@@ -49,8 +49,7 @@ let methods = {
               this.comment.substring(0, start_pos) +
               img_teg +
               this.comment.substring(start_pos);
-
-              console.log(this.comment)
+             //console.log(this.comment)
           }
 
           this.add_attachment(attachment);
@@ -337,7 +336,7 @@ let methods = {
     if (this.id != "") return;
 
     //this.$router.push('/issue/' + this.issueProjectNum)
-  
+
 
     window.location.href =
       "/issue/" + this.issueProjectNum;
@@ -603,8 +602,7 @@ let methods = {
     this.saved_name = this.get_field_by_name("Название").value;
     this.current_description = this.saved_descr;
     this.edit_mode = true;
-
-    this.$nextTick(() => { 
+    this.$nextTick(() => {
       this.$refs.issue_descr_text_inpt.$refs.text_input.focus()
    })
     //console.log("this.saved_descr", this.saved_name, this.saved_descr);
@@ -1105,19 +1103,18 @@ export default mod;
           </div>
         </Transition>
 
-        <TextInput
-          label="Описание"
-          v-if="!loading && (edit_mode || id == '')"
-          :value="get_field_by_name('Описание').value"
-          :id="'values.' + get_field_by_name('Описание').idx + '.value'"
-          parent_name="issue"
-          ref="issue_descr_text_inpt"
-          textarea_id="issue_description_textarea"
-          @paste="pasted"
-          @update_parent_from_input="edit_current_description"
-          style="margin-top: 15px"
-        >
-        </TextInput>
+        <KMarkdownInput
+            style="margin-top: 10px"
+            v-if="!loading && (edit_mode || id === '')"
+            :value="get_field_by_name('Описание').value"
+            :id="'values.' + get_field_by_name('Описание').idx + '.value'"
+            @update_parent_from_input="edit_current_description"
+            @paste="pasted"
+            parent_name="issue"
+            placeholder="Описание задачи..."
+            textarea_id="issue_description_textarea"
+            transition="element_fade"
+        />
 
         <div id="issue_footer_buttons"
              v-if="!loading && id === ''">
@@ -1129,9 +1126,8 @@ export default mod;
           />
         </div>
 
-        <Transition name="element_fade">
-          <div class="edit-mode-btn-container"
-               v-if="!loading && id != '' && (edit_mode || id == '')">
+        <div class="edit-mode-btn-container" v-if="!loading && id != '' && (edit_mode || id == '')">
+          <TransitionGroup name="element_fade">
             <KButton
               class="save-issue-edit-mode-btn"
               name="Сохранить"
@@ -1142,8 +1138,8 @@ export default mod;
               name="Отменить"
               @click="cancel_edit_mode"
             />
-          </div>
-        </Transition>
+          </TransitionGroup>
+        </div>
 
 			<Transition name="element_fade">
         <KMarked v-if="!loading"
@@ -1180,38 +1176,31 @@ export default mod;
           </KAttachment>
         </Transition>
 
-      
-
-        <Transition name="element_fade">
-          <TextInput
-            label="Комментарий"
-            v-if="!loading && !edit_mode  && id != ''"
+          <KMarkdownInput
             class="comment_input"
-
-            @update_parent_from_input="update_comment"
+            style="margin-top: 20px"
+            v-if="!loading && !edit_mode && id !== ''"
             :value="comment"
-            textarea_id="comment_area"
-
-            @input_focus="comment_focus"
+            :id="'values.' + get_field_by_name('Описание').idx + '.value'"
+            @update_parent_from_input="update_comment"
             @paste="pasted"
-          >
-          </TextInput>
-        </Transition>
-
-        
-
+            placeholder="Комментарий к задаче..."
+            textarea_id="issue_comment_textarea"
+            transition="element_fade"
+          />
         <Transition name="element_fade">
           <KButton
-            v-if="!loading && !edit_mode  && id != ''"
+            v-if="!loading && !edit_mode && id !== ''"
             id="send_comment_btn"
             name="Отправить"
             v-bind:class="{ outlined: comment_focused }"
             @click="send_comment()"
+            :disabled="comment === ''"
           />
         </Transition>
 
         <CommentList
-            v-if="!loading && !edit_mode  && id != ''"
+            v-if="!loading && !edit_mode"
             v-model:actions="issue[0].actions"
             :images="images"
         />
@@ -1482,7 +1471,11 @@ $code-width: 160px;
 }
 
 #send_comment_btn {
+  .disabled-btn {
+    background-color: var(--panel-bg-color);
+  }
 }
+
 #send_comment_btn .btn_input {
   height: 25px;
   width: 100%;
@@ -1494,7 +1487,6 @@ $code-width: 160px;
 }
 
 .comment_input {
-  margin-top: 20px;
   margin-bottom: -4px !important;
 }
 
@@ -1604,7 +1596,7 @@ $code-width: 160px;
 
 .edit-mode-btn-container {
   margin-top: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
 }
@@ -1636,7 +1628,7 @@ $code-width: 160px;
 }
 
 .issue-tags-container .tag-input{
-  font-size: 10px;
+  font-size: 13px;
   padding-left: 5px;
 }
 

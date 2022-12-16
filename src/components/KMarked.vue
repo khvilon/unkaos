@@ -117,12 +117,12 @@ export default {
     {
       //let start = new Date()
       this.md_value = this.md(val);
-    
+
       //console.log(new Date() - start)
     }
 
 
-    
+
 
   },
 
@@ -154,7 +154,7 @@ export default {
      // console.log('vvv', val, oldVal)
       nextTick(() => {
         this.wait_for_recalc_count++;
-    
+
         setTimeout(this.recalc_md, 0, val)
       })
     },
@@ -191,6 +191,10 @@ a {
   width: 100%;
   color: var(--text-color);
   font-family: Inter, system-ui, Roboto, sans-serif;
+
+}
+
+.marked-container > * {
   font-size: 14px;
 }
 
@@ -215,6 +219,10 @@ a {
   box-sizing: border-box;
   outline: var(--text-color) solid 1px;
   cursor: zoom-in;
+}
+
+.marked-container p img {
+  margin-top: 4px;
 }
 
 .attachment-img {
@@ -254,10 +262,10 @@ a {
 
 .marked-container pre code {
   position: relative;
+  border: none;
   font-family: Menlo, "Bitstream Vera Sans Mono", "Ubuntu Mono", Consolas,
     "Courier New", Courier, monospace;
   font-size: 95%;
-  border: 4px solid transparent;
   color: inherit;
 }
 
@@ -312,8 +320,8 @@ a {
 }
 
 .marked-container blockquote {
-  margin: 4px 0;
-  padding: 0 0 0 16px;
+  margin: 0 0 0 5px;
+  padding: 4px 0 4px 16px;
   box-shadow: inset 2px 0 0;
 }
 
