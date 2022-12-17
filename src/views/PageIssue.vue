@@ -46,9 +46,9 @@ let methods = {
   },
 
   get_field_by_name: function (name) {
-    if (this.issue == undefined || this.issue.length != 1) return {};
+    if (this.issue === undefined || this.issue.length !== 1) return {};
     for (let i in this.issue[0].values) {
-      if (this.issue[0].values[i].label == name) {
+      if (this.issue[0].values[i].label === name) {
         this.issue[0].values[i].idx = i;
         return this.issue[0].values[i];
       }
@@ -261,76 +261,52 @@ let methods = {
     this.set("type_uuid", type_uuid);
     //		console.log('update_type3', values)
   },
-  set(path, val) {
+  set (path, val) {
     this.$store.state["issue"]["selected_issue"][path] = val;
     this.$store.state["issue"]["issue"][0].path = val;
     this.$store.state["issue"]["filtered_issue"][0].path = val;
   },
   save: async function () {
-    if(!(await this.check_issue_changed())) return
-
-    if(this.old_project_uuid && this.old_project_uuid != this.issue[0].project_uuid)
-    {
+    if (!(await this.check_issue_changed())) return
+    if (this.old_project_uuid && this.old_project_uuid !== this.issue[0].project_uuid) {
+      // todo move this to backend completely
       let old_issues_num = {
         num: this.issue[0].num, 
         project_uuid: this.old_project_uuid, 
         uuid: tools.uuidv4(), 
         issue_uuid: this.issue[0].uuid
       }
-      rest.run_method('create_old_issues_num', old_issues_num)
+      await rest.run_method('create_old_issues_num', old_issues_num)
       this.$store.commit("id_push_update_issue", {
         id: 'num',
         val: undefined,
       });
     }
-
     await this.$store.dispatch("save_issue");
-
-    if(this.old_project_uuid && this.old_project_uuid != this.issue[0].project_uuid)
-    {
+    if (this.old_project_uuid && this.old_project_uuid !== this.issue[0].project_uuid) {
       //this.saved_new()
       let ans = await rest.run_method("read_issues", {uuid: this.issue[0].uuid});
-      if(ans != null && ans[0] != undefined)
-      {
-        window.location.href =
-      "/issue/" + ans[0].project_short_name + '-' +  ans[0].num
+      if (ans != null && ans[0] !== undefined) {
+        window.location.href = "/issue/" + ans[0].project_short_name + '-' +  ans[0].num
       }
       console.log(ans);
     }
-    else this.saved();
+    else await this.saved();
   },
   saved: async function (issue) {
-    //this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
+    // this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
     await this.update_data({ uuid: this[this.name][0].uuid });
     this.edit_mode = false;
-    //this.add_action_to_history('edit', '')
-
+    // this.add_action_to_history('edit', '')
     localStorage.last_saved_issue_params = this.get_params_for_localstorage();
-
-    //todo save type and project in localstorage for future issue create
+    // todo save type and project in localstorage for future issue create
     this.title;
-
-    /*
-    if(this.$store.state['common']['in_iframe']) {
-      console.log("this.$store.state['common']['in_iframe']")
-      window.parent.location.reload()
-    }*/
-
-    if (this.id != "") return;
-
-    //this.$router.push('/issue/' + this.issueProjectNum)
-
-
-    window.location.href =
-      "/issue/" + this.issueProjectNum;
-
-    //
-
+    if (this.id !== "") return;
+    window.location.href = "/issue/" + this.issueProjectNum;
     //setTimeout(this.init, 1000)
   },
   saved_new: function () {
-    window.location.href =
-      "/issue/" + this.issueProjectNum;
+    window.location.href = "/issue/" + this.issueProjectNum;
   },
   deleted: function (issue) {
     window.location.href = "/issues/";
@@ -586,17 +562,17 @@ let methods = {
     this.current_description = this.saved_descr;
     this.edit_mode = true;
     this.$nextTick(() => {
-      this.$refs.issue_descr_text_inpt.$refs.text_input.focus()
+      this.$refs.issue_descr_text_inpt.$refs.markdown_textarea_resizable.focus()
    })
     //console.log("this.saved_descr", this.saved_name, this.saved_descr);
   },
   cancel_edit_mode: function () {
     this.get_field_by_name("Описание").value = this.saved_descr;
     this.get_field_by_name("Название").value = this.saved_name;
+    this.current_description = this.saved_descr;
     this.edit_mode = false;
   },
-  check_issue_changed: async function()
-  {
+  check_issue_changed: async function() {
     let ans = await rest.run_method("read_issue", { uuid: this.issue[0].uuid });
 
     let ans_is_valid = ans != undefined && ans != null && ans.length > 0;
@@ -641,8 +617,7 @@ let methods = {
 
   },
   format_dt: function(dt){return tools.format_dt(dt)},
-  read_selected_tags: async function()
-  {
+  read_selected_tags: async function() {
     let tags_uuids = (await rest.run_method("read_issue_tags_selected", {issue_uuid: this.issue[0].uuid})).map((t)=>t.issue_tags_uuid)
     let tags = this.issue_tags.filter((t)=>tags_uuids.includes(t.uuid))
     this.tags = tags.sort(tools.compare_obj('name'));
@@ -669,8 +644,7 @@ let methods = {
 
     this.add_tags()
   },
-  add_tags: async function()
-  {
+  add_tags: async function() {
     let db_tags = await rest.run_method("read_issue_tags_selected", {issue_uuid: this.issue[0].uuid})
     let db_tags_uuids = db_tags.map((t)=>t.issue_tags_uuid)
     let this_tags_uuids = this.tags.map((t)=>t.uuid)
@@ -685,8 +659,7 @@ let methods = {
       }
     }
   },
-  tag_deselected: async function(sel_val)
-  {
+  tag_deselected: async function(sel_val) {
 
     console.log('deselected', sel_val)
     let d_vals = await rest.run_method("read_issue_tags_selected", {issue_uuid: this.issue[0].uuid, issue_tags_uuid: sel_val.uuid})
@@ -930,7 +903,6 @@ export default mod;
         :issue0_uuid="issue[0].uuid"
       />
     </Transition>
-
     <div id="issue_top_panel" class="panel"   >
 
     <div class="issue-top-buttons">
@@ -945,10 +917,7 @@ export default mod;
       >
       </StringInput>
       </Transition>
-
-      
     </div>
-		
 
       <Transition name="element_fade">
         <div
@@ -993,7 +962,6 @@ export default mod;
         >
         </a>
       </Transition>
-
 
       <Transition name="element_fade">
         <div
@@ -1089,6 +1057,7 @@ export default mod;
         <KMarkdownInput
             style="margin-top: 10px"
             v-if="!loading && (edit_mode || id === '')"
+            ref="issue_descr_text_inpt"
             :value="get_field_by_name('Описание').value"
             :id="'values.' + get_field_by_name('Описание').idx + '.value'"
             @update_parent_from_input="edit_current_description"
@@ -1112,11 +1081,13 @@ export default mod;
         <div class="edit-mode-btn-container" v-if="!loading && id != '' && (edit_mode || id == '')">
           <TransitionGroup name="element_fade">
             <KButton
+              key="1"
               class="save-issue-edit-mode-btn"
               name="Сохранить"
               @click="save"
             />
             <KButton
+              key="2"
               class="cancel-issue-edit-mode-btn"
               name="Отменить"
               @click="cancel_edit_mode"
@@ -1132,8 +1103,6 @@ export default mod;
         >
         </KMarked>
 			</Transition>
-
-		
 
         <Transition name="element_fade">
           <KRelations
@@ -1164,7 +1133,6 @@ export default mod;
             style="margin-top: 20px"
             v-if="!loading && !edit_mode && id !== ''"
             :value="comment"
-            :id="'values.' + get_field_by_name('Описание').idx + '.value'"
             @update_parent_from_input="update_comment"
             @paste="pasted"
             @input_focus="comment_focus"
