@@ -1,6 +1,7 @@
 <script>
 import dict from "../dict.ts";
 import tools from "../tools.ts";
+import cache from "../cache";
 
 export default {
   props: {
@@ -131,7 +132,7 @@ export default {
   methods: {
     move_hover(e) {
       if (this.$store.state["common"]["is_mobile"]) return;
-      if (localStorage.lock_main_menu != "true") this.is_opened = true;
+      if (cache.getObject("lock_main_menu") !== true) this.is_opened = true;
       this.hover_opacity = 1;
       this.hover_offset_x = e.target.offsetLeft;
       this.hover_offset_y = e.target.offsetTop;
