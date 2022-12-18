@@ -1,6 +1,7 @@
 import store from "./stores/index";
 import tools from "./tools";
 import conf from "./conf";
+import cache from "./cache";
 
 export default class rest {
 
@@ -38,8 +39,8 @@ export default class rest {
     if (resp.status != 200) return null;
     const data = await resp.json();
     //rest.headers.token = data.user_token
-    localStorage.user_token = data.user_token;
-    localStorage.profile = JSON.stringify(data.profile);
+    cache.setString("user_token", data.user_token)
+    cache.setObject("profile", data.profile)
     return data;
   }
 
@@ -51,7 +52,7 @@ export default class rest {
       start: new Date(),
     };
     method = method.replace("create", "upsert").replace("update", "upsert");
-    rest.headers.set("token", localStorage.user_token);
+    rest.headers.set("token", cache.getString("user_token"));
     rest.headers.set("subdomain", rest.get_subdomain());
     //console.log('hhhh', rest.headers)
     const method_array = tools.split2(method, "_");

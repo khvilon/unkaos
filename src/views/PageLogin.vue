@@ -23,7 +23,6 @@ login_page.methods = {
       console.log("wrong email or pass");
       this.wrong = true;
     } else {
-      //localStorage.user_token = token
       this.$router.push("/issues");
     }
   },

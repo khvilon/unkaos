@@ -6,6 +6,7 @@ import KAlerter from "./components/KAlerter.vue";
 import palette from "./palette.ts";
 import dict from "./dict.ts";
 import tools from "./tools.ts";
+import cache from "./cache.ts";
 
 let uri = window.location.href;
 
@@ -21,7 +22,6 @@ export default {
 
   created() {
     this.check_is_in_workspace();
-    // console.log('localStorage.tic', localStorage.tic)
     /*
       let uri = window.location.href
      
@@ -37,9 +37,9 @@ export default {
 
   mounted() {
     console.log("app mounted");
-    if (localStorage.theme == undefined) localStorage.theme = "dark";
+    let theme = cache.getString('theme')
     let htmlElement = document.documentElement;
-    htmlElement.setAttribute("theme", localStorage.theme);
+    htmlElement.setAttribute("theme", theme);
 
     this.$store.state["common"]["is_mobile"] = this.is_mobile() || this.in_iframe();
     this.$store.state["common"]["in_iframe"] = this.in_iframe();
