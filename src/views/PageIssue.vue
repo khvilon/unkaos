@@ -2,6 +2,7 @@
 import tools from "../tools.ts";
 import page_helper from "../page_helper.ts";
 import rest from "../rest.ts";
+import cache from "../cache";
 
 let methods = {
   pasted: async function (e) {
@@ -100,7 +101,7 @@ let methods = {
       name: action_icons[type],
       created_at: new Date(),
       value: val,
-      author: JSON.parse(localStorage.profile).name,
+      author: cache.getObject("profile").name,
     };
     console.log("New action added:", new_action);
     this.issue[0].actions.unshift(new_action);
@@ -298,8 +299,7 @@ let methods = {
     await this.update_data({ uuid: this[this.name][0].uuid });
     this.edit_mode = false;
     // this.add_action_to_history('edit', '')
-    localStorage.last_saved_issue_params = this.get_params_for_localstorage();
-    // todo save type and project in localstorage for future issue create
+    cache.setString("last_saved_issue_params", this.get_params_for_localstorage())
     this.title;
     if (this.id !== "") return;
     window.location.href = "/issue/" + this.issueProjectNum;
@@ -368,7 +368,7 @@ let methods = {
     this.get_formated_relations();
   },
   load_params_from_localstorage(storage_path, full) {
-    this.url_params = JSON.parse(localStorage[storage_path]);
+    this.url_params = cache.getObject(storage_path);
 
     console.log(
       "load params from localstore",
@@ -438,18 +438,16 @@ let methods = {
     }
 
     if (
-      (this.id == undefined || this.id == "") &&
-      this.url_params.clone == "true" &&
-      localStorage.cloned_params != undefined
+      (this.id === undefined || this.id === "") &&
+       this.url_params.clone === "true" &&
+       cache.getObject("cloned_params") !== undefined
     )
     {
-      this.url_params = JSON.parse(localStorage.cloned_params);
-
+      this.url_params = cache.getObject("cloned_params");
       this.load_params_from_localstorage("cloned_params", true);
     } 
     else if (
-      (this.id == undefined || this.id == "") &&
-      localStorage.last_saved_issue_params != undefined
+      (this.id == undefined || this.id == "") && cache.getObject("last_saved_issue_params") !== undefined
     ) 
     {
       this.load_params_from_localstorage("last_saved_issue_params");
@@ -458,16 +456,14 @@ let methods = {
     
 
     if (this.id == undefined || this.id == "") {
-      console.log("ibiiit issue", this.issue[0]);
-
+      // console.log("ibiiit issue", this.issue[0]);
       for (let i in this.issue[0].values) {
         this.issue[0].values[i].issue_uuid = this.issue[0].uuid;
         this.issue[0].values[i].uuid = tools.uuidv4();
-        if (this.issue[0].values[i].name == "Автор")
-          this.issue[0].values[i].value = JSON.parse(localStorage.profile).uuid;
+        if (this.issue[0].values[i].name === "Автор")
+          this.issue[0].values[i].value = cache.getObject("profile").uuid;
       }
-
-      console.log("ibiiit issue", this.issue[0]);
+      // console.log("ibiiit issue", this.issue[0]);
     }
 
     let ans = await rest.run_method("read_watcher", {
@@ -532,7 +528,7 @@ let methods = {
     return JSON.stringify(params);
   },
   get_clone_url: function () {
-    localStorage.cloned_params = this.get_params_for_localstorage();
+    cache.setString("cloned_params", this.get_params_for_localstorage());
     return "/issue?clone=true";
 
     let url = "/issue?t=" + new Date().getTime();

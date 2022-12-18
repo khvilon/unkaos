@@ -1,8 +1,9 @@
 <script>
-import tools from "../tools.ts";
 import { marked } from "marked";
-import palette from "../css/palette.scss?type=style&index=0&lang=scss&module=1";
 import { nextTick } from "vue";
+import tools from "../tools.ts";
+import palette from "../css/palette.scss?type=style&index=0&lang=scss&module=1";
+import cache from "../cache.ts";
 
 export default {
   
@@ -26,7 +27,7 @@ export default {
   },
   methods: {
     get_palette_param: function (name) {
-      let theme = "[theme=" + localStorage.theme + "]";
+      let theme = "[theme=" + cache.getString("theme") + "]";
       let val = palette.split(theme);
       val = val[1];
       val = val.split(name + ": ");
@@ -162,9 +163,9 @@ export default {
   },
   images: {
     handler: function (val, oldVal) {
-        this.val.toString()
-      console.log('viiim', val, oldVal)
-     // this.md_value = this.md(this.val);
+      this.val.toString()
+      // console.log('viiim', val, oldVal)
+      // this.md_value = this.md(this.val);
     },
     deep: true,
       immediate: true

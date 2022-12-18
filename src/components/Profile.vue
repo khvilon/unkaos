@@ -1,4 +1,5 @@
 <script>
+import cache from "../cache";
 export default {
   data() {
     return {
@@ -18,32 +19,25 @@ export default {
     };
   },
   mounted() {
-    console.log("localStorage.profile", localStorage.profile);
-
+    console.log("Cached profile:", cache.getObject('profile'));
     for (let i = 0; i < this.themes.length; i++) {
-      if (localStorage.theme == this.themes[i].val) this.theme = this.themes[i];
+      if (cache.getString("theme") === this.themes[i].val) this.theme = this.themes[i];
     }
-
-    if (localStorage.lock_main_menu == "true") this.lock_main_menu = true;
-
-    //console.log(this.user.avatar)
-
+    this.lock_main_menu = cache.getObject("lock_main_menu");
     document.addEventListener("click", this.close_menu);
 
     try {
-      this.user = JSON.parse(localStorage.profile);
+      this.user = cache.getObject("profile");
     } catch (err) {}
   },
   updated() {
     //console.log('uuuuu')
-    //this.user = JSON.parse(localStorage.profile)
   },
 
   methods: {
     logout() {
-      //console.log('logout')
-      localStorage.user_token = "";
-      localStorage.profile = "{}";
+      cache.setString("user_token", "");
+      cache.setObject("profile", {});
       this.$router.push("/login");
     },
     close_menu(e) {
@@ -55,13 +49,13 @@ export default {
     },
     set_theme(theme) {
       this.theme = theme;
-      localStorage.theme = theme.val;
+      cache.setString("theme", theme.val)
       let htmlElement = document.documentElement;
       htmlElement.setAttribute("theme", theme.val);
     },
     set_lang(lang) {},
     update_lock_main_menu(value) {
-      localStorage.lock_main_menu = value + "";
+      cache.setObject("lock_main_menu", value)
     },
   },
 };

@@ -5,6 +5,7 @@
 	import d from '../dict.ts'
 	import rest from '../rest';
 	import tools from '../tools.ts'
+  import cache from "../cache";
 
 	let methods = {
 		ws_init()
@@ -393,7 +394,7 @@
 					}
 				}
 				
-				let  stored_exp = localStorage[this.selected_board.uuid+'#'+x]
+				let stored_exp = cache.getString(this.selected_board.uuid+'#'+x)
 				if(stored_exp == undefined || stored_exp == 'false') stored_exp = false
 				else stored_exp = true
 				this.swimlanes[x].expanded = stored_exp
@@ -641,17 +642,14 @@
 			else if (p == 'Show-stopper') return 'red'
 			else return 'gray'
 		},
-		delete_board()
-		{
+		delete_board() {
 			this.$store.dispatch('delete_board')
 		},
-		swimlane_expanded_toogle(swimlane)
-		{
+		swimlane_expanded_toogle(swimlane) {
 			swimlane.expanded = !swimlane.expanded
-			localStorage[this.selected_board.uuid+'#'+swimlane.id] = swimlane.expanded
+      cache.setString(this.selected_board.uuid+'#'+swimlane.id, swimlane.expanded)
 		},
-		swimlanes_updated(v)
-		{
+		swimlanes_updated(v) {
 			if(v == null)
 			{
 				this.$store.commit('id_push_update_board' , {id: 'swimlanes_by_root', val:false})
@@ -717,15 +715,12 @@
 			}
 			return ch
 		},
-		async new_issue_card(swimlane, status)
-		{
+		async new_issue_card(swimlane, status) {
 			console.log('new issue card', swimlane, status)
-
 			let parent_uuid = swimlane.id
 			let status_uuid = status.uuid
 			let project_uuid = swimlane.project_uuid
-			let author_uuid = JSON.parse(localStorage.profile).uuid
-
+			let author_uuid = cache.getObject("profile").uuid
 			let query = decodeURIComponent(atob( this.encoded_query))
 			let search_start = 0
 			let field_start

@@ -48,15 +48,16 @@
 </template>
 
 <script>
+import cache from "../cache.ts";
 export default {
   name: "CommentList",
   data() {
     return {
-      showComments: true,
-      showTime: true,
-      showEdits: true,
-      showTransitions: true,
-      sortOrder: true,
+      showComments:    cache.getObject("actions_sort_order"),
+      showTime:        cache.getObject("actions_show_time"),
+      showEdits:       cache.getObject("actions_show_edits"),
+      showTransitions: cache.getObject("actions_show_transitions"),
+      sortOrder:       cache.getObject("actions_sort_order"),
     };
   },
   props: {
@@ -101,66 +102,25 @@ export default {
   },
   methods: {
     invertSortOrder() {
-      localStorage.actions_sort_order = !this.sortOrder;
+      cache.setObject('actions_sort_order', !this.sortOrder);
       this.sortOrder = !this.sortOrder;
     },
     toggleComments() {
-      localStorage.actions_show_comments = !this.showComments;
+      cache.setObject('actions_show_comments', !this.showComments);
       this.showComments = !this.showComments;
     },
     toggleTime() {
-      localStorage.actions_show_time = !this.showTime;
+      cache.setObject('actions_show_time', !this.showTime);
       this.showTime = !this.showTime;
     },
     toggleEdits() {
-      localStorage.actions_show_edits = !this.showEdits;
+      cache.setObject('actions_show_edits', !this.showEdits);
       this.showEdits = !this.showEdits;
     },
     toggleTransitions() {
-      localStorage.actions_show_transitions = !this.showTransitions;
+      cache.setObject('actions_show_transitions', !this.showTransitions);
       this.showTransitions = !this.showTransitions;
     },
-  },
-  mounted() {
-    const sortOrder = localStorage.actions_sort_order;
-    if (sortOrder !== undefined) {
-      this.sortOrder = JSON.parse(sortOrder);
-    } else {
-      localStorage.actions_sort_order = true;
-      this.sortOrder = true;
-    }
-
-    const showComments = localStorage.actions_show_comments;
-    if (showComments !== undefined) {
-      this.showComments = JSON.parse(showComments);
-    } else {
-      localStorage.actions_show_comments = true;
-      this.showComments = true;
-    }
-
-    const showTime = localStorage.actions_show_time;
-    if (showTime !== undefined) {
-      this.showTime = JSON.parse(showTime);
-    } else {
-      localStorage.actions_show_time = true;
-      this.showTime = true;
-    }
-
-    const showEdits = localStorage.actions_show_edits;
-    if (showEdits !== undefined) {
-      this.showEdits = JSON.parse(showEdits);
-    } else {
-      localStorage.actions_show_edits = true;
-      this.showEdits = true;
-    }
-
-    const showTransitions = localStorage.actions_show_transitions;
-    if (showTransitions !== undefined) {
-      this.showTransitions = JSON.parse(showTransitions);
-    } else {
-      localStorage.actions_show_transitions = true;
-      this.showTransitions = true;
-    }
   },
 };
 </script>
