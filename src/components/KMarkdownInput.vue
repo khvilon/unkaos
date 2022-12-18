@@ -29,16 +29,20 @@ export default {
       type: String,
       default: "",
     },
+    parent_name: {
+      type: String,
+      default: "",
+    },
   },
   emits: ["update_parent_from_input", "input_focus"],
   methods: {
     resize() {
-      let element = this.$refs["markdown-textarea-resizable"];
+      let element = this.$refs["markdown_textarea_resizable"];
       element.style.height = "66px";
       element.style.height = element.scrollHeight + "px";
     },
     getSelectionVars() {
-      let textArea = this.$refs["markdown-textarea-resizable"]
+      let textArea = this.$refs["markdown_textarea_resizable"]
       let startPos = textArea.selectionStart
       let endPos = textArea.selectionEnd
       return {textArea, startPos, endPos}
@@ -131,7 +135,7 @@ export default {
       });
     },
     keyEvent(event) {
-      console.log('keyCode: ',event.keyCode,', event:', event)
+      //console.log('keyCode: ',event.keyCode,', event:', event)
       if (event.ctrlKey) {
         if (!event.shiftKey) { // Ctrl
           switch (event.keyCode) {
@@ -246,6 +250,7 @@ export default {
   },
   watch: {
     value(val) {
+      if (this.val === val) return;
       this.val = val;
     },
     val(val) {
@@ -304,7 +309,7 @@ export default {
       </div>
       <div class="markdown-input-container">
         <textarea
-            ref="markdown-textarea-resizable"
+            ref="markdown_textarea_resizable"
             class="markdown-input-textarea"
             v-model="val"
             :id="textarea_id"
