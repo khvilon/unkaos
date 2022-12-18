@@ -4,6 +4,7 @@ import store_helper from "../store_helper.ts";
 import tools from "../tools.ts";
 
 import "vue-select/dist/vue-select.css";
+import cache from "../cache";
 
 export default {
   components: {
@@ -47,7 +48,7 @@ export default {
 
       let new_list = tools.clone_obj(list)
 
-      let me = JSON.parse(localStorage.profile);
+      let me = cache.getObject("profile");
       for(let i in new_list)
       {
         if(me.uuid == new_list[i].uuid)
