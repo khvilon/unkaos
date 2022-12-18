@@ -103,7 +103,7 @@ export default {
 
       //console.log(html)
       this.wait_for_recalc_count--;
-      console.log('recalced')
+      //console.log('recalced')
       return new_html
     },
 
