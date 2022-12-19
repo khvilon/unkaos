@@ -28,12 +28,12 @@ export default class cache {
 
   // Write object to localStorage as JSON string
   static setObject(settingName: string, object: any) {
-    localStorage.setItem(settingName, object)
+    localStorage.setItem(settingName, JSON.stringify(object))
   }
 
   // Write string to localStorage
-  static setString(settingName: string, object: string) {
-    localStorage.setItem(settingName, JSON.stringify(object))
+  static setString(settingName: string, string: string) {
+    localStorage.setItem(settingName, string)
   }
 
   // Get value from localStorage or return and save default value if none is set.
