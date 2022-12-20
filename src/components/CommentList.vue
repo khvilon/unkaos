@@ -53,7 +53,7 @@ export default {
   name: "CommentList",
   data() {
     return {
-      showComments:    cache.getObject("actions_sort_order"),
+      showComments:    cache.getObject("actions_show_comments"),
       showTime:        cache.getObject("actions_show_time"),
       showEdits:       cache.getObject("actions_show_edits"),
       showTransitions: cache.getObject("actions_show_transitions"),
