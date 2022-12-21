@@ -469,4 +469,27 @@ $loading-bar-width: 200vw;
   //border-bottom-color: $border-color !important;
 }
 
+.issue-top-button {
+  height: 38px;
+  width: 38px;
+  padding: 2px;
+  border-radius: var(--border-radius);
+  display: flex !important;
+  font-size: 35px;
+  color: var(--on-button-icon-color);
+  cursor: pointer;
+  text-decoration: none;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+}
+
+.issue-top-button-inactive {
+  color: var(--off-button-icon-color) !important;
+}
+
+.issue-top-button:hover {
+  background: var(--icon-hover-bg-color);
+}
+
 </style>

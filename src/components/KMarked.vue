@@ -195,10 +195,6 @@ a {
 
 }
 
-.marked-container > * {
-  font-size: 14px;
-}
-
 .marked-container p:first-child {
   margin-top: 0;
 }
@@ -277,7 +273,7 @@ a {
   background-color: inherit;
   font-family: Menlo, "Bitstream Vera Sans Mono", "Ubuntu Mono", Consolas,
     "Courier New", Courier, monospace;
-  font-size: 95%;
+  font-size: 95% !important;
   border-color: var(--code-fragment-border-color);
   border-width: 1px;
   border-style: solid;
@@ -328,5 +324,6 @@ a {
 
 .marked-container * {
   user-select: text !important;
+  font-size: 14px;
 }
 </style>
