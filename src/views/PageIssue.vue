@@ -313,19 +313,13 @@ let methods = {
   },
   add_attachment: async function (att) {
     att.issue_uuid = this.issue[0].uuid;
-    if (this.$store.state["issue"]["selected_issue"].attachments == undefined) this.$store.state["issue"]["selected_issue"].attachments = []
-    this.$store.state["issue"]["selected_issue"].attachments.push(att);
     let ans = await rest.run_method("upsert_attachments", att);
 
     this.attachments.push(att);
     if (att.type.indexOf("image") > -1) this.images.push(att);
   },
   delete_attachment: async function (att) {
-    let attachments = this.$store.state["issue"]["selected_issue"].attachments;
-    for (let i in attachments) {
-      if (attachments[i].uuid == att.uuid)
-        this.$store.state["issue"]["selected_issue"].attachments.splice(i, 1);
-    }
+    
     let ans = await rest.run_method("delete_attachments", {uuid: att.uuid});
 
     for (let i in this.attachments) {
