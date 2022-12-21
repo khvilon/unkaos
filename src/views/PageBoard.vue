@@ -318,6 +318,8 @@
 		},
 		make_swimlanes()
 		{
+
+			console.log('make_swimlanes0', new Date())
 			this.swimlanes = {}
 
 			if(this.selected_board.config != undefined && this.selected_board.config != null && this.selected_board.config != '')
@@ -342,6 +344,8 @@
 					}
 				}
 			}
+
+			console.log('make_swimlanes1', new Date())
 
 			//console.log('parent_types_uuids',parent_types_uuids)
 
@@ -454,6 +458,9 @@
 				
 			}
 
+			console.log('make_swimlanes2', new Date())
+
+
 
 			if(tools.obj_length(this.swimlanes) == 0)return
 			
@@ -471,7 +478,7 @@
 				
 			}
 
-			
+			console.log('make_swimlanes100', new Date())
 
 			//load saved swimlanes order
 
