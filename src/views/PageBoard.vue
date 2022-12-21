@@ -352,6 +352,7 @@
 				let root_num
 				let root_name
 				let root_project_uuid
+				let root_issue
 				let is_resolved = false
 				if(this.selected_board.swimlanes_by_root)
 				{
@@ -368,6 +369,7 @@
 						link = '/issue/' + root_num	
 						root_project_uuid = root.project_uuid
 						is_resolved = this.statuses_ends_dict[root.status_uuid]
+						root_issue = root
 					}
 					
 				}
@@ -405,6 +407,7 @@
 					this.swimlanes[x].link = link
 					this.swimlanes[x].num = root_num
 					this.swimlanes[x].is_resolved = is_resolved
+					this.swimlanes[x].issue = root_issue
 				} 
 
 				if(this.conf != undefined && this.conf.swimlanes != undefined && this.conf.swimlanes[x] != undefined) {
@@ -1207,6 +1210,11 @@
 				</a>
 				<span>{{'кол-во: ' + swimlane.count}}</span>
 				<span>{{'сумма: ' + swimlane.sum}}</span>
+				<i 
+					v-if="swimlane.issue!=undefined" 
+					@click="selected_issue=swimlane.issue"
+					class='bx bx-window-open' >
+				</i>
 			</div>
 
 			<div class="swimlane-body" :class="{'swimlane-body-closed': !swimlane.expanded && !selected_board.no_swimlanes}"
@@ -1949,13 +1957,17 @@
 	margin-right: 23px;
 }
 
-.issue-board-card .bx-window-open{
+.issue-board-card .bx-window-open, .swimlane-head .bx-window-open{
 	font-size: 20px;
 	cursor: pointer;
 	opacity: 0;
 }
 
-.issue-board-card:hover .bx-window-open{
+.swimlane-head .bx-window-open{
+	padding-top: 5px;
+}
+
+.issue-board-card:hover .bx-window-open, .swimlane-head:hover .bx-window-open{
 	opacity: 1;
 }
 
