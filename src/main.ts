@@ -44,6 +44,7 @@ import ColorInput from "./components/ColorInput.vue";
 
 import EditTagModal from "./components/EditTagModal.vue";
 import KMarkdownInput from "./components/KMarkdownInput.vue";
+import IWatcher from "./icons/IWatcher.vue";
 
 const app = createApp(App);
 
@@ -84,5 +85,6 @@ app.component("TagInput", TagInput);
 app.component("ColorInput", ColorInput);
 app.component("EditTagModal", EditTagModal);
 app.component("KMarkdownInput", KMarkdownInput);
+app.component("IWatcher", IWatcher)
 
 app.mount("#app");

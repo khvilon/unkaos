@@ -552,7 +552,10 @@ let methods = {
     this.current_description = val;
   },
   enter_edit_mode: function () {
-    if (this.edit_mode) return;
+    if (this.edit_mode) {
+      this.cancel_edit_mode();
+      return;
+    }
     this.saved_descr = this.get_field_by_name("Описание").value;
     this.saved_name = this.get_field_by_name("Название").value;
     this.saved_project_uuid = this.issue[0].project_uuid
@@ -916,62 +919,67 @@ export default mod;
       >
       </StringInput>
       </Transition>
-    </div>
-
       <Transition name="element_fade">
         <div
-          v-if="!loading && id != ''"
-          style="display: flex"
-          class="watch"
-          :class="{ 'watch-active': edit_mode }"
-          @click="enter_edit_mode"
+            v-if="!loading && id !== ''"
+            :class="{ 'issue-top-button-inactive': !edit_mode }"
+            class="issue-top-button bx bx-edit"
+            title="Редактировать задачу"
+            @click="enter_edit_mode"
         >
-          🖉
         </div>
       </Transition>
 
       <Transition name="element_fade">
         <div
-          v-if="!loading && id != ''"
-          style="display: flex"
-          class="watch"
-          :class="{ 'watch-active': watch }"
-          @click="togle_watch"
+            v-if="!loading && id !== ''"
+            class="issue-top-button"
+            title="Следить за задачей (функция в разработке)"
+            @click="togle_watch"
         >
-          👁
+          <IWatcher :enabled="watch"/>
         </div>
       </Transition>
 
       <Transition name="element_fade">
-        <a
-          v-if="!loading && id != '' &&
-          !$store.state['common']['is_mobile']"
-          class="bx bx-copy clone-btn"
-          :href="get_clone_url()"
-        >
-        </a>
+        <div class="issue-top-button">
+          <a
+            v-if="!loading && id != '' &&
+            !$store.state['common']['is_mobile']"
+            class="issue-clone-button bx bxs-duplicate "
+            title="Клонировать задачу"
+            :href="get_clone_url()"
+          >
+          </a>
+        </div>
       </Transition>
 
       <Transition name="element_fade">
-        <a
-          v-if="!loading && id != '' &&
-          !$store.state['common']['is_mobile']"
-          class="bx bx-subdirectory-right make-child-btn"
-          :href="('/issue?t=' + new Date().getTime() + '&parent_uuid=' + issue[0].uuid)"
-        >
-        </a>
+        <div class="issue-top-button">
+          <a
+            v-if="!loading && id != '' &&
+            !$store.state['common']['is_mobile']"
+            class="make-child-btn issue-top-button bx bx-subdirectory-right"
+            title="Создать дочернюю задачу"
+            :href="('/issue?t=' + new Date().getTime() + '&parent_uuid=' + issue[0].uuid)"
+          >
+          </a>
+        </div>
       </Transition>
 
       <Transition name="element_fade">
         <div
-          v-if="!loading && $store.state['common']['is_mobile']"
-          style="display: flex"
-          class="watch"
-          @click="card_open = !card_open"
+            v-if="!loading && $store.state['common']['is_mobile']"
+            style="display: flex"
+            class="watch"
+            @click="card_open = !card_open"
         >
           {{ card_open ? ">>>" : "<<<" }}
         </div>
       </Transition>
+    </div>
+
+
     </div>
 
     <div id="issue_down_panel">
@@ -1288,7 +1296,6 @@ $code-width: 160px;
 #issue_top_panel {
   height: $top-menu-height;
   display: flex;
-  padding-top: 3px;
   padding-left: 15px;
 }
 
@@ -1298,17 +1305,36 @@ $code-width: 160px;
 
 .issue-top-buttons {
   display: flex;
+  align-items: center;
   padding: 10px 20px;
 }
 
 .issue-top-buttons > *:not(:last-child) {
-  margin-right: 20px;
+  margin-right: 15px;
 }
+
+.issue-clone-button {
+  font-size: 35px;
+  text-decoration: none;
+  color: var(--on-button-icon-color);
+}
+
+.make-child-btn {
+  display: flex !important;
+  font-size: 27px !important;
+  border-radius: 50% !important;
+  border-style: solid;
+  padding-top: 4px;
+  padding-left: 4px;
+  width: 32px !important;
+  height: 32px !important;
+}
+
 
 .issue-transitions {
   padding-top: 10px;
   flex-direction: column;
-  margin-bottom: 0px !important;
+  margin-bottom: 0 !important;
 }
 
 #issue_table_panel,
@@ -1455,13 +1481,6 @@ $code-width: 160px;
   outline: 1px solid;
 }
 
-.issue-code,
-.issue-status-input {
-  //padding-right: 0 !important;
-  //width: 180px;
-}
-
-
 .issue-status-input .vs__dropdown-toggle {
   border-width: 1px !important;
 }
@@ -1489,43 +1508,6 @@ $code-width: 160px;
 
 #issue-attachments {
   width: 100%;
-}
-
-.clone-btn, .make-child-btn {
-  margin: 10px 20px 10px 0;
-  display: flex;
-  
-  // cursor: pointer;
-  text-decoration: none;
-}
-
-.clone-btn{
-  font-size: 35px;
-}
-
-.make-child-btn
-{
-  font-size: 28px;
-  border-radius: 50%;
-  border-style: solid;
-  width: 32px;
-  height: 32px;
-  padding-top: 1px;
-}
-
-.watch {
-  border-radius: var(--border-radius);
-  display: flex;
-  font-size: 35px;
-  margin-right: 20px;
-  //margin-top: 2px;
-  color: var(--off-button-icon-color);
-  cursor: pointer;
-}
-
-.watch-active {
-  color: var(--on-button-icon-color);
-  //font-weight: 600;
 }
 
 .image-attachments {
