@@ -555,6 +555,7 @@ let methods = {
     if (this.edit_mode) return;
     this.saved_descr = this.get_field_by_name("Описание").value;
     this.saved_name = this.get_field_by_name("Название").value;
+    this.saved_project_uuid = this.issue[0].project_uuid
     this.current_description = this.saved_descr;
     this.edit_mode = true;
     this.$nextTick(() => {
@@ -565,6 +566,7 @@ let methods = {
   cancel_edit_mode: function () {
     this.get_field_by_name("Описание").value = this.saved_descr;
     this.get_field_by_name("Название").value = this.saved_name;
+    this.issue[0].project_uuid = this.saved_project_uuid
     this.current_description = this.saved_descr;
     this.edit_mode = false;
   },
@@ -677,6 +679,7 @@ const data = {
   label: "Поля",
   saved_descr: "",
   saved_name: "",
+  saved_project_uuid: undefined,
   new_relation_modal_visible: false,
   relation_types: [],
   collumns: [],
