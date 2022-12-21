@@ -65,13 +65,18 @@ export default {
   <div class="profile" v-if="common.is_in_workspace">
     <div class="profile-top">
       <img :src="user.avatar" @click="menu_visible = !menu_visible" />
-      <div>{{ user.name }}</div>
-      <a
-        class="bx bx-plus-circle new-issue-btn"
-        :href="'/issue?t=' + new Date().getTime()"
-        tag="i"
-      >
-      </a>
+      <div class="profile-username">{{ user.name }}</div>
+      <div class="issue-top-button">
+        <a
+            class="bx bx-plus new-issue-btn"
+            title="Создать новую задачу"
+            :href="'/issue?t=' + new Date().getTime()"
+            tag="i"
+        >
+        </a>
+      </div>
+
+
     </div>
 
     <div v-if="menu_visible" id="profile-menu" class="panel">
@@ -115,17 +120,36 @@ export default {
 
 .profile {
   position: absolute;
-  height: 74px;
-  width: 90px;
-  right: 0px;
-  top: 0px;
-  padding: 7px;
-
+  right: 0;
+  top: 0;
+  padding: 10px 25px;
   z-index: 1;
-  display: block;
+  display: flex;
+  flex-direction: row-reverse;
   align-items: center;
   color: white;
   width: auto;
+}
+
+.profile-username {
+  padding: 5px;
+  margin: 0 5px;
+}
+
+.new-issue-btn {
+  display: flex !important;
+  align-content: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 30px;
+  border-radius: 50% !important;
+  border-style: solid;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--on-button-icon-color);
 }
 
 .profile img {
@@ -133,12 +157,10 @@ export default {
   width: $input-height;
   object-fit: cover;
   border-radius: var(--border-radius);
-  margin-right: 16px;
   float: right;
-  margin-top: 6px;
   // background-image: url('https://oboz.myjetbrains.com/hub/api/rest/avatar/7755ec62-dfa1-4c3c-a3a9-ac6748d607c1?dpr=1.25&size=20');
   cursor: pointer;
-  border-style: groove;
+  border-style: outset;
   border-width: 1px;
 }
 
@@ -147,10 +169,7 @@ export default {
 }
 
 .profile-top div {
-  margin-top: 14px;
-  margin-right: 10px;
   float: right;
-
   font-weight: 600;
   font-size: 14px;
 }
@@ -163,7 +182,7 @@ export default {
   top: calc($top-menu-height + 2px);
   margin: 0;
   padding: 20px;
-  background: val(--table-row-color);
+  background: var(--table-row-color);
 
   display: flex;
   flex-direction: column;
@@ -196,15 +215,4 @@ export default {
   font-size: 20px;
 }
 
-.new-issue-btn {
-  display: flex;
-  margin-top: 6px;
-  font-size: 35px;
-
-  /* margin-right: 40px; */
-  right: 10px;
-  position: relative;
-  cursor: pointer;
-  text-decoration: none;
-}
 </style>
