@@ -37,13 +37,12 @@ export default {
 
   mounted() {
     console.log("app mounted");
-    let theme = cache.getString('theme')
+    cache.loadDefaultsIfNecessary()
     let htmlElement = document.documentElement;
-    htmlElement.setAttribute("theme", theme);
+    htmlElement.setAttribute("theme", cache.getString('theme'));
 
     this.$store.state["common"]["is_mobile"] = this.is_mobile() || this.in_iframe();
     this.$store.state["common"]["in_iframe"] = this.in_iframe();
-    
 
     console.log(
       "this.$store.state[common][is_mobile]",
