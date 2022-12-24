@@ -558,13 +558,24 @@
 		},
 		move_card: function(el)
 		{
+			if(this.card_draginfo.uuid == undefined) return
+
+			console.log('move_card2', el)
+		},
+		move_card_status: function(el)
+		{
 			//console.log('moving0')
 			if(this.card_draginfo.uuid == undefined) return
 			//console.log('moving1')
 			if(this.card_draginfo.status_uuid != el.uuid)
 			{
+				console.log('move_card0', el)
 				this.status_draginfo = el
 		//		console.log('moving2')
+			}
+			else
+			{
+				console.log('move_card1', el)
 			}
 		},
 		drop_card: function(el)
@@ -1231,7 +1242,7 @@
 				<div 
 				v-for="(status, s_index) in boards_columns"
 				:key="s_index"
-				@mousemove="move_card(status)"
+				@mousemove="move_card_status(status)"
 				@mouseup="drop_card(status)"
 				@mouseleave="status_draginfo={}"
 				class="status-board-collumn"
@@ -1250,6 +1261,7 @@
 							'selected-board-card': selected_issue != undefined && issue.uuid == selected_issue.uuid}"
 							@dblclick="selected_issue=issue"
 							@mousedown="dragstart_card($event, issue)"
+							@mousemove="move_card(issue)"
 							class="issue-board-card">
 							<div class="issue-card-top"
 							:style="[  {backgroundColor: get_card_color(issue)} ]"

@@ -520,7 +520,7 @@ crud.make_query = {
 
       //console.log('user_query', user_query)
 
-      let uuids_query = `WITH filtered_issues AS (
+      let uuids_query_parts = [`WITH filtered_issues AS (
                 SELECT * FROM
                 (
                 SELECT 
@@ -533,12 +533,19 @@ crud.make_query = {
                 ISS.PROJECT_UUID,
                 ISS.STATUS_UUID,
                 ISS.SPRINT_UUID,
+                `,
+
+
+                `
                 STRING_AGG(IT.issue_tags_uuid::text, ',') AS TAGS
                 FROM issues ISS
                 LEFT JOIN issue_actions IA
                 ON IA.ISSUE_UUID = ISS.UUID
                 LEFT JOIN issue_tags_selected IT
-                ON IT.ISSUE_UUID = ISS.UUID AND IT.DELETED_AT IS NULL
+                ON IT.ISSUE_UUID = ISS.UUID AND IT.DELETED_AT IS NULL 
+                `,
+
+                `
                 GROUP BY 
                 ISS.UUID,
                 ISS.NUM,
@@ -547,13 +554,20 @@ crud.make_query = {
                 ISS.DELETED_AT,
                 ISS.PROJECT_UUID,
                 ISS.STATUS_UUID,
-                ISS.SPRINT_UUID
-                ) I
-                WHERE `;
+                `,
 
-      let f1 = `EXISTS (SELECT 1 FROM field_values FV WHERE FV.issue_uuid = I.uuid AND FV.field_uuid = '`;
+                `ISS.SPRINT_UUID) I
+                WHERE `];
 
-      let f2 = `' AND FV.value `;
+      let f_join_parts = [`LEFT JOIN LATERAL (SELECT 1 AS value_exists FROM field_values WHERE 
+        issue_uuid = ISS.uuid AND field_uuid = '`, 
+       `' AND 
+      value `,
+      ` ) FIELD_VALUES`,
+      ` ON TRUE
+      `]
+
+      let f_sel_parts = [`FIELD_VALUES`, `.value_exists IS NOT NULL as FIELD_VALUES`, `_EXISTS,`]
 
       let q_resolved_uuids = `(SELECT UUID FROM ISSUE_STATUSES WHERE IS_END)`;
       user_query = user_query.replaceAll(
@@ -561,7 +575,10 @@ crud.make_query = {
         "!=ALL " + q_resolved_uuids
       );
 
-      
+      let fv_str = ''
+      let fv_sel_str = ''
+      let fv_group_str = ''
+      let fv_count = 0
       //user_query = user_query.replaceAll("='(resolved)'", '=ANY '  + q_resolved_uuids )
 
       while (user_query.indexOf("attr#") > -1) {
@@ -572,12 +589,39 @@ crud.make_query = {
         user_query = user_query.replaceFrom("like'", " like '", start);
         
       }
-      while (user_query.indexOf("fields#") > -1) {
-        let start = user_query.indexOf("fields#");
-        user_query = user_query.replaceFrom("fields#", f1, start);
-        user_query = user_query.replaceFrom("#", f2, start);
-        user_query = user_query.replaceFrom("#", ")", start);
-        user_query = user_query.replaceFrom("like'", " like '", start);
+      const field_tag = "fields#"
+      while (user_query.indexOf(field_tag) > -1) {
+
+        
+        let start = user_query.indexOf(field_tag);
+
+        let field_uuid_start = start + field_tag.length
+        let field_uuid_end = user_query.indexOf("#", field_uuid_start)
+        let field_uuid = user_query.substring(field_uuid_start, field_uuid_end)
+        //console.log(field_uuid)
+
+        field_value_end = user_query.indexOf("#", field_uuid_end+1)
+        let field_value = user_query.substring(field_uuid_end+1, field_value_end)
+        //console.log(field_value)
+
+        fv_str += f_join_parts[0] + field_uuid + f_join_parts[1] + field_value + f_join_parts[2] + fv_count + f_join_parts[3]
+        console.log(fv_str)
+
+        fv_sel_str += f_sel_parts[0] + fv_count + f_sel_parts[1] + fv_count + f_sel_parts[2]
+        console.log(fv_sel_str)
+
+        let field_local_name = 'FIELD_VALUES' + fv_count +  '_EXISTS'
+
+        fv_group_str += field_local_name + ','
+
+        user_query = user_query.substring(0, start) + field_local_name + user_query.substring(field_value_end+1)
+
+       // user_query = user_query.replaceFrom("fields#", f1, start);
+       // user_query = user_query.replaceFrom("#", f2, start);
+       // user_query = user_query.replaceFrom("#", ")", start);
+       // user_query = user_query.replaceFrom("like'", " like '", start);
+
+        fv_count++
       }
 
       user_query = user_query.replaceAll(
@@ -591,8 +635,6 @@ crud.make_query = {
       );
       
 
-      //user_query = user_query.replaceAll("I.updated_at", "MAX(IA.CREATED_AT)")
-
       let order_start = user_query.indexOf("order by ");
       if (order_start > -1) {
         let order_by = user_query.substring(order_start);
@@ -600,6 +642,8 @@ crud.make_query = {
         query = query.replace("$@order", order_by);
       } else query = query.replace("$@order", "");
 
+      let uuids_query = uuids_query_parts[0]  + fv_sel_str +  uuids_query_parts[1] + fv_str + 
+      uuids_query_parts[2] + fv_group_str + uuids_query_parts[3]
       query = uuids_query + user_query + ")" + query;
 
       delete params["query"];

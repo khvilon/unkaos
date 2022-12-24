@@ -940,7 +940,7 @@ export default mod;
           <a
             v-if="!loading && id != '' &&
             !$store.state['common']['is_mobile']"
-            class="issue-clone-button bx bxs-duplicate "
+            class="issue-clone-button bx bx-duplicate "
             title="Клонировать задачу"
             :href="get_clone_url()"
           >
