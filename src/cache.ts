@@ -1,19 +1,37 @@
+class Setting {
+  name: string
+  default_val: any
+  is_object: boolean
+
+  constructor(name :string, default_val: string, is_object: boolean) {
+    this.name = name
+    this.default_val = default_val
+    this.is_object = is_object
+  }
+}
+
 // LocalStorage wrapper
 export default class cache {
 
-  static defaultSettings: Map<string, string> = new Map ([
-    ['theme',                    "dark"  ],
-    ['issues_query',             ""      ],
-    ['lock_main_menu',           "false" ],
-    ['actions_sort_order',       "true"  ],
-    ['actions_show_comments',    "true"  ],
-    ['actions_show_time',        "true"  ],
-    ['actions_show_edits',       "true"  ],
-    ['actions_show_transitions', "true"  ],
-  ])
+  static defaultSettings: Array<Setting> = [
+    new Setting('theme',                    'dark',   false),
+    new Setting('issues_query',             '',       false),
+    new Setting('lock_main_menu',           'false',  true),
+    new Setting('actions_sort_order',       'true',   true),
+    new Setting('actions_show_comments',    'true',   true),
+    new Setting('actions_show_time',        'true',   true),
+    new Setting('actions_show_edits',       'true',   true),
+    new Setting('actions_show_transitions', 'true',   true),
+  ]
 
   static clear() {
     localStorage.clear()
+  }
+
+  static loadDefaultsIfNecessary() {
+    this.defaultSettings.forEach(
+      (setting) => this.get(setting.name, setting.is_object)
+    )
   }
 
   // Get object from localStorage
@@ -39,23 +57,21 @@ export default class cache {
   // Get value from localStorage or return and save default value if none is set.
   private static get(settingName: string, asObject: boolean) : any {
     const storageValue = localStorage.getItem(settingName)
-    if (storageValue !== undefined) {
-      if (storageValue !== null) {
-        if (asObject) {
-          return JSON.parse(storageValue)
-        } else {
-          return storageValue
-        }
+    if (storageValue !== null) {
+      if (asObject) {
+        return JSON.parse(storageValue)
+      } else {
+        return storageValue
       }
     } else {
       // return default value and add default value to localStorage
-      const defaultSetting = this.defaultSettings.get(settingName)
+      const defaultSetting = this.defaultSettings.find( (setting)=> setting.name == settingName)
       if (defaultSetting !== undefined) {
         if (asObject) {
-          localStorage.setItem(settingName, JSON.parse(defaultSetting))
-          return JSON.parse(defaultSetting)
+          localStorage.setItem(settingName, JSON.parse(defaultSetting.default_val))
+          return JSON.parse(defaultSetting.default_val)
         } else {
-          localStorage.setItem(settingName, defaultSetting)
+          localStorage.setItem(settingName, defaultSetting.default_val)
           return defaultSetting
         }
       }
