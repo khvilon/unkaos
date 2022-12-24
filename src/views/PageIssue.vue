@@ -555,10 +555,6 @@ let methods = {
     this.saved_project_uuid = this.issue[0].project_uuid
     this.current_description = this.saved_descr;
     this.edit_mode = true;
-    this.$nextTick(() => {
-      this.$refs.issue_descr_text_inpt.$refs.markdown_textarea_resizable.focus()
-   })
-    //console.log("this.saved_descr", this.saved_name, this.saved_descr);
   },
   cancel_edit_mode: function () {
     this.get_field_by_name("Описание").value = this.saved_descr;

@@ -99,14 +99,10 @@ export default {
       let { textArea, startPos, endPos } = this.getSelectionVars()
       let text = this.val
       let textBeforeSelectionStart = text.substring(0, startPos)
-      let textBeforeSelectionEnd = text.substring(0, endPos)
       let textAfterSelectionEnd = text.substring(endPos)
-      let firstLine = (textBeforeSelectionStart.match(new RegExp("\n", "g")) || []).length
-      let lastLine = (textBeforeSelectionEnd.match(new RegExp("\n", "g")) || []).length
-      let lines = text.split('\n')
+      let lines = text.substring(startPos, endPos).split('\n')
       let editedTimes = 0
       lines.forEach( (value, i) => {
-        if ( (i >= firstLine) && (i <= lastLine) ) {
           if (value.startsWith(symbols)) {
             lines[i] = value.substring(symbols.length)
             editedTimes--
@@ -114,7 +110,6 @@ export default {
             lines[i] = symbols + value
             editedTimes++
           }
-        }
       });
       document.execCommand('insertText', false, lines.join('\n'))
       let selectionStart = textBeforeSelectionStart.lastIndexOf('\n') + 1
@@ -275,6 +270,13 @@ export default {
     }
   },
   mounted() {
+    if (this.parent_name === 'issue') {
+      nextTick(() => {
+        // focus issue description
+        this.$refs.markdown_textarea_resizable.setSelectionRange(0, 0)
+        this.$refs.markdown_textarea_resizable.focus()
+      })
+    }
     this.val = this.value;
     nextTick(() => {
       this.resize();
