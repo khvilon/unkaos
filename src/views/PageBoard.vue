@@ -230,6 +230,18 @@
 			if(a[1].name>b[1].name) return 1
 			return 0
 		},
+		compare_cards_to_sort: function(a, b)
+		{
+			//console.log('aaa', a, b)
+			const pseudo_infinite_position = 1000
+			if(a.position == undefined) a.position = pseudo_infinite_position
+			if(a.position == undefined) b.position = pseudo_infinite_position
+			if(a.position<b.position) return -1
+			if(a.position>b.position) return 1
+			if(Number(a.num)<Number(b.num)) return -1
+			if(Number(a.num)>Number(b.num)) return 1
+			return 0
+		},
 		sort_swimlanes()
 		{
 			let swimlanes_arr = Object.entries(this.swimlanes)
@@ -239,6 +251,18 @@
 			swimlanes_arr = swimlanes_arr.sort(this.compare_swimlanes_to_sort)
 
 			this.swimlanes = Object.fromEntries(swimlanes_arr)
+		},
+		sort_cards()
+		{
+			for(let i in this.swimlanes){
+				for(let status_uuid in this.swimlanes[i].filtered_issues){
+					this.swimlanes[i].filtered_issues[status_uuid] = 
+					this.swimlanes[i].filtered_issues[status_uuid].sort(this.compare_cards_to_sort)
+					for(let j = 0; j < this.swimlanes[i].filtered_issues[status_uuid].length; j++){
+						this.swimlanes[i].filtered_issues[status_uuid][j].position = j
+					}
+				}
+			}
 		},	
 		change_swimlane_position(swimlane, new_position)
 		{	
@@ -285,7 +309,15 @@
 			this.conf.swimlanes = {}
 			for(let i in this.swimlanes)
 			{
-				this.conf.swimlanes[i] = {position: this.swimlanes[i].position }
+				this.conf.swimlanes[i] = {position: this.swimlanes[i].position, filtered_issues: {}}
+				for(let status in this.swimlanes[i].filtered_issues){
+					if(this.swimlanes[i].filtered_issues[status] == undefined) continue
+					this.conf.swimlanes[i].filtered_issues[status] = {}
+					for(let j = 0; j < this.swimlanes[i].filtered_issues[status].length; j++){
+						let issue = this.swimlanes[i].filtered_issues[status][j]
+						this.conf.swimlanes[i].filtered_issues[status][issue.uuid] = {position: issue.position}
+					}
+				}
 			}
 		},
 		move_swimlane(e, swimlane_to)
@@ -430,9 +462,9 @@
 				this.swimlanes[x].issues[status_uuid].push(this.boards_issues[i])
 
 				
-				let is_is_columns = this.boards_columns.map((obj)=>obj.uuid).indexOf(this.boards_issues[i].status_uuid) > -1
+				let is_in_columns = this.boards_columns.map((obj)=>obj.uuid).indexOf(this.boards_issues[i].status_uuid) > -1
 				
-				if(is_is_columns && 
+				if(is_in_columns && 
 				(!this.selected_board.use_sprint_filter || this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num].uuid))
 				{
 					//console.log(this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num], this.boards_issues[i].sprint_uuid, this.sprints[this.curr_sprint_num])
@@ -449,13 +481,6 @@
 					}
 				}
 
-				
-
-				
-
-				
-
-				
 			}
 
 			console.log('make_swimlanes2', new Date())
@@ -468,15 +493,39 @@
 
 			this.sort_swimlanes()
 
+
+			
+
 			
 			let position = 0
 			for(let i in this.swimlanes)
 			{
 				this.swimlanes[i].position = position
-				position++
-				//this.swimlanes[swimlanes_arr[i].name].position = i
+				position++		
 				
+				if(this.conf.swimlanes[i] == undefined) continue
+				if(this.conf.swimlanes[i].filtered_issues == undefined) continue
+
+				
+				for(let status in this.swimlanes[i].filtered_issues){
+					console.log('cooonf0', this.conf.swimlanes[i].filtered_issues[status])
+					if(this.conf.swimlanes[i].filtered_issues[status] == undefined) continue
+					if( this.swimlanes[i].filtered_issues[status] == undefined) continue
+					console.log('cooonf', this.conf.swimlanes[i].filtered_issues[status])
+					for(let j = 0; j < this.swimlanes[i].filtered_issues[status].length; j++)
+					{
+						let issue_uuid = this.swimlanes[i].filtered_issues[status][j].uuid
+						if(this.conf.swimlanes[i].filtered_issues[status][issue_uuid] == undefined) continue
+						this.swimlanes[i].filtered_issues[status][j].position = 
+							this.conf.swimlanes[i].filtered_issues[status][issue_uuid].position
+					}
+					
+				}
 			}
+
+			this.sort_cards()
+
+
 
 			console.log('make_swimlanes100', new Date())
 
@@ -555,6 +604,8 @@
 		//	console.log('dddddrrrr end')
 			this.card_draginfo = {}
 			this.status_draginfo = {}
+			//this.card_to_be_moved_down_uuid = undefined
+			//this.bottom_to_move_uuids = undefined
 		},
 		move_card: function(el)
 		{
@@ -562,7 +613,7 @@
 
 			console.log('move_card2', el)
 		},
-		move_card_status: function(el)
+		move_card_status: function(el, e, swimlane)
 		{
 			//console.log('moving0')
 			if(this.card_draginfo.uuid == undefined) return
@@ -573,28 +624,129 @@
 				this.status_draginfo = el
 		//		console.log('moving2')
 			}
-			else
-			{
-				console.log('move_card1', el)
-			}
+			
+			
+				const pause_timeout = 100 //ms
+
+				//console.log(new Date() - this.last_move_card_calc_dt)
+				if(new Date() - this.last_move_card_calc_dt < pause_timeout) return
+				this.last_move_card_calc_dt = new Date()
+				const pseudo_infinite_top = 10000
+				let min_top_dist = pseudo_infinite_top;
+				let closest_top
+				let min_bottom_dist = pseudo_infinite_top;
+				let closest_bottom
+				for(let i in swimlane.filtered_issues[el.uuid])
+				{
+					let ref_name = 'issue_board_card_' + swimlane.id + '_' + el.uuid + '_' + i
+
+					let card_rect = this.$refs[ref_name][0].getBoundingClientRect()
+					console.log(card_rect, e.clientY, ref_name)
+					let top_diff_y = Math.abs(card_rect.top - e.clientY)
+					let bottom_diff_y = Math.abs(card_rect.bottom - e.clientY)
+					
+					if(top_diff_y < min_top_dist)
+					{
+						min_top_dist = top_diff_y
+						closest_top = swimlane.filtered_issues[el.uuid][i]
+						console.log('move_card1', min_top_dist, i)
+					}
+
+					if(bottom_diff_y < min_bottom_dist)
+					{
+						min_bottom_dist = bottom_diff_y
+						closest_bottom = swimlane.filtered_issues[el.uuid][i]
+						console.log('move_card1', min_top_dist, i)
+					}
+					
+				}
+
+				console.log(closest_top.num)
+
+				if(closest_top== undefined || closest_top.uuid == this.card_draginfo.uuid || swimlane.filtered_issues[el.uuid] == undefined)
+				{
+					this.bottom_to_move_uuids = undefined
+					this.card_to_be_moved_down_uuid = undefined
+					return
+				}
+
+				let last_num = swimlane.filtered_issues[el.uuid].length-1
+				let is_closest_last = 
+					swimlane.filtered_issues[el.uuid][last_num].uuid == closest_bottom.uuid
+				let is_closest_first = 
+					swimlane.filtered_issues[el.uuid][0].uuid == closest_top.uuid
+
+				
+				if(is_closest_last && (!is_closest_first || min_bottom_dist < min_top_dist)) {
+					this.bottom_to_move_uuids = el.uuid + '_' + swimlane.uuid
+					console.log('bottom_to_move_uuids', this.bottom_to_move_uuids)
+					this.card_to_be_moved_down_uuid = undefined
+				}
+				else {
+					if(Number(this.card_draginfo.position) + 1 == Number(closest_top.position) && this.card_draginfo.status_uuid == closest_top.status_uuid){
+						this.card_to_be_moved_down_uuid = undefined
+					}
+					else this.card_to_be_moved_down_uuid = closest_top.uuid
+					this.bottom_to_move_uuids = undefined
+				}
+			
 		},
-		drop_card: function(el)
+		drop_card: function(el, e, swimlane)
 		{
+
+			//console.log('move_card111', e, this.$refs['issue_board_card_' + el.uuid + '_0'])
+
 			//console.log('moving0')
-			if(this.card_draginfo.uuid == undefined) return
-			if(this.status_draginfo.uuid == undefined) return
-			//console.log('moving1')
-			if(this.card_draginfo.status_uuid == el.uuid) return
+
+			let status_changed = this.card_draginfo.uuid != undefined &&
+			this.status_draginfo.uuid != undefined &&
+			this.card_draginfo.status_uuid != el.uuid
+			
+			if(status_changed)
+			{
+				this.card_draginfo.status_uuid = el.uuid
+				this.card_draginfo.status_name = el.name
+
+				rest.run_method('update_issue', this.card_draginfo)
+
+				this.make_swimlanes()
+			}
 			
 
-			this.card_draginfo.status_uuid = el.uuid
-			this.card_draginfo.status_name = el.name
+			if(this.card_to_be_moved_down_uuid != undefined)
+			{
+				let inc = 0
+				for(let i = 0; i < swimlane.filtered_issues[el.uuid].length; i++){					
+					if(swimlane.filtered_issues[el.uuid][i].uuid == this.card_to_be_moved_down_uuid){
+						this.card_draginfo.position = swimlane.filtered_issues[el.uuid][i].position
+						inc++
+						if(inc == 0) this.card_draginfo.position--
+					}
+					if(swimlane.filtered_issues[el.uuid][i].uuid == this.card_draginfo.uuid) inc--
 
-			rest.run_method('update_issue', this.card_draginfo)
+					swimlane.filtered_issues[el.uuid][i].position=Number(swimlane.filtered_issues[el.uuid][i].position) + inc;
+				} 
 
-			this.make_swimlanes()
-		//	console.log('drop')
-			
+				this.sort_cards()
+				this.card_to_be_moved_down_uuid = undefined
+
+				this.make_conf()
+				let conf_str = JSON.stringify(this.conf)
+				this.$store.commit('id_push_update_board' , {id: 'config', val:conf_str})
+				this.$store.dispatch('save_board');
+			}
+
+			if(this.bottom_to_move_uuids != undefined)
+			{
+				this.card_draginfo.position = this.pseudo_infinite_card_position
+				this.sort_cards()
+				this.bottom_to_move_uuids = undefined
+				
+				this.make_conf()
+				let conf_str = JSON.stringify(this.conf)
+				this.$store.commit('id_push_update_board' , {id: 'config', val:conf_str})
+				this.$store.dispatch('save_board');
+			}
 		},
 		get_input_by_id: function(id)
 		{
@@ -865,6 +1017,8 @@
 			if(swimlane.issues[status.uuid] == undefined) swimlane.issues[status.uuid] = []
 			swimlane.issues[status.uuid].push(created_issue)
 			if(swimlane.filtered_issues[status.uuid] == undefined) swimlane.filtered_issues[status.uuid] = []
+
+			//swimlane.filtered_issues[status.uuid]
 			swimlane.filtered_issues[status.uuid].push(created_issue)
 
 			this.get_issues()
@@ -911,6 +1065,10 @@
 	boards_issues: [],
 	colorFromScript: 'green',
 	configs_open: false,
+	pseudo_infinite_card_position: 1000,
+	card_to_be_moved_down_uuid: undefined,
+	bottom_to_move_uuids: undefined,
+	last_move_card_calc_dt: new Date(),
     collumns:[
 		{
 	        name: '№',
@@ -1242,8 +1400,8 @@
 				<div 
 				v-for="(status, s_index) in boards_columns"
 				:key="s_index"
-				@mousemove="move_card_status(status)"
-				@mouseup="drop_card(status)"
+				@mousemove="move_card_status(status, $event, swimlane)"
+				@mouseup="drop_card(status, $event, swimlane)"
 				@mouseleave="status_draginfo={}"
 				class="status-board-collumn"
 				:class="{'status-board-collumn-dragging-to':  this.status_draginfo.uuid == status.uuid, 'when-dragged-card': card_draginfo.uuid != undefined}"
@@ -1251,63 +1409,81 @@
 					
 					<label>{{status.name}}</label>
 					<div class="issue-board-cards-container"
-					
+						
 					>
+						
 						<div
-							v-for="(issue, i_index) in (swimlane.filtered_issues[status.uuid] != undefined ? swimlane.filtered_issues[status.uuid] : [])"
-							:key="i_index"
-							:class="{ 'dragged-card': issue.uuid ==  card_draginfo.uuid, 
-							'when-dragged-card': card_draginfo.uuid != undefined,
-							'selected-board-card': selected_issue != undefined && issue.uuid == selected_issue.uuid}"
-							@dblclick="selected_issue=issue"
-							@mousedown="dragstart_card($event, issue)"
-							@mousemove="move_card(issue)"
-							class="issue-board-card">
-							<div class="issue-card-top"
-							:style="[  {backgroundColor: get_card_color(issue)} ]"
-							></div>
-							<div class="issue-card-title">
-							<div>
-								<a 
-								:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}}</a>
-								<span>{{issue.type_name}}</span> 
-								<i 
-								@click="selected_issue=issue"
-								class='bx bx-window-open' ></i>
+						v-for="(issue, i_index) in 
+						(swimlane.filtered_issues[status.uuid] != undefined ? swimlane.filtered_issues[status.uuid] : [])"
+						:key="i_index"
+						>
+							<div
+								v-if="issue.uuid == card_to_be_moved_down_uuid && card_draginfo.uuid != undefined"
+								class="gost-issue-card">
 							</div>
-							<label
-							contenteditable="true"
-							@blur="edit_card_title(issue, $event)"
-							:class="{ 'resolved-issue':statuses_ends_dict[issue.status_uuid]}"
-							>{{get_field_by_name(issue, 'Название').value}}</label>
-							</div>
-							<label class="issue-card-description" v-if="display_description">
-								{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
-							</label>
-							<div class="issue-board-card-footer">
+							<div
 								
-								<div
-								class="board-card-field"
-								v-for="(f, index) in selected_board.boards_fields"
-								>
-									<label 
-									class="board-card-field-title"
-									v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'">
-									{{f.fields[0].name}}: </label>
-									<component
-										v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
-										v-bind:is="f.fields[0].type[0].code + 'Input'"
-										:value="get_field_value(issue, f.fields[0])"
-										label=""
-										:key="index"
-										:disabled="f.fields[0].name == 'Автор'"
-										:values="available_values[f.fields_uuid]"
-										class="board-card-field-input"
-										@updated="field_updated"
-									></component>
+								:ref="'issue_board_card_' + swimlane.id + '_' + status.uuid + '_' +i_index"
+								:id="'issue_board_card_' + swimlane.id + '_' + status.uuid + '_' +i_index"
+								:class="{ 'dragged-card': issue.uuid ==  card_draginfo.uuid, 
+								'when-dragged-card': card_draginfo.uuid != undefined,
+								'selected-board-card': selected_issue != undefined && issue.uuid == selected_issue.uuid}"
+								@dblclick="selected_issue=issue"
+								@mousedown="dragstart_card($event, issue)"
+								@mousemove.prevent
+								class="issue-board-card">
+								
+								<div class="issue-card-top"
+								:style="[  {backgroundColor: get_card_color(issue)} ]"
+								></div>
+								<div class="issue-card-title">
+								<div>
+									<a 
+									:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}}</a>
+									<span>{{issue.type_name}}</span> 
+									<i 
+									@click="selected_issue=issue"
+									class='bx bx-window-open' ></i>
 								</div>
-							</div>	
+								<label
+								contenteditable="true"
+								@blur="edit_card_title(issue, $event)"
+								:class="{ 'resolved-issue':statuses_ends_dict[issue.status_uuid]}"
+								>{{get_field_by_name(issue, 'Название').value}}</label>
+								</div>
+								<label class="issue-card-description" v-if="display_description">
+									{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
+								</label>
+								<div class="issue-board-card-footer">
+									
+									<div
+									class="board-card-field"
+									v-for="(f, index) in selected_board.boards_fields"
+									>
+										<label 
+										class="board-card-field-title"
+										v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'">
+										{{f.fields[0].name}}: </label>
+										<component
+											v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
+											v-bind:is="f.fields[0].type[0].code + 'Input'"
+											:value="get_field_value(issue, f.fields[0])"
+											label=""
+											:key="index"
+											:disabled="f.fields[0].name == 'Автор'"
+											:values="available_values[f.fields_uuid]"
+											class="board-card-field-input"
+											@updated="field_updated"
+										></component>
+									</div>
+								</div>	
+								
+							</div>
 							
+						</div>
+						<div
+							v-if="bottom_to_move_uuids == status.uuid + '_' + swimlane.uuid && card_draginfo.uuid != undefined"
+							class="gost-issue-card">
 						</div>
 						<i v-if="selected_board.swimlanes_by_root" class="bx new-issue-card-btn" @click="new_issue_card(swimlane, status)">+</i>
 					</div>
@@ -1994,6 +2170,15 @@
 	opacity: 0 !important;
 }
 
+
+.gost-issue-card{
+	border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: dashed;
+	margin-bottom: 5px;
+	height: $input-height;
+}
 
 
 
