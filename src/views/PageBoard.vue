@@ -503,6 +503,7 @@
 				this.swimlanes[i].position = position
 				position++		
 				
+				if(this.conf.swimlanes == undefined) return
 				if(this.conf.swimlanes[i] == undefined) continue
 				if(this.conf.swimlanes[i].filtered_issues == undefined) continue
 
@@ -1025,8 +1026,8 @@
 
 			//console.log(created_issue)
 		},
-		field_updated: async function () {
-			console.log("field_updated");
+		field_updated: async function (e, field) {
+			console.log("field_updated", e, field);
 			
 		},
 		
@@ -1473,7 +1474,7 @@
 											:disabled="f.fields[0].name == 'Автор'"
 											:values="available_values[f.fields_uuid]"
 											class="board-card-field-input"
-											@updated="field_updated"
+											@updated="field_updated($event, f.fields[0])"
 										></component>
 									</div>
 								</div>	
