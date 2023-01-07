@@ -5,8 +5,7 @@ import query_parser from "../query_parser.ts";
 import d from "../dict.ts";
 import rest from "../rest";
 import tools from "../tools.ts";
-
-console.log("d", d.get("Название"), d);
+import cache from "../cache";
 
 let methods = {
   add_with_children: function (obj, arr, ch_level) {
@@ -19,7 +18,6 @@ let methods = {
     if (obj.children == undefined) return arr;
 
     for (let i in obj.children) {
-      console.log(obj, ch_level);
       arr = this.add_with_children(obj.children[i], arr, ch_level + 1);
     }
 
@@ -27,13 +25,9 @@ let methods = {
   },
   get_issues: async function (query, offset) {
     let url = "query=" + encodeURIComponent(this.search_query);
-
     this.$router.replace({});
-
-    localStorage.issues_query = this.search_query;
-    localStorage.issues_query_encoded = this.search_query_encoded;
-
-    //console.log('get issues with query ', query, localStorage.issues_query)
+    cache.setString("issues_query", this.search_query);
+    cache.setString("issues_query_encoded", this.search_query_encoded);
     let options = {};
     this.search_query_encoded = "";
     if (query != undefined && query != "")
@@ -42,9 +36,14 @@ let methods = {
 
     //options.tree_view = tree_view
 
-    let issues = await rest.run_method("read_issues", options);
+    if(offset == undefined) {
+      let ans = await rest.run_method("read_issues_count", options);
+      if (ans == null) this.total_count = '-'
+      else if (ans[0] == undefined) this.total_count = '-'
+      else this.total_count = ans[0].count
+    }
 
-    console.log("this.loaded_issues0", issues);
+    let issues = await rest.run_method("read_issues", options);
 
     if (offset != undefined) {
       for (let i in issues) {
@@ -74,8 +73,6 @@ let methods = {
       }
     }
 
-    console.log("this.loaded_issues0", this.loaded_issues);
-
     this.loaded_issues_tree = [];
 
     for (let i in this.loaded_issues) {
@@ -87,11 +84,11 @@ let methods = {
         );
     }
 
-    console.log(
+   /* console.log(
       "this.loaded_issues1",
       this.loaded_issues,
       this.loaded_issues_tree
-    );
+    );*/
 
     //this.loaded_issues = issues
     //console.log(this.loaded_issues[0], this.issues[0])
@@ -124,12 +121,33 @@ let methods = {
       link: "/issues?query=" + encodeURIComponent(this.search_query),
     };
 
+
     await rest.run_method("create_favourites", favourite);
   },
+  get_table_data: function () {
+    if(document.getElementById("issues_table") == undefined) return ''
+    let data = document.getElementById("issues_table").innerHTML.replaceAll('▲', '').replaceAll('▼', '')
+    return data
+  },
+  get_excel: function()
+  {
+    let data = this.get_table_data()
+    //console.log(data)
+    if(data=='') return
+
+    const blob = new Blob([data], { type: "data:application/vnd.ms-excel" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = 'Unkaos экспорт запроса.xls';
+      link.click();
+      URL.revokeObjectURL(link.href);
+      return
+  }
 };
 
 const data = {
   favourite_issues_type_uuid: "ac367512-c614-4f2a-b7d3-816018f71ad8",
+  total_count: 0,
   loaded_issues: [],
   loaded_issues_tree: [],
   name: "issues",
@@ -218,6 +236,11 @@ const data = {
       id: "",
       dictionary: "sprints",
     },
+    {
+      label: "tags",
+      id: "",
+      dictionary: "issue_tags",
+    },
   ],
 };
 
@@ -236,8 +259,7 @@ mod.mounted = function () {
     });
   } else {
     this.$nextTick(function () {
-      this.search_query =
-        localStorage.issues_query != undefined ? localStorage.issues_query : "";
+      this.search_query = cache.getString("issues_query")
     });
   }
 
@@ -247,9 +269,8 @@ mod.mounted = function () {
 mod.activated = function () {
   console.log("activated!");
   this.$nextTick(function () {
-    if (this.search_query == localStorage.issues_query) return;
-    this.search_query =
-      localStorage.issues_query != undefined ? localStorage.issues_query : "";
+    if (this.search_query === cache.getString("issues_query")) return;
+    this.search_query = cache.getString("issues_query")
   });
 };
 /*
@@ -273,7 +294,7 @@ export default mod;
           max-height: calc(100% - 60px);
         "
       >
-        <span>{{ label }}</span>
+        <span class="topbar-label">{{ label }}</span>
 
         <IssuesSearchInput
           label=""
@@ -286,6 +307,7 @@ export default mod;
           :issue_types="issue_types"
           :users="users"
           :sprints="sprints"
+          :tags="issue_tags"
           :parent_query="search_query"
         >
         </IssuesSearchInput>
@@ -299,13 +321,21 @@ export default mod;
           @click="tree_view = !tree_view"
         ></i>
         <i class="bx bx-star top-menu-icon-btn" @click="add_to_favourites"> </i>
+        <i v-if="!loading" class="bx bxs-download top-menu-icon-btn"
+        @click="get_excel"
+        > </i>
+
+
+        <span class="topbar-label">{{loaded_issues.length}}/{{total_count}}</span>
       </div>
     </div>
 
     <div id="issues_down_panel" class="panel">
-      <div id="issues_table_panel">
+      <div id="issues_table_panel" ref="issuesTablePanel">
         <Transition name="element_fade">
           <KTable
+            :ref="'issuesTable'"
+            id="issues_table"
             v-if="!loading"
             @scroll_update="load_more"
             :collumns="collumns"
@@ -313,6 +343,7 @@ export default mod;
             :name="'issues'"
             :dicts="{ users: users }"
             :tree_view="tree_view"
+
           />
         </Transition>
       </div>

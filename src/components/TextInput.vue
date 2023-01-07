@@ -44,13 +44,11 @@ export default {
 
   methods: {
     resize() {
+      
       console.log("resizing");
       if (this.$refs.text_input == undefined) return;
-      //this.$refs.text_input.style.height = "auto";
-      //this.$refs.text_input.style.height = 0
-
       this.$refs.text_input.style.height = `${
-        this.$refs.text_input_shadow.scrollHeight + 4
+        this.$refs.text_input_shadow.scrollHeight + 10
       }px`;
     },
     getCaretIndex(element) {
@@ -70,29 +68,6 @@ export default {
       }
       return position;
     },
-    make_bold(e) {
-      const bold_tag = "**";
-      console.log("make_bold", e.target);
-      // console.log(e)
-      var elInput = e.target; //document.getElementById('tempid') // Select the object according to the id selector
-      var startPos = elInput.selectionStart; // input the 0th character to the selected character
-      var endPos = elInput.selectionEnd; // The selected character to the last character
-
-      if (startPos < endPos) {
-        //console.log(e, startPos, endPos)
-        this.val =
-          this.val.substring(0, startPos) +
-          bold_tag +
-          this.val.substring(startPos, endPos) +
-          bold_tag +
-          this.val.substring(endPos);
-
-        nextTick(() => {
-          elInput.selectionStart = endPos + bold_tag.length * 2;
-          elInput.selectionEnd = endPos + bold_tag.length * 2;
-        });
-      }
-    },
     pasted(e) {
       console.log(e);
     },
@@ -106,42 +81,36 @@ export default {
       this.resize();
     })
   },
-  computed: {
+  /*computed: {
     scroll_height: function () {
       if (this.$refs == undefined || this.$refs.text_input_shadow == undefined)
         return 0;
       return this.$refs.text_input_shadow.scrollHeight;
     },
-  },
+  },*/
 
   watch: {
-    scroll_height: function () {
+    /*scroll_height: function () {
       this.resize();
-    },
+    },*/
     value: function (val, oldVal) {
       if (this.val == val) return;
       this.val = val;
-
-
     },
 
     val: function (val, oldVal) {
-      console.log(val, oldVal, this.id, this.parent_name);
-
-
-
+      //console.log(val, oldVal, this.id, this.parent_name);
       this.$emit("update_parent_from_input", val);
-
+      nextTick(() => {
+        this.resize();
+      })
       if (this.parent_name == undefined || this.parent_name == "") return;
-
       this.$store.commit("id_push_update_" + this.parent_name, {
         id: this.id,
         val: val,
       });
 
-      nextTick(() => {
-        this.resize();
-      })
+      
     },
   },
 };
@@ -161,8 +130,6 @@ export default {
       ref="text_input"
       @focus="$emit('input_focus', true)"
       @blur="$emit('input_focus', false)"
-      @keyup="resize"
-      @keydown.ctrl.b="make_bold"
       :id="textarea_id"
       class="text-input"
       :type="type"
@@ -172,7 +139,7 @@ export default {
   </div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @import "../css/global.scss";
 
 .text .text-input {
@@ -184,20 +151,16 @@ export default {
   resize: none;
 }
 
-.text {
-}
-
 .text-input {
-  font-size: 13px;
-  font-weight: 400;
-  border-radius: var(--border-radius);
-  background: var(--input-bg-color);
   width: 100%;
-
+  font-size: 14px;
+  font-weight: 400;
+  background: var(--input-bg-color);
   border-color: var(--border-color);
-  border-style: inset;
+  border-style: var(--border-style);
   border-width: var(--border-width);
   border-radius: var(--border-radius);
+  overflow: clip;
 }
 
 .text-input-shadow {

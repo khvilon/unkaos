@@ -2,6 +2,7 @@
 import tools from "../tools.ts";
 import page_helper from "../page_helper.ts";
 import rest from "../rest.ts";
+import cache from "../cache";
 
 let methods = {
   pasted: async function (e) {
@@ -33,25 +34,8 @@ let methods = {
             type: file.type,
             table_name: "attachments",
           };
-
-          let start_pos = e.target.selectionStart;
-
-          let img_teg =
-            '<img src="' + attachment.name + "." + attachment.extention + '">';
-
-          if (e.target.id == "issue_description_textarea") {
-            let f = this.get_field_by_name("Описание");
-            f.value =
-              this.current_description.substring(0, start_pos) +
-              img_teg +
-              this.current_description.substring(start_pos);
-          } else {
-            this.comment =
-              this.comment.substring(0, start_pos) +
-              img_teg +
-              this.comment.substring(start_pos);
-          }
-
+          let img_teg = '![](' + attachment.name + "." + attachment.extention + '){width=x%}';
+          document.execCommand('insertText', false, img_teg)
           this.add_attachment(attachment);
         } else {
           return;
@@ -63,9 +47,9 @@ let methods = {
   },
 
   get_field_by_name: function (name) {
-    if (this.issue == undefined || this.issue.length != 1) return {};
+    if (this.issue === undefined || this.issue.length !== 1) return {};
     for (let i in this.issue[0].values) {
-      if (this.issue[0].values[i].label == name) {
+      if (this.issue[0].values[i].label === name) {
         this.issue[0].values[i].idx = i;
         return this.issue[0].values[i];
       }
@@ -117,7 +101,7 @@ let methods = {
       name: action_icons[type],
       created_at: new Date(),
       value: val,
-      author: JSON.parse(localStorage.profile).name,
+      author: cache.getObject("profile").name,
     };
     console.log("New action added:", new_action);
     this.issue[0].actions.unshift(new_action);
@@ -180,7 +164,7 @@ let methods = {
     //		console.log('tyyyyypes', this.issue_types)
     if (this.issue_types == undefined) return [];
     this.update_type(this.issue[0].type_uuid);
-    return this.issue_types;
+    return this.issue_types.sort(tools.compare_obj('name'));
   },
   set_status: async function (status_uuid) {
     if(!(await this.check_issue_changed())) return false
@@ -278,67 +262,72 @@ let methods = {
     this.set("type_uuid", type_uuid);
     //		console.log('update_type3', values)
   },
-  set(path, val) {
+  set (path, val) {
     this.$store.state["issue"]["selected_issue"][path] = val;
     this.$store.state["issue"]["issue"][0].path = val;
     this.$store.state["issue"]["filtered_issue"][0].path = val;
   },
   save: async function () {
-    if(!(await this.check_issue_changed())) return
-
+    if (!(await this.check_issue_changed())) return
+    if (this.old_project_uuid && this.old_project_uuid !== this.issue[0].project_uuid) {
+      // todo move this to backend completely
+      let old_issues_num = {
+        num: this.issue[0].num, 
+        project_uuid: this.old_project_uuid, 
+        uuid: tools.uuidv4(), 
+        issue_uuid: this.issue[0].uuid
+      }
+      await rest.run_method('create_old_issues_num', old_issues_num)
+      this.$store.commit("id_push_update_issue", {
+        id: 'num',
+        val: undefined,
+      });
+    }
     await this.$store.dispatch("save_issue");
-
-    this.saved();
+    if (this.old_project_uuid && this.old_project_uuid !== this.issue[0].project_uuid) {
+      //this.saved_new()
+      let ans = await rest.run_method("read_issues", {uuid: this.issue[0].uuid});
+      if (ans != null && ans[0] !== undefined) {
+        window.location.href = "/issue/" + ans[0].project_short_name + '-' +  ans[0].num
+      }
+      console.log(ans);
+    }
+    else await this.saved();
   },
   saved: async function (issue) {
-    //this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
+    // this.issue[0] = (await rest.run_method('read_issue', {uuid: this.issue[0].uuid}))[0]
     await this.update_data({ uuid: this[this.name][0].uuid });
     this.edit_mode = false;
-    //this.add_action_to_history('edit', '')
-
-    localStorage.last_saved_issue_params = this.get_params_for_localstorage();
-
-    //todo save type and project in localstorage for future issue create
+    // this.add_action_to_history('edit', '')
+    cache.setString("last_saved_issue_params", this.get_params_for_localstorage())
     this.title;
-
-    if (this.id != "") return;
-
-    //this.$router.push('/issue/' + issue[0].project_short_name + '-' + issue[0].num)
-    window.location.href =
-      "/issue/" + issue[0].project_short_name + "-" + issue[0].num;
-
-    //
-
+    if (this.id !== "") return;
+    window.location.href = "/issue/" + this.issueProjectNum;
     //setTimeout(this.init, 1000)
   },
-  saved_new: function (issue) {
-    window.location.href =
-      "/issue/" + issue[0].project_short_name + "-" + issue[0].num;
+  saved_new: function () {
+    window.location.href = "/issue/" + this.issueProjectNum;
   },
   deleted: function (issue) {
     window.location.href = "/issues/";
   },
   add_attachment: async function (att) {
     att.issue_uuid = this.issue[0].uuid;
-    if (this.$store.state["issue"]["selected_issue"].attachments == undefined) this.$store.state["issue"]["selected_issue"].attachments = []
-    this.$store.state["issue"]["selected_issue"].attachments.push(att);
     let ans = await rest.run_method("upsert_attachments", att);
 
-    if (att.type.indexOf("image") > -1) this.attachments.push(att);
+    this.attachments.push(att);
+    if (att.type.indexOf("image") > -1) this.images.push(att);
   },
   delete_attachment: async function (att) {
-    let attachments = this.$store.state["issue"]["selected_issue"].attachments;
-    for (let i in attachments) {
-      if (attachments[i].uuid == att.uuid)
-        this.$store.state["issue"]["selected_issue"].attachments.splice(i, 1);
-    }
-    let ans = await rest.run_method("delete_attachments", att);
+    
+    let ans = await rest.run_method("delete_attachments", {uuid: att.uuid});
 
-    if (att.type.indexOf("image") < 0) return;
     for (let i in this.attachments) {
-      if (this.attachments[i].uuid == att.uuid) {
-        this.attachments.splice(i, 1);
-      }
+      if (this.attachments[i].uuid == att.uuid) this.attachments.splice(i, 1);
+    }
+    if (att.type.indexOf("image") < 0) return;
+    for (let i in this.images) {
+      if (this.images[i].uuid == att.uuid) this.images.splice(i, 1);
     }
   },
   get_available_values: function (field_uuid) {
@@ -373,7 +362,7 @@ let methods = {
     this.get_formated_relations();
   },
   load_params_from_localstorage(storage_path, full) {
-    this.url_params = JSON.parse(localStorage[storage_path]);
+    this.url_params = cache.getObject(storage_path);
 
     console.log(
       "load params from localstore",
@@ -431,6 +420,8 @@ let methods = {
     this.set("values", values);
   },
   init: async function (delay) {
+
+    let uri_params = tools.obj_clone(this.url_params)
     if (
       this.issue == undefined ||
       this.issue[0] == undefined ||
@@ -441,31 +432,32 @@ let methods = {
     }
 
     if (
-      (this.id == undefined || this.id == "") &&
-      this.url_params.clone == "true" &&
-      localStorage.cloned_params != undefined
-    ) {
-      this.url_params = JSON.parse(localStorage.cloned_params);
-
+      (this.id === undefined || this.id === "") &&
+       this.url_params.clone === "true" &&
+       cache.getObject("cloned_params") !== undefined
+    )
+    {
+      this.url_params = cache.getObject("cloned_params");
       this.load_params_from_localstorage("cloned_params", true);
-    } else if (
-      (this.id == undefined || this.id == "") &&
-      localStorage.last_saved_issue_params != undefined
-    ) {
+    } 
+    else if (
+      (this.id == undefined || this.id == "") && cache.getObject("last_saved_issue_params") !== undefined
+    ) 
+    {
       this.load_params_from_localstorage("last_saved_issue_params");
     }
 
-    if (this.id == undefined || this.id == "") {
-      console.log("ibiiit issue", this.issue[0]);
+    
 
+    if (this.id == undefined || this.id == "") {
+      // console.log("ibiiit issue", this.issue[0]);
       for (let i in this.issue[0].values) {
         this.issue[0].values[i].issue_uuid = this.issue[0].uuid;
         this.issue[0].values[i].uuid = tools.uuidv4();
-        if (this.issue[0].values[i].name == "Автор")
-          this.issue[0].values[i].value = JSON.parse(localStorage.profile).uuid;
+        if (this.issue[0].values[i].name === "Автор")
+          this.issue[0].values[i].value = cache.getObject("profile").uuid;
       }
-
-      console.log("ibiiit issue", this.issue[0]);
+      // console.log("ibiiit issue", this.issue[0]);
     }
 
     let ans = await rest.run_method("read_watcher", {
@@ -473,10 +465,44 @@ let methods = {
     });
     this.watch = ans.length > 0;
 
-    let attachments = await rest.run_method("read_attachments", {
+    this.attachments = await rest.run_method("read_attachments", {
       issue_uuid: this.issue[0].uuid,
     });
-    this.attachments = attachments.filter((a) => a.type.indexOf("image/") > -1);
+    this.images = this.attachments.filter((a) => a.type.indexOf("image/") > -1);
+
+    this.sprints = this.sprints.sort(tools.compare_obj('start_date')).reverse()
+
+    this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
+
+    this.old_project_uuid = this.issue[0].project_uuid
+
+    await this.read_selected_tags()
+
+    this.current_description = this.get_field_by_name('Описание').value
+
+    /*if(this.url_params.status_uuid != undefined)
+    {
+      console.log('preset status', this.url_params.status_uuid)
+    }*/
+
+    console.log('this.url_params', this.url_params)
+    if(uri_params.parent_uuid != undefined)
+    {
+      
+
+      let relation = {
+        uuid: tools.uuidv4(),
+        issue0_uuid: uri_params.parent_uuid,
+        issue1_uuid: this.issue[0].uuid,
+        type_uuid: this.parent_relation_type_uuid,
+      };
+
+      await this.$store.dispatch('save_issue');
+
+      await this.add_relation(relation)
+
+      this.saved_new()
+    }
 
     this.title;
   },
@@ -496,7 +522,7 @@ let methods = {
     return JSON.stringify(params);
   },
   get_clone_url: function () {
-    localStorage.cloned_params = this.get_params_for_localstorage();
+    cache.setString("cloned_params", this.get_params_for_localstorage());
     return "/issue?clone=true";
 
     let url = "/issue?t=" + new Date().getTime();
@@ -520,20 +546,24 @@ let methods = {
     this.current_description = val;
   },
   enter_edit_mode: function () {
-    if (this.edit_mode) return;
+    if (this.edit_mode) {
+      this.cancel_edit_mode();
+      return;
+    }
     this.saved_descr = this.get_field_by_name("Описание").value;
     this.saved_name = this.get_field_by_name("Название").value;
+    this.saved_project_uuid = this.issue[0].project_uuid
     this.current_description = this.saved_descr;
     this.edit_mode = true;
-    console.log("this.saved_descr", this.saved_name, this.saved_descr);
   },
   cancel_edit_mode: function () {
     this.get_field_by_name("Описание").value = this.saved_descr;
     this.get_field_by_name("Название").value = this.saved_name;
+    this.issue[0].project_uuid = this.saved_project_uuid
+    this.current_description = this.saved_descr;
     this.edit_mode = false;
   },
-  check_issue_changed: async function()
-  {
+  check_issue_changed: async function() {
     let ans = await rest.run_method("read_issue", { uuid: this.issue[0].uuid });
 
     let ans_is_valid = ans != undefined && ans != null && ans.length > 0;
@@ -543,6 +573,9 @@ let methods = {
       );
       return false;
     }
+
+    this.old_project_uuid = ans[0].project_uuid
+
     return true
   },
   field_updated: async function () {
@@ -550,6 +583,7 @@ let methods = {
     if (this.id == "") return;
 
     if(!(await this.check_issue_changed())) return
+    
 
     await this.$store.dispatch("save_issue");
 
@@ -572,18 +606,73 @@ let methods = {
 
    //await this.update_data({ uuid: this[this.name][0].uuid });
 
+  },
+  format_dt: function(dt){return tools.format_dt(dt)},
+  read_selected_tags: async function() {
+    let tags_uuids = (await rest.run_method("read_issue_tags_selected", {issue_uuid: this.issue[0].uuid})).map((t)=>t.issue_tags_uuid)
+    let tags = this.issue_tags.filter((t)=>tags_uuids.includes(t.uuid))
+    this.tags = tags.sort(tools.compare_obj('name'));
+  },
+  tag_selected: async function(sel_val) {
+    console.log('tag_selectedtag_selected', sel_val)
+
+    
+    this.tags = sel_val
+    let have_new_tags = false
+    for(let i in this.tags) {
+      if(this.tags[i].created_at == undefined) {
+        let ans = await rest.run_method("create_issue_tags", this.tags[i]);
+        
+        this.tags[i].created_at = new Date()
+
+        have_new_tags = true;
+      }
+    }
+
+    this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
+
+    console.log('this.issue_tags', this.issue_tags)
+
+    this.add_tags()
+  },
+  add_tags: async function() {
+    let db_tags = await rest.run_method("read_issue_tags_selected", {issue_uuid: this.issue[0].uuid})
+    let db_tags_uuids = db_tags.map((t)=>t.issue_tags_uuid)
+    let this_tags_uuids = this.tags.map((t)=>t.uuid)
+
+    console.log(db_tags_uuids, typeof db_tags_uuids, db_tags_uuids.contains)
+  
+    for(let i in this_tags_uuids)
+    {
+      if(!db_tags_uuids.includes(this_tags_uuids[i]) ) {
+        let t = {uuid: tools.uuidv4(), issue_uuid: this.issue[0].uuid, issue_tags_uuid: this_tags_uuids[i]}
+        await rest.run_method("create_issue_tags_selected", t);
+      }
+    }
+  },
+  tag_deselected: async function(sel_val) {
+
+    console.log('deselected', sel_val)
+    let d_vals = await rest.run_method("read_issue_tags_selected", {issue_uuid: this.issue[0].uuid, issue_tags_uuid: sel_val.uuid})
+    if(d_vals == null) return
+    if(d_vals[0] == undefined) return
+    await rest.run_method("delete_issue_tags_selected", {uuid: d_vals[0].uuid})
   }
 };
 
 const data = {
+  parent_relation_type_uuid: "73b0a22e-4632-453d-903b-09804093ef1b",
   current_description: "",
+  tags: [],
   card_open: false,
   edit_mode: false,
   attachments: [],
+  images: [],
   name: "issue",
   label: "Поля",
   saved_descr: "",
   saved_name: "",
+  saved_project_uuid: undefined,
   new_relation_modal_visible: false,
   relation_types: [],
   collumns: [],
@@ -623,8 +712,11 @@ const data = {
       type: "Select",
       clearable: "true",
     },
+    
   ],
   comment: "",
+  old_project_uuid: '',
+  issue_tags: [],
   watch: false,
   comment_focused: false,
   transitions: [],
@@ -689,6 +781,17 @@ mod.computed.title = function () {
     return "Задача";
   }
 };
+mod.computed.issueProjectNum = function () {
+  if (
+    this.issue[0].project_short_name !== undefined &&
+    this.issue[0].num !== undefined
+  ) {
+    return this.issue[0].project_short_name + "-" + this.issue[0].num;
+  } else {
+    return "Новая задача";
+  }
+};
+mod.computed.created_at = ()=>tools.format_dt(issue[0].created_at)
 
 mod.computed.available_transitions = function () {
   //		if(this.current_status) console.log('aa');
@@ -792,99 +895,124 @@ export default mod;
         :issue0_uuid="issue[0].uuid"
       />
     </Transition>
-
     <div id="issue_top_panel" class="panel"   >
 
     <div class="issue-top-buttons">
       <Transition name="element_fade">
       <StringInput
-      v-if="!loading && issue[0] != undefined && !$store.state['common']['is_mobile']"
-      key="issue_code"
-      class='issue-code'
-      label=''
-      :disabled="true"
-      :value="id"
+        v-if="!loading && issue[0] !== undefined && !$store.state['common']['is_mobile']"
+        key="issue_code"
+        class='issue-code'
+        label=''
+        :disabled="true"
+        :value="issueProjectNum"
       >
       </StringInput>
       </Transition>
+      <Transition name="element_fade">
+        <div
+            v-if="!loading && id !== ''"
+            :class="{ 'issue-top-button-inactive': !edit_mode }"
+            class="issue-top-button bx bx-edit"
+            title="Редактировать задачу"
+            @click="enter_edit_mode"
+        >
+        </div>
+      </Transition>
 
       <Transition name="element_fade">
-      <SelectInput
-      v-if="!loading && issue[0] != undefined && id!='' && !$store.state['common']['is_mobile']"
-      label=""
-      :value="get_status()"
-      :values="statuses"
-      :disabled="transitions.length <= max_status_buttons_count"
-      class="issue-status-input"
-      :parameters="{clearable: false, reduce: obj => obj.uuid}"
-      @update_parent_from_input="update_statuses"
-      >
-      </SelectInput>
+        <div
+            v-if="!loading && id !== ''"
+            class="issue-top-button"
+            title="Следить за задачей (функция в разработке)"
+            @click="togle_watch"
+        >
+          <IWatcher :enabled="watch"/>
+        </div>
+      </Transition>
+
+      <Transition name="element_fade">
+        <div class="issue-top-button">
+          <a
+            v-if="!loading && id != '' &&
+            !$store.state['common']['is_mobile']"
+            class="issue-clone-button bx bx-duplicate "
+            title="Клонировать задачу"
+            :href="get_clone_url()"
+          >
+          </a>
+        </div>
+      </Transition>
+
+      <Transition name="element_fade">
+        <div class="issue-top-button">
+          <a
+            v-if="!loading && id != '' &&
+            !$store.state['common']['is_mobile']"
+            class="make-child-btn issue-top-button bx bx-subdirectory-right"
+            title="Создать дочернюю задачу"
+            :href="('/issue?t=' + new Date().getTime() + '&parent_uuid=' + issue[0].uuid)"
+          >
+          </a>
+        </div>
+      </Transition>
+
+      <Transition name="element_fade">
+        <div
+            v-if="!loading && $store.state['common']['is_mobile']"
+            style="display: flex"
+            class="watch"
+            @click="card_open = !card_open"
+        >
+          {{ card_open ? ">>>" : "<<<" }}
+        </div>
       </Transition>
     </div>
-		<Transition name="element_fade">
-		<div class="issue-transitions" v-if="!loading && id!='' && available_transitions.length <= max_status_buttons_count && !$store.state['common']['is_mobile']" style="display: flex;">
-		<KButton
-		v-for="(transition, index) in available_transitions"
-		:key="index"
-		class="status-btn"
-		:name="transition.name"
-		:func="''"
-		@click="set_status(transition.status_to_uuid)"
-		/>
-		</div>
 
-		</Transition >
 
-      <Transition name="element_fade">
-        <div
-          v-if="!loading && id != ''"
-          style="display: flex"
-          class="watch"
-          :class="{ 'watch-active': edit_mode }"
-          @click="enter_edit_mode"
-        >
-          🖉
-        </div>
-      </Transition>
-
-      <Transition name="element_fade">
-        <div
-          v-if="!loading && id != ''"
-          style="display: flex"
-          class="watch"
-          :class="{ 'watch-active': watch }"
-          @click="togle_watch"
-        >
-          👁
-        </div>
-      </Transition>
-
-      <Transition name="element_fade">
-        <a
-          v-if="!loading && id != ''"
-          class="bx bx-copy clone-btn"
-          :href="get_clone_url()"
-        >
-        </a>
-      </Transition>
-
-      <Transition name="element_fade">
-        <div
-          v-if="!loading && $store.state['common']['is_mobile']"
-          style="display: flex"
-          class="watch"
-          @click="card_open = !card_open"
-        >
-          {{ card_open ? ">>>>>" : "<<<<<" }}
-        </div>
-      </Transition>
     </div>
 
     <div id="issue_down_panel">
       <div id="issue_main_panel" class="panel">
 
-        <tagInput v-if="is_in_dev_mode"> </tagInput>
+        <div class="issue-line" v-if="!loading && id !==''">
+          <div class="issue-tags-container">
+            <div class="tag-label-container"><i class='bx bx-purchase-tag'></i></div>
+            <tagInput v-if="id!=''"
+            :values="issue_tags"
+            :value="tags"
+            @value_selected="tag_selected"
+            @value_deselected="tag_deselected"
+            @updated="field_updated"
+            > </tagInput>
+          </div>
+
+          <div class="issue-author-container"
+            :v-if="
+              !loading &&
+              id !== '' &&
+              get_field_by_name('Автор').value !== undefined
+            "
+          >
+            <UserInput
+              label=""
+              v-if="!loading && id != ''"
+              :value="get_field_by_name('Автор').value"
+              :disabled="true"
+              class="issue-author-input"
+            >
+            </UserInput>
+
+            <StringInput
+              label=""
+              :v-if="!loading && id != ''"
+              :value="format_dt(issue[0].created_at)"
+              :disabled="true"
+              v-if="issue[0].created_at!==undefined"
+            >
+            </StringInput>
+          </div>
+        </div>
 
         <Transition name="element_fade">
           <div class="issue-line" v-if="!loading">
@@ -907,12 +1035,12 @@ export default mod;
             </span>
 
             <SelectInput
-              v-if="id == ''"
+              v-if="id == '' || edit_mode"
               label="Проект"
               key="issue_project_input"
               :value="issue[0].project_uuid"
               :values="projects"
-              :disabled="id != ''"
+              :disabled="false"
               class="issue-project-input"
               :clearable="false"
               :parameters="{ clearable: false, reduce: (obj) => obj.uuid }"
@@ -923,47 +1051,55 @@ export default mod;
           </div>
         </Transition>
 
-        <TextInput
-          label="Описание"
-          v-if="!loading && (edit_mode || id == '')"
-          :value="get_field_by_name('Описание').value"
-          :id="'values.' + get_field_by_name('Описание').idx + '.value'"
-          parent_name="issue"
-          ref="issue_descr_text_inpt"
-          textarea_id="issue_description_textarea"
-          @paste="pasted"
-          @update_parent_from_input="edit_current_description"
-          
-        >
-        </TextInput>
+        <KMarkdownInput
+            style="margin-top: 10px"
+            v-if="!loading && (edit_mode || id === '')"
+            ref="issue_descr_text_inpt"
+            :value="get_field_by_name('Описание').value"
+            :id="'values.' + get_field_by_name('Описание').idx + '.value'"
+            @update_parent_from_input="edit_current_description"
+            @paste="pasted"
+            parent_name="issue"
+            placeholder="Описание задачи..."
+            textarea_id="issue_description_textarea"
+            transition="element_fade"
+        />
 
-        <Transition name="element_fade">
-          <div class="edit-mode-btn-container">
+        <div id="issue_footer_buttons"
+             v-if="!loading && id === ''">
+          <KButton
+            id="save_issue_btn"
+            :name="'Создать задачу'"
+            :func="'save_issue'"
+            @button_ans="saved_new"
+          />
+        </div>
+
+        <div class="edit-mode-btn-container" v-if="!loading && id != '' && (edit_mode || id == '')">
+          <TransitionGroup name="element_fade">
             <KButton
-              v-if="!loading && id != '' && (edit_mode || id == '')"
+              key="1"
               class="save-issue-edit-mode-btn"
               name="Сохранить"
               @click="save"
             />
             <KButton
-              v-if="!loading && id != '' && (edit_mode || id == '')"
+              key="2"
               class="cancel-issue-edit-mode-btn"
               name="Отменить"
               @click="cancel_edit_mode"
             />
-          </div>
-        </Transition>
+          </TransitionGroup>
+        </div>
 
 			<Transition name="element_fade">
-			<KMarked v-if="!loading && !edit_mode && id!=''"
-			:val="get_field_by_name('Описание').value ? get_field_by_name('Описание').value : ''"
-			:images="attachments"
-      :use_bottom_images="true"
-			>
-			</KMarked>
+        <KMarked v-if="!loading"
+          :val="current_description ? current_description : ''"
+          :images="images"
+          :use_bottom_images="true"
+        >
+        </KMarked>
 			</Transition>
-
-		
 
         <Transition name="element_fade">
           <KRelations
@@ -982,40 +1118,41 @@ export default mod;
             v-if="!loading"
             label=""
             id="issue-attachments"
-            :attachments="issue[0].attachments"
+            :attachments="attachments"
             @attachment_added="add_attachment"
             @attachment_deleted="delete_attachment"
           >
           </KAttachment>
         </Transition>
 
-        <Transition name="element_fade">
-          <TextInput
-            label="Комментарий"
-            v-if="!loading && id != ''"
+          <KMarkdownInput
             class="comment_input"
-            @update_parent_from_input="update_comment"
+            style="margin-top: 20px"
+            v-if="!loading && !edit_mode && id !== ''"
             :value="comment"
-            @input_focus="comment_focus"
+            @update_parent_from_input="update_comment"
             @paste="pasted"
-          >
-          </TextInput>
-        </Transition>
-
+            @input_focus="comment_focus"
+            placeholder="Комментарий к задаче..."
+            textarea_id="issue_comment_textarea"
+            transition="element_fade"
+          />
         <Transition name="element_fade">
           <KButton
-            v-if="!loading && id != ''"
-            id="send_comment_btn"
-            name="Отправить"
-            v-bind:class="{ outlined: comment_focused }"
-            @click="send_comment()"
+              v-if="!loading && !edit_mode && id !== ''"
+              id="send_comment_btn"
+              name="Отправить"
+              v-bind:class="{ outlined: comment_focused }"
+              @click="send_comment()"
+              :disabled="comment === ''"
           />
         </Transition>
+
 
         <CommentList
             v-if="!loading && !edit_mode"
             v-model:actions="issue[0].actions"
-            :images="attachments"
+            :images="images"
         />
       </div>
       <div
@@ -1039,6 +1176,34 @@ export default mod;
               :value="id"
             >
             </StringInput>
+
+
+            <Transition name="element_fade">
+            <div class="issue-transitions" v-if="!loading && id!='' && available_transitions.length <= max_status_buttons_count && !$store.state['common']['is_mobile']" style="display: flex;">
+            <KButton
+            v-for="(transition, index) in available_transitions"
+            :key="index"
+            class="status-btn"
+            :name="transition.name"
+            :func="''"
+            @click="set_status(transition.status_to_uuid)"
+            />
+            </div>
+            </Transition >
+
+            <Transition name="element_fade">
+              <SelectInput
+              v-if="!loading && issue[0] != undefined && id!='' && !$store.state['common']['is_mobile']"
+              label="Статус"
+              :value="get_status()"
+              :values="statuses"
+              :disabled="transitions.length <= max_status_buttons_count"
+              class="issue-status-input"
+              :parameters="{clearable: false, reduce: obj => obj.uuid}"
+              @update_parent_from_input="update_statuses"
+              >
+              </SelectInput>
+              </Transition>
 
 
             <SelectInput
@@ -1102,43 +1267,9 @@ export default mod;
               :values="get_available_values(input.field_uuid)"
               @updated="field_updated"
             ></component>
-
-            <UserInput
-              label="Автор"
-              v-if="!loading && id != ''"
-              :value="get_field_by_name('Автор').value"
-              :disabled="true"
-              class="issue-author-input"
-            >
-            </UserInput>
-
-            <DateInput
-              label="Создана"
-              :v-if="id != ''"
-              :value="issue[0].created_at"
-              :disabled="true"
-            >
-            </DateInput>
+            
           </div>
         </Transition>
-
-        <div id="issue_card_footer_div" class="footer_div">
-          <KButton
-            v-if="!loading && id == ''"
-            id="save_issue_btn"
-            :name="'Сохранить'"
-            :func="'save_issue'"
-            @button_ans="saved_new"
-          />
-          <KButton
-            v-if="false && !loading && id != ''"
-            id="delete_issue_btn"
-            :name="'Удалить'"
-            :func="'delete_issue'"
-            @button_ans="deleted"
-            :disabled="true"
-          />
-        </div>
       </div>
     </div>
   </div>
@@ -1155,24 +1286,45 @@ $code-width: 160px;
 #issue_top_panel {
   height: $top-menu-height;
   display: flex;
-  padding-top: 3px;
+  padding-left: 15px;
+}
+
+.iframe-view #issue_top_panel{
+  border: none;
 }
 
 .issue-top-buttons {
   display: flex;
+  align-items: center;
   padding: 10px 20px;
 }
 
-.issue-top-buttons > div {
-  margin-right: 20px;
+.issue-top-buttons > *:not(:last-child) {
+  margin-right: 15px;
 }
 
-.issue-top-buttons > div:last-child {
-  margin-right: 0;
+.issue-clone-button {
+  font-size: 35px;
+  text-decoration: none;
+  color: var(--on-button-icon-color);
 }
+
+.make-child-btn {
+  display: flex !important;
+  font-size: 27px !important;
+  border-radius: 50% !important;
+  border-style: solid;
+  padding-top: 4px;
+  padding-left: 4px;
+  width: 32px !important;
+  height: 32px !important;
+}
+
 
 .issue-transitions {
-  padding: 10px;
+  padding-top: 10px;
+  flex-direction: column;
+  margin-bottom: 0 !important;
 }
 
 #issue_table_panel,
@@ -1185,8 +1337,8 @@ $code-width: 160px;
 }
 
 #issue_main_panel {
-  padding: 10px 8px 10px 20px;
-  border-right: 8px solid var(--panel-bg-color);
+  padding: 10px 30px 10px 35px;
+  border-right: 5px solid var(--panel-bg-color);
   display: flex;
   flex-direction: column;
   width: $issue-workspace-width;
@@ -1207,6 +1359,23 @@ $code-width: 160px;
   width: 100vw !important;
 }
 
+#issue_footer_buttons {
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+
+#save_issue_btn {
+  width: 160px;
+}
+
+#save_issue_btn input {
+  width: 100%;
+  height: 30px;
+}
+
 #issue_card {
   width: $card-width;
   margin-left: 0px;
@@ -1224,16 +1393,6 @@ $code-width: 160px;
   left: 100vw !important;
 }
 
-#save_issue_btn,
-#delete_issue_btn {
-  padding: 0px 20px 15px 20px;
-  width: 100%;
-}
-
-#save_issue_btn input,
-#delete_issue_btn input {
-  width: 100%;
-}
 
 #issue_down_panel {
   display: flex;
@@ -1250,18 +1409,22 @@ $code-width: 160px;
 .issue-line {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+ // margin-bottom: 20px;
 }
+
 #issue_description_textarea {
   padding: 4px 10px 6px 10px;
+  min-height: 60px;
+  transition: none;
 }
 
 
 .status-btn,
 .status-btn .btn_input {
   height: $input-height !important;
-  width: 200px !important;
-  margin-right: 20px;
+  width: 100% !important;
+  margin-bottom: 10px;
+  //margin-right: 20px;
 }
 
 .issue-name-input {
@@ -1276,7 +1439,11 @@ $code-width: 160px;
 }
 
 #send_comment_btn {
+  .disabled-btn {
+    background-color: var(--panel-bg-color);
+  }
 }
+
 #send_comment_btn .btn_input {
   height: 25px;
   width: 100%;
@@ -1288,7 +1455,6 @@ $code-width: 160px;
 }
 
 .comment_input {
-  margin-top: 20px;
   margin-bottom: -4px !important;
 }
 
@@ -1305,35 +1471,25 @@ $code-width: 160px;
   outline: 1px solid;
 }
 
-.issue-code,
-.issue-status-input {
-  padding-right: 0 !important;
-  width: 180px;
-}
-
-
 .issue-status-input .vs__dropdown-toggle {
   border-width: 1px !important;
 }
 
 .issue-project-input {
   width: 27%;
+  margin-left: 10px;
 }
 
 #issue_card_scroller {
   display: flex;
   flex-direction: column;
-  padding: 10px 20px 10px 20px;
+  padding: 10px 25px 10px 25px;
   height: calc(100vh - $top-menu-height);
   overflow-y: scroll;
 }
 
-#issue_card_scroller > div {
-  margin-bottom: 20px;
-}
-
-#issue_card_scroller > div:last-child {
-  margin-bottom: 0;
+#issue_card_scroller > *:not(:last-child) {
+  margin-bottom: 15px;
 }
 
 #issue_card_scroller::-webkit-scrollbar {
@@ -1342,29 +1498,6 @@ $code-width: 160px;
 
 #issue-attachments {
   width: 100%;
-}
-
-.clone-btn {
-  margin: 10px 20px 10px 0;
-  display: flex;
-  font-size: 35px;
-  // cursor: pointer;
-  text-decoration: none;
-}
-
-.watch {
-  border-radius: var(--border-radius);
-  display: flex;
-  font-size: 35px;
-  margin-right: 20px;
-  //margin-top: 2px;
-  color: var(--off-button-icon-color);
-  cursor: pointer;
-}
-
-.watch-active {
-  color: var(--on-button-icon-color);
-  //font-weight: 600;
 }
 
 .image-attachments {
@@ -1379,14 +1512,15 @@ $code-width: 160px;
 }
 
 .issue-title-span {
-  margin-top: 10px;
+  margin: 10px 0;
   font-size: 22px;
   width: 100%;
-  text-align: center;
   user-select: text;
 }
 
 .edit-mode-btn-container {
+  margin-top: 10px;
+  margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
 }
@@ -1406,6 +1540,41 @@ $code-width: 160px;
 .cancel-issue-edit-mode-btn {
   padding-left: $input-height;
 }
+
+.bx-purchase-tag
+{
+  font-size: 18px;
+  padding: 6px 0;
+}
+
+.issue-tags-container, .issue-author-container{
+  display: inherit;
+}
+
+.issue-tags-container .tag-input{
+  font-size: 13px;
+  padding-left: 5px;
+}
+
+.issue-author-container *{
+  background: none !important;
+  border: none !important;
+}
+
+.issue-author-container svg{
+  display: none;
+}
+.issue-author-container .vs__actions, .issue-author-container .vs__search{
+  display: none;
+}
+
+.issue-author-container{
+}
+
+.issue-author-container .string-input{
+  width: 130px !important;
+}
+
 
 /*
 .v-enter-active,

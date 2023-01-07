@@ -1,8 +1,8 @@
-let crud = {};
+let crud:any = {};
 
-let data_model = require("./data_model");
-var tools = require("./tools");
-var sql = require("./sql");
+import data_model from "./data_model";
+import tools from "../tools";
+import sql from "./sql";
 
 const edited_type_uuid = "1ff12964-4f5c-4be9-8fe3-f3d9a7225300";
 const transition_type_uuid = "4d7d3265-806b-492a-b6c1-636e1fa653a9";
@@ -13,12 +13,10 @@ const comment_type_uuid = "f53d8ecc-c26e-4909-a070-5c33e6f7a196";
 
 const select_limit = 300;
 
-const atob = require("atob");
+//const atob = require("atob");
 const { Console } = require("console");
 
-const uuid_length = edited_type_uuid.length;
-
-crud.json_sql = function (table_name) {
+crud.jsonSql = function (table_name:string) {
   return (
     "CASE WHEN COUNT(" +
     table_name +
@@ -28,7 +26,7 @@ crud.json_sql = function (table_name) {
   );
 };
 
-crud.make_read_query_template = function (table_name, num) {
+crud.make_read_query_template = function (table_name:string, num:number) {
   if (num == undefined) num = 1;
   let select = "'" + table_name + "' AS table_name";
   let join = "";
@@ -62,7 +60,7 @@ crud.make_read_query_template = function (table_name, num) {
 
       select +=
         ", " +
-        crud.json_sql("f" + forein_table_num_str) +
+        crud.jsonSql("f" + forein_table_num_str) +
         " AS " +
         column.column_name.replace("_uuid", "");
 
@@ -78,7 +76,7 @@ crud.make_read_query_template = function (table_name, num) {
 
     select +=
       ", " +
-      crud.json_sql("ff" + forein_table_num_str) +
+      crud.jsonSql("ff" + forein_table_num_str) +
       " AS " +
       fk_table_name;
 
@@ -115,7 +113,7 @@ crud.make_read_query_template = function (table_name, num) {
     let forein_table_num_str = num + "" + forein_table_num + "_" + i;
 
     select +=
-      ", " + crud.json_sql("f" + forein_table_num_str) + " AS " + fk_table_name;
+      ", " + crud.jsonSql("f" + forein_table_num_str) + " AS " + fk_table_name;
 
     join +=
       " LEFT JOIN (" +
@@ -197,7 +195,6 @@ crud.load = async function () {
     CASE WHEN COUNT(T15) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T15) END AS ACTIONS,
     STATUS_UUID,
     T17.NAME AS STATUS_NAME,
-    CASE WHEN COUNT(T18) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T18) END AS ATTACHMENTS,
     T1.SPRINT_UUID,
     T19.PARENT_UUID,
     T20.NAME AS SPRINT_NAME
@@ -250,15 +247,6 @@ crud.load = async function () {
     ON A.AUTHOR_UUID = U.UUID
     ) T15
     ON T1.UUID = T15.ISSUE_UUID
-    LEFT JOIN
-    (SELECT 
-        'attachments' AS TABLE_NAME,
-        UUID,
-        NAME,
-        EXTENTION,
-        ISSUE_UUID
-    FROM ATTACHMENTS) T18
-    ON T1.UUID = T18.ISSUE_UUID
     LEFT JOIN LATERAL
     (SELECT
         ISSUE0_UUID PARENT_UUID,
@@ -302,16 +290,15 @@ crud.load = async function () {
   crud.querys["issue"]["update"] = crud.querys["issues"]["update"];
   crud.querys["issue"]["delete"] = crud.querys["issues"]["delete"];
 
+  crud.querys["issues_count"] = {};
+  crud.querys["issues_count"]["read"] = `SELECT COUNT(uuid) FROM filtered_issues WHERE DELETED_AT IS NULL`
+
   crud.querys["issue_actions"][
     "read"
   ] = `SELECT * FROM issue_actions t1 WHERE deleted_at IS NULL $@1`;
 
-  crud.querys["attachments"][
-    "read"
-  ] = `SELECT * FROM attachments T1 WHERE TRUE $@1`;
-  crud.querys["attachments"][
-    "delete"
-  ] = `DELETE FROM attachments WHERE uuid = $@1`;
+  crud.querys["attachments"]["read"] = `SELECT * FROM attachments T1 WHERE TRUE $@1`;
+  crud.querys["attachments"]["delete"] = `DELETE FROM attachments WHERE uuid = $@1`;
 
   crud.querys["board"] = {};
   crud.querys["board"]["read"] = crud.querys["boards"]["read"];
@@ -327,7 +314,7 @@ crud.load = async function () {
   crud.querys["dashboard"]["delete"] = crud.querys["dashboards"]["delete"];
 
   crud.querys["short_issue_info"] = {};
-  crud.querys["short_issue_info"]["read"] =
+  crud.querys["short_issue_info"]["read"] = 
     `SELECT 
     I.UUID, P.SHORT_NAME || '-' || I.NUM || ' ' || FV.value AS name
     FROM ISSUES I
@@ -352,6 +339,20 @@ crud.load = async function () {
     ON P.UUID = I.PROJECT_UUID 
     WHERE I.DELETED_AT IS NULL`;
 
+    crud.querys["issue_uuid"] = {};
+    crud.querys["issue_uuid"]["read"] = `SELECT 
+    UUID
+    FROM ISSUES t1
+    WHERE DELETED_AT IS NULL $@1`;
+
+    
+    crud.querys["old_issue_uuid"] = {};
+    crud.querys["old_issue_uuid"]["read"] = `SELECT 
+    ISSUE_UUID AS UUID
+    FROM OLD_ISSUES_NUM t1
+    WHERE DELETED_AT IS NULL $@1`;
+    
+
   crud.querys["formated_relations"] = {};
   crud.querys["formated_relations"]["read"] =
     `
@@ -362,12 +363,15 @@ crud.load = async function () {
         R.DELETED_AT,
         RT.NAME TYPE_NAME,
         P.SHORT_NAME || '-' || I.NUM  ID,
-        FV.value ISSUE_NAME
+        FV.value ISSUE_NAME,
+        IST.IS_END ISSUE_RESOLVED
         FROM RELATIONS R
         LEFT JOIN RELATION_TYPES RT
         ON RT.UUID = R.TYPE_UUID
         LEFT JOIN ISSUES I 
         ON R.ISSUE1_UUID = I.UUID
+        LEFT JOIN ISSUE_STATUSES IST
+        ON I.STATUS_UUID = IST.UUID
         LEFT JOIN PROJECTS P
         ON P.UUID = I.PROJECT_UUID 
         LEFT JOIN FIELD_VALUES FV
@@ -381,12 +385,15 @@ crud.load = async function () {
         R.DELETED_AT,
         RT.REVERT_NAME TYPE_NAME,
         P.SHORT_NAME || '-' || I.NUM  ID,
-        FV.value ISSUE_NAME
+        FV.value ISSUE_NAME,
+        IST.IS_END ISSUE_RESOLVED
         FROM RELATIONS R
         LEFT JOIN RELATION_TYPES RT
         ON RT.UUID = R.TYPE_UUID
         LEFT JOIN ISSUES I 
         ON R.ISSUE0_UUID = I.UUID
+        LEFT JOIN ISSUE_STATUSES IST
+        ON I.STATUS_UUID = IST.UUID
         LEFT JOIN PROJECTS P
         ON P.UUID = I.PROJECT_UUID 
         LEFT JOIN FIELD_VALUES FV
@@ -432,7 +439,7 @@ crud.load = async function () {
         t1.updated_at`;
 };
 
-crud.push_query = function (query0, params0, query1, params1, is_revert) {
+crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is_revert:any) {
   //console.log('------------push_query0', '#' + query0 + '#', '##' + query1+ '##')
 
   if (query1 == "") return [query0, params0];
@@ -461,8 +468,8 @@ crud.push_query = function (query0, params0, query1, params1, is_revert) {
 
   for (let i = 0; i < q.length; i++) {
     if (is_revert) {
-      query.pop(q[i]);
-      params.pop(p[i]);
+      query.unshift(q[i]);
+      params.unshift(p[i]);
     } else {
       query.push(q[i]);
       params.push(p[i]);
@@ -474,7 +481,7 @@ crud.push_query = function (query0, params0, query1, params1, is_revert) {
   return [query, params];
 };
 
-crud.concat_querys = function (query0, params0, query1, params1, middle) {
+crud.concat_querys = function (query0:any, params0:any, query1:any, params1:any, middle:any) {
   // console.log('concstart', query0, params0, query1, params1, middle)
 
   if (Array.isArray(query0)) return [query0, params0];
@@ -497,20 +504,22 @@ crud.concat_querys = function (query0, params0, query1, params1, middle) {
 };
 
 crud.make_query = {
-  read: function (table_name, params) {
+  read: function (table_name:string, params:any) {
     if (table_name == undefined) return ["", []];
+    console.log(table_name)
     let query = crud.querys[table_name]["read"];
 
     if (
-      table_name == "issues" &&
+      (table_name == "issues"  &&
       params["query"] != undefined &&
-      params["query"] != ""
-    ) {
-      let user_query = decodeURIComponent(atob(params["query"]));
+      params["query"] != "") || table_name == "issues_count")
+     {
+      let user_query:String = ' TRUE '
+      if (params["query"]) user_query = decodeURIComponent(atob(params["query"]));
 
       //console.log('user_query', user_query)
 
-      let uuids_query = `WITH filtered_issues AS (
+      let uuids_query_parts = [`WITH filtered_issues AS (
                 SELECT * FROM
                 (
                 SELECT 
@@ -522,10 +531,20 @@ crud.make_query = {
                 ISS.DELETED_AT,
                 ISS.PROJECT_UUID,
                 ISS.STATUS_UUID,
-                ISS.SPRINT_UUID
+                ISS.SPRINT_UUID,
+                `,
+
+
+                `
+                STRING_AGG(IT.issue_tags_uuid::text, ',') AS TAGS
                 FROM issues ISS
                 LEFT JOIN issue_actions IA
                 ON IA.ISSUE_UUID = ISS.UUID
+                LEFT JOIN issue_tags_selected IT
+                ON IT.ISSUE_UUID = ISS.UUID AND IT.DELETED_AT IS NULL 
+                `,
+
+                `
                 GROUP BY 
                 ISS.UUID,
                 ISS.NUM,
@@ -534,19 +553,31 @@ crud.make_query = {
                 ISS.DELETED_AT,
                 ISS.PROJECT_UUID,
                 ISS.STATUS_UUID,
-                ISS.SPRINT_UUID
-                ) I
-                WHERE `;
+                `,
 
-      let f1 = `EXISTS (SELECT 1 FROM field_values FV WHERE FV.issue_uuid = I.uuid AND FV.field_uuid = '`;
+                `ISS.SPRINT_UUID) I
+                WHERE `];
 
-      let f2 = `' AND FV.value `;
+      let f_join_parts = [`LEFT JOIN LATERAL (SELECT 1 AS value_exists FROM field_values WHERE 
+        issue_uuid = ISS.uuid AND field_uuid = '`, 
+       `' AND 
+      value `,
+      ` ) FIELD_VALUES`,
+      ` ON TRUE
+      `]
+
+      let f_sel_parts = [`FIELD_VALUES`, `.value_exists IS NOT NULL as FIELD_VALUES`, `_EXISTS,`]
 
       let q_resolved_uuids = `(SELECT UUID FROM ISSUE_STATUSES WHERE IS_END)`;
       user_query = user_query.replaceAll(
         "!='(resolved)'",
         "!=ALL " + q_resolved_uuids
       );
+
+      let fv_str = ''
+      let fv_sel_str = ''
+      let fv_group_str = ''
+      let fv_count = 0
       //user_query = user_query.replaceAll("='(resolved)'", '=ANY '  + q_resolved_uuids )
 
       while (user_query.indexOf("attr#") > -1) {
@@ -554,15 +585,54 @@ crud.make_query = {
         user_query = user_query.replaceFrom("attr#", "I.", start);
         user_query = user_query.replaceFrom("#", "", start);
         user_query = user_query.replaceFrom("#", "", start);
+        user_query = user_query.replaceFrom("like'", " like '", start);
+        
       }
-      while (user_query.indexOf("fields#") > -1) {
-        let start = user_query.indexOf("fields#");
-        user_query = user_query.replaceFrom("fields#", f1, start);
-        user_query = user_query.replaceFrom("#", f2, start);
-        user_query = user_query.replaceFrom("#", ")", start);
+      const field_tag = "fields#"
+      while (user_query.indexOf(field_tag) > -1) {
+
+        
+        let start = user_query.indexOf(field_tag);
+
+        let field_uuid_start = start + field_tag.length
+        let field_uuid_end = user_query.indexOf("#", field_uuid_start)
+        let field_uuid = user_query.substring(field_uuid_start, field_uuid_end)
+        //console.log(field_uuid)
+
+        let field_value_end = user_query.indexOf("#", field_uuid_end+1)
+        let field_value = user_query.substring(field_uuid_end+1, field_value_end)
+        //console.log(field_value)
+
+        fv_str += f_join_parts[0] + field_uuid + f_join_parts[1] + field_value + f_join_parts[2] + fv_count + f_join_parts[3]
+        console.log(fv_str)
+
+        fv_sel_str += f_sel_parts[0] + fv_count + f_sel_parts[1] + fv_count + f_sel_parts[2]
+        console.log(fv_sel_str)
+
+        let field_local_name = 'FIELD_VALUES' + fv_count +  '_EXISTS'
+
+        fv_group_str += field_local_name + ','
+
+        user_query = user_query.substring(0, start) + field_local_name + user_query.substring(field_value_end+1)
+
+       // user_query = user_query.replaceFrom("fields#", f1, start);
+       // user_query = user_query.replaceFrom("#", f2, start);
+       // user_query = user_query.replaceFrom("#", ")", start);
+       // user_query = user_query.replaceFrom("like'", " like '", start);
+
+        fv_count++
       }
 
-      //user_query = user_query.replaceAll("I.updated_at", "MAX(IA.CREATED_AT)")
+      user_query = user_query.replaceAll(
+        "I.tags=",
+        "I.tags~"
+      );
+
+      user_query = user_query.replaceAll(
+        "' '",
+        "' '"
+      );
+      
 
       let order_start = user_query.indexOf("order by ");
       if (order_start > -1) {
@@ -571,6 +641,8 @@ crud.make_query = {
         query = query.replace("$@order", order_by);
       } else query = query.replace("$@order", "");
 
+      let uuids_query = uuids_query_parts[0]  + fv_sel_str +  uuids_query_parts[1] + fv_str + 
+      uuids_query_parts[2] + fv_group_str + uuids_query_parts[3]
       query = uuids_query + user_query + ")" + query;
 
       delete params["query"];
@@ -600,13 +672,15 @@ crud.make_query = {
     return [query.replaceAll("$@1", where), pg_params];
   },
 
-  delete: function (table_name, params) {
+  delete: function (table_name:string, params:any) {
+
+    console.log('table_name', table_name)
     let query = crud.querys[table_name]["delete"];
 
     return [query.replace("$@1", "'" + params.uuid + "'"), []];
   },
 
-  create: function (table_name, params) {
+  create: function (table_name:string, params:any) {
     //console.log('tn', table_name)
 
     if (table_name == undefined) return ["", []];
@@ -652,8 +726,9 @@ crud.make_query = {
     return [query, pg_params];
   },
 
-  update: function (table_name, params) {
+  update: function (table_name:string, params:any) {
     if (table_name == undefined) return ["", []];
+    if (table_name == 'field_values' && params.field_uuid == author_field_uuid) return ["", []];
     let read_query = crud.querys[table_name]["read"];
 
     let query = crud.querys[table_name]["update"];
@@ -691,7 +766,7 @@ crud.make_query = {
       //if(val == null || val == 'null') val = 'NULL'
       pg_params.push(val);
       //if(val != null && val.length > 50) val += '123321.aeraeraeraebaerbjrejfejjnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn...................................................'
-      set = set.concat(i, "=$", pg_params.length);
+      set = set.concat(i, "=$", pg_params.length.toString());
     }
 
     // if(set.indexOf('SELECT x.* FROM integration_1c.messages x') > 0)console.log('aaaaaleeeertttt0', set)
@@ -701,7 +776,7 @@ crud.make_query = {
     return [query, pg_params];
   },
 
-  upsert: function (table_name, params) {
+  upsert: function (table_name:string, params:any) {
     if (table_name == undefined) return ["", []];
     let [query_create, params_create] = crud.make_query.create(
       table_name,
@@ -715,6 +790,7 @@ crud.make_query = {
 
     query_update = query_update.replace(table_name, "").split("WHERE")[0];
 
+    if(query_update == '') query_update = 'NOTHING'
     let [query, pg_params] = crud.concat_querys(
       query_create,
       params_create,
@@ -729,8 +805,14 @@ crud.make_query = {
       let [q, p] = crud.push_query(
         query,
         pg_params,
-        "UPDATE issues SET num = (SELECT COALESCE(MAX(num), 0) + 1 FROM issues WHERE project_uuid = $1) WHERE uuid = $2",
-        [params.project_uuid, params.uuid]
+        `UPDATE issues SET num = 
+          (SELECT COALESCE(MAX(num), 0) + 1 FROM
+           ((SELECT uuid, project_uuid, num FROM issues)
+            UNION 
+           (SELECT uuid, project_uuid, num FROM old_issues_num)) t
+          WHERE project_uuid = $1 and uuid != $2) 
+        WHERE uuid = $3`,
+        [params.project_uuid, params.uuid, params.uuid]
       );
 
       query = q;
@@ -757,7 +839,7 @@ crud.make_query = {
     }
 
     let subquerys = "";
-    let subparams = [];
+    let subparams:any[] = [];
 
     for (let i in params) {
       // console.log('ccc1', params[i], typeof params[i])
@@ -785,7 +867,7 @@ crud.make_query = {
 
         //   console.log('_________0', new_subqyery)
         //   console.log('_________00')
-        let [q, p] = crud.push_query(
+        let [q, p]:any[] = crud.push_query(
           subquerys,
           subparams,
           new_subqyery,
@@ -805,8 +887,9 @@ crud.make_query = {
   },
 };
 
-crud.get_query = function (method, table_name, params) {
-  //console.log(func_name, 'aa', method, 'bb', table_name)
+crud.get_query = function (method:string, table_name:string, params:any) {
+  //console.log( method, 'bb', table_name)
+  if (table_name == undefined) return ["", []];
 
   let [query, pg_params] = crud.make_query[method](table_name, params);
 
@@ -826,8 +909,8 @@ crud.get_query = function (method, table_name, params) {
   return [query, pg_params];
 };
 
-crud.get_uuids = function (obj) {
-  let ans = {};
+crud.get_uuids = function (obj:any) {
+  let ans:any = {};
   if (obj.uuid !== undefined) ans[obj.uuid] = obj.table_name;
   for (let i in obj) {
     if (
@@ -865,10 +948,11 @@ crud.get_uuids = function (obj) {
   return ans;
 };
 
-crud.do = async function (subdomain, method, table_name, params) {
+crud.do = async function (subdomain:string, method:string, table_name:string, params:any, author_uuid:string) {
   if (table_name == "issue") table_name = "issues";
   else if (table_name == "board") table_name = "boards";
   //else if(table_name == 'dashboard') table_name = 'dashboards'
+ 
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
   // console.log('paraaaaaaaaaaaaaaaaaaaaaams', params)
@@ -1011,4 +1095,4 @@ crud.do = async function (subdomain, method, table_name, params) {
   return ans;
 };
 
-module.exports = crud;
+export default crud;

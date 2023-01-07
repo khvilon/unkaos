@@ -5,8 +5,7 @@ import query_parser from "../query_parser.ts";
 import d from "../dict.ts";
 import rest from "../rest";
 import tools from "../tools.ts";
-
-console.log("d", d.get("Название"), d);
+import cache from "../cache";
 
 let methods = {
   add_with_children: function (obj, arr, ch_level) {
@@ -29,11 +28,8 @@ let methods = {
     let url = "query=" + encodeURIComponent(this.search_query);
 
     this.$router.replace({});
-
-    localStorage.issues_query = this.search_query;
-    localStorage.issues_query_encoded = this.search_query_encoded;
-
-    //console.log('get issues with query ', query, localStorage.issues_query)
+    cache.setString("issues_query", this.search_query)
+    cache.setString("issues_query_encoded",  this.search_query_encoded)
     let options = {};
     this.search_query_encoded = "";
     if (query != undefined && query != "")
@@ -221,8 +217,7 @@ mod.mounted = function () {
     });
   } else {
     this.$nextTick(function () {
-      this.search_query =
-        localStorage.issues_query != undefined ? localStorage.issues_query : "";
+      this.search_query = cache.getString("issues_query")
     });
   }
 
@@ -232,9 +227,8 @@ mod.mounted = function () {
 mod.activated = function () {
   console.log("activated!");
   this.$nextTick(function () {
-    if (this.search_query == localStorage.issues_query) return;
-    this.search_query =
-      localStorage.issues_query != undefined ? localStorage.issues_query : "";
+    if (this.search_query === cache.getString("issues_query")) return;
+    this.search_query = cache.getString("issues_query")
   });
 };
 /*
@@ -258,7 +252,7 @@ export default mod;
           max-height: calc(100% - 60px);
         "
       >
-        <span>{{ label }}</span>
+        <span class="topbar-label">{{ label }}</span>
 
         <IssuesSearchInput
           label=""
@@ -277,8 +271,8 @@ export default mod;
       </div>
     </div>
 
-    <div id="issues_down_panel" class="panel">
-      <div class="gadget_issues_table_panel">
+
+      <div class="gadget_issues_table_panel panel">
         <Transition name="element_fade">
           <KTable
             v-if="!loading"
@@ -290,7 +284,7 @@ export default mod;
           />
         </Transition>
       </div>
-    </div>
+
   </div>
 </template>
 
@@ -301,6 +295,7 @@ export default mod;
 .gadget_issues_table_panel {
   height: auto;
   width: 100%;
+  border: none !important;
 }
 
 .gadget_issues_table_panel .ktable {

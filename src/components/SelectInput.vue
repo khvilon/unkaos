@@ -1,19 +1,44 @@
 <script>
 import Multiselect from "vue-multiselect";
 import store_helper from "../store_helper.ts";
+import tools from "../tools.ts";
+
+import { nextTick } from "vue";
 
 import "vue-select/dist/vue-select.css";
 
 export default {
   components: {
     Multiselect,
+  }, 
+
+  data() {
+    let d = {
+      val: undefined,
+      updated_at: undefined
+    };
+    return d;
   },
-  emits: ["search", "update_parent_from_input", "updated"],
+  emits: ["search", "update_parent_from_input", "updated", "tag_clicked", "value_created", "value_selected", "value_deselected"],
 
   beforeCreate() {},
   watch: {
     value: function (val, oldVal) {
+     
+        
+        this.val = val
+    
+    },
+    val: function (val, oldVal) {
       //this.convert_values_to_uuids()
+
+      
+      if(this.updated_at == undefined) 
+      {
+        this.updated_at = new Date()
+        return
+      }
+      this.updated_at = new Date()
 
       let val_obj;
       for (let i in this.values) {
@@ -35,6 +60,7 @@ export default {
       }
 
       if (this.parent_name != undefined && this.parent_name != "")
+        console.log('idpush')
         this.$store.commit("id_push_update_" + this.parent_name, {
           id: this.id,
           val: val,
@@ -92,41 +118,79 @@ export default {
     },
     multiselect: {},
   },
+  mounted() {
+    console.log('mounted', this.value)
+    this.val = this.value
+  },
   methods: {
+    
     check_selectable: function (val) {
       //   console.log('this.value0', val + '')
-      //console.log('this.value1', value + '')
-      //    console.log('this.value2', this.value + '')
+      //console.log('this.val1', value + '')
+      //    console.log('this.val2', this.val + '')
       if (this == undefined) return true;
-      //    console.log('this.value', this.value + '')
-      if (!(this.value instanceof Array)) return true;
+      //    console.log('this.val', this.val + '')
+      if (!(this.val instanceof Array)) return true;
 
-      for (let i in this.value) {
-        if (this.value[i].uuid == undefined && this.value[i] == val.uuid)
+      for (let i in this.val) {
+        if (this.val[i].uuid == undefined && this.val[i] == val.uuid)
           return false;
-        else if (this.value[i].uuid == val.uuid) return false;
+        else if (this.val[i].uuid == val.uuid) return false;
       }
       return true;
     },
     convert_values_to_uuids: function () {
-      if (this.value == undefined) return;
-      if (!(this.value instanceof Array)) return;
-      if (this.value.length == 0) return;
-      if (this.value[0].uuid == undefined) return;
+      if (this.val == undefined) return;
+      if (!(this.val instanceof Array)) return;
+      if (this.val.length == 0) return;
+      if (this.val[0].uuid == undefined) return;
 
       let val = [];
-      for (let i in this.value) {
-        val.push(this.value[i].uuid);
+      for (let i in this.val) {
+        val.push(this.val[i].uuid);
       }
-      //    console.log('vvv2', this.value+'')
-      this.value = val;
+      //    console.log('vvv2', this.val+'')
+      this.val = val;
     },
-    create_option: function () {
-      newOption = { uuid: tools.uuidv4(), name: this.label };
+    deselect: function(option)
+    {
+     
+      console.log('deselect',this.val, option)
+      if(this.val.filter == undefined) {
+        this.val = null
+      }
+      else{
+        this.val = this.val.filter((val) => {
+          return (val.uuid != option.uuid)
+        })
+      }
+      
+      this.$emit("value_deselected", option);
 
-      this.$emit("option:created", newOption);
+    },
+    create_option: function (text) {
+      let newOption
+
+      for(let i in this.values){
+        if(text == this.values[i].name){
+          newOption = this.values[i]
+        }
+      }
+
+      if(newOption == undefined){
+        newOption = { uuid: tools.uuidv4(), name: text };
+        this.$emit("value_created", newOption);
+      }
+   
       return newOption;
     },
+
+    value_selected: function(sel_val)
+    {
+      console.log('sel_val',sel_val)
+     
+      this.$emit('value_selected', sel_val)
+    }
   },
 };
 </script>
@@ -136,7 +200,7 @@ export default {
     <div class="label">{{ label }}</div>
 
     <v-select
-      v-model="value"
+      v-model="val"
       label="name"
       :reduce="parameters.reduce"
       :multiple="parameters.multiple"
@@ -147,7 +211,31 @@ export default {
       @search="(text, arg2) => $emit('search', text)"
       :taggable="taggable"
       :close-on-select="close_on_select"
+      :createOption="create_option"
+      @option:selected="value_selected"
     >
+      
+      <template v-if="taggable"
+      #selected-option-container="{ option}"
+      >
+        
+          <div class="select-input-selected" :style="[ 
+              option.color ? { 'background': option.color } : ''
+          ]">
+          
+          <span
+          @click="$emit('tag_clicked', option)"
+          :style="[ 
+              option.text_color ? { 'color' : option.text_color } : ''
+          ]"
+          class="vs__selected">
+            {{ option.name }}
+          </span>
+          <div class="x-icon-container">
+            <i class='bx bx-x' @click="deselect(option)"></i>
+          </div>
+        </div>
+      </template>
       <template v-slot:no-options="{ searching }">
         <template v-if="searching"> Ничего не найдено </template>
       </template>
@@ -218,6 +306,15 @@ export default {
 
 .vs__selected {
   background-color: var(--table-row-color-selected);
+}
+
+.select-input-selected{
+  font-weight: 700;
+  margin-right: 10px;
+  background-color: var(--table-row-color-selected);
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
 }
 
 .vs__deselect {
