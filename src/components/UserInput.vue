@@ -1,8 +1,10 @@
 <script>
 import Multiselect from "vue-multiselect";
 import store_helper from "../store_helper.ts";
+import tools from "../tools.ts";
 
 import "vue-select/dist/vue-select.css";
+import cache from "../cache";
 
 export default {
   components: {
@@ -14,6 +16,7 @@ export default {
       default_avatar:
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAe9JREFUSEvlVtFRHTEQkyqADggVABWEdAAdQAVABSQVABWkBOgAqACoAEqACsRoZp05fPZ5j8kMH+zPvbnzW3m18srEFwW/CBefApa0D2AnNv1I8n5tAauAJR0A+AtgswJ6BXBM8ia7gTSwpEsAJ4PEZyS9bhgp4KD2NrKZVie/I/kaLJwC+Bnff5G8GyFngR+jp08kd1tJJb0A2ALgnu/9L2BFoi6Vkn4DOPc6ksOChgsqmrs0ZtcVJjLAPwA8xx8Oe8qVdBSK99Jtkqa+G0Ng/1OSj8sGgCuSFtIsJqp/I1kft9n6LPD0KM3ormjubm6KngV2BT4iZVr5t5VuJjxUitK7qq9LTgEH3e61J1MBr3P5fB+NepsWV51dkns8rdKV32Qn1qeBR4Mh+z1FtST30BT72Zxc0XNX7z77uRiLwJIsKruRqV0T1oLdyuJrRhe4Y4FvUVkrmZnwWS+xaJVN4KD2YZLkyo40UqwkK9/im9rnXov6HnBxI1d4kLG5KQXB1nW8a7rVDHjqMgDSxt45dhfx/g9Ju9e/aAF7KtnU01OoJyBJhbl7kr6nLQIX753tco2svXbJoz9UXImqa4HZDVS9/iCyGth0lLtV6u60tImly0EN7IFRJpPV2B0AmapjADXzpUZmBmTtmu8H/A4J79EfjfUqWAAAAABJRU5ErkJggg==",
     };
+    users: []
   },
   watch: {
     value: function (val, oldVal) {
@@ -38,9 +41,44 @@ export default {
       this.$store.dispatch("get_users");
     }
   },
+  methods: {
+    sort(list) {
+
+      if(list == undefined) return []
+
+      let new_list = tools.clone_obj(list)
+
+      let me = cache.getObject("profile");
+      for(let i in new_list)
+      {
+        if(me.uuid == new_list[i].uuid)
+        {
+          new_list[i].name = '_me'
+          break
+        }
+      }
+
+     new_list = new_list.sort(tools.compare_obj("name"))
+
+     for(let i in new_list)
+      {
+        if(me.uuid == new_list[i].uuid)
+        {
+          new_list[i].name = me.name
+          break
+        }
+      }
+      
+      
+
+      return new_list
+
+    }
+  },
   computed: {
     options: function () {
-      return this.$store.getters["get_users"];
+      let users = this.$store.getters["get_users"];
+      return this.sort(users)
     },
     selected_users: function () {
       return this.$store.getters["selected_users"];
@@ -76,7 +114,7 @@ export default {
       default: false,
     },
   },
-  methods: {},
+
 };
 </script>
 

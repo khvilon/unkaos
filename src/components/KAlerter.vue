@@ -49,7 +49,6 @@ export default {
     }
     //console.log('alalaaaa', this.alerts)
     //console.log('uuuuu')
-    // this.user = JSON.parse(localStorage.profile)
   },
 };
 </script>

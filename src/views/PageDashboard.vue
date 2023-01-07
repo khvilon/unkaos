@@ -115,7 +115,8 @@ const data = {
   h_units: 8,
   uv: 0,
   uh: 0,
-  virtual_border_width: 6,
+  virtual_border_width: 10,
+  gadget_padding: 5,
   collumns: [
     {
       name: "№",
@@ -288,7 +289,7 @@ export default mod;
             width: Number(uh) * Number(gadget.width) + 'px',
             height: Number(uv) * Number(gadget.height) + 'px',
             'margin-left': Number(uh) * Number(gadget.x0) + 'px',
-            'margin-top': Number(uv) * Number(gadget.y0) + 'px',
+            'margin-top': Number(uv) * Number(0) + 'px',
           }"
           class="gadget"
         >
@@ -314,18 +315,18 @@ export default mod;
           <div class="gadget-borders">
             <div
               class="gadget-border gadget-top"
-              v-bind:style="{ width: Number(uh) * Number(gadget.width) + 'px' }"
+              v-bind:style="{ width: Number(uh) * Number(gadget.width) - 2*gadget_padding + 'px' }"
               @mousedown="start_resize($event, gadget, 'top')"
             ></div>
             <div
               class="gadget-border gadget-right"
               v-bind:style="{
                 height:
-                  Number(uv) * Number(gadget.height) -
+                  Number(uv) * Number(gadget.height) - 2*gadget_padding -
                   virtual_border_width +
                   'px',
                 'margin-left':
-                  Number(uh) * Number(gadget.width) -
+                  Number(uh) * Number(gadget.width) - 2*gadget_padding -
                   virtual_border_width / 4 +
                   'px',
               }"
@@ -333,7 +334,7 @@ export default mod;
             ></div>
             <div
               class="gadget-border gadget-bottom"
-              v-bind:style="{ width: Number(uh) * Number(gadget.width) + 'px' }"
+              v-bind:style="{ width: Number(uh) * Number(gadget.width) - 2*gadget_padding + 'px' }"
               @mousedown="start_resize($event, gadget, 'bottom')"
             ></div>
             <div
@@ -408,7 +409,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   position: relative;
 }
 .gadget {
-  border-style: var(--border-style);
+  border-style: none;
   border-width: var(--border-width);
   border-color: var(--border-color);
   border-radius: var(--border-radius);
@@ -416,6 +417,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   display: flex;
   flex-direction: column;
   position: absolute;
+  padding: 5px;
 }
 
 .gadget-head {
@@ -425,6 +427,19 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   position: relative;
   display: flex;
   align-items: center;
+
+  border-style: var(--border-style);
+  border-color: var(--border-color);
+
+  border-top-left-radius: var(--border-radius);
+  border-top-right-radius: var(--border-radius);
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+
+  border-top-width: var(--border-width);
+  border-left-width: var(--border-width);
+  border-right-width: var(--border-width);
+  border-bottom-width: 0px;
 }
 
 .gadget-head span {
@@ -436,6 +451,19 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   width: 100%;
   position: relative;
   overflow: scroll;
+
+  border-style: var(--border-style);
+  border-color: var(--border-color);
+
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+
+  border-top-width: var(--border-width);
+  border-left-width: var(--border-width);
+  border-right-width: var(--border-width);
+  border-bottom-width: var(--border-width);
 }
 
 .gadget-body::-webkit-scrollbar {
@@ -457,6 +485,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
 
 .gadget-border {
   background: rgba(0, 128, 0, 0);
+
 }
 
 .gadget-left,

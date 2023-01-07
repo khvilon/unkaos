@@ -53,7 +53,7 @@ export default {
       else return "";
     },
     blur() {
-      this.$emit("updated", val);
+      this.$emit("updated", this.value);
     },
   },
   watch: {

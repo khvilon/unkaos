@@ -6,6 +6,7 @@ import KAlerter from "./components/KAlerter.vue";
 import palette from "./palette.ts";
 import dict from "./dict.ts";
 import tools from "./tools.ts";
+import cache from "./cache.ts";
 
 let uri = window.location.href;
 
@@ -21,7 +22,6 @@ export default {
 
   created() {
     this.check_is_in_workspace();
-    // console.log('localStorage.tic', localStorage.tic)
     /*
       let uri = window.location.href
      
@@ -37,15 +37,16 @@ export default {
 
   mounted() {
     console.log("app mounted");
-    if (localStorage.theme == undefined) localStorage.theme = "dark";
+    cache.loadDefaultsIfNecessary()
     let htmlElement = document.documentElement;
-    htmlElement.setAttribute("theme", localStorage.theme);
+    htmlElement.setAttribute("theme", cache.getString('theme'));
 
-    this.$store.state["common"]["is_mobile"] = this.is_mobile();
+    this.$store.state["common"]["is_mobile"] = this.is_mobile() || this.in_iframe();
+    this.$store.state["common"]["in_iframe"] = this.in_iframe();
 
     console.log(
       "this.$store.state[common][is_mobile]",
-      this.$store.state["common"]["is_mobile"]
+      this.$store.state["common"]["is_mobile"], this.$store.state["common"]["in_iframe"]
     );
   },
   computed: {
@@ -61,6 +62,13 @@ export default {
   methods: {
     is_mobile: function () {
       return window.innerHeight > window.innerWidth;
+    },
+    in_iframe: function () {
+        try {
+            return window.self !== window.top;
+        } catch (e) {
+            return true;
+        }
     },
     pasted: function (e) {
       console.log(e);
@@ -106,6 +114,7 @@ export default {
       'no-menu-container': !is_in_workspace,
       loading: loading,
       'mobile-view': $store.state['common']['is_mobile'],
+      'iframe-view': $store.state['common']['in_iframe'],
     }"
   >
     <router-view v-slot="{ Component }" :key="$route.fullPath">
@@ -130,9 +139,10 @@ export default {
     </div>
   </Transition>
   <MainMenu
+    v-if="$store.state['common'] && !$store.state['common']['in_iframe']"
     v-bind:class="{ 'mobile-sidebar': $store.state['common']['is_mobile'] }"
   />
-  <Profile v-if="is_in_workspace" />
+  <Profile v-if="is_in_workspace && $store.state['common'] && !$store.state['common']['in_iframe']" />
   <KAlerter />
 </template>
 
@@ -150,11 +160,14 @@ body {
   margin: 0px;
 }
 
+html {
+  font-size: $font-size;
+}
+
 * {
   color: var(--text-color);
-  font-size: $font-size;
   //font-family: 'Segoe UI Local';//segoiui;//var(--font-family);
-
+  font-size: $font-size;
   font-family: Inter, system-ui, Roboto, sans-serif;
 
   //margin: 0;
@@ -200,6 +213,11 @@ body {
   width: calc(100vw) !important;
   height: calc(100vh - $main-menu-width) !important;
   top: $main-menu-width !important;
+}
+
+.iframe-view {
+  height: 100vh !important;
+  top: 0 !important;
 }
 
 .no-menu-container {
@@ -326,19 +344,6 @@ $loading-bar-width: 200vw;
   margin-right: 20px;
 }
 
-.footer_div {
-  //position: absolute;
-  padding-top: 5px;
-
-  bottom: 0px;
-  //display: table-footer-group;
-}
-
-.footer_div div {
-  display: flex;
-  justify-content: space-between;
-}
-
 .slide-enter-active,
 .slide-leave-active {
   transition: all 0.75s ease-out;
@@ -393,6 +398,7 @@ $loading-bar-width: 200vw;
   //color: red;
   background-color: none;
   width: 12px;
+  height: 12px;
   opacity: 0;
 }
 
@@ -419,4 +425,70 @@ $loading-bar-width: 200vw;
 .change-password .btn_input {
   width: 100% !important;
 }
+
+.top-menu-icon-btn {
+	  height: $input-height;
+    width: $input-height;
+    font-size: calc($input-height - 10px);
+    border-radius: var(--border-radius);
+    margin-left: 10px;
+	  color: var(--text-color);
+    background-color: var(--button-color);
+    border-width: 1px;
+    border-color: var(--border-color);
+    border-style: solid;
+    border-style: outset;
+    cursor: pointer;
+	
+    text-align: center;
+	padding-top: 4px;
+  }
+
+.login-panel .btn_input {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.issue-search-input-btn {
+  padding: 0px;
+  //width: $input-height;
+}
+.issue-search-input-btn .btn_input {
+  padding: 0px;
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+  margin-left: -$input-height;
+  width: $input-height !important;
+  height: $input-height;
+
+  border-top-width: var(--issue-search-btn-top-border-width) !important;
+  border-bottom-width: var(--border-width) !important;
+  border-left-color: var(--border-color) !important;
+  border-top-color: var(--border-color) !important;
+  //border-bottom-color: $border-color !important;
+}
+
+.issue-top-button {
+  height: 38px;
+  width: 38px;
+  padding: 2px;
+  border-radius: var(--border-radius);
+  display: flex !important;
+  font-size: 35px;
+  color: var(--on-button-icon-color);
+  cursor: pointer;
+  text-decoration: none;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+}
+
+.issue-top-button-inactive {
+  color: var(--off-button-icon-color) !important;
+}
+
+.issue-top-button:hover {
+  background: var(--icon-hover-bg-color);
+}
+
 </style>

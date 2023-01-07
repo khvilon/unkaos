@@ -33,12 +33,14 @@ export default {
           id: "OR-3",
           issue_name: "Захватить вселенную",
           type_name: "Связана с",
+          issue_resolved: false,
         },
         {
           uuid: "bbb",
           id: "OR-2",
           issue_name: "Выпить пива",
           type_name: "Дублирует",
+          issue_resolved: true,
         },
       ],
     },
@@ -68,7 +70,7 @@ export default {
     >
       <span v-if="relation != undefined">
         {{ relation.type_name }}
-        <a :href="'/issue/' + relation.id"
+        <a :href="'/issue/' + relation.id" v-bind:class="{ relation_resolved: relation.issue_resolved }"
           >{{ relation.id }} {{ relation.issue_name }}</a
         >
         <i
@@ -115,6 +117,11 @@ $relation_input_border_width: 2px;
   margin-bottom: 3px;
 }
 
+.relation_resolved {
+  text-decoration: line-through;
+  opacity: .7;
+}
+
 .relations * {
   user-select: text;
 } 
@@ -132,7 +139,7 @@ $relation_input_border_width: 2px;
 }
 
 .relation span {
-  white-space: nowrap;
+ // white-space: nowrap;
   line-height: calc($input-height/2);
 }
 

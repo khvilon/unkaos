@@ -1,16 +1,34 @@
 <script>
-	
 	import page_helper from '../page_helper.ts'
 	import query_parser from '../query_parser.ts'
 
 	import d from '../dict.ts'
 	import rest from '../rest';
 	import tools from '../tools.ts'
-	import { computed } from '@vue/runtime-core';
-
-
+  import cache from "../cache";
 
 	let methods = {
+		ws_init()
+		{
+			const myWs = new WebSocket('ws://localhost:3003');
+			// обработчик проинформирует в консоль когда соединение установится
+			myWs.onopen = function () {
+			console.log('подключился');
+			};
+
+			// обработчик сообщений от сервера
+			myWs.onmessage = function (message) {
+			console.log('Message: %s', message.data);
+			};
+			// функция для отправки echo-сообщений на сервер
+			function wsSendEcho(value) {
+			myWs.send(JSON.stringify({action: 'ECHO', data: value.toString()}));
+			}
+			// функция для отправки команды ping на сервер
+			function wsSendPing() {
+			myWs.send(JSON.stringify({action: 'PING'}));
+			}
+		},
 		get_favourite_uuid() {
 			
 			if(this.favourites == undefined || this.selected_board == undefined || this.selected_board.is_new) 
@@ -119,6 +137,7 @@
 
 			 
 			this.selected_board.boards_columns = this.selected_board.boards_columns.sort((a, b) => { return a.num-b.num } )
+			this.selected_board.boards_fields = this.selected_board.boards_fields.sort((a, b) => { return a.num-b.num } )
 			//console.log('this.selected_board.boards_columns',JSON.stringify(this.selected_board.boards_columns))
 
 			//console.log('sselected_board3')
@@ -153,6 +172,42 @@
 				this.selected_board.boards_columns[i].name = this.selected_board.boards_columns[i].status[0].name
 			}
 
+			this.fields_values = []
+
+			for(let i in this.inputs_dict['boards_fields'].values)
+			{
+				
+				let val = this.inputs_dict['boards_fields'].values[i]
+				if(val.name == 'Название') continue
+				let col =  {field:[val], name:val.name}
+				for(let j in this.selected_board.boards_fields)
+				{
+					if (this.selected_board.boards_fields[j].fields[0].uuid == val.uuid)
+					{
+						col = this.selected_board.boards_fields[j] 
+						break
+					}
+				}
+				if(col.uuid == undefined) {
+					col.uuid = tools.uuidv4()
+					col.num = 0
+					col.table_name = 'boards_fields'
+					col.fields_uuid = val.uuid
+					col.boards_uuid = this.selected_board.uuid
+				}
+				
+				this.fields_values.push(col)
+			}
+
+			
+			for(let i in this.selected_board.boards_fields)
+			{
+				this.selected_board.boards_fields[i].name = this.selected_board.boards_fields[i].fields[0].name
+			}
+
+
+			this.ws_init()
+
 			//console.log('sselected_board4')
 			//get_issues()
 		},
@@ -171,17 +226,43 @@
 			if(a[1].position == undefined) b[1].position = -1
 			if(a[1].position<b[1].position) return -1
 			if(a[1].position>b[1].position) return 1
-			if(a[0]<b[0]) return -1
-			if(a[0]>b[0]) return 1
+			if(a[1].name<b[1].name) return -1
+			if(a[1].name>b[1].name) return 1
+			return 0
+		},
+		compare_cards_to_sort: function(a, b)
+		{
+			//console.log('aaa', a, b)
+			const pseudo_infinite_position = 1000
+			if(a.position == undefined) a.position = pseudo_infinite_position
+			if(a.position == undefined) b.position = pseudo_infinite_position
+			if(a.position<b.position) return -1
+			if(a.position>b.position) return 1
+			if(Number(a.num)<Number(b.num)) return -1
+			if(Number(a.num)>Number(b.num)) return 1
 			return 0
 		},
 		sort_swimlanes()
 		{
 			let swimlanes_arr = Object.entries(this.swimlanes)
 
+			console.log('swimlanes_arr', swimlanes_arr)
+
 			swimlanes_arr = swimlanes_arr.sort(this.compare_swimlanes_to_sort)
 
 			this.swimlanes = Object.fromEntries(swimlanes_arr)
+		},
+		sort_cards()
+		{
+			for(let i in this.swimlanes){
+				for(let status_uuid in this.swimlanes[i].filtered_issues){
+					this.swimlanes[i].filtered_issues[status_uuid] = 
+					this.swimlanes[i].filtered_issues[status_uuid].sort(this.compare_cards_to_sort)
+					for(let j = 0; j < this.swimlanes[i].filtered_issues[status_uuid].length; j++){
+						this.swimlanes[i].filtered_issues[status_uuid][j].position = j
+					}
+				}
+			}
 		},	
 		change_swimlane_position(swimlane, new_position)
 		{	
@@ -228,7 +309,15 @@
 			this.conf.swimlanes = {}
 			for(let i in this.swimlanes)
 			{
-				this.conf.swimlanes[i] = {position: this.swimlanes[i].position }
+				this.conf.swimlanes[i] = {position: this.swimlanes[i].position, filtered_issues: {}}
+				for(let status in this.swimlanes[i].filtered_issues){
+					if(this.swimlanes[i].filtered_issues[status] == undefined) continue
+					this.conf.swimlanes[i].filtered_issues[status] = {}
+					for(let j = 0; j < this.swimlanes[i].filtered_issues[status].length; j++){
+						let issue = this.swimlanes[i].filtered_issues[status][j]
+						this.conf.swimlanes[i].filtered_issues[status][issue.uuid] = {position: issue.position}
+					}
+				}
 			}
 		},
 		move_swimlane(e, swimlane_to)
@@ -261,6 +350,7 @@
 		},
 		make_swimlanes()
 		{
+			console.log('make_swimlanes0', new Date())
 			this.swimlanes = {}
 
 			if(this.selected_board.config != undefined && this.selected_board.config != null && this.selected_board.config != '')
@@ -286,6 +376,8 @@
 				}
 			}
 
+			console.log('make_swimlanes1', new Date())
+
 			//console.log('parent_types_uuids',parent_types_uuids)
 
 			for(let i in this.boards_issues)
@@ -293,6 +385,9 @@
 				let x = 0
 				let link
 				let root_num
+				let root_name
+				let root_project_uuid
+				let root_issue
 				let is_resolved = false
 				if(this.selected_board.swimlanes_by_root)
 				{
@@ -301,33 +396,42 @@
 					
 					
 					let root = this.get_root(this.boards_issues[i])
-					if(parent_types_uuids[root.type_uuid]) x = this.get_field_by_name(root, 'Название').value
+					if(parent_types_uuids[root.type_uuid]) x = root.uuid//this.get_field_by_name(root, 'Название').value
+					root_name = this.get_field_by_name(root, 'Название').value
 					if(root.num!=undefined)
 					{
 						root_num = root.project_short_name + '-' + root.num
 						link = '/issue/' + root_num	
-
+						root_project_uuid = root.project_uuid
 						is_resolved = this.statuses_ends_dict[root.status_uuid]
+						root_issue = root
 					}
 					
 				}
 				else if(!this.selected_board.no_swimlanes)
 				{
 					x = this.get_field_value(this.boards_issues[i], {uuid: this.selected_board.swimlanes_field_uuid}, true)
+					root_name = x
 				}
 
 				
+				if(x == '') { x = this.void_group_name; root_name = x}
+				else if(x == null) { x = this.void_group_name; root_name = x}
+				else if(x == undefined) { x = this.void_group_name; root_name = x}
 
+				if(this.swimlanes[x] == undefined) {
+					this.swimlanes[x] = {
+						id:x, 
+						name:root_name,
+						issues:{},
+						filtered_issues:{},
+						count:0, 
+						sum:0, 
+						project_uuid: root_project_uuid
+					}
+				}
 				
-				if(x == '') x = this.void_group_name
-				else if(x == null) x = this.void_group_name
-				else if(x == undefined) x = this.void_group_name
-
-				if(this.swimlanes[x] == undefined) this.swimlanes[x] = {name:x,issues:{},filtered_issues:{},count:0, sum:0}
-
-		
-				
-				let  stored_exp = localStorage[this.selected_board.uuid+'#'+x]
+				let stored_exp = cache.getString(this.selected_board.uuid+'#'+x)
 				if(stored_exp == undefined || stored_exp == 'false') stored_exp = false
 				else stored_exp = true
 				this.swimlanes[x].expanded = stored_exp
@@ -338,6 +442,7 @@
 					this.swimlanes[x].link = link
 					this.swimlanes[x].num = root_num
 					this.swimlanes[x].is_resolved = is_resolved
+					this.swimlanes[x].issue = root_issue
 				} 
 
 				if(this.conf != undefined && this.conf.swimlanes != undefined && this.conf.swimlanes[x] != undefined) {
@@ -351,14 +456,14 @@
 				let status_uuid = this.boards_issues[i].status_uuid
 				if(this.swimlanes[x].issues[status_uuid] == undefined) this.swimlanes[x].issues[status_uuid] = []
 
-				if(x == this.get_field_by_name(this.boards_issues[i], 'Название').value) continue
+				if(x == this.get_field_by_name(this.boards_issues[i], 'Название').value  || x == this.boards_issues[i].uuid) continue
 
 				this.swimlanes[x].issues[status_uuid].push(this.boards_issues[i])
 
 				
-				let is_is_columns = this.boards_columns.map((obj)=>obj.uuid).indexOf(this.boards_issues[i].status_uuid) > -1
+				let is_in_columns = this.boards_columns.map((obj)=>obj.uuid).indexOf(this.boards_issues[i].status_uuid) > -1
 				
-				if(is_is_columns && 
+				if(is_in_columns && 
 				(!this.selected_board.use_sprint_filter || this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num].uuid))
 				{
 					//console.log(this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num], this.boards_issues[i].sprint_uuid, this.sprints[this.curr_sprint_num])
@@ -375,14 +480,10 @@
 					}
 				}
 
-				
-
-				
-
-				
-
-				
 			}
+
+			console.log('make_swimlanes2', new Date())
+
 
 
 			if(tools.obj_length(this.swimlanes) == 0)return
@@ -390,18 +491,41 @@
 
 
 			this.sort_swimlanes()
-
 			
 			let position = 0
 			for(let i in this.swimlanes)
 			{
 				this.swimlanes[i].position = position
-				position++
-				//this.swimlanes[swimlanes_arr[i].name].position = i
+				position++		
 				
+				if(this.conf.swimlanes == undefined) return
+				if(this.conf.swimlanes[i] == undefined) continue
+				if(this.conf.swimlanes[i].filtered_issues == undefined) continue
+
+				
+				for(let status in this.swimlanes[i].filtered_issues){
+					console.log('cooonf0', this.conf.swimlanes[i].filtered_issues[status])
+					if(this.conf.swimlanes[i].filtered_issues[status] == undefined) continue
+					if( this.swimlanes[i].filtered_issues[status] == undefined) continue
+					console.log('cooonf', this.conf.swimlanes[i].filtered_issues[status])
+					for(let j = 0; j < this.swimlanes[i].filtered_issues[status].length; j++)
+					{
+						let issue_uuid = this.swimlanes[i].filtered_issues[status][j].uuid
+						if(this.conf.swimlanes[i].filtered_issues[status][issue_uuid] == undefined) continue
+						this.swimlanes[i].filtered_issues[status][j].position = 
+							this.conf.swimlanes[i].filtered_issues[status][issue_uuid].position
+					}
+					
+				}
 			}
 
-			
+			this.sort_cards()
+
+
+
+			console.log('make_swimlanes100', new Date())
+
+			this.swimlanes_to_show = this.swimlanes
 
 			//load saved swimlanes order
 
@@ -478,35 +602,149 @@
 		//	console.log('dddddrrrr end')
 			this.card_draginfo = {}
 			this.status_draginfo = {}
+			//this.card_to_be_moved_down_uuid = undefined
+			//this.bottom_to_move_uuids = undefined
 		},
 		move_card: function(el)
+		{
+			if(this.card_draginfo.uuid == undefined) return
+
+			console.log('move_card2', el)
+		},
+		move_card_status: function(el, e, swimlane)
 		{
 			//console.log('moving0')
 			if(this.card_draginfo.uuid == undefined) return
 			//console.log('moving1')
 			if(this.card_draginfo.status_uuid != el.uuid)
 			{
+				console.log('move_card0', el)
 				this.status_draginfo = el
 		//		console.log('moving2')
 			}
+			
+			
+				const pause_timeout = 100 //ms
+
+				//console.log(new Date() - this.last_move_card_calc_dt)
+				if(new Date() - this.last_move_card_calc_dt < pause_timeout) return
+				this.last_move_card_calc_dt = new Date()
+				const pseudo_infinite_top = 10000
+				let min_top_dist = pseudo_infinite_top;
+				let closest_top
+				let min_bottom_dist = pseudo_infinite_top;
+				let closest_bottom
+				for(let i in swimlane.filtered_issues[el.uuid])
+				{
+					let ref_name = 'issue_board_card_' + swimlane.id + '_' + el.uuid + '_' + i
+
+					let card_rect = this.$refs[ref_name][0].getBoundingClientRect()
+					console.log(card_rect, e.clientY, ref_name)
+					let top_diff_y = Math.abs(card_rect.top - e.clientY)
+					let bottom_diff_y = Math.abs(card_rect.bottom - e.clientY)
+					
+					if(top_diff_y < min_top_dist)
+					{
+						min_top_dist = top_diff_y
+						closest_top = swimlane.filtered_issues[el.uuid][i]
+						console.log('move_card1', min_top_dist, i)
+					}
+
+					if(bottom_diff_y < min_bottom_dist)
+					{
+						min_bottom_dist = bottom_diff_y
+						closest_bottom = swimlane.filtered_issues[el.uuid][i]
+						console.log('move_card1', min_top_dist, i)
+					}
+					
+				}
+
+				console.log(closest_top.num)
+
+				if(closest_top== undefined || closest_top.uuid == this.card_draginfo.uuid || swimlane.filtered_issues[el.uuid] == undefined)
+				{
+					this.bottom_to_move_uuids = undefined
+					this.card_to_be_moved_down_uuid = undefined
+					return
+				}
+
+				let last_num = swimlane.filtered_issues[el.uuid].length-1
+				let is_closest_last = 
+					swimlane.filtered_issues[el.uuid][last_num].uuid == closest_bottom.uuid
+				let is_closest_first = 
+					swimlane.filtered_issues[el.uuid][0].uuid == closest_top.uuid
+
+				
+				if(is_closest_last && (!is_closest_first || min_bottom_dist < min_top_dist)) {
+					this.bottom_to_move_uuids = el.uuid + '_' + swimlane.uuid
+					console.log('bottom_to_move_uuids', this.bottom_to_move_uuids)
+					this.card_to_be_moved_down_uuid = undefined
+				}
+				else {
+					if(Number(this.card_draginfo.position) + 1 == Number(closest_top.position) && this.card_draginfo.status_uuid == closest_top.status_uuid){
+						this.card_to_be_moved_down_uuid = undefined
+					}
+					else this.card_to_be_moved_down_uuid = closest_top.uuid
+					this.bottom_to_move_uuids = undefined
+				}
+			
 		},
-		drop_card: function(el)
+		drop_card: function(el, e, swimlane)
 		{
+
+			//console.log('move_card111', e, this.$refs['issue_board_card_' + el.uuid + '_0'])
+
 			//console.log('moving0')
-			if(this.card_draginfo.uuid == undefined) return
-			if(this.status_draginfo.uuid == undefined) return
-			//console.log('moving1')
-			if(this.card_draginfo.status_uuid == el.uuid) return
+
+			let status_changed = this.card_draginfo.uuid != undefined &&
+			this.status_draginfo.uuid != undefined &&
+			this.card_draginfo.status_uuid != el.uuid
+			
+			if(status_changed)
+			{
+				this.card_draginfo.status_uuid = el.uuid
+				this.card_draginfo.status_name = el.name
+
+				rest.run_method('update_issue', this.card_draginfo)
+
+				this.make_swimlanes()
+			}
 			
 
-			this.card_draginfo.status_uuid = el.uuid
-			this.card_draginfo.status_name = el.name
+			if(this.card_to_be_moved_down_uuid != undefined)
+			{
+				let inc = 0
+				for(let i = 0; i < swimlane.filtered_issues[el.uuid].length; i++){					
+					if(swimlane.filtered_issues[el.uuid][i].uuid == this.card_to_be_moved_down_uuid){
+						this.card_draginfo.position = swimlane.filtered_issues[el.uuid][i].position
+						inc++
+						if(inc == 0) this.card_draginfo.position--
+					}
+					if(swimlane.filtered_issues[el.uuid][i].uuid == this.card_draginfo.uuid) inc--
 
-			rest.run_method('update_issue', this.card_draginfo)
+					swimlane.filtered_issues[el.uuid][i].position=Number(swimlane.filtered_issues[el.uuid][i].position) + inc;
+				} 
 
-			this.make_swimlanes()
-		//	console.log('drop')
-			
+				this.sort_cards()
+				this.card_to_be_moved_down_uuid = undefined
+
+				this.make_conf()
+				let conf_str = JSON.stringify(this.conf)
+				this.$store.commit('id_push_update_board' , {id: 'config', val:conf_str})
+				this.$store.dispatch('save_board');
+			}
+
+			if(this.bottom_to_move_uuids != undefined)
+			{
+				this.card_draginfo.position = this.pseudo_infinite_card_position
+				this.sort_cards()
+				this.bottom_to_move_uuids = undefined
+				
+				this.make_conf()
+				let conf_str = JSON.stringify(this.conf)
+				this.$store.commit('id_push_update_board' , {id: 'config', val:conf_str})
+				this.$store.dispatch('save_board');
+			}
 		},
 		get_input_by_id: function(id)
 		{
@@ -575,17 +813,14 @@
 			else if (p == 'Show-stopper') return 'red'
 			else return 'gray'
 		},
-		delete_board()
-		{
+		delete_board() {
 			this.$store.dispatch('delete_board')
 		},
-		swimlane_expanded_toogle(swimlane)
-		{
+		swimlane_expanded_toogle(swimlane) {
 			swimlane.expanded = !swimlane.expanded
-			localStorage[this.selected_board.uuid+'#'+swimlane.name] = swimlane.expanded
+      cache.setString(this.selected_board.uuid+'#'+swimlane.id, swimlane.expanded)
 		},
-		swimlanes_updated(v)
-		{
+		swimlanes_updated(v) {
 			if(v == null)
 			{
 				this.$store.commit('id_push_update_board' , {id: 'swimlanes_by_root', val:false})
@@ -625,16 +860,187 @@
 		{
 			await rest.run_method('delete_favourites', {uuid: this.favourite_uuid})
 			this.favourite_uuid = null
-		}
+		},
+		async edit_card_title(issue, e) {
+			let new_title = e.target.innerText
+			for(let i in issue.values) {
+				if(issue.values[i].label == "Название") {
+					issue.values[i].value = new_title
+				}
+			}
+
+			await rest.run_method('update_issue', issue)
+			
+		},
+		get_children_by_status(swimlane, status) {
+			let ch
+			//console.log('new issue card000', swimlane, status)
+			for(let s in swimlane.issues){
+				for(let i in swimlane.issues[s])
+				{
+					if(s == status.uuid) {
+						return swimlane.issues[s][i];
+					} 
+					ch = swimlane.issues[s][i];
+				}
+			}
+			return ch
+		},
+		async new_issue_card(swimlane, status) {
+			console.log('new issue card', swimlane, status)
+			let parent_uuid = swimlane.id
+			let status_uuid = status.uuid
+			let project_uuid = swimlane.project_uuid
+			let author_uuid = cache.getObject("profile").uuid
+			let query = decodeURIComponent(atob( this.encoded_query))
+			let search_start = 0
+			let field_start
+			const max_count = 100
+			let count = 0
+			const field_text = 'fields#'
+			let query_fields = []
+
+			while(count < max_count)
+			{
+				field_start = query.indexOf(field_text, search_start)
+				if(field_start == -1) break
+				field_start += field_text.length
+				let field_end = query.indexOf("#", field_start)
+				let field_uuid = query.substring(field_start, field_end)
+				query_fields.push(field_uuid)
+				search_start = field_end
+				count++
+			}
+
+			let ch = this.get_children_by_status(swimlane, status)
+
+			if(ch == undefined){
+				for(let i in this.swimlanes)
+				{
+					ch = this.get_children_by_status(this.swimlanes[i], status)
+					if(ch != undefined) break
+				}
+			}
+
+			if(ch == undefined){
+				alert('Невозможно создать карточку. На доске нет ни одной карточки для определения типа')
+				return
+			}
+
+			let type_uuid = ch.type_uuid
+
+			const name = 'Задача с доски'
+
+			let issue = {
+				
+					uuid: tools.uuidv4(),
+					project_uuid: project_uuid,
+					status_uuid: status_uuid,
+					type_uuid: type_uuid,
+					values: [
+					{
+						type: "Text",
+						uuid: "",
+						label: "Описание",
+						value: "",
+						field_uuid: "4a095ff5-c1c4-4349-9038-e3c35a2328b9",
+						issue_uuid: "",
+						table_name: "field_values",
+					},
+					{
+						type: "String",
+						uuid: "",
+						label: "Название",
+						value: name,
+						field_uuid: "c96966ea-a591-47a9-992c-0a2f6443bc80",
+						issue_uuid: "",
+						table_name: "field_values",
+					},
+					{
+						type: "User",
+						uuid: "",
+						label: "Автор",
+						value: author_uuid,
+						field_uuid: "733f669a-9584-4469-a41b-544e25b8d91a",
+						issue_uuid: "",
+						table_name: "field_values",
+					},
+					],
+				
+			}
+
+
+			for(let i in ch.values) {
+				if(query_fields.includes(ch.values[i].field_uuid) &&
+				(ch.values[i].label != 'Описание' && 
+				ch.values[i].label != 'Название' && 
+				ch.values[i].label != 'Автор')) {
+					let new_value = tools.obj_clone(ch.values[i])
+					issue.values.push(new_value)
+				}
+			}
+
+			if(this.selected_board.use_sprint_filter) issue.sprint_uuid = this.sprints[this.curr_sprint_num].uuid
+
+			for (let i in issue.values) {
+				issue.values[i].issue_uuid = issue.uuid;
+				issue.values[i].uuid = tools.uuidv4();
+			}
+			
+
+			console.log(issue)
+			
+			
+			let ans = await rest.run_method('upsert_issue', issue)
+			let created_issue = ans[0]
+
+			if(created_issue.status_uuid != status_uuid) {
+				created_issue.status_uuid = status_uuid
+				ans = await rest.run_method('upsert_issue', created_issue)
+			}
+
+			let relation = {
+				uuid: tools.uuidv4(),
+				issue0_uuid: parent_uuid,
+				issue1_uuid: created_issue.uuid,
+				type_uuid: this.parent_relation_type_uuid,
+			};
+
+			await rest.run_method("upsert_relations", relation);
+
+			console.log(this.boards_issues.length)
+			this.boards_issues.push(created_issue)
+			console.log(this.boards_issues.length)
+			console.log(this.boards_issues)
+			if(swimlane.issues[status.uuid] == undefined) swimlane.issues[status.uuid] = []
+			swimlane.issues[status.uuid].push(created_issue)
+			if(swimlane.filtered_issues[status.uuid] == undefined) swimlane.filtered_issues[status.uuid] = []
+
+			//swimlane.filtered_issues[status.uuid]
+			swimlane.filtered_issues[status.uuid].push(created_issue)
+
+			this.get_issues()
+
+			//console.log(created_issue)
+		},
+		field_updated: async function (e, field) {
+			console.log("field_updated", e, field);
+			
+		},
+		
+
+
 	}
 
 	const data = 
   {
+	selected_issue: undefined,
+	parent_relation_type_uuid: "73b0a22e-4632-453d-903b-09804093ef1b",
 	instance: 
       {
         name: '',
         boards_columns: [],
-        
+        boards_fields: [],
       },
 	  statuses_ends_dict:{},
 	conf: {},
@@ -642,10 +1048,12 @@
 	favorite_uuid: undefined,
 	void_group_name: 'Без группы',
 	swimlanes: {},
+	swimlanes_to_show: {},
 	moving_swimlane: null,
 	sprints: [],
 	curr_sprint_num: 0,
 	column_values: [],
+	fields_values: [],
 	card_draginfo: {},
 	status_draginfo: {},
     name: 'board',
@@ -656,6 +1064,10 @@
 	boards_issues: [],
 	colorFromScript: 'green',
 	configs_open: false,
+	pseudo_infinite_card_position: 1000,
+	card_to_be_moved_down_uuid: undefined,
+	bottom_to_move_uuids: undefined,
+	last_move_card_calc_dt: new Date(),
     collumns:[
 		{
 	        name: '№',
@@ -712,6 +1124,16 @@
 			type: 'User',
 		},
 		{
+			id: 'boards_fields',
+			dictionary: 'fields',
+			type: 'User',
+		},
+		{
+			id: 'issue_tags',
+			dictionary: 'issue_tags',
+			type: 'Tag',
+		},
+		{
 			label: 'fields',
 			id: '',
 			dictionary: 'fields',
@@ -761,8 +1183,6 @@
 
   mod.computed.board_query_info = function(){
 	  let board_query_info = this.search_query
-	  
-
 
 	return board_query_info
   }
@@ -783,17 +1203,45 @@
 	return values
   }
 
-  mod.computed.swimlanes_value = function()
-  {
-	if(this.selected_board == undefined) return null
-	if(this.selected_board.no_swimlanes) return null
-	if(this.selected_board.swimlanes_by_root) return '0'
-	else return this.selected_board.swimlanes_field_uuid
+  mod.computed.swimlanes_value = function() {
+    if(this.selected_board == undefined) return null
+    if(this.selected_board.no_swimlanes) return null
+    if(this.selected_board.swimlanes_by_root) return '0'
+    else return this.selected_board.swimlanes_field_uuid
   }
 
 
-  mod.computed.total_count = function()
-  {
+  mod.computed.display_description = function() {
+	if(this.selected_board == undefined || this.selected_board.boards_fields == undefined) return false
+	for(let i in this.selected_board.boards_fields)
+	{
+		if(this.selected_board.boards_fields[i].name == 'Описание') return true
+	}
+	return false
+  
+  }
+
+  mod.computed.available_values = function (field_uuid) {
+			//		console.log('get_available_values', field_uuid)
+			let av = {}
+			
+			for (let i in this.fields) {
+				if (this.fields[i].available_values == undefined) 
+				{
+					av[this.fields[i].uuid] = []
+					continue;
+				}
+				let available_values = this.fields[i].available_values
+					.split(",")
+					.map((v) => v.replace("\n", "").replace("\r", "").trim());
+				av[this.fields[i].uuid] =  available_values;
+	
+			}
+			return  av
+		}
+
+
+  mod.computed.total_count = function() {
 	  let count = 0
   	for(let i in this.swimlanes)
 	  {
@@ -802,8 +1250,7 @@
 	  return count
   }
 
-  mod.computed.total_sum = function()
-  {
+  mod.computed.total_sum = function() {
 	  let sum = 0
   	for(let i in this.swimlanes)
 	  {
@@ -812,12 +1259,7 @@
 	  return sum
   }
 
- 
-
-  
-
-  mod.props =
-    {
+  mod.props = {
       uuid:
       {
         type: String,
@@ -825,17 +1267,9 @@
       }
     }
 
-
-	
-   
-  
-  
-
 	export default mod
 	
 </script>
-
-
 
 <template ref='board' >
 <div @mouseup="dragend_card()">
@@ -920,7 +1354,7 @@
 		<div
 		:class="{ 'when-dragged-swimlane': moving_swimlane != null}"
 		class="swimlane"
-		v-for="(swimlane, sw_index) in swimlanes"
+		v-for="(swimlane, sw_index) in swimlanes_to_show"
 		:key="sw_index"
 		@drop="move_swimlane($event, swimlane)"
 		@dragover.prevent
@@ -951,17 +1385,22 @@
 				</a>
 				<span>{{'кол-во: ' + swimlane.count}}</span>
 				<span>{{'сумма: ' + swimlane.sum}}</span>
+				<i 
+					v-if="swimlane.issue!=undefined" 
+					@click="selected_issue=swimlane.issue"
+					class='bx bx-window-open' >
+				</i>
 			</div>
 
-			<div class="swimlane-body"
-			v-show="swimlane.expanded || selected_board.no_swimlanes"
+			<div class="swimlane-body" :class="{'swimlane-body-closed': !swimlane.expanded && !selected_board.no_swimlanes}"
+
 			>
 		
 				<div 
 				v-for="(status, s_index) in boards_columns"
 				:key="s_index"
-				@mousemove="move_card(status)"
-				@mouseup="drop_card(status)"
+				@mousemove="move_card_status(status, $event, swimlane)"
+				@mouseup="drop_card(status, $event, swimlane)"
 				@mouseleave="status_draginfo={}"
 				class="status-board-collumn"
 				:class="{'status-board-collumn-dragging-to':  this.status_draginfo.uuid == status.uuid, 'when-dragged-card': card_draginfo.uuid != undefined}"
@@ -969,40 +1408,100 @@
 					
 					<label>{{status.name}}</label>
 					<div class="issue-board-cards-container"
-					
+						
 					>
-					<div
-						v-for="(issue, i_index) in (swimlane.filtered_issues[status.uuid] != undefined ? swimlane.filtered_issues[status.uuid] : [])"
+						
+						<div
+						v-for="(issue, i_index) in 
+						(swimlane.filtered_issues[status.uuid] != undefined ? swimlane.filtered_issues[status.uuid] : [])"
 						:key="i_index"
-						:class="{ 'dragged-card': issue.uuid ==  card_draginfo.uuid, 'when-dragged-card': card_draginfo.uuid != undefined}"
-						
-						@mousedown="dragstart_card($event, issue)"
-						class="issue-board-card">
-						<div class="issue-card-top"
-						:style="[  {backgroundColor: get_card_color(issue)} ]"
-						></div>
-						<div class="issue-card-title">
-						<a 
-						
-						:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}} {{issue.type_name}}</a>
-						
-						<label
-						:class="{ 'resolved-issue':statuses_ends_dict[issue.status_uuid]}"
-						>{{get_field_by_name(issue, 'Название').value}}</label>
-						</div>
-						<label class="issue-card-description">
-							{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
-						</label>
-						<div class="issue-board-card-footer">
-							<div><label>{{'Assignee: ' + get_dict_value(get_field_by_name(issue, 'Assignee').value, 'User')}}</label>
+						>
+							<div
+								v-if="issue.uuid == card_to_be_moved_down_uuid && card_draginfo.uuid != undefined"
+								class="gost-issue-card">
 							</div>
+							<div
+								
+								:ref="'issue_board_card_' + swimlane.id + '_' + status.uuid + '_' +i_index"
+								:id="'issue_board_card_' + swimlane.id + '_' + status.uuid + '_' +i_index"
+								:class="{ 'dragged-card': issue.uuid ==  card_draginfo.uuid, 
+								'when-dragged-card': card_draginfo.uuid != undefined,
+								'selected-board-card': selected_issue != undefined && issue.uuid == selected_issue.uuid}"
+								@dblclick="selected_issue=issue"
+								@mousedown="dragstart_card($event, issue)"
+								@mousemove.prevent
+								class="issue-board-card">
+								
+								<div class="issue-card-top"
+								:style="[  {backgroundColor: get_card_color(issue)} ]"
+								></div>
+								<div class="issue-card-title">
+								<div>
+									<a 
+									:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{issue.project_short_name}}-{{issue.num}}</a>
+									<span>{{issue.type_name}}</span> 
+									<i 
+									@click="selected_issue=issue"
+									class='bx bx-window-open' ></i>
+								</div>
+								<label
+								contenteditable="true"
+								@blur="edit_card_title(issue, $event)"
+								:class="{ 'resolved-issue':statuses_ends_dict[issue.status_uuid]}"
+								>{{get_field_by_name(issue, 'Название').value}}</label>
+								</div>
+								<label class="issue-card-description" v-if="display_description">
+									{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
+								</label>
+								<div class="issue-board-card-footer">
+									
+									<div
+									class="board-card-field"
+									v-for="(f, index) in selected_board.boards_fields"
+									>
+										<label 
+										class="board-card-field-title"
+										v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'">
+										{{f.fields[0].name}}: </label>
+										<component
+											v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
+											v-bind:is="f.fields[0].type[0].code + 'Input'"
+											:value="get_field_value(issue, f.fields[0])"
+											label=""
+											:key="index"
+											:disabled="f.fields[0].name == 'Автор'"
+											:values="available_values[f.fields_uuid]"
+											class="board-card-field-input"
+											@updated="field_updated($event, f.fields[0])"
+										></component>
+									</div>
+								</div>	
+								
+							</div>
+							
 						</div>
-						
-					</div>
+						<div
+							v-if="bottom_to_move_uuids == status.uuid + '_' + swimlane.uuid && card_draginfo.uuid != undefined"
+							class="gost-issue-card">
+						</div>
+						<i v-if="selected_board.swimlanes_by_root" class="bx new-issue-card-btn" @click="new_issue_card(swimlane, status)">+</i>
 					</div>
 				</div>
 			</div>
+
 		</div>
+
+			<div class="board-card-frame"  :class="{'board-card-frame-closed': !selected_issue}">
+				<div>
+					<iframe 
+					v-if="selected_issue"
+					:src="('/issue/' + selected_issue.project_short_name + '-' + selected_issue.num)"></iframe>
+					<i 
+					v-if="selected_issue"
+					@click="(selected_issue = undefined)" class='bx bx-x'></i>
+				</div>
+			</div>
+		
 
 		<div class="modal-bg" v-show="configs_open">
 		<div
@@ -1019,6 +1518,7 @@
 		@search_issues="get_issues"
 		:projects="projects"
 		:issue_statuses="issue_statuses"
+		:tags="issue_tags"
 		:issue_types="issue_types"
 		:users="users"
 		:sprints="sprints"
@@ -1066,13 +1566,14 @@
 		></SelectInput>
 
 		<SelectInput 
-			label='Поля внизу карточки (функция в разработке)'
-			id='fields'
-			disabled="true"
+			v-if="inputs_dict != undefined && selected_board != undefined"
+			label='Поля карточки'
+			id='boards_fields'
 			:parent_name="'board'"
 			clearable="false"
-			dictionary= 'fields'
-			:values="[]"
+			:value="get_json_val(selected_board, 'boards_fields')"
+			:values="fields_values"
+			:parameters="{ multiple: true}"
 		></SelectInput>
 
 		<BooleanInput 
@@ -1089,27 +1590,27 @@
 			disabled="true"
 			:parent_name="'board'"
 			clearable="false"
-			dictionary= 'fields'
 			:values="[]"
 			multiple: false
 		></SelectInput>
 
 	
-		<div class="btn-container">
-		<KButton 
-		name="Сохранить"
-		id="save-board-config-btn"
-		:func="'save_board'"
-		@click="configs_open=false"
-		/>
-		<KButton 
-		name="Отменить"
-		id="cancel-board-config-btn"
-		@click="configs_open=false"
-		/>
+		<div class="table_card_footer">
+      <KButton
+        name="Сохранить"
+        class="table_card_footer_btn"
+        :func="'save_board'"
+        @click="configs_open=false"
+      />
+      <KButton
+        name="Отменить"
+        class="table_card_footer_btn"
+        @click="configs_open=false"
+      />
 		</div>
 
 		</div>
+
   </div>
 		  
 	</div>
@@ -1118,9 +1619,6 @@
 
 	</div>
 </template>
-
-
-
 
 <style lang="scss">
   @import '../css/palette.scss';
@@ -1147,15 +1645,37 @@
   }
 
   #board_down_panel {
+    padding-right: 7px;
     display: flex;
-	flex-direction: column;
-	height: calc(100vh - $top-menu-height);
-
-	overflow:scroll;
+	  flex-direction: column;
+	  height: calc(100vh - $top-menu-height);
+	  overflow:scroll;
   }
 
   #board_down_panel::-webkit-scrollbar{
     display:none;
+  }
+
+  .board-config {
+    padding: 20px;
+  }
+
+  .board-config > *:not(:last-child) {
+    margin-bottom: 10px;
+  }
+
+  .table_card_footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .table_card_footer_btn {
+    width: 45%;
+
+    input {
+      width: 100%;
+    }
   }
 
 
@@ -1177,13 +1697,17 @@
 
   .issue-board-cards-container
   {
-	  background: var(--disabled-bg-color);
-	  border-radius: var(--border-radius);
-	  border-color: var(--disabled-bg-color);
-	  border-width: 5px;
-	  border-style: solid;
-	  overflow:scroll;
-	  height: 100%;
+	background: var(--disabled-bg-color);
+	border-radius: var(--border-radius);
+	border-color: var(--disabled-bg-color);
+	border-width: 5px;
+	border-style: solid;
+	overflow:scroll;
+	height: 100%;
+
+	display: flex;
+    flex-direction: column;
+	overflow: visible;
   }
 
   .issue-board-cards-container::-webkit-scrollbar{
@@ -1229,10 +1753,26 @@
 	padding: 5px;
   }
 
+  .issue-card-title div{
+	display: flex;
+	width: 100%;
+  }
+
+  .issue-card-title span
+  {
+	width: 100%;
+  }
+
   .issue-card-title a
   {
 	color: var(--link-color);
-	margin: 0px 0px 4px 0px;
+	margin: 0px 4px 4px 4px;
+	white-space: nowrap;
+  }
+
+  .issue-card-title label {
+	cursor: text;
+	font-weight: 500;
   }
 
   .issue-card-description
@@ -1268,10 +1808,6 @@
 	  padding: 5px;
   }
 
-  .issue-board-card-footer label
-  {
-	font-size: 10px;
-  }
 
   .board-name-input
   {
@@ -1286,15 +1822,6 @@
 		-webkit-user-drag: none;
 		-webkit-user-select: none;
 		-ms-user-select: none;
-  }
-
-  #save-board-config-btn
-  {
-	  padding-right: 10px;
-  }
-  #cancel-board-config-btn
-  {
-	  padding-left: 10px;
   }
 
   .top-menu-icon-btn {
@@ -1314,20 +1841,13 @@
 	padding-top: 4px;
   }
 
-  .delete-board-btn
-  {
+  .delete-board-btn {
 	font-size: 23px;
 	padding-top: 5px;
 	color: #d27065
   }
 
-  
-  .board-issue-search-input
-  {
-	padding: 10px 20px 10px 20px !important;
-  }
-
-  .board-issue-search-input span {
+  .panel topbar span {
     font-size: 20px;
     font-weight: 400;
     margin-top: 1px;
@@ -1362,8 +1882,10 @@
 	width: $font-size;
 	height: $input-height;
 	border-radius: var(--border-radius);
-	margin: 0px !important;
-	padding-top: 3px;
+	margin: 0 0 0 2px !important;
+	padding-top: 0px;
+  font-size: 20px;
+  font-weight: 400;
 }
 
 .board-sprint-filter-btn:hover{
@@ -1426,8 +1948,20 @@
     display: flex;
 	overflow: hidden;
 	margin-left: $cards_field_left;
+	overflow: visible;
+	padding-bottom: 30px;
 }
 
+.swimlane-body-closed * {
+	height: 0 !important;
+	overflow:  hidden !important;
+}
+
+.swimlane-body-closed {
+  height: 0;
+  padding: 0;
+  margin: 0;
+}
 
 .swimlane-expander
 {
@@ -1463,6 +1997,187 @@
 
 }
 
+
+.board-card-field{
+	display: flex;
+	padding-bottom: 2px;
+}
+
+.board-card-field .numeric{
+	display: flex;
+}
+
+.board-card-field-input .label{
+	height: 0px !important;
+	max-height: 0px !important;
+	min-height: 0px !important;
+	font-size: 11px !important;
+}
+
+.board-card-field-input{
+	height: 15px !important;
+	width: 100%;
+}
+
+.board-card-field-input img{
+	width: 11px !important;
+	height: 11px !important;
+	max-height: 11px !important;
+	min-height: 11px !important;
+}
+
+.board-card-field-input *{
+
+	//height: 15px !important;
+	//max-height: 15px !important;
+	//min-height: 15px !important;
+	
+	
+}
+
+.board-card-field-input svg{
+	display: none;
+}
+
+.board-card-field-input span{
+	margin: 0px !important;
+}
+
+
+.board-card-field *{
+	font-size: 11px !important;
+}
+
+
+.board-card-field-input input, .board-card-field-input textarea, .board-card-field-input .vs__dropdown-toggle,
+.board-card-field-input .vs__selected{
+	height: 15px !important;
+	max-height: 15px !important;
+	min-height: 15px !important;
+	font-size: 11px !important;
+	background: none !important;
+	border: none !important;
+}
+
+.board-card-field-input textarea {
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+
+.board-card-field-input .vs__dropdown-menu{
+	//position: absolute !important;
+	z-index: 200;
+}
+
+.board-card-field-title{
+	white-space: nowrap;
+}
+
+.new-issue-card-btn{
+	font-size: 18px;
+    font-weight: 700 !important;
+    position: relative;
+    text-decoration: none;
+    border-radius: 50%;
+    border-style: solid;
+    border-width: 2px;
+    width: 18px;
+    height: 18px;
+    align-items: center;
+    display: flex !important;
+    padding-left: 2px;
+    align-self: center;
+    margin: 0;
+    align-content: end;
+    flex-wrap: wrap;
+	cursor: pointer;
+	color: var(--link-color);
+}
+
+
+.board-card-frame{
+	position: absolute;
+	top: $top-menu-height;
+	bottom: 0;
+	right: 0;
+	width: 450px;
+	background: var(--loading-bg-color);
+	border: none;
+	padding: 10px;
+}
+.board-card-frame-closed{
+	width: 0px;
+	padding: 0px;
+}
+
+.board-card-frame div {
+	width: 100%;
+    height: 100%;
+
+	border-radius: var(--border-radius);
+
+	background: var(--panel-bg-color);
+    border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: groove;
+}
+
+
+
+.board-card-frame iframe{
+	width: 100%;
+    height: 100%;
+    z-index: 1;
+    position: relative;
+	
+	background: var(--panel-bg-color);
+    border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: groove;
+
+	border: none;
+}
+
+.board-card-frame i{
+	position: absolute;
+    right: 0;
+    z-index: 1;
+    font-size: 32px;
+    margin: 13px;
+    cursor: pointer;
+	margin-right: 23px;
+}
+
+.issue-board-card .bx-window-open, .swimlane-head .bx-window-open{
+	font-size: 20px;
+	cursor: pointer;
+	opacity: 0;
+}
+
+.swimlane-head .bx-window-open{
+	padding-top: 5px;
+}
+
+.issue-board-card:hover .bx-window-open, .swimlane-head:hover .bx-window-open{
+	opacity: 1;
+}
+
+.selected-board-card .bx-window-open{
+	opacity: 0 !important;
+}
+
+
+.gost-issue-card{
+	border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: dashed;
+	margin-bottom: 5px;
+	height: $input-height;
+}
 
 
 

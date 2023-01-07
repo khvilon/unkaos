@@ -1,6 +1,7 @@
 <script>
 import page_helper from "../page_helper.ts";
 import rest from "../rest.ts";
+import cache from "../cache.ts";
 
 const data = {
   new_pass: "",
@@ -72,7 +73,7 @@ const data = {
 const mod = await page_helper.create_module(data);
 
 mod.methods.is_this_user = function () {
-  let user = JSON.parse(localStorage.profile);
+  let user = cache.getObject("profile");
   return this.selected_users.uuid == user.uuid;
 };
 
