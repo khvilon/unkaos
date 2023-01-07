@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var security = {};
-const tools = require('../tools');
+const tools_1 = __importDefault(require("../tools"));
 const sql_1 = __importDefault(require("./sql"));
 var jwt = require('jsonwebtoken');
 const key = 'shhhhh';
@@ -27,7 +27,7 @@ security.newToken = function (workspace, email, pass) {
         let user_data = { uuid: users[0].uuid };
         let token = jwt.sign(user_data, key);
         let ans = yield (0, sql_1.default) `INSERT INTO  ${(0, sql_1.default)(workspace + '.user_sessions')} (uuid, user_uuid, token) 
-        values( ${tools.uuidv4()}, ${users[0].uuid}, MD5(${token}))`;
+        values( ${tools_1.default.uuidv4()}, ${users[0].uuid}, MD5(${token}))`;
         return { user_token: token, profile: users[0] };
     });
 };

@@ -350,7 +350,6 @@
 		},
 		make_swimlanes()
 		{
-
 			console.log('make_swimlanes0', new Date())
 			this.swimlanes = {}
 
@@ -492,10 +491,6 @@
 
 
 			this.sort_swimlanes()
-
-
-			
-
 			
 			let position = 0
 			for(let i in this.swimlanes)
@@ -529,6 +524,8 @@
 
 
 			console.log('make_swimlanes100', new Date())
+
+			this.swimlanes_to_show = this.swimlanes
 
 			//load saved swimlanes order
 
@@ -1051,6 +1048,7 @@
 	favorite_uuid: undefined,
 	void_group_name: 'Без группы',
 	swimlanes: {},
+	swimlanes_to_show: {},
 	moving_swimlane: null,
 	sprints: [],
 	curr_sprint_num: 0,
@@ -1356,7 +1354,7 @@
 		<div
 		:class="{ 'when-dragged-swimlane': moving_swimlane != null}"
 		class="swimlane"
-		v-for="(swimlane, sw_index) in swimlanes"
+		v-for="(swimlane, sw_index) in swimlanes_to_show"
 		:key="sw_index"
 		@drop="move_swimlane($event, swimlane)"
 		@dragover.prevent

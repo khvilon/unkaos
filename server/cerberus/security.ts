@@ -1,6 +1,6 @@
 var security : any = {}
 
-const tools = require('../tools')
+import tools from "../tools";
 
 import sql from "./sql";
 

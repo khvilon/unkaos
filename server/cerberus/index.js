@@ -21,7 +21,9 @@ const security_1 = __importDefault(require("./security"));
 const checkSession = function (workspace, token) {
     if (data_1.default.sessions[workspace] == null)
         return null;
-    let session = data_1.default.sessions[workspace][md5(token)];
+    const md5Token = md5(token);
+    //console.log('token', md5Token)
+    let session = data_1.default.sessions[workspace][md5Token];
     if (!session)
         return null;
     let user = data_1.default.users[workspace][session.user_uuid];
@@ -93,5 +95,5 @@ app.post('/upsert_password_rand', (req, res) => __awaiter(void 0, void 0, void 0
     handleRequest(req, res);
 }));
 app.listen(port, () => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(`Server running on port ${port}`);
+    console.log(`Cerberus running on port ${port}`);
 }));
