@@ -15,15 +15,21 @@ app.use(bodyParser.json({limit: '150mb'}));
 app.use(bodyParser.raw({limit: '150mb'}));
 app.use(bodyParser.urlencoded({limit: '150mb', extended: true}));
 
-async function init()
-{
-    
+async function init(){ 
     const zeus_listeners = await axios.get(zeus_url + '/read_listeners');
 
     for(let i = 0; i < zeus_listeners.data.length; i++){
         let method = zeus_listeners.data[i].method
         let func = zeus_listeners.data[i].func
+
+        
+
         app[method]('/' + func, async (req:any, res:any) => {
+
+            //console.log(req)
+
+            req.headers.request_function = func
+            //console.log(req.headers)
 
             let cerberus_ans = await axios({
                 method: 'get',
@@ -37,10 +43,15 @@ async function init()
                 return
             }
 
-            const zeus_ans = await axios({
+            //console.log('cerberus_ans.data', cerberus_ans.data)
+
+            req.headers.user_uuid = cerberus_ans.data.uuid
+           // req.headers.user_name = cerberus_ans.data.name
+
+            let zeus_ans = await axios({
                 method: method,
-                url: zeus_url + '/' + func,
-                headers: req.headers
+                url: zeus_url + req.url,
+                headers: {subdomain: req.headers.subdomain, user_uuid: cerberus_ans.data.uuid}
             });
 
             res.status(zeus_ans.status);
@@ -49,7 +60,7 @@ async function init()
     }
 
     app.listen(port, async () => {
-        console.log(`Server running on port ${port}`)
+        console.log(`Gateway running on port ${port}`)
     })
 }
     

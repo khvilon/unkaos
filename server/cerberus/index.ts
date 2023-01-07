@@ -9,7 +9,9 @@ import security from "./security";
 
 const checkSession = function(workspace : string, token : string){
     if(data.sessions[workspace] == null) return null
-    let session = data.sessions[workspace][md5(token)]
+    const md5Token = md5(token)
+    //console.log('token', md5Token)
+    let session = data.sessions[workspace][md5Token]
     if(!session) return null
     let user = data.users[workspace][session.user_uuid]
     if(!user) return null
@@ -92,5 +94,5 @@ app.post('/upsert_password_rand', async (req : any, res : any) => {
 
 app.listen(port, async () => 
 {
-    console.log(`Server running on port ${port}`)
+    console.log(`Cerberus running on port ${port}`)
 })

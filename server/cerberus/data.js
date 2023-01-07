@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var data = {};
 const sql_1 = __importDefault(require("./sql"));
 const tokenExpirationTimeSec = 30 * 60 * 60 * 24; //30 days
-const checkExpiredInterval = 60 * 1000; //1 minute, ms
+const checkExpiredInterval = 5 * 1000; //1 minute, ms
 data.workspaces = [];
 data.sessions = {};
 data.users = {};
@@ -92,8 +92,10 @@ const checkExpired = function () {
     let now = new Date();
     for (let workspace in data.sessions) {
         for (let token in data.sessions[workspace]) {
-            if (data.sessions[workspace][token].expires_at < now)
-                data.sessions[workspace][token] = undefined;
+            if (data.sessions[workspace][token].expires_at < now) {
+                //console.log(workspace, token, data.sessions[workspace][token], now)
+                delete data.sessions[workspace][token];
+            }
         }
     }
     setTimeout(checkExpired, checkExpiredInterval);

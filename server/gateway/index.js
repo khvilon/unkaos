@@ -31,6 +31,9 @@ function init() {
             let method = zeus_listeners.data[i].method;
             let func = zeus_listeners.data[i].func;
             app[method]('/' + func, (req, res) => __awaiter(this, void 0, void 0, function* () {
+                //console.log(req)
+                req.headers.request_function = func;
+                //console.log(req.headers)
                 let cerberus_ans = yield (0, axios_1.default)({
                     method: 'get',
                     url: cerberus_url + '/check_session',
@@ -41,17 +44,20 @@ function init() {
                     res.send(cerberus_ans.data);
                     return;
                 }
-                const zeus_ans = yield (0, axios_1.default)({
+                //console.log('cerberus_ans.data', cerberus_ans.data)
+                req.headers.user_uuid = cerberus_ans.data.uuid;
+                // req.headers.user_name = cerberus_ans.data.name
+                let zeus_ans = yield (0, axios_1.default)({
                     method: method,
-                    url: zeus_url + '/' + func,
-                    headers: req.headers
+                    url: zeus_url + req.url,
+                    headers: { subdomain: req.headers.subdomain, user_uuid: cerberus_ans.data.uuid }
                 });
                 res.status(zeus_ans.status);
                 res.send(zeus_ans.data);
             }));
         }
         app.listen(port, () => __awaiter(this, void 0, void 0, function* () {
-            console.log(`Server running on port ${port}`);
+            console.log(`Gateway running on port ${port}`);
         }));
     });
 }
