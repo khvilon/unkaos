@@ -55,8 +55,12 @@ sql.query = async function(subdomain:string, query_arr:any, params_arr:any){
         }
 
         try{
-            if(params != undefined && params != null && params.length > 0)
+            if(params != undefined && params != null && params.length > 0){
+                for(let j in params){
+                    if(params[j] == 'NOW()') params[j] = new Date()//workspaceSqls[subdomain]('NOW()')
+                }
                 ans = await workspaceSqls[subdomain].unsafe(query, params)
+            }
             else ans = await workspaceSqls[subdomain].unsafe(query)
         }
         catch(e){

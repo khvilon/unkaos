@@ -15,5 +15,8 @@
     "jsonwebtoken": "^9.0.0",
     "md5": "^2.3.0",
     "postgres": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13"
   }
 }
