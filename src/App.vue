@@ -414,6 +414,10 @@ $loading-bar-width: 200vw;
     -webkit-box-shadow: inset 0 0 5px var(--scroll-shadow-color);
 }
 
+::-webkit-scrollbar-corner {
+  background: rgba(0,0,0,0);
+}
+
 .table_card_footer_btn {
   width: 45%;
 
