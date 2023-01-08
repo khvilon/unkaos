@@ -131,7 +131,6 @@ export default {
       });
     },
     swapSelectionBySymbols(symbols) {
-      console.log('debug')
       let { textArea, startPos, endPos } = this.getSelectionVars()
       if (this.val.substring(startPos, endPos) !== symbols) {
         document.execCommand('insertText', false, symbols)
