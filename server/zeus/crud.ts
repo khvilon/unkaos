@@ -1,8 +1,8 @@
-let crud = {};
+let crud:any = {};
 
-let data_model = require("./data_model");
-var tools = require("./tools");
-var sql = require("./sql");
+import data_model from "./data_model";
+import tools from "../tools";
+import sql from "./sql";
 
 const edited_type_uuid = "1ff12964-4f5c-4be9-8fe3-f3d9a7225300";
 const transition_type_uuid = "4d7d3265-806b-492a-b6c1-636e1fa653a9";
@@ -13,12 +13,10 @@ const comment_type_uuid = "f53d8ecc-c26e-4909-a070-5c33e6f7a196";
 
 const select_limit = 300;
 
-const atob = require("atob");
+//const atob = require("atob");
 const { Console } = require("console");
 
-const uuid_length = edited_type_uuid.length;
-
-crud.json_sql = function (table_name) {
+crud.jsonSql = function (table_name:string) {
   return (
     "CASE WHEN COUNT(" +
     table_name +
@@ -28,7 +26,7 @@ crud.json_sql = function (table_name) {
   );
 };
 
-crud.make_read_query_template = function (table_name, num) {
+crud.make_read_query_template = function (table_name:string, num:number) {
   if (num == undefined) num = 1;
   let select = "'" + table_name + "' AS table_name";
   let join = "";
@@ -62,7 +60,7 @@ crud.make_read_query_template = function (table_name, num) {
 
       select +=
         ", " +
-        crud.json_sql("f" + forein_table_num_str) +
+        crud.jsonSql("f" + forein_table_num_str) +
         " AS " +
         column.column_name.replace("_uuid", "");
 
@@ -78,7 +76,7 @@ crud.make_read_query_template = function (table_name, num) {
 
     select +=
       ", " +
-      crud.json_sql("ff" + forein_table_num_str) +
+      crud.jsonSql("ff" + forein_table_num_str) +
       " AS " +
       fk_table_name;
 
@@ -115,7 +113,7 @@ crud.make_read_query_template = function (table_name, num) {
     let forein_table_num_str = num + "" + forein_table_num + "_" + i;
 
     select +=
-      ", " + crud.json_sql("f" + forein_table_num_str) + " AS " + fk_table_name;
+      ", " + crud.jsonSql("f" + forein_table_num_str) + " AS " + fk_table_name;
 
     join +=
       " LEFT JOIN (" +
@@ -441,7 +439,7 @@ crud.load = async function () {
         t1.updated_at`;
 };
 
-crud.push_query = function (query0, params0, query1, params1, is_revert) {
+crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is_revert:any) {
   //console.log('------------push_query0', '#' + query0 + '#', '##' + query1+ '##')
 
   if (query1 == "") return [query0, params0];
@@ -470,8 +468,8 @@ crud.push_query = function (query0, params0, query1, params1, is_revert) {
 
   for (let i = 0; i < q.length; i++) {
     if (is_revert) {
-      query.pop(q[i]);
-      params.pop(p[i]);
+      query.unshift(q[i]);
+      params.unshift(p[i]);
     } else {
       query.push(q[i]);
       params.push(p[i]);
@@ -483,7 +481,7 @@ crud.push_query = function (query0, params0, query1, params1, is_revert) {
   return [query, params];
 };
 
-crud.concat_querys = function (query0, params0, query1, params1, middle) {
+crud.concat_querys = function (query0:any, params0:any, query1:any, params1:any, middle:any) {
   // console.log('concstart', query0, params0, query1, params1, middle)
 
   if (Array.isArray(query0)) return [query0, params0];
@@ -506,8 +504,9 @@ crud.concat_querys = function (query0, params0, query1, params1, middle) {
 };
 
 crud.make_query = {
-  read: function (table_name, params) {
+  read: function (table_name:string, params:any) {
     if (table_name == undefined) return ["", []];
+    console.log(table_name)
     let query = crud.querys[table_name]["read"];
 
     if (
@@ -515,7 +514,7 @@ crud.make_query = {
       params["query"] != undefined &&
       params["query"] != "") || table_name == "issues_count")
      {
-      let user_query = ' TRUE '
+      let user_query:String = ' TRUE '
       if (params["query"]) user_query = decodeURIComponent(atob(params["query"]));
 
       //console.log('user_query', user_query)
@@ -600,7 +599,7 @@ crud.make_query = {
         let field_uuid = user_query.substring(field_uuid_start, field_uuid_end)
         //console.log(field_uuid)
 
-        field_value_end = user_query.indexOf("#", field_uuid_end+1)
+        let field_value_end = user_query.indexOf("#", field_uuid_end+1)
         let field_value = user_query.substring(field_uuid_end+1, field_value_end)
         //console.log(field_value)
 
@@ -673,7 +672,7 @@ crud.make_query = {
     return [query.replaceAll("$@1", where), pg_params];
   },
 
-  delete: function (table_name, params) {
+  delete: function (table_name:string, params:any) {
 
     console.log('table_name', table_name)
     let query = crud.querys[table_name]["delete"];
@@ -681,7 +680,7 @@ crud.make_query = {
     return [query.replace("$@1", "'" + params.uuid + "'"), []];
   },
 
-  create: function (table_name, params) {
+  create: function (table_name:string, params:any) {
     //console.log('tn', table_name)
 
     if (table_name == undefined) return ["", []];
@@ -727,7 +726,7 @@ crud.make_query = {
     return [query, pg_params];
   },
 
-  update: function (table_name, params) {
+  update: function (table_name:string, params:any) {
     if (table_name == undefined) return ["", []];
     if (table_name == 'field_values' && params.field_uuid == author_field_uuid) return ["", []];
     let read_query = crud.querys[table_name]["read"];
@@ -767,7 +766,7 @@ crud.make_query = {
       //if(val == null || val == 'null') val = 'NULL'
       pg_params.push(val);
       //if(val != null && val.length > 50) val += '123321.aeraeraeraebaerbjrejfejjnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn...................................................'
-      set = set.concat(i, "=$", pg_params.length);
+      set = set.concat(i, "=$", pg_params.length.toString());
     }
 
     // if(set.indexOf('SELECT x.* FROM integration_1c.messages x') > 0)console.log('aaaaaleeeertttt0', set)
@@ -777,7 +776,7 @@ crud.make_query = {
     return [query, pg_params];
   },
 
-  upsert: function (table_name, params) {
+  upsert: function (table_name:string, params:any) {
     if (table_name == undefined) return ["", []];
     let [query_create, params_create] = crud.make_query.create(
       table_name,
@@ -840,7 +839,7 @@ crud.make_query = {
     }
 
     let subquerys = "";
-    let subparams = [];
+    let subparams:any[] = [];
 
     for (let i in params) {
       // console.log('ccc1', params[i], typeof params[i])
@@ -868,7 +867,7 @@ crud.make_query = {
 
         //   console.log('_________0', new_subqyery)
         //   console.log('_________00')
-        let [q, p] = crud.push_query(
+        let [q, p]:any[] = crud.push_query(
           subquerys,
           subparams,
           new_subqyery,
@@ -888,7 +887,7 @@ crud.make_query = {
   },
 };
 
-crud.get_query = function (method, table_name, params) {
+crud.get_query = function (method:string, table_name:string, params:any) {
   //console.log( method, 'bb', table_name)
   if (table_name == undefined) return ["", []];
 
@@ -910,8 +909,8 @@ crud.get_query = function (method, table_name, params) {
   return [query, pg_params];
 };
 
-crud.get_uuids = function (obj) {
-  let ans = {};
+crud.get_uuids = function (obj:any) {
+  let ans:any = {};
   if (obj.uuid !== undefined) ans[obj.uuid] = obj.table_name;
   for (let i in obj) {
     if (
@@ -949,10 +948,11 @@ crud.get_uuids = function (obj) {
   return ans;
 };
 
-crud.do = async function (subdomain, method, table_name, params) {
+crud.do = async function (subdomain:string, method:string, table_name:string, params:any, author_uuid:string) {
   if (table_name == "issue") table_name = "issues";
   else if (table_name == "board") table_name = "boards";
   //else if(table_name == 'dashboard') table_name = 'dashboards'
+ 
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
   // console.log('paraaaaaaaaaaaaaaaaaaaaaams', params)
@@ -1095,4 +1095,4 @@ crud.do = async function (subdomain, method, table_name, params) {
   return ans;
 };
 
-module.exports = crud;
+export default crud;

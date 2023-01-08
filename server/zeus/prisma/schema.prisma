@@ -1,0 +1,564 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://oboz:agq4wrg@unkaos.oboz.tech:5432/unkaos?schema=oboz"
+}
+
+model attachments {
+  uuid       String    @id @db.Uuid
+  issue_uuid String    @db.Uuid
+  name       String
+  extention  String?
+  type       String?
+  data       String?
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime  @default(now()) @db.Timestamptz(6)
+  daleted_at DateTime? @db.Timestamptz(6)
+  issues     issues    @relation(fields: [issue_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_attachments_to_issues")
+
+  @@index([issue_uuid], map: "idx_attachments_issue_uuid")
+}
+
+model boards {
+  uuid                                       String           @id @db.Uuid
+  name                                       String
+  author_uuid                                String           @db.Uuid
+  created_at                                 DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at                                 DateTime?        @db.Timestamptz(6)
+  deleted_at                                 DateTime?        @db.Timestamptz(6)
+  query                                      String?
+  estimate_uuid                              String?          @db.Uuid
+  swimlanes_field_uuid                       String?          @db.Uuid
+  swimlanes_by_root                          Boolean          @default(true)
+  no_swimlanes                               Boolean          @default(false)
+  use_sprint_filter                          Boolean          @default(true)
+  config                                     String?
+  users                                      users            @relation(fields: [author_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_boards_to_author")
+  fields_boards_estimate_uuidTofields        fields?          @relation("boards_estimate_uuidTofields", fields: [estimate_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_boards_to_estimate")
+  fields_boards_swimlanes_field_uuidTofields fields?          @relation("boards_swimlanes_field_uuidTofields", fields: [swimlanes_field_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_swimlanes_field")
+  boards_columns                             boards_columns[]
+  boards_fields                              boards_fields[]
+}
+
+model boards_columns {
+  uuid           String         @id @db.Uuid
+  boards_uuid    String         @db.Uuid
+  status_uuid    String         @db.Uuid
+  num            Int            @db.SmallInt
+  created_at     DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime       @default(now()) @db.Timestamptz(6)
+  deleted_at     DateTime?      @db.Timestamptz(6)
+  issue_statuses issue_statuses @relation(fields: [status_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_boards_columns_to_statuses")
+  boards         boards         @relation(fields: [boards_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_boards_to_columns")
+}
+
+model boards_fields {
+  uuid        String    @id @db.Uuid
+  boards_uuid String    @db.Uuid
+  fields_uuid String    @db.Uuid
+  num         Int       @db.SmallInt
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  fields      fields    @relation(fields: [fields_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_boards_fields_to_fields")
+  boards      boards    @relation(fields: [boards_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_boards_to_fields")
+}
+
+model dashboards {
+  uuid        String    @id @db.Uuid
+  name        String
+  author_uuid String?   @db.Uuid
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime? @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  users       users?    @relation(fields: [author_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_dashboards_to_author")
+  gadgets     gadgets[]
+}
+
+model favourites {
+  uuid             String           @id @db.Uuid
+  type_uuid        String           @db.Uuid
+  author_uuid      String           @db.Uuid
+  name             String
+  link             String
+  created_at       DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime         @default(now()) @db.Timestamptz(6)
+  deleted_at       DateTime?        @db.Timestamptz(6)
+  users            users            @relation(fields: [author_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_favourites_to_owner")
+  favourites_types favourites_types @relation(fields: [type_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_favourites_to_type")
+}
+
+model favourites_types {
+  uuid       String       @id @db.Uuid
+  name       String
+  created_at DateTime     @db.Timestamptz(6)
+  updated_at DateTime     @default(now()) @db.Timestamptz(6)
+  deleted_at DateTime?    @db.Timestamptz(6)
+  favourites favourites[]
+}
+
+model field_types {
+  uuid       String    @id @db.Uuid
+  name       String
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+  code       String?
+  fields     fields[]
+}
+
+model field_values {
+  issue_uuid String    @db.Uuid
+  field_uuid String    @db.Uuid
+  value      String?
+  uuid       String    @id @db.Uuid
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  fields     fields    @relation(fields: [field_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_field_values_to_fields")
+  issues     issues    @relation(fields: [issue_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_field_values_to_issues")
+
+  @@index([field_uuid], map: "idx_field_values_field_uuid")
+  @@index([issue_uuid], map: "idx_field_values_issue_uuid")
+  @@index([issue_uuid, field_uuid, value], map: "idx_field_values_issue_uuid_field_uuid_value")
+  @@index([issue_uuid, value], map: "idx_field_values_issue_uuid_value")
+  @@index([uuid], map: "idx_field_values_uuid")
+  @@index([value], map: "idx_field_values_value", type: Hash)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model field_values_temp {
+  issue_uuid String?   @db.Uuid
+  field_uuid String?   @db.Uuid
+  value      String?
+  uuid       String?   @db.Uuid
+  created_at DateTime? @db.Timestamp(6)
+  updated_at DateTime? @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model field_values_temp2 {
+  issue_uuid String?   @db.Uuid
+  field_uuid String?   @db.Uuid
+  value      String?
+  uuid       String?   @db.Uuid
+  created_at DateTime? @db.Timestamp(6)
+  updated_at DateTime? @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+
+  @@ignore
+}
+
+model fields {
+  uuid                                       String                  @id @db.Uuid
+  name                                       String
+  type_uuid                                  String                  @db.Uuid
+  created_at                                 DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at                                 DateTime?               @db.Timestamptz(6)
+  deleted_at                                 DateTime?               @db.Timestamptz(6)
+  is_custom                                  Boolean                 @default(true)
+  min_value                                  Decimal?                @db.Decimal
+  max_value                                  Decimal?                @db.Decimal
+  presision                                  Int?                    @db.SmallInt
+  available_values                           String?
+  boards_boards_estimate_uuidTofields        boards[]                @relation("boards_estimate_uuidTofields")
+  boards_boards_swimlanes_field_uuidTofields boards[]                @relation("boards_swimlanes_field_uuidTofields")
+  boards_fields                              boards_fields[]
+  field_values                               field_values[]
+  field_types                                field_types             @relation(fields: [type_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_fields_to_type")
+  issue_types_to_fields                      issue_types_to_fields[]
+}
+
+model gadget_types {
+  uuid       String    @id @db.Uuid
+  name       String
+  code       String
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  gadgets    gadgets[]
+}
+
+model gadgets {
+  uuid           String       @id @db.Uuid
+  dashboard_uuid String       @db.Uuid
+  config         String?
+  x0             Int
+  y0             Int
+  width          Int
+  height         Int
+  type_uuid      String       @db.Uuid
+  created_at     DateTime     @default(now()) @db.Timestamp(6)
+  updated_at     DateTime     @default(now()) @db.Timestamp(6)
+  deleted_at     DateTime?    @db.Timestamp(6)
+  name           String?
+  dashboards     dashboards   @relation(fields: [dashboard_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_gadgets_to_dashboards")
+  gadget_types   gadget_types @relation(fields: [type_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_gadgets_to_type")
+}
+
+model issue_actions {
+  uuid                String               @id @db.Uuid
+  issue_uuid          String               @db.Uuid
+  author_uuid         String               @db.Uuid
+  created_at          DateTime             @default(now()) @db.Timestamptz(6)
+  value               String?
+  type_uuid           String?              @db.Uuid
+  updated_at          DateTime?            @db.Timestamptz(6)
+  deleted_at          DateTime?            @db.Timestamptz(6)
+  issue_actions_types issue_actions_types? @relation(fields: [type_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_issue_actions_to_issue_actions_types")
+  issues              issues               @relation(fields: [issue_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_issue_actions_to_issues")
+  users               users                @relation(fields: [author_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_issue_actions_to_users")
+
+  @@index([author_uuid], map: "idx_issue_actions_author_uuid")
+  @@index([issue_uuid], map: "idx_issue_actions_issue_uuid")
+  @@index([type_uuid], map: "idx_issue_actions_type_uuid")
+  @@index([uuid], map: "idx_issue_actions_uuid")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model issue_actions_temp {
+  uuid        String?   @db.Uuid
+  issue_uuid  String?   @db.Uuid
+  author_uuid String?   @db.Uuid
+  created_at  DateTime? @db.Timestamptz(6)
+  value       String?
+  type_uuid   String?   @db.Uuid
+  updated_at  DateTime? @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+
+  @@ignore
+}
+
+model issue_actions_types {
+  uuid          String          @id @db.Uuid
+  name          String
+  issue_actions issue_actions[]
+}
+
+model issue_statuses {
+  uuid           String           @id @db.Uuid
+  name           String
+  created_at     DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime?        @db.Timestamptz(6)
+  deleted_at     DateTime?        @db.Timestamptz(6)
+  is_start       Boolean?
+  is_end         Boolean?
+  boards_columns boards_columns[]
+  workflow_nodes workflow_nodes[]
+}
+
+model issue_tags {
+  uuid                String                @id @db.Uuid
+  name                String
+  color               String?
+  created_at          DateTime              @default(now()) @db.Timestamp(6)
+  updated_at          DateTime              @default(now()) @db.Timestamp(6)
+  deleted_at          DateTime?             @db.Timestamp(6)
+  author_uuid         String?               @db.Uuid
+  is_personal         Boolean               @default(false)
+  text_color          String?
+  users               users?                @relation(fields: [author_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_issue_tags_to_author")
+  issue_tags_selected issue_tags_selected[]
+
+  @@index([name], map: "idx_issue_tags_name")
+  @@index([uuid], map: "idx_issue_tags_uuid")
+}
+
+model issue_tags_selected {
+  issue_uuid      String     @db.Uuid
+  issue_tags_uuid String     @db.Uuid
+  created_at      DateTime   @default(now()) @db.Timestamp(6)
+  updated_at      DateTime   @default(now()) @db.Timestamp(6)
+  deleted_at      DateTime?  @db.Timestamp(6)
+  uuid            String     @id @db.Uuid
+  issue_tags      issue_tags @relation(fields: [issue_tags_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_issues_to_issue_tags_issue_tags")
+  issues          issues     @relation(fields: [issue_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_issues_to_issue_tags_issues")
+
+  @@index([deleted_at], map: "idx_issue_tags_selected_deleted_at")
+  @@index([issue_uuid], map: "idx_issue_tags_selected_issue_uuid")
+  @@index([issue_tags_uuid], map: "idx_issue_tags_selected_tag_uuid")
+}
+
+model issue_types {
+  uuid                  String                  @id @db.Uuid
+  name                  String
+  workflow_uuid         String                  @db.Uuid
+  created_at            DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?               @db.Timestamptz(6)
+  deleted_at            DateTime?               @db.Timestamptz(6)
+  workflows             workflows               @relation(fields: [workflow_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_issue_types_to_workflows")
+  issue_types_to_fields issue_types_to_fields[]
+  issues                issues[]
+}
+
+model issue_types_to_fields {
+  issue_types_uuid String      @db.Uuid
+  fields_uuid      String      @db.Uuid
+  fields           fields      @relation(fields: [fields_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_fields_to_issue_types")
+  issue_types      issue_types @relation(fields: [issue_types_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_issue_types_to_fields")
+
+  @@id([issue_types_uuid, fields_uuid])
+}
+
+model issues {
+  uuid                                    String                @id @db.Uuid
+  type_uuid                               String                @db.Uuid
+  created_at                              DateTime              @default(now()) @db.Timestamptz(6)
+  updated_at                              DateTime?             @db.Timestamptz(6)
+  deleted_at                              DateTime?             @db.Timestamptz(6)
+  num                                     BigInt?
+  project_uuid                            String?               @db.Uuid
+  status_uuid                             String?               @db.Uuid
+  sprint_uuid                             String?               @db.Uuid
+  author_uuid                             String?               @db.Uuid
+  tags                                    String[]              @db.Uuid
+  attachments                             attachments[]
+  field_values                            field_values[]
+  issue_actions                           issue_actions[]
+  issue_tags_selected                     issue_tags_selected[]
+  projects                                projects?             @relation(fields: [project_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_issues_to_project")
+  sprints                                 sprints?              @relation(fields: [sprint_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_issues_to_sprint")
+  issue_types                             issue_types           @relation(fields: [type_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_issues_to_type")
+  relations_relations_issue0_uuidToissues relations[]           @relation("relations_issue0_uuidToissues")
+  relations_relations_issue1_uuidToissues relations[]           @relation("relations_issue1_uuidToissues")
+  watchers                                watchers[]
+
+  @@index([created_at], map: "idx_issues_created_at")
+  @@index([num], map: "idx_issues_num")
+  @@index([project_uuid], map: "idx_issues_project_uuid")
+  @@index([sprint_uuid], map: "idx_issues_sprint_uuid")
+  @@index([status_uuid], map: "idx_issues_status_uuid")
+  @@index([type_uuid], map: "idx_issues_type_uuid")
+  @@index([updated_at], map: "idx_issues_updated")
+  @@index([uuid], map: "idx_issues_uuid")
+}
+
+model logs_done {
+  uuid        String   @id @db.Uuid
+  user_uuid   String?  @db.Uuid
+  table_name  String?
+  method      String?
+  target_uuid String?  @db.Uuid
+  parameters  String?
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  users       users?   @relation(fields: [user_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_logs_done_to_users")
+}
+
+model old_issues_num {
+  uuid         String    @id @db.Uuid
+  issue_uuid   String    @db.Uuid
+  project_uuid String    @db.Uuid
+  num          Int
+  created_at   DateTime  @default(now()) @db.Timestamp(6)
+  updated_at   DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at   DateTime? @db.Timestamp(6)
+  projects     projects  @relation(fields: [project_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_old_issues_num_to_projects")
+}
+
+model permition_targets {
+  uuid       String       @id @db.Uuid
+  name       String
+  table_name String?
+  permitions permitions[]
+}
+
+model permitions {
+  uuid              String            @id @db.Uuid
+  role_uuid         String            @db.Uuid
+  target_uuid       String            @db.Uuid
+  permits           Boolean           @default(true)
+  created_at        DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?         @db.Timestamptz(6)
+  deleted_at        DateTime?         @db.Timestamptz(6)
+  permition_targets permition_targets @relation(fields: [target_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_permitions_to_permition_targets")
+  roles             roles             @relation(fields: [role_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_permitions_to_roles")
+}
+
+model permitions_for_issues {
+  uuid         String    @id @db.Uuid
+  project_uuid String?   @db.Uuid
+  permits      Boolean   @default(true)
+  issue_uuid   String?   @db.Uuid
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime? @db.Timestamptz(6)
+  deleted_at   DateTime? @db.Timestamptz(6)
+  role_uuid    String    @db.Uuid
+  roles        roles     @relation(fields: [role_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_permitions_for_issues_to_roles")
+}
+
+model projects {
+  uuid           String           @unique @db.Uuid
+  name           String
+  short_name     String
+  owner_uuid     String           @db.Uuid
+  description    String?
+  avatar         String?
+  created_at     DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime         @db.Timestamptz(6)
+  deleted_at     DateTime?        @db.Timestamptz(6)
+  issues         issues[]
+  old_issues_num old_issues_num[]
+  users          users            @relation(fields: [owner_uuid], references: [uuid], onUpdate: NoAction, map: "fk_projects_to_owner")
+
+  @@id([uuid, short_name])
+}
+
+model relation_types {
+  uuid        String      @id @db.Uuid
+  name        String
+  revert_name String
+  created_at  DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime?   @db.Timestamptz(6)
+  deleted_at  DateTime?   @db.Timestamptz(6)
+  relations   relations[]
+}
+
+model relations {
+  uuid                                 String         @id @db.Uuid
+  issue0_uuid                          String         @db.Uuid
+  issue1_uuid                          String         @db.Uuid
+  type_uuid                            String         @db.Uuid
+  created_at                           DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at                           DateTime       @default(now()) @db.Timestamptz(6)
+  deleted_at                           DateTime?      @db.Timestamptz(6)
+  issues_relations_issue0_uuidToissues issues         @relation("relations_issue0_uuidToissues", fields: [issue0_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_relation_issue0_to_issues")
+  issues_relations_issue1_uuidToissues issues         @relation("relations_issue1_uuidToissues", fields: [issue1_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_relation_issue1_to_issues")
+  relation_types                       relation_types @relation(fields: [type_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_relations_to_relation_types")
+
+  @@index([issue0_uuid], map: "idx_relations_issue0_uuid")
+  @@index([issue1_uuid], map: "idx_relations_issue1_uuid")
+  @@index([type_uuid], map: "idx_relations_type_uuid")
+  @@index([uuid], map: "idx_relations_uuid")
+}
+
+model roles {
+  uuid                  String                  @id @db.Uuid
+  name                  String
+  is_custom             Boolean                 @default(true)
+  created_at            DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?               @db.Timestamptz(6)
+  deleted_at            DateTime?               @db.Timestamptz(6)
+  permissions           Json?
+  permitions            permitions[]
+  permitions_for_issues permitions_for_issues[]
+  users_to_roles        users_to_roles[]
+}
+
+model sprints {
+  uuid        String    @id(map: "Sprints_pkey") @db.Uuid
+  name        String
+  start_date  DateTime  @default(now()) @db.Timestamptz(6)
+  end_date    DateTime  @default(now()) @db.Timestamptz(6)
+  color       String?
+  archived_at DateTime? @db.Timestamptz(6)
+  resolved_at DateTime? @db.Timestamptz(6)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime? @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  issues      issues[]
+}
+
+model transitions {
+  uuid             String    @id @db.Uuid
+  status_from_uuid String    @db.Uuid
+  status_to_uuid   String    @db.Uuid
+  name             String
+  created_at       DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime? @db.Timestamptz(6)
+  deleted_at       DateTime? @db.Timestamptz(6)
+  workflows_uuid   String    @db.Uuid
+  workflows        workflows @relation(fields: [workflows_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_workflows_to_transitions")
+}
+
+model user_sessions {
+  uuid       String    @id @db.Uuid
+  user_uuid  String    @db.Uuid
+  token      String
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  users      users     @relation(fields: [user_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "user_sessions_to_user")
+}
+
+model users {
+  name             String
+  login            String
+  mail             String
+  active           Boolean          @default(true)
+  password         String           @default("mypass")
+  avatar           String?
+  uuid             String           @id @db.Uuid
+  created_at       DateTime?        @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime?        @db.Timestamptz(6)
+  deleted_at       DateTime?        @db.Timestamptz(6)
+  token            String?
+  token_created_at DateTime?        @db.Timestamptz(6)
+  telegram         String           @default("")
+  boards           boards[]
+  dashboards       dashboards[]
+  favourites       favourites[]
+  issue_actions    issue_actions[]
+  issue_tags       issue_tags[]
+  logs_done        logs_done[]
+  projects         projects[]
+  user_sessions    user_sessions[]
+  users_to_roles   users_to_roles[]
+  watchers         watchers[]
+
+  @@index([uuid], map: "idx_users_uuid")
+}
+
+model users_to_roles {
+  users_uuid String @db.Uuid
+  roles_uuid String @db.Uuid
+  roles      roles  @relation(fields: [roles_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_users_to_roles_to_roles")
+  users      users  @relation(fields: [users_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_users_to_roles_to_users")
+
+  @@id([users_uuid, roles_uuid])
+}
+
+model watchers {
+  user_uuid  String @db.Uuid
+  issue_uuid String @db.Uuid
+  issues     issues @relation(fields: [issue_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_watchers_to_issues")
+  users      users  @relation(fields: [user_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_watchers_to_users")
+
+  @@id([user_uuid, issue_uuid])
+}
+
+model workflow_nodes {
+  uuid                String         @id @db.Uuid
+  x                   Int
+  y                   Int
+  workflows_uuid      String         @db.Uuid
+  issue_statuses_uuid String         @db.Uuid
+  created_at          DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?      @db.Timestamptz(6)
+  deleted_at          DateTime?      @db.Timestamptz(6)
+  issue_statuses      issue_statuses @relation(fields: [issue_statuses_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_workflow_nodes_to_statuses")
+  workflows           workflows      @relation(fields: [workflows_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction, map: "fk_workflows_to_workflow_nodes")
+}
+
+model workflows {
+  name           String
+  created_at     DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime         @db.Timestamptz(6)
+  deleted_at     DateTime?        @db.Timestamptz(6)
+  uuid           String           @id @db.Uuid
+  issue_types    issue_types[]
+  transitions    transitions[]
+  workflow_nodes workflow_nodes[]
+}
+
+/// We could not retrieve columns for the underlying table. Either it has none or you are missing rights to see them. Please check your privileges.
+// model configs {
+// }
