@@ -3,14 +3,16 @@ import sql from "./sql";
 
 import crud from "./crud";
 
-const cors = require('cors');
-const express = require('express');
+//const cors = require('cors');
+import cors from 'cors';
+
+import express from "express";
 import tools from "../tools";
 
-const app = express()
+const app:any = express()
 const port = 3006
 
-var bodyParser = require('body-parser');
+//var bodyParser = require('body-parser');
 
 const dict:any =
 {
@@ -24,9 +26,9 @@ const dict:any =
 var listeners:any[] = []
 
 app.use(cors());
-app.use(bodyParser.json({limit: '150mb'}));
-app.use(bodyParser.raw({limit: '150mb'}));
-app.use(bodyParser.urlencoded({limit: '150mb', extended: true}));
+app.use(express.json({limit: '150mb'}));
+app.use(express.raw({limit: '150mb'}));
+app.use(express.urlencoded({limit: '150mb', extended: true}));
 
 const handleRequest = async function(req:any, res:any)
 {
@@ -77,6 +79,7 @@ const init = async function()
         let ans = await sql.query(subdomain, `INSERT INTO watchers SET (user_uuid, issue_uuid) VALUES('` + req.headers.user_uuid + `','` + issue_uuid + `') ON CONFLICT DO NOTHING`)
         res.send(ans)
     })
+    listeners.push({"method": 'post',"func":'upsert_watcher'})
 
     app.delete('/delete_watcher', async (req:any, res:any) => {   
         let subdomain = req.headers.subdomain
@@ -84,6 +87,7 @@ const init = async function()
         let ans = await sql.query(subdomain, `DELETE FROM watchers WHERE user_uuid = '` + req.headers.user_uuid + `' AND issue_uuid = '` + issue_uuid + `'`)
         res.send(ans)
     })
+    listeners.push({"method": 'delete',"func":'delete_watcher'})
 
     app.get('/read_watcher', async (req:any, res:any) => {   
         let subdomain = req.headers.subdomain
@@ -91,6 +95,9 @@ const init = async function()
         let ans = await sql.query(subdomain, `SELECT * FROM watchers WHERE user_uuid = '` + req.headers.user_uuid + `' AND issue_uuid = '` + issue_uuid + `'`)
         res.send(ans)
     })
+    listeners.push({"method": 'get',"func":'read_watcher'})
+
+    
 
     app.get('/read_listeners', async (req:any, res:any) => {   
         res.send(listeners)
@@ -100,6 +107,7 @@ const init = async function()
         for(let method in crud.querys[table]){
             let func_name = method + '_' + table
             listeners.push({"method": dict[method],"func":func_name})
+            
             app[dict[method]]('/' + func_name, handleRequest)
         }
     }

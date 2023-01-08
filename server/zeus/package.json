@@ -18,6 +18,7 @@
     "postgres": "^3.3.2"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.13",
     "prisma": "^4.8.1"
   }
 }

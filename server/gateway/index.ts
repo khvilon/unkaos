@@ -1,22 +1,22 @@
 import axios from 'axios';
 
-const cors = require('cors');
-const express = require('express');
-const bodyParser = require('body-parser');
+import conf from './conf.json';
 
-const app = express()
+import cors from 'cors';
+
+import express from "express";
+
+const app:any = express()
 
 const port = 3001
-const zeus_url = 'http://127.0.0.1:3006'
-const cerberus_url = 'http://127.0.0.1:3005'
 
 app.use(cors());
-app.use(bodyParser.json({limit: '150mb'}));
-app.use(bodyParser.raw({limit: '150mb'}));
-app.use(bodyParser.urlencoded({limit: '150mb', extended: true}));
+app.use(express.json({limit: '150mb'}));
+app.use(express.raw({limit: '150mb'}));
+app.use(express.urlencoded({limit: '150mb', extended: true}));
 
 async function init(){ 
-    const zeus_listeners = await axios.get(zeus_url + '/read_listeners');
+    const zeus_listeners = await axios.get(conf.zeusUrl + '/read_listeners');
 
     for(let i = 0; i < zeus_listeners.data.length; i++){
         let method = zeus_listeners.data[i].method
@@ -33,7 +33,7 @@ async function init(){
 
             let cerberus_ans = await axios({
                 method: 'get',
-                url: cerberus_url + '/check_session' ,
+                url: conf.cerberusUrl + '/check_session' ,
                 headers: req.headers
             });
 
@@ -49,8 +49,9 @@ async function init(){
            // req.headers.user_name = cerberus_ans.data.name
 
             let zeus_ans = await axios({
+                data: req.body,
                 method: method,
-                url: zeus_url + req.url,
+                url: conf.zeusUrl + req.url,
                 headers: {subdomain: req.headers.subdomain, user_uuid: cerberus_ans.data.uuid}
             });
 
