@@ -25,6 +25,10 @@ export default {
       type: String,
       default: "text",
     },
+    placeholder: {
+      type: String,
+      default: ""
+    }
   },
 
   emits: ["update_parent_from_input", "updated"],
@@ -76,9 +80,10 @@ export default {
     <div class="label">{{ label }}</div>
     <input
       class="string-input"
-      :type="type"
       v-model="value"
+      :type="type"
       :disabled="disabled"
+      :placeholder="placeholder"
       @blur="blur"
     />
   </div>

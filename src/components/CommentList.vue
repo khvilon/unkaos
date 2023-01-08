@@ -5,33 +5,33 @@
         <div
           class="issue-actions-button bx bx-message-dots"
           title="Отображать комментарии"
-          v-bind:class="{ shadowed: !showComments }"
+          :class="{ shadowed: !showComments }"
           @click="toggleComments"
         ></div>
         <div
           class="issue-actions-button bx bxs-time"
           title="Отображать затраченное время"
           style="display: none"
-          v-bind:class="{ shadowed: !showTime }"
+          :class="{ shadowed: !showTime }"
           @click="toggleTime"
         ></div>
         <div
           class="issue-actions-button bx bx-edit"
           title="Отображать изменения в полях задачи"
-          v-bind:class="{ shadowed: !showEdits }"
+          :class="{ shadowed: !showEdits }"
           @click="toggleEdits"
         ></div>
         <div
           class="issue-actions-button bx bx-transfer"
           title="Отображать изменения статусов"
-          v-bind:class="{ shadowed: !showTransitions }"
+          :class="{ shadowed: !showTransitions }"
           @click="toggleTransitions"
         ></div>
         <div
           class="issue-actions-button"
           title="Порядок сортировки по дате создания"
           @click="invertSortOrder"
-          v-bind:class="{
+          :class="{
             'bx bxs-up-arrow': sortOrder,
             'bx bxs-down-arrow': !sortOrder,
           }"
