@@ -16,15 +16,24 @@ const handleNotify = async function(row:any, { command, relation, key, old }: an
         conn.send(JSON.stringify({type:"monitor_issue", uuid: row.uuid}))
     }
     else if(command == 'update' && relation.table == 'field_values'){
+        let conn = issues[row.issue_uuid]
+        if (conn == undefined) return
+        conn.send(JSON.stringify({type:"monitor_issue", uuid: row.issue_uuid}))
+       // data.users[relation.schema] = await getWorkspaceUsers(relation.schema)
+    }
+    else if(command == 'insert' && relation.table == 'issue_actions'){
+        let conn = issues[row.issue_uuid]
+        if (conn == undefined) return
+        conn.send(JSON.stringify({type:"monitor_issue", uuid: row.issue_uuid}))
        // data.users[relation.schema] = await getWorkspaceUsers(relation.schema)
     }
 }
 
 const handleSubscribeConnect = function(){
-    console.log('subscribe connected!')
+    console.log('subscribe connected2!')
 }
 
-sql.subscribe('*', handleNotify, handleSubscribeConnect)
+sql.subscribe('*',handleNotify, handleSubscribeConnect)
 
 wss.on('connection', function connection(connection) {
     connection.on('message', function message(data) {
