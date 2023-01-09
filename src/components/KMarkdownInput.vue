@@ -3,9 +3,15 @@ import {nextTick} from "vue";
 
 export default {
   name: "KMarkdownInput",
+  emits: ["update_parent_from_input", "input_focus", "attachment_added", "attachment_deleted"],
   data() {
     return {
-      val: ""
+      val: "",
+      imgSelectorVisible: false,
+      fontSelectorVisible: false,
+      savedSelectionStart: 0,
+      savedSelectionEnd: 0,
+      imageLink: ""
     };
   },
   props: {
@@ -33,8 +39,11 @@ export default {
       type: String,
       default: "",
     },
+    attachments: {
+      type: Array,
+      default: [],
+    }
   },
-  emits: ["update_parent_from_input", "input_focus"],
   methods: {
     resize() {
       let element = this.$refs["markdown_textarea_resizable"];
@@ -123,11 +132,13 @@ export default {
     },
     swapSelectionBySymbols(symbols) {
       let { textArea, startPos, endPos } = this.getSelectionVars()
-      document.execCommand('insertText', false, symbols)
-      nextTick(() => {
-        textArea.setSelectionRange(startPos, endPos + symbols.length)
-        this.resize()
-      });
+      if (this.val.substring(startPos, endPos) !== symbols) {
+        document.execCommand('insertText', false, symbols)
+        nextTick(() => {
+          textArea.setSelectionRange(startPos, startPos + symbols.length)
+          this.resize()
+        });
+      }
     },
     keyEvent(event) {
       //console.log('keyCode: ',event.keyCode,', event:', event)
@@ -200,8 +211,9 @@ export default {
     mdStrike() {
       this.wrapSelectionBySymbols('~~','~~')
     },
-    mdFontSize() {
-      // todo
+    toggleFontSize() {
+      this.imgSelectorVisible = false
+      this.fontSelectorVisible = !this.fontSelectorVisible
       // todo option selector
     },
     mdQuote() {
@@ -230,10 +242,19 @@ export default {
     mdTable() {
       this.swapSelectionBySymbols('|  |  |\n| --- | --- |\n|  |  |')
     },
-    mdImage() {
-      this.wrapSelectionBySymbols('![](','){width=x%}')
-      // todo change selection pos
-      // todo option selector
+    toggleImgSelect() {
+      this.fontSelectorVisible = false
+      this.imgSelectorVisible = !this.imgSelectorVisible
+    },
+    mdImageSelect(image) {
+      this.restoreSelection()
+      this.swapSelectionBySymbols('![]('+ image.name + '.'+ image.extention + '){width=x%}')
+      this.toggleImgSelect()
+    },
+    mdImageLink() {
+      this.restoreSelection()
+      this.swapSelectionBySymbols('![]('+ this.imageLink + '){width=x%}')
+      this.toggleImgSelect()
     },
     mdLine() {
       this.swapSelectionBySymbols('---\n')
@@ -241,6 +262,26 @@ export default {
     previewMd() {
       // todo
       // show/hide markdown preview
+    },
+    onTextareaBlur() {
+      this.saveSelection()
+      this.$emit('input_focus', false)
+    },
+    saveSelection() {
+      // save selection for later reuse
+      let { startPos, endPos } = this.getSelectionVars()
+      this.savedSelectionStart = startPos
+      this.savedSelectionEnd = endPos
+    },
+    restoreSelection() {
+      let textArea = this.$refs["markdown_textarea_resizable"]
+      textArea.select()
+      textArea.selectionStart = this.savedSelectionStart
+      textArea.selectionEnd = this.savedSelectionEnd
+    },
+    updateImgLink(link) {
+      console.log('updateImgLink', link)
+      this.imageLink = link
     }
   },
   watch: {
@@ -288,24 +329,75 @@ export default {
 <template>
   <Transition :name="transition">
     <div class="markdown-input">
-      <div class="markdown-input-buttons" @mousedown.prevent>
-        <div class="markdown-input-button bx bx-bold"                 @click="mdBold"         title="Жирный (Ctrl + B)"></div>
-        <div class="markdown-input-button bx bx-italic"               @click="mdItalic"       title="Курсив (Ctrl + I)"></div>
-        <div class="markdown-input-button bx bx-strikethrough"        @click="mdStrike"       title="Перечёркнутый (Ctrl + Shift + S)"></div>
+      <div class="markdown-input-buttons">
+        <div class="markdown-input-button bx bx-bold"            @mousedown.prevent @click="mdBold"          title="Жирный (Ctrl + B)"></div>
+        <div class="markdown-input-button bx bx-italic"          @mousedown.prevent @click="mdItalic"        title="Курсив (Ctrl + I)"></div>
+        <div class="markdown-input-button bx bx-strikethrough"   @mousedown.prevent @click="mdStrike"        title="Перечёркнутый (Ctrl + Shift + S)"></div>
         <div class="markdown-input-button-separator"></div>
-        <div class="markdown-input-button bx bx-font-size"            @click="mdFontSize"     title="Размер шрифта" style="display: none"></div>
-        <div class="markdown-input-button-separator"                                                                style="display: none"></div>
-        <div class="markdown-input-button bx bxs-quote-right"         @click="mdQuote"        title="Цитата (Ctrl + Shift + Q)"></div>
-        <div class="markdown-input-button bx bx-code-alt"             @click="mdCodeFragment" title="Фрагмент кода (Ctrl + Shift + C)" ></div>
-        <div class="markdown-input-button bx bx-code-block"           @click="mdCodeBlock"    title="Блок кода (Ctrl + Shift + M)" ></div>
-        <div class="markdown-input-button bx bx-link"                 @click="mdLink"         title="Ссылка (Ctrl + L)" ></div>
+        <div class="markdown-input-button bx bx-font-size"
+             @mousedown.prevent
+             @click="toggleFontSize"
+             title="Размер шрифта"
+             :class="{ md_button_selected: fontSelectorVisible }"
+             style="display: none"
+        >
+          <Transition :name="transition">
+            <RelativeBox
+                v-if="fontSelectorVisible"
+                :child_style="'margin: 2px 0 0 -2px'"
+            >
+            </RelativeBox>
+          </Transition>
+        </div>
+        <div class="markdown-input-button-separator" style="display: none"></div>
+        <div class="markdown-input-button bx bxs-quote-right"    @mousedown.prevent @click="mdQuote"         title="Цитата (Ctrl + Shift + Q)"></div>
+        <div class="markdown-input-button bx bx-code-alt"        @mousedown.prevent @click="mdCodeFragment"  title="Фрагмент кода (Ctrl + Shift + C)" ></div>
+        <div class="markdown-input-button bx bx-code-block"      @mousedown.prevent @click="mdCodeBlock"     title="Блок кода (Ctrl + Shift + M)" ></div>
+        <div class="markdown-input-button bx bx-link"            @mousedown.prevent @click="mdLink"          title="Ссылка (Ctrl + L)" ></div>
         <div class="markdown-input-button-separator"></div>
-        <div class="markdown-input-button bx bx-list-ul"              @click="mdListUl"       title="Маркированный список (Ctrl + U)"></div>
-        <div class="markdown-input-button bx bx-list-ol"              @click="mdListOl"       title="Нумерованный список (Ctrl + O)"></div>
-        <div class="markdown-input-button bx bx-list-check"           @click="mdListCheck"    title="Чеклист"></div>
+        <div class="markdown-input-button bx bx-list-ul"         @mousedown.prevent @click="mdListUl"        title="Маркированный список (Ctrl + U)"></div>
+        <div class="markdown-input-button bx bx-list-ol"         @mousedown.prevent @click="mdListOl"        title="Нумерованный список (Ctrl + O)"></div>
+        <div class="markdown-input-button bx bx-list-check"      @mousedown.prevent @click="mdListCheck"     title="Чеклист"></div>
         <div class="markdown-input-button-separator"></div>
-        <div class="markdown-input-button bx bx-table"                @click="mdTable"        title="Таблица"></div>
-        <div class="markdown-input-button bx bx-image"                @click="mdImage"        title="Изображение"   style="display: none"></div>
+        <div class="markdown-input-button bx bx-table"           @mousedown.prevent @click="mdTable"         title="Таблица"></div>
+        <div class="markdown-input-button bx bx-image"
+             @click.self="toggleImgSelect"
+             title="Изображение"
+             :class="{ md_button_selected: imgSelectorVisible }">
+          <Transition :name="transition">
+            <RelativeBox
+                :child_style="'margin: 2px 0 0 -2px'"
+                v-if="imgSelectorVisible"
+            >
+              <KTabPanel>
+                <KTab title="Вложения" style="padding: 2px">
+                  <KAttachment
+                      style="width: max-content"
+                      :show_icon="false"
+                      :attachments="attachments.filter((attachment) => attachment.type.indexOf('image') > -1)"
+                      @img_selected="mdImageSelect($event)"
+                      @attachment_added="$emit('attachment_added', $event)"
+                      @attachment_deleted="$emit('attachment_deleted', $event)"
+                  >
+                  </KAttachment>
+                </KTab>
+                <KTab title="Ссылка" style="padding: 10px">
+                  <StringInput
+                      label=""
+                      placeholder="https://"
+                      @update_parent_from_input="updateImgLink($event)"
+                  />
+                  <KButton
+                      name="Вставить"
+                      style="height: 25px; margin-top: 2px;"
+                      @click="mdImageLink"
+                  />
+                </KTab>
+              </KTabPanel>
+            </RelativeBox>
+          </Transition>
+        </div>
+
         <div class="markdown-input-button bx bx-dots-horizontal"      @click="mdLine"         title="Горизонтальная линия (Ctrl + R)" style="display: none"></div>
         <div class="markdown-input-button md-preview bx bxl-markdown" @click="previewMd"     :title="previewDescription" style="display: none"></div>
       </div>
@@ -319,7 +411,7 @@ export default {
             @input="resize"
             @keydown ="keyEvent"
             @focus="$emit('input_focus', true)"
-            @blur="$emit('input_focus', false)"
+            @blur="onTextareaBlur"
         ></textarea>
       </div>
     </div>
@@ -383,6 +475,10 @@ export default {
 
 .markdown-input:focus-within {
   outline: 1px solid;
+}
+
+.md_button_selected {
+  background: var(--icon-hover-bg-color);
 }
 
 </style>

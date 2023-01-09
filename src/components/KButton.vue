@@ -62,8 +62,9 @@ export default {
 @import "../css/global.scss";
 
 .btn .btn_input {
+  user-select: none !important;
   width: 200px;
-  height: 35px;
+  height: 100%;
   color: var(--text-color);
   background-color: var(--button-color);
   border-width: 1px;
