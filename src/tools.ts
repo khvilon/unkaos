@@ -221,7 +221,7 @@ export default class tools {
     return new Date(dt).toLocaleString("ru", tools.dt_options);
   }
 
-  static copy_text_to_clipboard(text) {
+  static copy_text_to_clipboard(text:string) {
     var textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.position = "fixed";  //avoid scrolling to bottom
@@ -235,12 +235,7 @@ export default class tools {
     }
     document.body.removeChild(textArea)
     return;
-  }
-
-
-  
-
-  
+  }  
 }
 
 declare global {

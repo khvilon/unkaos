@@ -8,27 +8,7 @@
   import cache from "../cache";
 
 	let methods = {
-		ws_init()
-		{
-			const myWs = new WebSocket('ws://localhost:3003');
-			// обработчик проинформирует в консоль когда соединение установится
-			myWs.onopen = function () {
-			console.log('подключился');
-			};
-
-			// обработчик сообщений от сервера
-			myWs.onmessage = function (message) {
-			console.log('Message: %s', message.data);
-			};
-			// функция для отправки echo-сообщений на сервер
-			function wsSendEcho(value) {
-			myWs.send(JSON.stringify({action: 'ECHO', data: value.toString()}));
-			}
-			// функция для отправки команды ping на сервер
-			function wsSendPing() {
-			myWs.send(JSON.stringify({action: 'PING'}));
-			}
-		},
+		
 		get_favourite_uuid() {
 			
 			if(this.favourites == undefined || this.selected_board == undefined || this.selected_board.is_new) 
@@ -206,8 +186,6 @@
 			}
 
 
-			this.ws_init()
-
 			//console.log('sselected_board4')
 			//get_issues()
 		},
@@ -350,6 +328,7 @@
 		},
 		make_swimlanes()
 		{
+
 			console.log('make_swimlanes0', new Date())
 			this.swimlanes = {}
 
@@ -491,6 +470,10 @@
 
 
 			this.sort_swimlanes()
+
+
+			
+
 			
 			let position = 0
 			for(let i in this.swimlanes)
@@ -524,8 +507,6 @@
 
 
 			console.log('make_swimlanes100', new Date())
-
-			this.swimlanes_to_show = this.swimlanes
 
 			//load saved swimlanes order
 
@@ -1048,7 +1029,6 @@
 	favorite_uuid: undefined,
 	void_group_name: 'Без группы',
 	swimlanes: {},
-	swimlanes_to_show: {},
 	moving_swimlane: null,
 	sprints: [],
 	curr_sprint_num: 0,
@@ -1354,8 +1334,8 @@
 		<div
 		:class="{ 'when-dragged-swimlane': moving_swimlane != null}"
 		class="swimlane"
-		v-for="(swimlane, sw_index) in swimlanes_to_show"
-		:key="sw_index"
+		v-for="(swimlane, sw_index) in swimlanes"
+		:key="swimlane.uuid"
 		@drop="move_swimlane($event, swimlane)"
 		@dragover.prevent
 		@dragenter.prevent
@@ -1398,7 +1378,7 @@
 		
 				<div 
 				v-for="(status, s_index) in boards_columns"
-				:key="s_index"
+				:key="swimlane.uuid + '_' + s_index"
 				@mousemove="move_card_status(status, $event, swimlane)"
 				@mouseup="drop_card(status, $event, swimlane)"
 				@mouseleave="status_draginfo={}"
@@ -1414,7 +1394,7 @@
 						<div
 						v-for="(issue, i_index) in 
 						(swimlane.filtered_issues[status.uuid] != undefined ? swimlane.filtered_issues[status.uuid] : [])"
-						:key="i_index"
+						:key="issue.uuid + '_' + i_index"
 						>
 							<div
 								v-if="issue.uuid == card_to_be_moved_down_uuid && card_draginfo.uuid != undefined"
@@ -1453,27 +1433,37 @@
 								<label class="issue-card-description" v-if="display_description">
 									{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
 								</label>
-								<div class="issue-board-card-footer">
+								<div class="issue-board-card-footer" v-show="swimlane.expanded || selected_board.no_swimlanes">
 									
 									<div
 									class="board-card-field"
-									v-for="(f, index) in selected_board.boards_fields"
+									v-for="(f, f_index) in selected_board.boards_fields"
 									>
 										<label 
 										class="board-card-field-title"
 										v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'">
 										{{f.fields[0].name}}: </label>
 										<component
-											v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
+											v-if="false && f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
 											v-bind:is="f.fields[0].type[0].code + 'Input'"
 											:value="get_field_value(issue, f.fields[0])"
 											label=""
-											:key="index"
+											:key="issue.uuid + '_' + i_index + '_' + f_index"
 											:disabled="f.fields[0].name == 'Автор'"
 											:values="available_values[f.fields_uuid]"
 											class="board-card-field-input"
 											@updated="field_updated($event, f.fields[0])"
 										></component>
+										<StringInput
+											v-if="swimlane.expanded && f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
+											:value="get_field_value(issue, f.fields[0], true)"
+											label=""
+											:key="issue.uuid + '_' + i_index + '_' + f_index"
+											:disabled="true"
+											:values="available_values[f.fields_uuid]"
+											class="board-card-field-input"
+											@updated="field_updated($event, f.fields[0])"
+										></StringInput>
 									</div>
 								</div>	
 								
