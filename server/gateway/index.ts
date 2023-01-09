@@ -22,8 +22,6 @@ async function init(){
         let method = zeus_listeners.data[i].method
         let func = zeus_listeners.data[i].func
 
-        
-
         app[method]('/' + func, async (req:any, res:any) => {
 
             //console.log(req)
@@ -59,6 +57,17 @@ async function init(){
             res.send(zeus_ans.data)
         })
     }
+
+    app.get('/get_token', async (req : any, res : any) => {
+        let cerberus_ans = await axios({
+            method: 'get',
+            url: conf.cerberusUrl + '/get_token' ,
+            headers: req.headers
+        }); 
+
+        res.status(cerberus_ans.status);
+        res.send(cerberus_ans.data)
+    })
 
     app.listen(port, async () => {
         console.log(`Gateway running on port ${port}`)
