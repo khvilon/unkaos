@@ -49,46 +49,43 @@ export default {
 }
 
 ul.tabs__header {
-  display: block;
+  margin: 0;
+  display: flex;
   list-style: none;
-  margin: 0 0 0 20px;
   padding: 0;
-  height: 40px;
+  height: 36px;
   z-index: 1;
 }
 
 ul.tabs__header > li {
+  user-select: none !important;
+  display: flex;
+  align-items: center;
   padding: 5px 10px;
-  margin: 0;
-  display: inline-block;
-  margin-right: 5px;
+  margin: 10px 0 1px 0;
   cursor: pointer;
   border-radius: var(--border-radius) var(--border-radius) 0 0;
+  border-width: var(--border-width);
   border-color: var(--border-color);
   border-style: groove;
-  border-bottom: 0px solid transparent;
+  border-bottom: 0 solid transparent;
 }
 
 ul.tabs__header > li.tab__selected {
-  /* font-weight: bold; */
-
-  padding: 8px 10px;
-  
+  background-color: var(--panel-bg-color);
+  margin: 0;
 }
 
 .tab {
-
   display: inline-block;
-  color: black;
-  border-radius: var(--border-radius);
   width: 100%;
- 
+  margin-top: -1px;
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
   border-width: var(--border-width);
   border-color: var(--border-color);
   border-style: groove;
   padding: 20px;
   height: calc(100% - 40px);
-  margin: -5px;
 }
 
 .tab-panel .tab {
@@ -99,8 +96,4 @@ ul.tabs__header > li.tab__selected {
   background-color: var(--table-row-color);
 }
 
-.tab-panel li.tab__selected {
-  background-color: var(--panel-bg-color);
-  
-}
 </style>

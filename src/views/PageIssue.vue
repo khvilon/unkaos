@@ -320,9 +320,7 @@ let methods = {
     if (att.type.indexOf("image") > -1) this.images.push(att);
   },
   delete_attachment: async function (att) {
-    
     let ans = await rest.run_method("delete_attachments", {uuid: att.uuid});
-
     for (let i in this.attachments) {
       if (this.attachments[i].uuid == att.uuid) this.attachments.splice(i, 1);
     }
@@ -1056,16 +1054,19 @@ export default mod;
 
         <KMarkdownInput
             style="margin-top: 10px"
-            v-if="!loading && (edit_mode || id === '')"
             ref="issue_descr_text_inpt"
-            :value="get_field_by_name('Описание').value"
-            :id="'values.' + get_field_by_name('Описание').idx + '.value'"
-            @update_parent_from_input="edit_current_description"
-            @paste="pasted"
             parent_name="issue"
             placeholder="Описание задачи..."
             textarea_id="issue_description_textarea"
             transition="element_fade"
+            v-if="!loading && (edit_mode || id === '')"
+            :attachments="attachments"
+            :value="get_field_by_name('Описание').value"
+            :id="'values.' + get_field_by_name('Описание').idx + '.value'"
+            @update_parent_from_input="edit_current_description"
+            @paste="pasted"
+            @attachment_added="add_attachment"
+            @attachment_deleted="delete_attachment"
         />
 
         <div id="issue_footer_buttons"
@@ -1115,31 +1116,30 @@ export default mod;
           >
           </KRelations>
         </Transition>
-
-        <Transition name="element_fade">
-          <KAttachment
-            v-if="!loading"
-            label=""
+        <KAttachment
+            transition="element_fade"
             id="issue-attachments"
+            v-if="!loading"
             :attachments="attachments"
             @attachment_added="add_attachment"
             @attachment_deleted="delete_attachment"
-          >
-          </KAttachment>
-        </Transition>
-
-          <KMarkdownInput
+        >
+        </KAttachment>
+        <KMarkdownInput
             class="comment_input"
             style="margin-top: 20px"
+            placeholder="Комментарий к задаче..."
+            textarea_id="issue_comment_textarea"
+            transition="element_fade"
             v-if="!loading && !edit_mode && id !== ''"
+            :attachments="attachments"
             :value="comment"
             @update_parent_from_input="update_comment"
             @paste="pasted"
             @input_focus="comment_focus"
-            placeholder="Комментарий к задаче..."
-            textarea_id="issue_comment_textarea"
-            transition="element_fade"
-          />
+            @attachment_added="add_attachment"
+            @attachment_deleted="delete_attachment"
+        />
         <Transition name="element_fade">
           <KButton
               v-if="!loading && !edit_mode && id !== ''"
@@ -1150,8 +1150,6 @@ export default mod;
               :disabled="comment === ''"
           />
         </Transition>
-
-
         <CommentList
             v-if="!loading && !edit_mode"
             v-model:actions="issue[0].actions"
@@ -1499,7 +1497,13 @@ $code-width: 160px;
   display: none;
 }
 
+
+.bx-paperclip {
+  font-size: $font-size * 1.4;
+}
+
 #issue-attachments {
+  margin-top: 20px;
   width: 100%;
 }
 
