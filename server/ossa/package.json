@@ -12,8 +12,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@becual/pg-notify": "^2.0.5",
-    "pg-notify": "^0.0.19",
-    "postgres": "^3.3.2"
+    "jsonwebtoken": "^9.0.0",
+    "md5": "^2.3.0",
+    "postgres": "^3.3.2",
+    "ws": "^8.12.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/ws": "^8.5.4"
   }
 }

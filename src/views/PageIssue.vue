@@ -3,6 +3,7 @@ import tools from "../tools.ts";
 import page_helper from "../page_helper.ts";
 import rest from "../rest.ts";
 import cache from "../cache";
+import ws from "../ws.ts";
 
 let methods = {
   pasted: async function (e) {
@@ -503,6 +504,8 @@ let methods = {
 
       this.saved_new()
     }
+
+    ws.monitorIssue(this.issue[0].uuid)
 
     this.title;
   },
