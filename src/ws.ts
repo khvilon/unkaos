@@ -1,36 +1,98 @@
-import tools from "./tools";
-import conf from "./conf";
-const checkConnectionInterval = 5000 //ms
+
+import conf from "./conf"
+
+//import { io } from "socket.io-client";
+
+export class monRequest{
+	readonly type:string
+	readonly key:string
+	readonly monMsg:string
+	readonly callback:Function
+	constructor(type:string, key:string, callback:Function) {
+		this.type = type
+		this.key = key
+		this.callback = callback
+		this.monMsg = JSON.stringify({"type": type, "key": key})
+	}
+}
 
 export default class ws {
+	private static readonly checkConnectionInterval = 5000 //ms
+	private static readonly  reconnectInterval = 2000 //ms
 
-  static issues: string[] = [];
+	static s : WebSocket
+	static monRequests: Map<string, monRequest> = new Map([])
+	static isAlife = true
 
-  static myWs : WebSocket = new WebSocket(conf.wsUrl);
+	static connect() {
+		//if(ws.s != undefined && ws.s.readyState !== WebSocket.CLOSED) return
+		//else if(ws.s != undefined)
+		console.log('WS try connect');
+		ws.s = new WebSocket(conf.wsUrl)
 
-  static monitorIssue(uuid: string, callback: Function) {
-    let myWs = this.myWs
-	// обработчик проинформирует в консоль когда соединение установится
-	myWs.onopen = function () {
-		console.log('wsws WebSocket to check changes for issue ' + uuid + ' connected');
-	};
+		ws.s.onerror = (err)=>{
+			console.error('WS encountered error: ', err, 'Closing socket')
+			ws.s.close();	
+		};
 
+		ws.s.onclose = (e)=>{
+			console.log('WS is closed. Reconnect will be attempted in ' + ws.reconnectInterval + ' ms', e.reason)
+			setTimeout(ws.connect, ws.reconnectInterval)
+		};
 
-	let msg = {"type": 'monitor_issue', "uuid": uuid}
-	myWs.send(JSON.stringify(msg));
+		ws.s.onopen = ()=>{
+			console.log('WS open')
+			ws.isAlife = true;
+			for (let [key, value] of ws.monRequests) {
+				console.log('WS send mon req'); ws.s.send(value.monMsg) 
+			}
+		}
 
-	// обработчик сообщений от сервера
-	this.myWs.onmessage = function (message) {
-		console.log('wsws Message: %s', message.data);
-	};
-	
-	console.log('wsws',conf.wsUrl )
-	// функция для отправки команды ping на сервер
-	function wsSendPing() {
-		myWs.send(JSON.stringify({action: 'PING'}));
+		ws.s.onmessage = function (message) {
+			console.log('WS message: %s', message.data);
 
-		setTimeout(wsSendPing, checkConnectionInterval)
+			let msg:any
+			try{msg = JSON.parse(message.data)}
+			catch(err){ console.log('WS message is not a valid json'); return }
+
+			if(msg.action == 'PONG'){
+				ws.isAlife = true
+				return
+			}
+			console.log(ws.monRequests)
+			let mr = ws.monRequests.get(msg.key + '#' + msg.type)
+			if(mr) mr.callback(message)
+		}
+
+		console.log('wsws')
 	}
-    wsSendPing()
-  }
+
+
+	static heartbit(){
+		console.log(ws.isAlife, !ws.isAlife && ws.s != undefined && ws.s.readyState !== WebSocket.CLOSED)
+		if(!ws.isAlife && ws.s != undefined && ws.s.readyState !== WebSocket.CLOSED) ws.s.close()
+		ws.isAlife = false;
+		ws.ping()
+		setTimeout(ws.heartbit, ws.checkConnectionInterval)
+	}
+	
+
+	static ping() {
+		console.log('WS try ping')
+		try{
+			if(ws.s != undefined && ws.s.readyState !== WebSocket.CLOSED) 
+				ws.s.send(JSON.stringify({action: 'PING'}))
+		}
+		catch(err){console.log('WS ping faied', err)}
+	}
+	
+
+	static mon(req:monRequest) {
+		console.log('WS add req: ', req)
+		ws.monRequests.set(req.key + '#' + req.type, req)
+		if(ws.s != undefined && ws.s.readyState !== WebSocket.CLOSED) {console.log('WS send req'); ws.s.send(req.monMsg) }
+	}
 }
+
+ws.connect()
+ws.heartbit()

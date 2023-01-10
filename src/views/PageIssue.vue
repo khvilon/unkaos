@@ -3,7 +3,7 @@ import tools from "../tools.ts";
 import page_helper from "../page_helper.ts";
 import rest from "../rest.ts";
 import cache from "../cache";
-import ws from "../ws.ts";
+import wsMon from "../wsMon.ts";
 
 let methods = {
   pasted: async function (e) {
@@ -464,18 +464,12 @@ let methods = {
     });
     this.watch = ans.length > 0;
 
-    this.attachments = await rest.run_method("read_attachments", {
-      issue_uuid: this.issue[0].uuid,
-    });
-    this.images = this.attachments.filter((a) => a.type.indexOf("image/") > -1);
-
+    await this.load_attachments()
+    await this.load_tags()
+    
     this.sprints = this.sprints.sort(tools.compare_obj('start_date')).reverse()
 
-    this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
-
     this.old_project_uuid = this.issue[0].project_uuid
-
-    await this.read_selected_tags()
 
     this.current_description = this.get_field_by_name('Описание').value
 
@@ -503,9 +497,48 @@ let methods = {
       this.saved_new()
     }
 
-    ws.monitorIssue(this.issue[0].uuid)
+    wsMon.monitorIssue(this.issue[0].uuid,
+    this.update_issue, this.get_formated_relations, this.load_attachments , this.load_tags)
 
     this.title;
+  },
+
+  async load_tags()
+  {
+    this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
+    await this.read_selected_tags()
+  },
+
+  async load_attachments()
+  {
+    this.attachments = await rest.run_method("read_attachments", {
+      issue_uuid: this.issue[0].uuid,
+    });
+    this.images = this.attachments.filter((a) => a.type.indexOf("image/") > -1);
+
+    wsMon.monitorIssueAttachmentsDel(this.attachments.map((a)=>a.uuid), this.load_attachments)
+  },
+
+  async update_issue(msg)
+  {
+    let my_description = this.get_field_by_name('Описание').value
+    await this.update_data({uuid: this.issue[0].uuid})
+    console.log('wswsws', this.get_field_by_name('Описание').value, this.saved_descr, this.current_description, my_description)
+    if(!this.edit_mode || this.saved_descr == my_description){
+      console.log('wswswsws1')
+      this.current_description = this.get_field_by_name('Описание').value
+      this.saved_descr = this.get_field_by_name('Описание').value
+    } 
+    else if (this.saved_descr != this.get_field_by_name('Описание').value) {
+      console.log('wswswsws2')
+      this.saved_descr = this.get_field_by_name('Описание').value
+      this.get_field_by_name('Описание').value = my_description
+      this.must_reload = true
+    }
+    else {
+      this.get_field_by_name('Описание').value = my_description
+      this.must_reload = true
+    }
   },
 
   get_params_for_localstorage() {
@@ -726,6 +759,7 @@ const data = {
   max_status_buttons_count: 2,
   current_status: true,
   is_in_dev_mode: false,
+  must_reload: false,
   instance: {
     values: [
       {
@@ -1084,7 +1118,8 @@ export default mod;
             <KButton
               key="1"
               class="save-issue-edit-mode-btn"
-              name="Сохранить"
+              :name="!must_reload ? 'Сохранить' : 'Описание изменено параллельно. Скопируйте свое и обновите страницу'"
+              :disabled="must_reload"
               @click="save"
             />
             <KButton
