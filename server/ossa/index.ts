@@ -3,6 +3,9 @@ const port = 3004
 import { WebSocketServer, WebSocket } from 'ws';
 const wss = new WebSocketServer({ port: port });
 
+import axios from 'axios';
+import conf from './conf.json';
+
 import sql from "./sql";
 
 class MonType{
@@ -42,20 +45,12 @@ const handleNotify = async function(row:any, { command, relation, key, old }: an
         let mt = mts[i]
         if(!mt.commands.includes(command)) continue
 
-        console.log('a',mt,row)
-
         let mt_key = row[mt.key_path]
-        console.log('aa',monTasks, mt_key)
         let tasksPool = monTasks.get(mt_key)
-        console.log('aaa',tasksPool)
         if(!tasksPool) continue
-
-        console.log('b',tasksPool, mt.type)
 
         let connections = tasksPool.get(mt.type)
         if(!connections) continue
-
-        console.log('c', connections.length)
 
         let msg = {command: command, relation: relation, key: mt_key, type: mt.type}
         for(let j = 0; j < connections.length; j++) connections[j].send(JSON.stringify(msg))
@@ -64,16 +59,16 @@ const handleNotify = async function(row:any, { command, relation, key, old }: an
    
 }
 
-const handleSubscribeConnect = function(){
-    console.log('subscribe connected!')
-}
-
+const handleSubscribeConnect = function(){ console.log('subscribe connected!') }
 sql.subscribe('*',handleNotify, handleSubscribeConnect)
 
-wss.on('connection', function connection(connection, req) {
+var sessions:any={}
 
-    connection.on('message', function message(data) {
+wss.on('connection', async function connection(connection, req) {
 
+    connection.on('message', async function message(data) {
+
+        console.log('received: %s', data)
         
         let dataObj:any
         try{ dataObj = JSON.parse(data.toString()) }
@@ -89,6 +84,32 @@ wss.on('connection', function connection(connection, req) {
             else monTasks.get(key)?.get(type)?.push(connection)
 
             //console.log(monTasks)
+        }
+        else if(dataObj.action == 'AUTH'){
+
+            if(!dataObj.token || !dataObj.subdomain){
+                connection.close()
+                console.log('Socket closing - need token and subdomain');
+                return
+            }
+
+            let headers = {token: dataObj.token, subdomain: dataObj.subdomain}
+
+            let cerberus_ans = await axios({
+                method: 'get',
+                url: conf.cerberusUrl + '/check_session' ,
+                headers: headers
+            });
+
+            if(cerberus_ans.status != 200 || !req.headers['sec-websocket-key']){
+                connection.close()
+                console.log('Token auth failed');
+                return
+            }
+
+            console.log('User', cerberus_ans.data, 'auth OK')
+            let sessionId:string = req.headers['sec-websocket-key']
+            sessions[sessionId] = cerberus_ans.data
         }
         else if(dataObj.action == 'PING'){
             connection.send(JSON.stringify({action:'PONG'}))
