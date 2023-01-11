@@ -1,5 +1,6 @@
 
 import conf from "./conf"
+import cache from "./cache";
 
 //import { io } from "socket.io-client";
 
@@ -16,6 +17,8 @@ export class monRequest{
 	}
 }
 
+
+
 export default class ws {
 	private static readonly checkConnectionInterval = 5000 //ms
 	private static readonly  reconnectInterval = 2000 //ms
@@ -23,12 +26,25 @@ export default class ws {
 	static s : WebSocket
 	static monRequests: Map<string, monRequest> = new Map([])
 	static isAlife = true
+	static subdomain:string = ws.getSubdomain()
+
+	static getSubdomain(): string {
+		const uri = window.location.href;
+		const uriParts = uri.split(".");
+		if (uriParts.length < 3) return "public";
+		if (uriParts[1] == "unkaos")
+			return uriParts[0].replace("http://", "").replace("https://", "");
+		return uriParts[1];
+	}
 
 	static connect() {
 		//if(ws.s != undefined && ws.s.readyState !== WebSocket.CLOSED) return
 		//else if(ws.s != undefined)
 		console.log('WS try connect');
+		ws.subdomain = ws.getSubdomain()
+		if(!this.subdomain || this.subdomain == '') return
 		ws.s = new WebSocket(conf.wsUrl)
+		
 
 		ws.s.onerror = (err)=>{
 			console.error('WS encountered error: ', err, 'Closing socket')
@@ -41,7 +57,9 @@ export default class ws {
 		};
 
 		ws.s.onopen = ()=>{
+			
 			console.log('WS open')
+			ws.s.send(JSON.stringify({action:'AUTH', token:cache.getString("user_token"), subdomain:ws.getSubdomain()}))
 			ws.isAlife = true;
 			for (let [key, value] of ws.monRequests) {
 				console.log('WS send mon req'); ws.s.send(value.monMsg) 
@@ -78,6 +96,7 @@ export default class ws {
 	
 
 	static ping() {
+		if(!ws.subdomain) return
 		console.log('WS try ping')
 		try{
 			if(ws.s != undefined && ws.s.readyState !== WebSocket.CLOSED) 

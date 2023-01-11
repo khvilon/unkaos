@@ -1,4 +1,4 @@
-    var mail = {}
+    var mail:any = {}
 
 const { info } = require('console')
     const nodemailer = require('nodemailer')
@@ -23,11 +23,8 @@ const { info } = require('console')
     
 
 
-    mail.send = async function(to, subject, text, html)
-    {
-
-        
-        
+    mail.send = async function(to:string, subject:string, text:string, html:string)
+    { 
         let result = await mail.transporter.sendMail({
             from: '"Unkaos" <' + mail.user + '>',
             to: to,
