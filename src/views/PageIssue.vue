@@ -521,6 +521,9 @@ let methods = {
 
   async update_issue(msg)
   {
+    this.freeze_save = true
+    const freeze_timeout = 1000//ms
+    setTimeout(()=>{this.freeze_save=false}, freeze_timeout)
     let my_description = this.get_field_by_name('Описание').value
     await this.update_data({uuid: this.issue[0].uuid})
     console.log('wswsws', this.get_field_by_name('Описание').value, this.saved_descr, this.current_description, my_description)
@@ -615,6 +618,7 @@ let methods = {
   field_updated: async function () {
     console.log("field_updated");
     if (this.id == "") return;
+    if(this.freeze_save) return;
 
     if(!(await this.check_issue_changed())) return
     
@@ -760,6 +764,7 @@ const data = {
   current_status: true,
   is_in_dev_mode: false,
   must_reload: false,
+  freeze_save: false,
   instance: {
     values: [
       {

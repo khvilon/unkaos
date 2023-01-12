@@ -50,8 +50,8 @@ export default {
 @import "../css/global.scss";
 
 .boolean .boolean-input {
-  width: 35px;
-  height: 35px;
+  width: $input-height;;
+  height: $input-height;
   color: var(--text-color);
 }
 
@@ -60,7 +60,7 @@ export default {
 }
 
 .boolean-input {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 400;
   border-radius: var(--border-radius);
   transition: all 0.5s ease;
