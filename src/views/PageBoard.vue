@@ -180,11 +180,26 @@
 			}
 
 			
-			for(let i in this.selected_board.boards_fields)
-			{
+			for(let i in this.selected_board.boards_fields){
 				this.selected_board.boards_fields[i].name = this.selected_board.boards_fields[i].fields[0].name
 			}
 
+
+			let my_uuid = cache.getObject("profile").uuid
+			let filters = await rest.run_method("read_boards_filters",{board_uuid: this.selected_board.uuid})
+			filters = filters.filter((f)=>!f.is_private || f.author_uuid == my_uuid)
+			filters = filters.sort(tools.compare_obj_dt('updated_at'))
+
+			/*let my_filters = await rest.run_method("read_boards_filters",{
+					board_uuid: this.selected_board.uuid, is_private: 'TRUE', 
+				author_uuid: cache.getObject("profile").uuid
+				})
+			console.log('my_filters', my_filters)
+			let public_filters = await rest.run_method("read_boards_filters", { 
+				board_uuid: this.selected_board.uuid, is_private: false })	
+			console.log('public_filters', public_filters)*/
+
+			this.filters = filters//my_filters.concat(public_filters);
 
 			//console.log('sselected_board4')
 			//get_issues()
@@ -535,14 +550,20 @@
 			}
 			else return
 
-			if(this.selected_board.use_sprint_filter)
-			{
-				options.query = decodeURIComponent(atob( options.query))
-				options.query = '(' + options.query + ") and attr#sprint_uuid#='" + this.sprints[this.curr_sprint_num].uuid + "'"
-
-				console.log('options.query', options.query)
-				options.query = btoa(encodeURIComponent(options.query))  
+			let query_str = '(' +decodeURIComponent(atob( options.query)).split('order by')[0] + ')'
+			if(this.selected_board.use_sprint_filter){
+				query_str += " and attr#sprint_uuid#='" + this.sprints[this.curr_sprint_num].uuid + "'#"
 			}
+
+			let active_filters = this.filters.filter((f)=>f.is_active)
+			for(let i = 0; i < active_filters.length; i++){
+				query_str += ' and (' + active_filters[i].converted_query + ')'
+			}
+
+			console.log('options.query', query_str)
+			options.query = btoa(encodeURIComponent(query_str)) 
+
+
 			this.boards_issues = await rest.run_method('read_issues', options)
 
 			this.make_swimlanes()
@@ -1008,9 +1029,40 @@
 			console.log("field_updated", e, field);
 			
 		},
-		
 
+		start_add_filter: function(){
+			this.filter_to_edit={query:'', name:'', is_active:true, is_private:true}
+			this.board_filter_modal_visible = true
+		},
+		start_edit_filter: function(filter){
+			this.filter_to_edit = filter
+			this.board_filter_modal_visible = true
+		},
+		filter_ok: function(filter){
+			this.board_filter_modal_visible = false
+			if(filter.uuid){
 
+			}
+			else{
+				filter.uuid = tools.uuidv4()
+				filter.author_uuid = cache.getObject("profile").uuid
+				filter.board_uuid = this.selected_board.uuid
+				filter.table_name = 'boards_filters'
+				this.filters.push(filter)
+			}
+			filter.updated_at = new Date()
+			rest.run_method("upsert_boards_filters", filter)
+			this.filters = this.filters.sort(tools.compare_obj_dt('updated_at'))
+			this.get_issues()
+		},
+		delete_filter: function(filter){
+			rest.run_method("delete_boards_filters", {uuid: filter.uuid})
+			this.filters = this.filters.filter((f)=>f.uuid != filter.uuid)
+		},
+		toggle_filter: function(filter){
+			filter.is_active = !filter.is_active
+			this.get_issues()
+		}
 	}
 
 	const data = 
@@ -1048,6 +1100,9 @@
 	card_to_be_moved_down_uuid: undefined,
 	bottom_to_move_uuids: undefined,
 	last_move_card_calc_dt: new Date(),
+	filters:[],
+	board_filter_modal_visible: false,
+	filter_to_edit: {},
     collumns:[
 		{
 	        name: '№',
@@ -1253,6 +1308,22 @@
 
 <template ref='board' >
 <div @mouseup="dragend_card()">
+
+	<Transition name="element_fade">
+      <KBoardFilterModal
+        v-if="board_filter_modal_visible"
+        @close_board_filter_modal="board_filter_modal_visible=false"
+        @ok_board_filter_modal="filter_ok"
+		:filter="filter_to_edit"
+		:fields="fields"
+		:projects="projects"
+		:issue_statuses="issue_statuses"
+		:issue_tags="issue_tags"
+		:issue_types="issue_types"
+		:users="users"
+		:sprints="sprints"
+      />
+    </Transition>
 	
     <div class='panel topbar'>
 		<div style="display: flex ; flex-direction:row; flex-grow: 1; max-height: calc(100% - 60px); ">
@@ -1288,7 +1359,7 @@
 		</div>
 
 		<StringInput class="board-query-info"
-		v-if="board != undefined && selected_board != undefined"
+		v-if="false && board != undefined && selected_board != undefined"
 		label=''
 		disabled="true"
 		:value="board_query_info"
@@ -1324,6 +1395,27 @@
     <div id=board_down_panel class="panel" 
 	
 	>
+
+		<div class="filters-row">
+			<i class='bx bx-filter-alt'></i>
+			<div class="filter"
+			v-for="(filter) in filters"
+			:class="{ 'selected-filter': filter.is_active}"
+			>
+				<i class="delete-filter-btn bx bx-trash"
+				@click="delete_filter(filter)"
+				></i>
+				<span
+				@click="toggle_filter(filter)"
+				>{{ filter.name }}</span>
+				<i class="config-filter-btn bx bx-cog"
+				@click="start_edit_filter(filter)"
+				></i>
+			</div>
+			<i class="add-filter-btn bx bx-plus"
+			@click="start_add_filter()"
+			></i>
+		</div>
 
 		<div class="swimlane-total">
 			<span>Всего</span>
@@ -2167,6 +2259,79 @@
     border-style: dashed;
 	margin-bottom: 5px;
 	height: $input-height;
+}
+
+.filters-row{
+	display: flex;
+	margin: 10px 15px 5px 15px;
+}
+
+.filters-row .bx{
+	font-size: 18px;
+	padding-top: 3px;
+}
+
+.filters-row .bx-filter-alt{
+	padding-right: 8px;
+}
+
+
+
+.filter .bx{
+	font-size: 13px;
+	padding: 3px 1px 1px 1px;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.filter:hover .bx{
+	opacity: 1;
+}
+
+.filter .bx-cog{
+	margin-top:1px;
+}
+
+.delete-filter-btn:hover{
+	color: red;
+}
+.config-filter-btn:hover{
+	color: green
+}
+
+.add-filter-btn:hover{
+	color: green;
+	cursor: pointer;
+	
+}
+
+.add-filter-btn{
+margin-left: 5px;
+}
+
+.filters-row .filter{
+	border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: solid;
+	margin-left: 8px;
+    height: 25px;
+	padding: 1px 3px 1px 3px;
+    cursor: pointer;
+	display: flex;
+}
+
+.filters-row .filter span{
+	padding: 0px 5px;
+} 
+
+.filters-row .selected-filter{
+	background-color: var(--button-color);
+	box-shadow: var(--text-color) 0px 0px 1px;
+}
+
+.filters-row .filter:hover{
+	box-shadow: var(--text-color) 0px 0px 3px;
 }
 
 

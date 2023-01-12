@@ -11,7 +11,7 @@ const name_field_uuid = "c96966ea-a591-47a9-992c-0a2f6443bc80";
 const parent_relation_type_uuid = "73b0a22e-4632-453d-903b-09804093ef1b";
 const comment_type_uuid = "f53d8ecc-c26e-4909-a070-5c33e6f7a196";
 
-const select_limit = 300;
+const select_limit = 1000;
 
 //const atob = require("atob");
 const { Console } = require("console");

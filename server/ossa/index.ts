@@ -85,8 +85,8 @@ wss.on('connection', async function connection(connection, req) {
 
             //console.log(monTasks)
         }
-        else if(dataObj.action == 'AUTH'){
-
+        else if(false && dataObj.action == 'AUTH'){
+/*
             if(!dataObj.token || !dataObj.subdomain){
                 connection.close()
                 console.log('Socket closing - need token and subdomain');
@@ -109,7 +109,7 @@ wss.on('connection', async function connection(connection, req) {
 
             console.log('User', cerberus_ans.data, 'auth OK')
             let sessionId:string = req.headers['sec-websocket-key']
-            sessions[sessionId] = cerberus_ans.data
+            sessions[sessionId] = cerberus_ans.data*/
         }
         else if(dataObj.action == 'PING'){
             connection.send(JSON.stringify({action:'PONG'}))

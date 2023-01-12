@@ -41,8 +41,8 @@ export default class ws {
 		//if(ws.s != undefined && ws.s.readyState !== WebSocket.CLOSED) return
 		//else if(ws.s != undefined)
 		console.log('WS try connect');
-		ws.subdomain = ws.getSubdomain()
-		if(!this.subdomain || this.subdomain == '') return
+		//ws.subdomain = ws.getSubdomain()
+		//if(!this.subdomain || this.subdomain == '') return
 		ws.s = new WebSocket(conf.wsUrl)
 		
 
@@ -96,7 +96,7 @@ export default class ws {
 	
 
 	static ping() {
-		if(!ws.subdomain) return
+		//if(!ws.subdomain) return
 		console.log('WS try ping')
 		try{
 			if(ws.s != undefined && ws.s.readyState !== WebSocket.CLOSED) 

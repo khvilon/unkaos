@@ -74,7 +74,7 @@ export default {
 "User"
 */
 
-  emits: ["update_parent_from_input", "input_focus", "search_issues"],
+  emits: ["update_parent_from_input", "input_focus", "search_issues", "converted"],
   data() {
     return {
       suggestions: [],
@@ -237,10 +237,7 @@ export default {
     },
     emit_query() {
       //  console.log('this.fields.length * this.projects.length * this.issue_types.length', this.fields.length , this.projects.length , this.issue_types.length)
-      if (
-        this.fields.length * this.projects.length * this.issue_types.length ==
-        0
-      ) {
+      if (this.fields.length * this.projects.length * this.issue_types.length == 0) {
         setTimeout(this.emit_query, 200);
         return;
       }
@@ -666,6 +663,8 @@ export default {
         qd.query.length == 0;
 
       //console.log('convvvvvvvvvvv query', query_valid, qd)
+
+      this.$emit("converted", query_valid ? this.converted_query : '');
 
       return query_valid;
     },

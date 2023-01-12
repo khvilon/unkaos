@@ -35,6 +35,7 @@ import KRelations from "./components/KRelations.vue";
 
 import IssuesSearchInput from "./components/IssuesSearchInput.vue";
 import KNewRelationModal from "./components/KNewRelationModal.vue";
+import KBoardFilterModal from "./components/KBoardFilterModal.vue";
 
 import KMarked from "./components/KMarked.vue";
 import Comment from "./components/Comment.vue";
@@ -79,6 +80,7 @@ app.component("KRelations", KRelations);
 app.component("IssuesSearchInput", IssuesSearchInput);
 
 app.component("KNewRelationModal", KNewRelationModal);
+app.component("KBoardFilterModal", KBoardFilterModal);
 app.component("KMarked", KMarked);
 app.component("Comment", Comment);
 app.component("CommentList", CommentList);
