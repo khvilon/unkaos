@@ -119,14 +119,21 @@ let methods = {
       //const spend_time_field_uuid = '60d53a40-cda9-4cb2-a207-23f8236ee9a7'
       let h = Number(this.comment.substr(2));
       if (!isNaN(h)) {
-        let field = this.get_field_by_name("Spent time");
-        if (field != null) {
-          if (field.value == null) field.value = 0;
-          field.value = Number(field.value) + h;
-          let ans = await rest.run_method("upsert_field_values", field);
-          console.log("sptime", field);
-          params.value = "Добавил " + h + "ч работы на задачу";
+
+        let author = cache.getObject("profile")
+        let time_entry = {
+          comment: '',
+          author: [author],
+          author_uuid: author.uuid,
+          issue_uuid: this.issue[0].uuid,
+          duration: h,
+          work_date: new Date()
         }
+        
+        this.ok_time_entry_modal(time_entry)
+        
+        params.value = "Добавил " + h + "ч работы на задачу";
+        
       }
     }
 
@@ -731,13 +738,29 @@ let methods = {
       this.time_entries.push(time_entry)
     }
     this.time_entry_modal_visible = false
+    
     rest.run_method("upsert_time_entries", time_entry);
+    this.recalc_spent_time()
   },
   delete_time_entry: async function(time_entry)
   {
     this.time_entry_modal_visible = false
     this.time_entries = this.time_entries.filter((t)=>t.uuid!=time_entry.uuid)
     rest.run_method("delete_time_entries", {uuid: time_entry.uuid});
+    this.recalc_spent_time()
+  },
+  recalc_spent_time()
+  {
+    let spent_time = 0
+    for(let i = 0; i < this.time_entries.length; i++){
+      spent_time += this.time_entries[i].duration
+    }
+    this.issue[0].spent_time = spent_time
+    this.$store.commit("id_push_update_issue", {
+      id: 'spent_time',
+      val: spent_time,
+    })
+    this.field_updated()
   }
 };
 
@@ -1357,6 +1380,18 @@ export default mod;
               @updated="field_updated(val)"
             >
             </SelectInput>
+
+            <NumericInput
+              label="Затраченное время"
+              v-if="!loading"
+              class="issue-spent-time-input"
+              :value="issue[0].spent_time"
+              :parent_name="'issue'"
+              :disabled="true"
+              id="spent_time"
+              @updated="field_updated(val)"
+            >
+            </NumericInput>
 
             <component
               v-bind:is="input.type + 'Input'"

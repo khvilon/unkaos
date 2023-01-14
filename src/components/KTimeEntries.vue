@@ -6,26 +6,6 @@ import cache from "../cache";
 export default {
   emits: ["new_time_entry", "edit_time_entry"],
   props: {
-    label: {
-      type: String,
-      default: "label",
-    },
-    value: {
-      type: String,
-      default: "",
-    },
-    id: {
-      type: String,
-      default: "",
-    },
-    parent_name: {
-      type: String,
-      default: "",
-    },
-    time_entry_types: {
-      type: Array,
-      default: [],
-    },
     time_entries: {
       type: Array,
       default: [
@@ -33,9 +13,6 @@ export default {
     },
   },
   methods: {
-    get_src: function (value) {
-      if (value) return value;
-    },
     format_date: function (value) {
       return tools.format_date(value)
     },
@@ -49,8 +26,9 @@ export default {
       let authors_time_entries = {}
       for(let i = 0; i < this.time_entries.length; i++){
         let author = this.time_entries[i].author[0]
-        if(authors_time_entries[author.uuid] == undefined) authors_time_entries[author.uuid] = []
-        authors_time_entries[author.uuid].push(this.time_entries[i])
+        if(authors_time_entries[author.uuid] == undefined) authors_time_entries[author.uuid] = {author: author, sum:0, entries:[]}
+        authors_time_entries[author.uuid].entries.push(this.time_entries[i])
+        authors_time_entries[author.uuid].sum += Number.isInteger(this.time_entries[i].duration) ? this.time_entries[i].duration : 0
       }
       return authors_time_entries
     },
@@ -67,17 +45,17 @@ export default {
         class="add-time-entry-btn bx bx-plus"
         @click="() => $emit('new_time_entry')"
       ></i
-      >{{ label }}
+      >
     </div>
     <div
     v-for="(author_time_entries) in authors_time_entries"
     class="author-time-entries"
     >
-    <img v-if="author_time_entries[0].author[0].avatar" :src="author_time_entries[0].author[0].avatar" />
-    <span class="time-entries-author-name">{{ author_time_entries[0].author[0].name }}</span>
+    <img v-if="author_time_entries.author.avatar" :src="author_time_entries.author.avatar" />
+    <span class="time-entries-author-name">{{ author_time_entries.author.name }} {{ author_time_entries.sum }}ч</span>
     <div
       class="time-entry"
-      v-for="(time_entry) in sort_time_entries(author_time_entries)"
+      v-for="(time_entry) in sort_time_entries(author_time_entries.entries)"
     >
       <span>{{ format_date(time_entry.work_date) }}</span>
       <span class="time-entry-duration">{{ time_entry.duration }}ч</span>
@@ -192,7 +170,7 @@ $time_entry_input_border_width: 2px;
 }
 
 .time-entry .time-entry-comment{
-  font-style: italic;
+  //font-style: italic;
 }
 .time-entry .time-entry-duration{
   font-weight: 600;

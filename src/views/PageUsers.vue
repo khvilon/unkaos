@@ -52,6 +52,16 @@ const data = {
       type: "String",
     },
     {
+      label: "Телеграм",
+      id: "telegram",
+      type: "String",
+    },
+    {
+      label: "Discord",
+      id: "discord",
+      type: "String",
+    },
+    {
       label: "Активен",
       id: "active",
       type: "Boolean",
