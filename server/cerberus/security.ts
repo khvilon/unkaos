@@ -12,6 +12,8 @@ security.newToken = async function(workspace : String, email : String, pass : St
         mail=${ email } AND 
         password = MD5(${ pass }) AND deleted_at IS NULL AND active`
 
+    console.log(email, pass)
+
     if(!users || users.length != 1) return null
 
     let user_data = { uuid: users[0].uuid }

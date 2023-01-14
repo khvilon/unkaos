@@ -29,11 +29,31 @@ async function init(){
             req.headers.request_function = func
             //console.log(req.headers)
 
-            let cerberus_ans = await axios({
-                method: 'get',
-                url: conf.cerberusUrl + '/check_session' ,
-                headers: req.headers
-            });
+            let cerberus_ans
+            try{
+                cerberus_ans = await axios({
+                    method: 'get',
+                    url: conf.cerberusUrl + '/check_session' ,
+                    headers: req.headers
+                });
+            }
+            catch(err){
+                if(cerberus_ans != undefined){
+                    res.status(cerberus_ans.status);
+                    res.send(cerberus_ans.data);
+                }
+                else{
+                    res.status(401);
+                    res.send({message:'Ошибка авторизации'});
+                }
+                return
+            }
+
+            if(cerberus_ans == undefined){
+                res.status(401);
+                res.send({message:'Ошибка авторизации'});
+                return
+            }
 
             if(cerberus_ans.status != 200){
                 res.status(cerberus_ans.status);
