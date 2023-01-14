@@ -17,6 +17,7 @@ export default {
       lang: { name: "Русский", val: "ru" },
       lock_main_menu: false,
       //instead of user.avatar for new year
+      is_new_year: false,
       girl_uuids: 
       [
         '1e943b18-7ba7-4ae1-b185-437bea3491d0',
@@ -69,9 +70,11 @@ export default {
       this.$router.push("/login");
     },
     close_menu(e) {
-      console.log(e);
+      console.log('ccc', e);
+      if(e.target.localName == "img") return
       for (let i in e.path) {
-        if (e.path[i].className == "profile") return;
+        //if (e.path[i].className == "profile") return;
+        localName
       }
       this.menu_visible = false;
     },
@@ -86,15 +89,22 @@ export default {
       cache.setObject("lock_main_menu", value)
     },
 
-    get_santa_avatar()
+    get_avatar()
     {
+      if(!this.is_new_year) return this.user.avatar ? this.user.avatar : 'https://oboz.myjetbrains.com/hub/api/rest/avatar/7755ec62-dfa1-4c3c-a3a9-ac6748d607c1?dpr=1.25&size=20'
       if(!this.girl_uuids.includes(this.user.uuid)) return this.bad_santa
       const max_santa_count = 10
       let santa_id =Math.floor(Math.random()*max_santa_count)
       if(santa_id > this.bad_santa_girl.length-1) santa_id = this.bad_santa_girl.length-1
       console.log('bad_santa_girl', santa_id)
       return this.bad_santa_girl[santa_id]
+    },
+    toggle_menu()
+    {
+      console.log('tm')
+      this.menu_visible = !this.menu_visible
     }
+    
   },
 };
 </script>
@@ -102,7 +112,7 @@ export default {
 <template>
   <div class="profile" v-if="common.is_in_workspace">
     <div class="profile-top">
-      <img :src="get_santa_avatar()" @click="menu_visible = !menu_visible" />
+      <img @click="toggle_menu()" :src="get_avatar()"  />
       <div class="profile-username">{{ user.name }}</div>
       <div class="issue-top-button">
         <a
@@ -195,15 +205,15 @@ export default {
   width: $input-height;
 
   //new year
-  margin-top: -5px;
-  margin-right: -20px;
-  height: 50px;
-  width: 50px;
+  //margin-top: -5px;
+  //margin-right: -20px;
+  //height: 50px;
+  //width: 50px;
 
   object-fit: cover;
   border-radius: var(--border-radius);
   float: right;
-  // background-image: url('https://oboz.myjetbrains.com/hub/api/rest/avatar/7755ec62-dfa1-4c3c-a3a9-ac6748d607c1?dpr=1.25&size=20');
+ 
   cursor: pointer;
   border-style: outset;
   border-width: 1px;

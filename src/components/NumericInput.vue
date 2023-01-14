@@ -25,6 +25,10 @@ export default {
       type: String,
       default: "text",
     },
+    min: {
+      type: Number,
+      default: -Number.MAX_SAFE_INTEGER,
+    }
   },
 
   emits: ["update_parent_from_input", "updated"],
@@ -79,8 +83,6 @@ export default {
     <input
       type="number"
       class="numeric-input"
-      min="1"
-      max="9"
       v-model="value"
       :disabled="disabled"
       @blur="blur"

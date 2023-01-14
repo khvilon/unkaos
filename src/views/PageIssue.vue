@@ -466,6 +466,9 @@ let methods = {
 
     await this.load_attachments()
     await this.load_tags()
+    await this.load_time_entries()
+
+    console.log('time_entries', this.time_entries)
     
     this.sprints = this.sprints.sort(tools.compare_obj('start_date')).reverse()
 
@@ -517,6 +520,11 @@ let methods = {
     this.images = this.attachments.filter((a) => a.type.indexOf("image/") > -1);
 
     wsMon.monitorIssueAttachmentsDel(this.attachments.map((a)=>a.uuid), this.load_attachments)
+  },
+  load_time_entries: async function(){
+    this.time_entries = await rest.run_method("read_time_entries", {
+      issue_uuid: this.issue[0].uuid,
+    });
   },
 
   async update_issue(msg)
@@ -695,6 +703,41 @@ let methods = {
     if(d_vals == null) return
     if(d_vals[0] == undefined) return
     await rest.run_method("delete_issue_tags_selected", {uuid: d_vals[0].uuid})
+  },
+  new_time_entry: async function()
+  {
+    //console.log('new_time_entry')
+    let author = cache.getObject("profile")
+    this.selected_time_entry = 
+    {
+      comment: '',
+      author: [author],
+      author_uuid: author.uuid,
+      issue_uuid: this.issue[0].uuid,
+      duration: 0,
+      work_date: new Date()
+    }
+    this.time_entry_modal_visible = true
+  },
+  edit_time_entry: async function(time_entry)
+  {
+    this.selected_time_entry = time_entry
+    this.time_entry_modal_visible = true
+  },
+  ok_time_entry_modal: async function(time_entry)
+  {
+    if(!time_entry.uuid) {
+      time_entry.uuid = tools.uuidv4()
+      this.time_entries.push(time_entry)
+    }
+    this.time_entry_modal_visible = false
+    rest.run_method("upsert_time_entries", time_entry);
+  },
+  delete_time_entry: async function(time_entry)
+  {
+    this.time_entry_modal_visible = false
+    this.time_entries = this.time_entries.filter((t)=>t.uuid!=time_entry.uuid)
+    rest.run_method("delete_time_entries", {uuid: time_entry.uuid});
   }
 };
 
@@ -712,9 +755,12 @@ const data = {
   saved_name: "",
   saved_project_uuid: undefined,
   new_relation_modal_visible: false,
+  time_entry_modal_visible: false,
+  selected_time_entry: {},
   relation_types: [],
   collumns: [],
   formated_relations: [],
+  time_entries: [],
   inputs: [
     {
       label: "Воркфлоу",
@@ -933,6 +979,15 @@ export default mod;
         @relation_added="add_relation"
         :relation_types="relation_types"
         :issue0_uuid="issue[0].uuid"
+      />
+    </Transition>
+    <Transition name="element_fade">
+      <KTimeEntryModal
+        v-if="time_entry_modal_visible"
+        @close_time_entry_modal="time_entry_modal_visible = false"
+        @ok_time_entry_modal="ok_time_entry_modal"
+        @delete_time_entry="delete_time_entry"
+        :time_entry="selected_time_entry"
       />
     </Transition>
     <div id="issue_top_panel" class="panel"   >
@@ -1155,6 +1210,17 @@ export default mod;
             @relation_deleted="delete_relation"
           >
           </KRelations>
+        </Transition>
+        <Transition name="element_fade">
+          <KTimeEntries
+            v-if="!loading && id != ''"
+            label=""
+            id="issue_time_entries"
+            @new_time_entry="new_time_entry"
+            :time_entries="time_entries"
+            @edit_time_entry="edit_time_entry"
+          >
+          </KTimeEntries>
         </Transition>
         <KAttachment
             transition="element_fade"
