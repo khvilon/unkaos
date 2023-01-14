@@ -27,12 +27,18 @@ export default {
     print(e) {
       console.log(e.srcElement.value);
       let val = e.srcElement.value;
+      
+      this.$emit("update_parent_from_input", val);
+
       this.$store.commit("id_push_update_" + this.parent_name, {
         id: this.id,
         val: val,
       });
     },
     format(val) {
+
+      
+
       var options = {
         year: "numeric",
         month: "numeric",
@@ -59,6 +65,10 @@ export default {
   watch: {
     value: function (val, oldVal) {
       console.log(val, oldVal, this.id, this.parent_name);
+
+      //console.log('chch')
+
+      //this.$emit("update_parent_from_input", val);
 
       this.$store.commit("id_push_update_" + this.parent_name, {
         id: this.id,

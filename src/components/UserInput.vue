@@ -134,7 +134,7 @@ export default {
       @close="is_open=false"
     >
       <template v-if="is_open" #option="{ name, active, avatar }">
-        <img  v-if="false" :src="avatar ?? default_avatar" />{{ name
+        <img :src="avatar ?? default_avatar" />{{ name
         }}{{ active ? "" : " (заблокирован)" }}
       </template>
       <template #selected-option="{ name, active, avatar }">
