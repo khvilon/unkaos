@@ -9,6 +9,13 @@ export default class tools {
     minute: "2-digit",
   };
 
+  static date_options: Intl.DateTimeFormatOptions = {
+    year: "2-digit",
+    month: "numeric",
+    day: "numeric",
+    timeZone: "Europe/Moscow",
+  };
+
   static str_contains(str: string, substr: string): boolean {
     str = str.toString().toLowerCase();
     substr = substr.toString().toLowerCase();
@@ -46,6 +53,9 @@ export default class tools {
     return JSON.parse(JSON.stringify(obj));
   }
 
+  static string_is_date(str): boolean{
+    return (new Date(str) !== "Invalid Date") && !isNaN(new Date(str))
+  }
   /*
   tools.clone_obj = tools.obj_clone = function(obj) {
     //  if(obj.boards_columns != undefined) console.log('cloneclone', JSON.stringify(obj))
@@ -220,8 +230,11 @@ export default class tools {
   static format_dt(dt: number | string | Date): string {
     return new Date(dt).toLocaleString("ru", tools.dt_options);
   }
+  static format_date(dt: number | string | Date): string {
+    return new Date(dt).toLocaleString("ru", tools.date_options);
+  }
 
-  static copy_text_to_clipboard(text) {
+  static copy_text_to_clipboard(text:string) {
     var textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.position = "fixed";  //avoid scrolling to bottom
@@ -235,12 +248,7 @@ export default class tools {
     }
     document.body.removeChild(textArea)
     return;
-  }
-
-
-  
-
-  
+  }  
 }
 
 declare global {

@@ -8,27 +8,7 @@
   import cache from "../cache";
 
 	let methods = {
-		ws_init()
-		{
-			const myWs = new WebSocket('ws://localhost:3003');
-			// обработчик проинформирует в консоль когда соединение установится
-			myWs.onopen = function () {
-			console.log('подключился');
-			};
-
-			// обработчик сообщений от сервера
-			myWs.onmessage = function (message) {
-			console.log('Message: %s', message.data);
-			};
-			// функция для отправки echo-сообщений на сервер
-			function wsSendEcho(value) {
-			myWs.send(JSON.stringify({action: 'ECHO', data: value.toString()}));
-			}
-			// функция для отправки команды ping на сервер
-			function wsSendPing() {
-			myWs.send(JSON.stringify({action: 'PING'}));
-			}
-		},
+		
 		get_favourite_uuid() {
 			
 			if(this.favourites == undefined || this.selected_board == undefined || this.selected_board.is_new) 
@@ -200,13 +180,26 @@
 			}
 
 			
-			for(let i in this.selected_board.boards_fields)
-			{
+			for(let i in this.selected_board.boards_fields){
 				this.selected_board.boards_fields[i].name = this.selected_board.boards_fields[i].fields[0].name
 			}
 
 
-			this.ws_init()
+			let my_uuid = cache.getObject("profile").uuid
+			let filters = await rest.run_method("read_boards_filters",{board_uuid: this.selected_board.uuid})
+			filters = filters.filter((f)=>!f.is_private || f.author_uuid == my_uuid)
+			filters = filters.sort(tools.compare_obj_dt('updated_at'))
+
+			/*let my_filters = await rest.run_method("read_boards_filters",{
+					board_uuid: this.selected_board.uuid, is_private: 'TRUE', 
+				author_uuid: cache.getObject("profile").uuid
+				})
+			console.log('my_filters', my_filters)
+			let public_filters = await rest.run_method("read_boards_filters", { 
+				board_uuid: this.selected_board.uuid, is_private: false })	
+			console.log('public_filters', public_filters)*/
+
+			this.filters = filters//my_filters.concat(public_filters);
 
 			//console.log('sselected_board4')
 			//get_issues()
@@ -350,6 +343,7 @@
 		},
 		make_swimlanes()
 		{
+
 			console.log('make_swimlanes0', new Date())
 			this.swimlanes = {}
 
@@ -491,6 +485,10 @@
 
 
 			this.sort_swimlanes()
+
+
+			
+
 			
 			let position = 0
 			for(let i in this.swimlanes)
@@ -525,8 +523,6 @@
 
 			console.log('make_swimlanes100', new Date())
 
-			this.swimlanes_to_show = this.swimlanes
-
 			//load saved swimlanes order
 
 
@@ -554,14 +550,20 @@
 			}
 			else return
 
-			if(this.selected_board.use_sprint_filter)
-			{
-				options.query = decodeURIComponent(atob( options.query))
-				options.query = '(' + options.query + ") and attr#sprint_uuid#='" + this.sprints[this.curr_sprint_num].uuid + "'"
-
-				console.log('options.query', options.query)
-				options.query = btoa(encodeURIComponent(options.query))  
+			let query_str = '(' +decodeURIComponent(atob( options.query)).split('order by')[0] + ')'
+			if(this.selected_board.use_sprint_filter){
+				query_str += " and attr#sprint_uuid#='" + this.sprints[this.curr_sprint_num].uuid + "'#"
 			}
+
+			let active_filters = this.filters.filter((f)=>f.is_active)
+			for(let i = 0; i < active_filters.length; i++){
+				query_str += ' and (' + active_filters[i].converted_query + ')'
+			}
+
+			console.log('options.query', query_str)
+			options.query = btoa(encodeURIComponent(query_str)) 
+
+
 			this.boards_issues = await rest.run_method('read_issues', options)
 
 			this.make_swimlanes()
@@ -1027,9 +1029,40 @@
 			console.log("field_updated", e, field);
 			
 		},
-		
 
+		start_add_filter: function(){
+			this.filter_to_edit={query:'', name:'', is_active:true, is_private:true}
+			this.board_filter_modal_visible = true
+		},
+		start_edit_filter: function(filter){
+			this.filter_to_edit = filter
+			this.board_filter_modal_visible = true
+		},
+		filter_ok: function(filter){
+			this.board_filter_modal_visible = false
+			if(filter.uuid){
 
+			}
+			else{
+				filter.uuid = tools.uuidv4()
+				filter.author_uuid = cache.getObject("profile").uuid
+				filter.board_uuid = this.selected_board.uuid
+				filter.table_name = 'boards_filters'
+				this.filters.push(filter)
+			}
+			filter.updated_at = new Date()
+			rest.run_method("upsert_boards_filters", filter)
+			this.filters = this.filters.sort(tools.compare_obj_dt('updated_at'))
+			this.get_issues()
+		},
+		delete_filter: function(filter){
+			rest.run_method("delete_boards_filters", {uuid: filter.uuid})
+			this.filters = this.filters.filter((f)=>f.uuid != filter.uuid)
+		},
+		toggle_filter: function(filter){
+			filter.is_active = !filter.is_active
+			this.get_issues()
+		}
 	}
 
 	const data = 
@@ -1048,7 +1081,6 @@
 	favorite_uuid: undefined,
 	void_group_name: 'Без группы',
 	swimlanes: {},
-	swimlanes_to_show: {},
 	moving_swimlane: null,
 	sprints: [],
 	curr_sprint_num: 0,
@@ -1068,6 +1100,9 @@
 	card_to_be_moved_down_uuid: undefined,
 	bottom_to_move_uuids: undefined,
 	last_move_card_calc_dt: new Date(),
+	filters:[],
+	board_filter_modal_visible: false,
+	filter_to_edit: {},
     collumns:[
 		{
 	        name: '№',
@@ -1273,6 +1308,22 @@
 
 <template ref='board' >
 <div @mouseup="dragend_card()">
+
+	<Transition name="element_fade">
+      <KBoardFilterModal
+        v-if="board_filter_modal_visible"
+        @close_board_filter_modal="board_filter_modal_visible=false"
+        @ok_board_filter_modal="filter_ok"
+		:filter="filter_to_edit"
+		:fields="fields"
+		:projects="projects"
+		:issue_statuses="issue_statuses"
+		:issue_tags="issue_tags"
+		:issue_types="issue_types"
+		:users="users"
+		:sprints="sprints"
+      />
+    </Transition>
 	
     <div class='panel topbar'>
 		<div style="display: flex ; flex-direction:row; flex-grow: 1; max-height: calc(100% - 60px); ">
@@ -1308,7 +1359,7 @@
 		</div>
 
 		<StringInput class="board-query-info"
-		v-if="board != undefined && selected_board != undefined"
+		v-if="false && board != undefined && selected_board != undefined"
 		label=''
 		disabled="true"
 		:value="board_query_info"
@@ -1345,6 +1396,27 @@
 	
 	>
 
+		<div class="filters-row">
+			<i class='bx bx-filter-alt'></i>
+			<div class="filter"
+			v-for="(filter) in filters"
+			:class="{ 'selected-filter': filter.is_active}"
+			>
+				<i class="delete-filter-btn bx bx-trash"
+				@click="delete_filter(filter)"
+				></i>
+				<span
+				@click="toggle_filter(filter)"
+				>{{ filter.name }}</span>
+				<i class="config-filter-btn bx bx-cog"
+				@click="start_edit_filter(filter)"
+				></i>
+			</div>
+			<i class="add-filter-btn bx bx-plus"
+			@click="start_add_filter()"
+			></i>
+		</div>
+
 		<div class="swimlane-total">
 			<span>Всего</span>
 			<span v-if="boards_issues">{{'кол-во: ' + total_count + '/' + boards_issues.length}}</span>
@@ -1354,8 +1426,8 @@
 		<div
 		:class="{ 'when-dragged-swimlane': moving_swimlane != null}"
 		class="swimlane"
-		v-for="(swimlane, sw_index) in swimlanes_to_show"
-		:key="sw_index"
+		v-for="(swimlane, sw_index) in swimlanes"
+		:key="swimlane.uuid"
 		@drop="move_swimlane($event, swimlane)"
 		@dragover.prevent
 		@dragenter.prevent
@@ -1398,7 +1470,7 @@
 		
 				<div 
 				v-for="(status, s_index) in boards_columns"
-				:key="s_index"
+				:key="swimlane.uuid + '_' + s_index"
 				@mousemove="move_card_status(status, $event, swimlane)"
 				@mouseup="drop_card(status, $event, swimlane)"
 				@mouseleave="status_draginfo={}"
@@ -1414,7 +1486,7 @@
 						<div
 						v-for="(issue, i_index) in 
 						(swimlane.filtered_issues[status.uuid] != undefined ? swimlane.filtered_issues[status.uuid] : [])"
-						:key="i_index"
+						:key="issue.uuid + '_' + i_index"
 						>
 							<div
 								v-if="issue.uuid == card_to_be_moved_down_uuid && card_draginfo.uuid != undefined"
@@ -1453,27 +1525,37 @@
 								<label class="issue-card-description" v-if="display_description">
 									{{get_field_by_name(issue, 'Описание').value != undefined ? get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''}}
 								</label>
-								<div class="issue-board-card-footer">
+								<div class="issue-board-card-footer" v-show="swimlane.expanded || selected_board.no_swimlanes">
 									
 									<div
 									class="board-card-field"
-									v-for="(f, index) in selected_board.boards_fields"
+									v-for="(f, f_index) in selected_board.boards_fields"
 									>
 										<label 
 										class="board-card-field-title"
 										v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'">
 										{{f.fields[0].name}}: </label>
 										<component
-											v-if="f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
+											v-if="false && f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
 											v-bind:is="f.fields[0].type[0].code + 'Input'"
 											:value="get_field_value(issue, f.fields[0])"
 											label=""
-											:key="index"
+											:key="issue.uuid + '_' + i_index + '_' + f_index"
 											:disabled="f.fields[0].name == 'Автор'"
 											:values="available_values[f.fields_uuid]"
 											class="board-card-field-input"
 											@updated="field_updated($event, f.fields[0])"
 										></component>
+										<StringInput
+											v-if="swimlane.expanded && f.fields!=undefined && f.fields[0]!=undefined && f.fields[0].name!='Описание'"
+											:value="get_field_value(issue, f.fields[0], true)"
+											label=""
+											:key="issue.uuid + '_' + i_index + '_' + f_index"
+											:disabled="true"
+											:values="available_values[f.fields_uuid]"
+											class="board-card-field-input"
+											@updated="field_updated($event, f.fields[0])"
+										></StringInput>
 									</div>
 								</div>	
 								
@@ -2177,6 +2259,79 @@
     border-style: dashed;
 	margin-bottom: 5px;
 	height: $input-height;
+}
+
+.filters-row{
+	display: flex;
+	margin: 10px 15px 5px 15px;
+}
+
+.filters-row .bx{
+	font-size: 18px;
+	padding-top: 3px;
+}
+
+.filters-row .bx-filter-alt{
+	padding-right: 8px;
+}
+
+
+
+.filter .bx{
+	font-size: 13px;
+	padding: 3px 1px 1px 1px;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.filter:hover .bx{
+	opacity: 1;
+}
+
+.filter .bx-cog{
+	margin-top:1px;
+}
+
+.delete-filter-btn:hover{
+	color: red;
+}
+.config-filter-btn:hover{
+	color: green
+}
+
+.add-filter-btn:hover{
+	color: green;
+	cursor: pointer;
+	
+}
+
+.add-filter-btn{
+margin-left: 5px;
+}
+
+.filters-row .filter{
+	border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: solid;
+	margin-left: 8px;
+    height: 25px;
+	padding: 1px 3px 1px 3px;
+    cursor: pointer;
+	display: flex;
+}
+
+.filters-row .filter span{
+	padding: 0px 5px;
+} 
+
+.filters-row .selected-filter{
+	background-color: var(--button-color);
+	box-shadow: var(--text-color) 0px 0px 1px;
+}
+
+.filters-row .filter:hover{
+	box-shadow: var(--text-color) 0px 0px 3px;
 }
 
 

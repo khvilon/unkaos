@@ -3,6 +3,7 @@ import tools from "../tools.ts";
 import page_helper from "../page_helper.ts";
 import rest from "../rest.ts";
 import cache from "../cache";
+import wsMon from "../wsMon.ts";
 
 let methods = {
   pasted: async function (e) {
@@ -319,9 +320,7 @@ let methods = {
     if (att.type.indexOf("image") > -1) this.images.push(att);
   },
   delete_attachment: async function (att) {
-    
     let ans = await rest.run_method("delete_attachments", {uuid: att.uuid});
-
     for (let i in this.attachments) {
       if (this.attachments[i].uuid == att.uuid) this.attachments.splice(i, 1);
     }
@@ -465,18 +464,15 @@ let methods = {
     });
     this.watch = ans.length > 0;
 
-    this.attachments = await rest.run_method("read_attachments", {
-      issue_uuid: this.issue[0].uuid,
-    });
-    this.images = this.attachments.filter((a) => a.type.indexOf("image/") > -1);
+    await this.load_attachments()
+    await this.load_tags()
+    await this.load_time_entries()
 
+    console.log('time_entries', this.time_entries)
+    
     this.sprints = this.sprints.sort(tools.compare_obj('start_date')).reverse()
 
-    this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
-
     this.old_project_uuid = this.issue[0].project_uuid
-
-    await this.read_selected_tags()
 
     this.current_description = this.get_field_by_name('Описание').value
 
@@ -504,7 +500,56 @@ let methods = {
       this.saved_new()
     }
 
+    wsMon.monitorIssue(this.issue[0].uuid,
+    this.update_issue, this.get_formated_relations, this.load_attachments , this.load_tags)
+
     this.title;
+  },
+
+  async load_tags()
+  {
+    this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
+    await this.read_selected_tags()
+  },
+
+  async load_attachments()
+  {
+    this.attachments = await rest.run_method("read_attachments", {
+      issue_uuid: this.issue[0].uuid,
+    });
+    this.images = this.attachments.filter((a) => a.type.indexOf("image/") > -1);
+
+    wsMon.monitorIssueAttachmentsDel(this.attachments.map((a)=>a.uuid), this.load_attachments)
+  },
+  load_time_entries: async function(){
+    this.time_entries = await rest.run_method("read_time_entries", {
+      issue_uuid: this.issue[0].uuid,
+    });
+  },
+
+  async update_issue(msg)
+  {
+    this.freeze_save = true
+    const freeze_timeout = 1000//ms
+    setTimeout(()=>{this.freeze_save=false}, freeze_timeout)
+    let my_description = this.get_field_by_name('Описание').value
+    await this.update_data({uuid: this.issue[0].uuid})
+    console.log('wswsws', this.get_field_by_name('Описание').value, this.saved_descr, this.current_description, my_description)
+    if(!this.edit_mode || this.saved_descr == my_description){
+      console.log('wswswsws1')
+      this.current_description = this.get_field_by_name('Описание').value
+      this.saved_descr = this.get_field_by_name('Описание').value
+    } 
+    else if (this.saved_descr != this.get_field_by_name('Описание').value) {
+      console.log('wswswsws2')
+      this.saved_descr = this.get_field_by_name('Описание').value
+      this.get_field_by_name('Описание').value = my_description
+      this.must_reload = true
+    }
+    else {
+      this.get_field_by_name('Описание').value = my_description
+      this.must_reload = true
+    }
   },
 
   get_params_for_localstorage() {
@@ -581,6 +626,7 @@ let methods = {
   field_updated: async function () {
     console.log("field_updated");
     if (this.id == "") return;
+    if(this.freeze_save) return;
 
     if(!(await this.check_issue_changed())) return
     
@@ -657,6 +703,41 @@ let methods = {
     if(d_vals == null) return
     if(d_vals[0] == undefined) return
     await rest.run_method("delete_issue_tags_selected", {uuid: d_vals[0].uuid})
+  },
+  new_time_entry: async function()
+  {
+    //console.log('new_time_entry')
+    let author = cache.getObject("profile")
+    this.selected_time_entry = 
+    {
+      comment: '',
+      author: [author],
+      author_uuid: author.uuid,
+      issue_uuid: this.issue[0].uuid,
+      duration: 0,
+      work_date: new Date()
+    }
+    this.time_entry_modal_visible = true
+  },
+  edit_time_entry: async function(time_entry)
+  {
+    this.selected_time_entry = time_entry
+    this.time_entry_modal_visible = true
+  },
+  ok_time_entry_modal: async function(time_entry)
+  {
+    if(!time_entry.uuid) {
+      time_entry.uuid = tools.uuidv4()
+      this.time_entries.push(time_entry)
+    }
+    this.time_entry_modal_visible = false
+    rest.run_method("upsert_time_entries", time_entry);
+  },
+  delete_time_entry: async function(time_entry)
+  {
+    this.time_entry_modal_visible = false
+    this.time_entries = this.time_entries.filter((t)=>t.uuid!=time_entry.uuid)
+    rest.run_method("delete_time_entries", {uuid: time_entry.uuid});
   }
 };
 
@@ -674,9 +755,12 @@ const data = {
   saved_name: "",
   saved_project_uuid: undefined,
   new_relation_modal_visible: false,
+  time_entry_modal_visible: false,
+  selected_time_entry: {},
   relation_types: [],
   collumns: [],
   formated_relations: [],
+  time_entries: [],
   inputs: [
     {
       label: "Воркфлоу",
@@ -725,6 +809,8 @@ const data = {
   max_status_buttons_count: 2,
   current_status: true,
   is_in_dev_mode: false,
+  must_reload: false,
+  freeze_save: false,
   instance: {
     values: [
       {
@@ -895,6 +981,15 @@ export default mod;
         :issue0_uuid="issue[0].uuid"
       />
     </Transition>
+    <Transition name="element_fade">
+      <KTimeEntryModal
+        v-if="time_entry_modal_visible"
+        @close_time_entry_modal="time_entry_modal_visible = false"
+        @ok_time_entry_modal="ok_time_entry_modal"
+        @delete_time_entry="delete_time_entry"
+        :time_entry="selected_time_entry"
+      />
+    </Transition>
     <div id="issue_top_panel" class="panel"   >
 
     <div class="issue-top-buttons">
@@ -1053,16 +1148,19 @@ export default mod;
 
         <KMarkdownInput
             style="margin-top: 10px"
-            v-if="!loading && (edit_mode || id === '')"
             ref="issue_descr_text_inpt"
-            :value="get_field_by_name('Описание').value"
-            :id="'values.' + get_field_by_name('Описание').idx + '.value'"
-            @update_parent_from_input="edit_current_description"
-            @paste="pasted"
             parent_name="issue"
             placeholder="Описание задачи..."
             textarea_id="issue_description_textarea"
             transition="element_fade"
+            v-if="!loading && (edit_mode || id === '')"
+            :attachments="attachments"
+            :value="get_field_by_name('Описание').value"
+            :id="'values.' + get_field_by_name('Описание').idx + '.value'"
+            @update_parent_from_input="edit_current_description"
+            @paste="pasted"
+            @attachment_added="add_attachment"
+            @attachment_deleted="delete_attachment"
         />
 
         <div id="issue_footer_buttons"
@@ -1080,7 +1178,8 @@ export default mod;
             <KButton
               key="1"
               class="save-issue-edit-mode-btn"
-              name="Сохранить"
+              :name="!must_reload ? 'Сохранить' : 'Описание изменено параллельно. Скопируйте свое и обновите страницу'"
+              :disabled="must_reload"
               @click="save"
             />
             <KButton
@@ -1112,31 +1211,41 @@ export default mod;
           >
           </KRelations>
         </Transition>
-
         <Transition name="element_fade">
-          <KAttachment
-            v-if="!loading"
+          <KTimeEntries
+            v-if="!loading && id != ''"
             label=""
+            id="issue_time_entries"
+            @new_time_entry="new_time_entry"
+            :time_entries="time_entries"
+            @edit_time_entry="edit_time_entry"
+          >
+          </KTimeEntries>
+        </Transition>
+        <KAttachment
+            transition="element_fade"
             id="issue-attachments"
+            v-if="!loading"
             :attachments="attachments"
             @attachment_added="add_attachment"
             @attachment_deleted="delete_attachment"
-          >
-          </KAttachment>
-        </Transition>
-
-          <KMarkdownInput
+        >
+        </KAttachment>
+        <KMarkdownInput
             class="comment_input"
             style="margin-top: 20px"
+            placeholder="Комментарий к задаче..."
+            textarea_id="issue_comment_textarea"
+            transition="element_fade"
             v-if="!loading && !edit_mode && id !== ''"
+            :attachments="attachments"
             :value="comment"
             @update_parent_from_input="update_comment"
             @paste="pasted"
             @input_focus="comment_focus"
-            placeholder="Комментарий к задаче..."
-            textarea_id="issue_comment_textarea"
-            transition="element_fade"
-          />
+            @attachment_added="add_attachment"
+            @attachment_deleted="delete_attachment"
+        />
         <Transition name="element_fade">
           <KButton
               v-if="!loading && !edit_mode && id !== ''"
@@ -1147,8 +1256,6 @@ export default mod;
               :disabled="comment === ''"
           />
         </Transition>
-
-
         <CommentList
             v-if="!loading && !edit_mode"
             v-model:actions="issue[0].actions"
@@ -1496,7 +1603,13 @@ $code-width: 160px;
   display: none;
 }
 
+
+.bx-paperclip {
+  font-size: $font-size * 1.4;
+}
+
 #issue-attachments {
+  margin-top: 20px;
   width: 100%;
 }
 

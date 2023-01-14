@@ -32,9 +32,13 @@ import KTab from "./components/KTab.vue";
 
 import KAttachment from "./components/KAttachment.vue";
 import KRelations from "./components/KRelations.vue";
+import KTimeEntries from "./components/KTimeEntries.vue";
+
 
 import IssuesSearchInput from "./components/IssuesSearchInput.vue";
 import KNewRelationModal from "./components/KNewRelationModal.vue";
+import KTimeEntryModal from "./components/KTimeEntryModal.vue";
+import KBoardFilterModal from "./components/KBoardFilterModal.vue";
 
 import KMarked from "./components/KMarked.vue";
 import Comment from "./components/Comment.vue";
@@ -45,6 +49,7 @@ import ColorInput from "./components/ColorInput.vue";
 import EditTagModal from "./components/EditTagModal.vue";
 import KMarkdownInput from "./components/KMarkdownInput.vue";
 import IWatcher from "./icons/IWatcher.vue";
+import RelativeBox from "./components/RelativeBox.vue";
 
 const app = createApp(App);
 
@@ -74,10 +79,13 @@ app.component("KTab", KTab);
 
 app.component("KAttachment", KAttachment);
 app.component("KRelations", KRelations);
+app.component("KTimeEntries", KTimeEntries);
 
 app.component("IssuesSearchInput", IssuesSearchInput);
 
 app.component("KNewRelationModal", KNewRelationModal);
+app.component("KTimeEntryModal", KTimeEntryModal);
+app.component("KBoardFilterModal", KBoardFilterModal);
 app.component("KMarked", KMarked);
 app.component("Comment", Comment);
 app.component("CommentList", CommentList);
@@ -86,5 +94,6 @@ app.component("ColorInput", ColorInput);
 app.component("EditTagModal", EditTagModal);
 app.component("KMarkdownInput", KMarkdownInput);
 app.component("IWatcher", IWatcher)
+app.component("RelativeBox", RelativeBox)
 
 app.mount("#app");
