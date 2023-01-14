@@ -8,8 +8,15 @@ dbLoger.writeLogIncoming = function(reqUuid:string, req:any){
 }
 
 dbLoger.writeLogDone = function(workspace:string, reqUuid:string, userUuid:string, tableName:string, method:string, targetUuid:string, params:any){
-    sql.admin`INSERT INTO ${sql(workspace) + '.logs_done'} (uuid, user_uuid, table_name, method, target_uuid, parameters) 
-    VALUES(${reqUuid},${userUuid},${tableName},${method},${targetUuid},${JSON.stringify(params)})`        
+   //console.log('lll',reqUuid,userUuid,tableName,method,targetUuid,JSON.stringify(params))
+   
+
+   let query = `INSERT INTO logs_done (uuid, user_uuid, table_name, method, target_uuid, parameters) VALUES ($1,$2,$3,$4,$5,$6)`
+   sql.query(workspace, query, [reqUuid,userUuid,tableName,method,targetUuid,JSON.stringify(params)])
+
+
+   // sql.admin`INSERT INTO ${sql(workspace + '.logs_done')} (uuid, user_uuid, table_name, method, target_uuid, parameters) 
+   // VALUES(${reqUuid},${userUuid},${tableName},${method},${targetUuid},'')` 
 }
 
 export default dbLoger
