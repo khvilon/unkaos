@@ -36,7 +36,7 @@ export default {
         {
           name: "Занесено",
           id: "created_at",
-          type: "date",
+          type: "dt",
         }
       ]
     }
@@ -54,7 +54,7 @@ export default {
 
       this.total_duration = 0
       for(let i = 0; i < this.time_entries.length; i++){
-      this.total_duration += this.time_entries[i].duration
+      this.total_duration += Number(this.time_entries[i].duration)
     }
   },
     init(){

@@ -106,6 +106,9 @@ export default {
         }
         return dt;
       }
+      if (type == "dt") {
+        return tools.format_dt(val)
+      }
       if (type == "boolean") {
         if (val == "true" || val == true || val == "t") return "✓";
         else return "✗";
