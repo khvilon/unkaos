@@ -3,6 +3,9 @@ import page_helper from "../page_helper.ts";
 
 import IssuesTable from "../gadgets/IssuesTable.vue";
 import IssuesTableConfig from "../gadgets/IssuesTableConfig.vue";
+import TimeReport from "../gadgets/TimeReport.vue";
+import TimeReportConfig from "../gadgets/TimeReportConfig.vue";
+
 
 import d from "../dict.ts";
 import rest from "../rest";
@@ -99,6 +102,41 @@ let methods = {
   show_resize: function () {
     if (!this.resize_data) return;
   },
+  save_gadget: function(e, gadget){
+    console.log('saving_gadget',e)
+    gadget.config_open = false;
+    gadget.name = e.name
+    gadget.config = JSON.stringify(e.config)
+    console.log('save_gadget',gadget)
+    rest.run_method('upsert_gadgets', gadget)
+  },
+  new_gadget:  function(type){
+    if(type.code != 'TimeReport') return
+
+    let gadget = {
+      uuid: tools.uuidv4(),
+      dashboard_uuid: this.dashboard[0].uuid,
+      x0: 0,
+      width: 8,
+      height: 3,
+      y0: this.max_y,
+      type_uuid: type.uuid,
+      name:  type.name
+    }
+
+    //console.log('new_gadget', gadget)
+    this.dashboard[0].gadgets.push(gadget)
+
+    rest.run_method('upsert_gadgets', gadget)
+
+    this.gadget_types_modal_visible = false;
+  },
+  delete_gadget: function(gadget){
+    this.dashboard[0].gadgets = this.dashboard[0].gadgets.filter((g)=>g.uuid != gadget.uuid)
+    gadget.deleted_at = new Date()
+    //rest.run_method('delete_gadgets', {uuid: gadget.uuid})
+    rest.run_method('upsert_gadgets', gadget)
+  }
 };
 
 const data = {
@@ -117,6 +155,7 @@ const data = {
   uh: 0,
   virtual_border_width: 10,
   gadget_padding: 5,
+  gadget_types_modal_visible: false,
   collumns: [
     {
       name: "№",
@@ -193,6 +232,12 @@ const data = {
       id: "",
       dictionary: "issue_types",
     },
+    {
+      label: "gadget_types",
+      id: "",
+      dictionary: "gadget_types",
+    },
+
   ],
 };
 
@@ -217,27 +262,32 @@ mod.computed.title = function () {
   }
 };
 
-mod.computed.total_height = function () {
-  this.uv;
-  if (this.dashboard == undefined || this.dashboard[0] == undefined) return 0;
-
-  let max_height = 0;
+mod.computed.max_y = function () {
+  let max_y = 0;
   for (let i in this.dashboard[0].gadgets) {
     let end =
       Number(this.dashboard[0].gadgets[i].y0) +
       Number(this.dashboard[0].gadgets[i].height);
-    max_height = Math.max(max_height, end);
+      max_y = Math.max(max_y, end);
 
-    this.dashboard[0].gadgets[i].config_open = false;
+    //this.dashboard[0].gadgets[i].config_open = false;
   }
+  return max_y
+}
 
-  console.log("aaa1", (max_height + this.v_units / 2) * this.uv);
-  return (max_height + this.v_units / 2) * this.uv;
+mod.computed.total_height = function () {
+  this.uv;
+  if (this.dashboard == undefined || this.dashboard[0] == undefined) return 0;
+
+  
+  return (this.max_y + this.v_units / 2) * this.uv;
 };
 
 mod.components = {
   IssuesTable,
   IssuesTableConfig,
+  TimeReport,
+  TimeReportConfig,
 };
 
 export default mod;
@@ -245,6 +295,27 @@ export default mod;
 
 <template ref="dashboard">
   <div>
+
+
+    <div v-if="gadget_types_modal_visible" class = gadget-types-modal-container>
+      <div class="modal-bg" @mousedown.self="gadget_types_modal_visible=false">
+        <div class="panel modal gadget-types-modal">
+          <div class="gadget-types-cells">
+            <div
+            v-for="(gadget_type) in gadget_types"
+            @click="new_gadget(gadget_type)"
+            class="gadget-types-cell"
+            :class="{'gadget-types-cell-disabled' : gadget_type.code != 'TimeReport'}"
+            >
+            <span>{{ gadget_type.name }}</span>
+            </div>
+          </div>
+          <KButton name="Отменить" @click="gadget_types_modal_visible=false" />
+        </div>
+      </div>
+    </div>
+
+
     <div class="panel topbar">
       <div
         style="
@@ -264,6 +335,11 @@ export default mod;
         >
         </StringInput>
 
+        <i
+          class="bx bx-extension top-menu-icon-btn add-gadget-btn"
+          @click="gadget_types_modal_visible=true"
+        >
+        </i>
         <i
           class="bx bx-trash top-menu-icon-btn delete-dashboard-btn"
           @click="delete_dashboard()"
@@ -289,7 +365,7 @@ export default mod;
             width: Number(uh) * Number(gadget.width) + 'px',
             height: Number(uv) * Number(gadget.height) + 'px',
             'margin-left': Number(uh) * Number(gadget.x0) + 'px',
-            'margin-top': Number(uv) * Number(0) + 'px',
+            'margin-top': Number(uv) * Number(gadget.y0) + 'px',
           }"
           class="gadget"
         >
@@ -299,17 +375,25 @@ export default mod;
               class="bx bx-dots-horizontal-rounded gadget-btn"
               @click="gadget.config_open = !gadget.config_open"
             ></i>
+            <i
+              class="bx bx-trash gadget-btn"
+              @click="delete_gadget(gadget)"
+            ></i>
           </div>
           <div class="gadget-body">
             <component
               v-show="!gadget.config_open"
               v-bind:is="gadget.type_code"
-            ></component>
+              :config="gadget.config ? JSON.parse(gadget.config) : {}"
+            ></component>total_height
 
             <component
               v-show="gadget.config_open"
               v-bind:is="gadget.type_code + 'Config'"
               :name="gadget.name"
+              :config="gadget.config ? JSON.parse(gadget.config) : {}"
+              @cancel="gadget.config_open=false"
+              @ok="save_gadget($event, gadget)"
             ></component>
           </div>
           <div class="gadget-borders">
@@ -444,6 +528,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
 
 .gadget-head span {
   padding-left: 10px;
+  width: 100%;
 }
 
 .gadget-body {
@@ -451,6 +536,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   width: 100%;
   position: relative;
   overflow: scroll;
+  background-color: var(--panel-bg-color);
 
   border-style: var(--border-style);
   border-color: var(--border-color);
@@ -510,8 +596,8 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
 }
 
 .gadget-btn {
-  height: 28px;
-  width: 28px;
+  height: 22px;
+  width: 22px;
   font-size: 15px;
   border-radius: var(--border-radius);
   margin-left: 10px;
@@ -523,9 +609,103 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   border-style: outset;
   cursor: pointer;
   text-align: center;
-  padding: 6px;
+  padding-top: 3px;
+  margin-right: 1px;
 
   text-align: center;
   //padding-top: 4px;
 }
+
+.delete-dashboard-btn:hover{
+  color: red;
+}
+
+.add-gadget-btn:hover{
+  color: green;
+}
+
+
+
+
+
+
+.gadget-types-modal {
+  padding: 20px;
+  position: absolute;
+  width: 60%;
+  height: fit-content !important;
+  width: fit-content !important;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.gadget-types-modal > *:not(:last-child) {
+  margin-bottom: 10px;
+}
+
+.gadget-types-modal SelectInut {
+  width: 100%;
+  height: $input-height;
+}
+
+
+.gadget-types-modal .btn {
+  width: 100%;
+  justify-content: center;
+    display: flex;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.gadget-types-modal .btn input{
+  width: 340px;
+}
+
+
+.gadget-types-modal #create-relation-btn {
+  padding-right: 20px;
+}
+
+.gadget-types-cells {
+  display: flex;
+  justify-content: center;
+}
+
+
+.gadget-types-cell {
+  width: 100px;
+  height: 100px;
+
+    font-size: 20px;
+
+    border-radius: var(--border-radius);
+    color: var(--text-color);
+    background-color: var(--button-color);
+    border-width: 1px;
+    border-color: var(--border-color);
+    border-style: solid;
+    border-style: outset;
+    cursor: pointer;
+    text-align: center;
+
+    margin: 10px;
+    align-items: center;
+    display: flex;
+}
+
+.gadget-types-cell-disabled{
+  cursor:not-allowed;
+  opacity: 0.5;
+}
+
+.gadget-types-cell span{
+width: 100%;
+}
+
+.gadget-head .bx-trash:hover{
+  color: red;
+}
+
+
 </style>

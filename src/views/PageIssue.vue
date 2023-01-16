@@ -488,6 +488,9 @@ let methods = {
       console.log('preset status', this.url_params.status_uuid)
     }*/
 
+    // ans = await rest.run_method("read_time_report", 
+    //{author_uuid: '9965cb94-17dc-46c4-ac1e-823857289e98', date_from:'2023-01-02', date_to:'2023-01-13'});
+
     console.log('this.url_params', this.url_params)
     if(uri_params.parent_uuid != undefined)
     {

@@ -22,11 +22,19 @@ export default {
       default: "",
     },
   },
+  data()
+  {
+    return {
+      current_value: null,
+    }
+  },
   emits: ["update_parent_from_input", "updated"],
   methods: {
     print(e) {
       console.log(e.srcElement.value);
       let val = e.srcElement.value;
+
+      this.current_value = val
       
       this.$emit("update_parent_from_input", val);
 
@@ -59,7 +67,7 @@ export default {
       else return "";
     },
     blur() {
-      this.$emit("updated", this.value);
+      this.$emit("updated", this.current_value);
     },
   },
   watch: {
