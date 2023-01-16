@@ -443,6 +443,25 @@ crud.load = async function () {
         t1.name,
         t1.created_at,
         t1.updated_at`;
+
+  crud.querys["time_report"] = {};
+  crud.querys["time_report"]["read"] = `
+    SELECT 
+      T1.WORK_DATE,
+      T1.DURATION,
+      T1.COMMENT,
+      I.NUM,
+      P.SHORT_NAME,
+      T1.CREATED_AT
+    FROM TIME_ENTRIES T1
+    JOIN ISSUES I
+    ON I.UUID = T1.ISSUE_UUID
+    JOIN PROJECTS P
+    ON P.UUID = I.PROJECT_UUID
+    WHERE T1.DELETED_AT IS NULL $@1
+    
+
+  `
 };
 
 crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is_revert:any) {
@@ -531,6 +550,9 @@ crud.make_query = {
                 SELECT 
                 ISS.UUID,
                 ISS.NUM,
+                ISS.TITLE,
+                ISS.DESCRIPTION,
+                ISS.SPENT_TIME,
                 ISS.TYPE_UUID,
                 ISS.CREATED_AT,
                 MAX(IA.CREATED_AT) AS UPDATED_AT,
@@ -554,6 +576,9 @@ crud.make_query = {
                 GROUP BY 
                 ISS.UUID,
                 ISS.NUM,
+                ISS.TITLE,
+                ISS.DESCRIPTION,
+                ISS.SPENT_TIME,
                 ISS.TYPE_UUID,
                 ISS.CREATED_AT,
                 ISS.DELETED_AT,
@@ -655,6 +680,13 @@ crud.make_query = {
     } else if (table_name == "issues" || table_name == "issue") {
       query = `WITH filtered_issues AS (SELECT * FROM ISSUES) ` + query;
       query = query.replace("$@order", "");
+    } 
+    else if(table_name == "time_report"){
+      if(params["date_from"] != "")
+        query += ` AND WORK_DATE >= '` + params["date_from"] + `'`
+      if(params["date_to"] != "")
+        query += ` AND WORK_DATE <= '` + params["date_to"] + `'`
+        query += ` ORDER BY T1.WORK_DATE`
     }
 
     if (!params || params.length == 0) return [query.replace("$@1", ""), []];
@@ -671,8 +703,12 @@ crud.make_query = {
       } else if (i == "like") {
         query = query.replace("$@2", params[i]);
       } else {
-        pg_params.push(params[i]);
-        where += " AND t1." + i + "=$" + pg_params.length;
+        if(i != 'date_from' && i != 'date_to')
+        {
+          pg_params.push(params[i]);
+          where += " AND t1." + i + "=$" + pg_params.length;
+        }
+        
       }
     }
     return [query.replaceAll("$@1", where), pg_params];
