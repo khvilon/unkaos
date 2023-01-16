@@ -385,7 +385,7 @@ export default mod;
               v-show="!gadget.config_open"
               v-bind:is="gadget.type_code"
               :config="gadget.config ? JSON.parse(gadget.config) : {}"
-            ></component>total_height
+            ></component>
 
             <component
               v-show="gadget.config_open"
