@@ -12,6 +12,11 @@ export default {
       ],
     },
   },
+  data() {
+    return {
+        expanded: false
+    };
+  },
   methods: {
     format_date: function (value) {
       return tools.format_date(value)
@@ -28,7 +33,7 @@ export default {
         let author = this.time_entries[i].author[0]
         if(authors_time_entries[author.uuid] == undefined) authors_time_entries[author.uuid] = {author: author, sum:0, entries:[]}
         authors_time_entries[author.uuid].entries.push(this.time_entries[i])
-        authors_time_entries[author.uuid].sum += Number.isInteger(this.time_entries[i].duration) ? this.time_entries[i].duration : 0
+        authors_time_entries[author.uuid].sum += Number(this.time_entries[i].duration)
       }
       return authors_time_entries
     },
@@ -40,7 +45,10 @@ export default {
 <template>
   <label class="time-entries">
     <div class="label">
-      <i class="bx bx-time"></i
+      <i class="bx bx-time"
+      :class="{'bx-time-expanded':expanded}"
+      @click="expanded = !expanded"
+      ></i
       ><i
         class="add-time-entry-btn bx bx-plus"
         @click="() => $emit('new_time_entry')"
@@ -48,7 +56,7 @@ export default {
       >
     </div>
     <div
-    v-for="(author_time_entries) in authors_time_entries"
+    v-for="(author_time_entries) in expanded ? authors_time_entries : []"
     class="author-time-entries"
     >
     <img v-if="author_time_entries.author.avatar" :src="author_time_entries.author.avatar" />
@@ -95,6 +103,12 @@ $time_entry_input_border_width: 2px;
 }
 .time-entries .bx-time{
   font-size: 15px;
+  cursor: pointer;
+  opacity: 0.5
+}
+
+.time-entries .bx-time-expanded{
+  opacity: 1;
 }
 
 .time-entries-input {
@@ -193,4 +207,6 @@ $time_entry_input_border_width: 2px;
 .time-entries .time-entries-author-name{
   font-size: 15px;
 }
+
+
 </style>

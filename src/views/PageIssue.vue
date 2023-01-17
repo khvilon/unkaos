@@ -132,7 +132,7 @@ let methods = {
         
         this.ok_time_entry_modal(time_entry)
         
-        params.value = "Добавил " + h + "ч работы на задачу";
+        return;
         
       }
     }
@@ -739,6 +739,10 @@ let methods = {
     if(!time_entry.uuid) {
       time_entry.uuid = tools.uuidv4()
       this.time_entries.push(time_entry)
+      this.actions_with_time_entries_rk++
+      console.log('>>>>>>>>>>>>>rrr', this.get_time_entries_as_actions())
+     // this.time_entries_as_actions
+     // this.actions_with_time_entries
     }
     this.time_entry_modal_visible = false
     
@@ -756,7 +760,7 @@ let methods = {
   {
     let spent_time = 0
     for(let i = 0; i < this.time_entries.length; i++){
-      spent_time += this.time_entries[i].duration
+      spent_time += Number(this.time_entries[i].duration)
     }
     this.issue[0].spent_time = spent_time
     this.$store.commit("id_push_update_issue", {
@@ -764,6 +768,23 @@ let methods = {
       val: spent_time,
     })
     this.field_updated()
+  },
+  get_time_entries_as_actions()
+  {
+    
+    return this.time_entries.map(function(t){
+      let comment = t.comment ? (' с комментарием: ' + t.comment) : ''
+      let val = 'Списал на задачу ' + t.duration + 'ч за ' + tools.format_date(t.work_date) + comment
+      let created_at = t.created_at ? t.created_at : new Date()
+      return{
+        uuid: t.uuid,
+        created_at: t.created_at, 
+        author: t.author[0].name,
+        name: 'time_entry', 
+        value: val,
+        created_at: created_at
+      }
+    })
   }
 };
 
@@ -787,6 +808,7 @@ const data = {
   collumns: [],
   formated_relations: [],
   time_entries: [],
+  actions_with_time_entries_rk: 0,
   inputs: [
     {
       label: "Воркфлоу",
@@ -958,6 +980,14 @@ mod.computed.available_transitions = function () {
   return this.transitions;
 
   //console.log('statusesstatusesstatuses', this.statuses_to)
+};
+
+
+
+mod.computed.actions_with_time_entries = function () {
+  this.actions_with_time_entries_rk;
+  let time_entries_actions = this.get_time_entries_as_actions()
+  return [...this.issue[0].actions, ...time_entries_actions]
 };
 
 mod.mounted = async function () {
@@ -1284,7 +1314,7 @@ export default mod;
         </Transition>
         <CommentList
             v-if="!loading && !edit_mode"
-            v-model:actions="issue[0].actions"
+            v-model:actions="actions_with_time_entries"
             :images="images"
         />
       </div>
@@ -1393,6 +1423,7 @@ export default mod;
               :disabled="true"
               id="spent_time"
               @updated="field_updated(val)"
+              @click="new_time_entry()"
             >
             </NumericInput>
 
@@ -1724,6 +1755,14 @@ $code-width: 160px;
 
 .issue-author-container .string-input{
   width: 130px !important;
+}
+
+.issue-spent-time-input *{
+  cursor: pointer !important;
+}
+
+.issue-spent-time-input:hover input{
+  color: green !important;
 }
 
 

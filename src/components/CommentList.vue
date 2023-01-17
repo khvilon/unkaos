@@ -9,9 +9,8 @@
           @click="toggleComments"
         ></div>
         <div
-          class="issue-actions-button bx bxs-time"
+          class="issue-actions-button bx bx-time"
           title="Отображать затраченное время"
-          style="display: none"
           :class="{ shadowed: !showTime }"
           @click="toggleTime"
         ></div>
@@ -94,7 +93,7 @@ export default {
         sf = sf.filter((action) => action.name !== "💬");
       }
       if (!this.showTime) {
-        sf = sf.filter((action) => action.name !== "time");
+        sf = sf.filter((action) => action.name !== "time_entry");
       }
       if (!this.showEdits) {
         sf = sf.filter((action) => action.name !== "📝");

@@ -28,7 +28,7 @@ export default {
       <div v-if="action.name=='💬'" class="issue-action-icon bx bx-message-dots"></div>
       <div v-if="action.name=='📝'" class="issue-action-icon bx bx-edit"></div>
       <div v-if="action.name=='🔁'" class="issue-action-icon bx bx-transfer"></div>
-
+      <div v-if="action.name=='time_entry'" class="issue-action-icon bx bx-time"></div>
     </div>
     <div class="issue-comment-text" v-if="action.value.length !== 0">
       <KMarked :val="action.value" :images="images"> </KMarked>
