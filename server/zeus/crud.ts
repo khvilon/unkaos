@@ -963,6 +963,8 @@ crud.get_uuids = function (obj:any) {
     )
       continue;
 
+
+    console.log('obj.table_name', obj, obj.table_name)
     let fk = data_model.model[obj.table_name]["fk"];
     if (fk !== undefined) {
       // console.log('fk', obj.table_name, fk)
