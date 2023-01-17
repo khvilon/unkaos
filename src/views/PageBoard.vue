@@ -1058,6 +1058,7 @@
 		delete_filter: function(filter){
 			rest.run_method("delete_boards_filters", {uuid: filter.uuid})
 			this.filters = this.filters.filter((f)=>f.uuid != filter.uuid)
+			this.board_filter_modal_visible = false
 		},
 		toggle_filter: function(filter){
 			filter.is_active = !filter.is_active
@@ -1314,6 +1315,7 @@
         v-if="board_filter_modal_visible"
         @close_board_filter_modal="board_filter_modal_visible=false"
         @ok_board_filter_modal="filter_ok"
+		@delete_board_filter="delete_filter"
 		:filter="filter_to_edit"
 		:fields="fields"
 		:projects="projects"
@@ -1403,7 +1405,7 @@
 			:class="{ 'selected-filter': filter.is_active}"
 			>
 				<i class="delete-filter-btn bx bx-trash"
-				@click="delete_filter(filter)"
+				@click=""
 				></i>
 				<span
 				@click="toggle_filter(filter)"
@@ -2284,7 +2286,7 @@
 	cursor: pointer;
 }
 
-.filter:hover .bx{
+.filter:hover .config-filter-btn{
 	opacity: 1;
 }
 
@@ -2292,9 +2294,7 @@
 	margin-top:1px;
 }
 
-.delete-filter-btn:hover{
-	color: red;
-}
+
 .config-filter-btn:hover{
 	color: green
 }
