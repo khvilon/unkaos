@@ -49,8 +49,9 @@ export default {
   },
   methods: {
     load_time_entries: async function () {
-    this.time_entries = await rest.run_method("read_time_report", 
-    {author_uuid: this.config.user.uuid, date_from: this.config.date_from, date_to: this.config.date_to});
+      let options = {date_from: this.config.date_from, date_to: this.config.date_to}
+      if(this.config.user && this.config.user.uuid) options.author_uuid = this.config.user.uuid, 
+    this.time_entries = await rest.run_method("read_time_report", options);
 
       this.total_duration = 0
       for(let i = 0; i < this.time_entries.length; i++){

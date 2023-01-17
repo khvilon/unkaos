@@ -19,11 +19,17 @@ let methods = {
     if (
       this.selected_dashboard == undefined ||
       this.dashboard == undefined ||
-      this.dashboard[0] != undefined
+      this.dashboard[0] == undefined
     ) {
-      setTimeout(this.init, 5000);
+      setTimeout(this.init, 200);
       return;
     }
+
+    this.gadgets = await rest.run_method('read_gadgets', {dashboard_uuid: this.dashboard[0].uuid})
+
+    this.gadgets = this.gadgets.filter((g)=>!g.deleted_at)
+
+  
 
     console.log(
       "sselected_dashboard1",
@@ -55,9 +61,16 @@ let methods = {
       x: e.clientX,
       y: e.clientY,
     };
+
+    this.shadow_gadget.width = this.resize_data.gadget.width
+    this.shadow_gadget.height = this.resize_data.gadget.height
+    this.shadow_gadget.x0 = this.resize_data.gadget.x0
+    this.shadow_gadget.y0 = this.resize_data.gadget.y0
   },
   end_resize: async function (e) {
     if (!this.resize_data) return;
+
+    
 
     let diff;
     if (
@@ -90,7 +103,7 @@ let methods = {
 
     console.log("resize1", this.resize_data.border);
 
-    await await rest.run_method("update_gadgets", this.resize_data.gadget);
+    await rest.run_method("update_gadgets", this.resize_data.gadget);
 
     this.resize_data = null;
 
@@ -99,8 +112,51 @@ let methods = {
   stop_resize: function () {
     this.resize_data = null;
   },
-  show_resize: function () {
+  show_resize: function (e) {
+
+    console.log('show_resize')
     if (!this.resize_data) return;
+
+    
+
+    let diff;
+    if (
+      this.resize_data.border == "right" ||
+      this.resize_data.border == "left"
+    ) {
+      diff = e.clientX - this.resize_data.x;
+      diff = diff / this.uh;
+    } else {
+      diff = e.clientY - this.resize_data.y;
+      diff = diff / this.uv;
+    }
+
+    if (diff > 0) diff = Math.ceil(diff);
+    else diff = Math.floor(diff);
+
+    console.log("resize0", diff);
+
+
+    this.shadow_gadget.width = this.resize_data.gadget.width
+    this.shadow_gadget.height = this.resize_data.gadget.height
+    this.shadow_gadget.x0 = this.resize_data.gadget.x0
+    this.shadow_gadget.y0 = this.resize_data.gadget.y0
+
+    if (this.resize_data.border == "right") {
+      this.shadow_gadget.width += diff;
+    } else if (this.resize_data.border == "bottom") {
+      this.shadow_gadget.height += diff;
+    } else if (this.resize_data.border == "left") {
+      this.shadow_gadget.x0 += diff;
+      this.shadow_gadget.width -= diff;
+    } else if (this.resize_data.border == "top") {
+      this.shadow_gadget.y0 += diff;
+      this.shadow_gadget.height -= diff;
+    }
+
+
+
+
   },
   save_gadget: function(e, gadget){
     console.log('saving_gadget',e)
@@ -121,21 +177,31 @@ let methods = {
       height: 3,
       y0: this.max_y,
       type_uuid: type.uuid,
+      type: [type],
       name:  type.name
     }
 
     //console.log('new_gadget', gadget)
-    this.dashboard[0].gadgets.push(gadget)
+    this.gadgets.push(gadget)
 
     rest.run_method('upsert_gadgets', gadget)
 
     this.gadget_types_modal_visible = false;
   },
   delete_gadget: function(gadget){
-    this.dashboard[0].gadgets = this.dashboard[0].gadgets.filter((g)=>g.uuid != gadget.uuid)
-    gadget.deleted_at = new Date()
-    //rest.run_method('delete_gadgets', {uuid: gadget.uuid})
-    rest.run_method('upsert_gadgets', gadget)
+    this.gadgets = this.gadgets.filter((g)=>g.uuid != gadget.uuid)
+    //gadget.deleted_at = new Date()
+    rest.run_method('delete_gadgets', {uuid: gadget.uuid})
+    //rest.run_method('upsert_gadgets', gadget)
+  },
+  delete_dashboard: async function(){
+    await rest.run_method('delete_dashboards', {uuid: this.dashboard[0].uuid})
+    window.location.href = "/dashboards"
+  },
+  update_name: async function(name){
+    this.dashboard[0].name = name
+    this.dashboard[0].table_name = 'dashboards'
+    await rest.run_method('update_dashboards', this.dashboard[0])
   }
 };
 
@@ -148,7 +214,7 @@ const data = {
   instance: {
     name: "",
   },
-
+  gadgets: [],
   v_units: 8,
   h_units: 8,
   uv: 0,
@@ -156,6 +222,7 @@ const data = {
   virtual_border_width: 10,
   gadget_padding: 5,
   gadget_types_modal_visible: false,
+  shadow_gadget: {x0:0, y0:0, width: 0, height: 0},
   collumns: [
     {
       name: "№",
@@ -264,13 +331,13 @@ mod.computed.title = function () {
 
 mod.computed.max_y = function () {
   let max_y = 0;
-  for (let i in this.dashboard[0].gadgets) {
+  for (let i in this.gadgets) {
     let end =
-      Number(this.dashboard[0].gadgets[i].y0) +
-      Number(this.dashboard[0].gadgets[i].height);
+      Number(this.gadgets[i].y0) +
+      Number(this.gadgets[i].height);
       max_y = Math.max(max_y, end);
 
-    //this.dashboard[0].gadgets[i].config_open = false;
+
   }
   return max_y
 }
@@ -332,6 +399,7 @@ export default mod;
           :parent_name="'dashboard'"
           class="dashboard-name-input"
           :value="get_json_val(dashboard[0], 'name')"
+          @updated="update_name"
         >
         </StringInput>
 
@@ -357,10 +425,19 @@ export default mod;
         @mousemove="show_resize"
       >
         <div
-          v-for="(gadget, index) in dashboard == undefined ||
-          dashboard[0] == undefined
-            ? []
-            : dashboard[0].gadgets"
+          v-bind:style="{
+            width: Number(uh) * Number(shadow_gadget.width) + 'px',
+            height: Number(uv) * Number(shadow_gadget.height) + 'px',
+            'margin-left': Number(uh) * Number(shadow_gadget.x0) + 'px',
+            'margin-top': Number(uv) * Number(shadow_gadget.y0) + 'px',
+          }"
+          class="shadow-gadget-container"
+          v-show="resize_data && resize_data.gadget"
+        >
+          <div class="shadow-gadget"></div>
+        </div>
+        <div
+          v-for="(gadget, index) in gadgets"
           v-bind:style="{
             width: Number(uh) * Number(gadget.width) + 'px',
             height: Number(uv) * Number(gadget.height) + 'px',
@@ -368,6 +445,7 @@ export default mod;
             'margin-top': Number(uv) * Number(gadget.y0) + 'px',
           }"
           class="gadget"
+          :class="{'resized-gadget': resize_data && resize_data.gadget && resize_data.gadget.uuid == gadget.uuid}"
         >
           <div class="gadget-head">
             <span>{{ gadget.name }}</span>
@@ -383,13 +461,13 @@ export default mod;
           <div class="gadget-body">
             <component
               v-show="!gadget.config_open"
-              v-bind:is="gadget.type_code"
+              v-bind:is="gadget.type[0].code"
               :config="gadget.config ? JSON.parse(gadget.config) : {}"
             ></component>
 
             <component
               v-show="gadget.config_open"
-              v-bind:is="gadget.type_code + 'Config'"
+              v-bind:is="gadget.type[0].code + 'Config'"
               :name="gadget.name"
               :config="gadget.config ? JSON.parse(gadget.config) : {}"
               @cancel="gadget.config_open=false"
@@ -502,6 +580,22 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   flex-direction: column;
   position: absolute;
   padding: 5px;
+}
+
+.shadow-gadget-container{
+
+  position: absolute;
+  padding: 5px;
+}
+
+.shadow-gadget{
+  background-color: var(--on-button-icon-color);
+  opacity: 0.3;
+  width: 100%;
+  height: 100%;
+  border-color: var(--border-color);
+  border-radius: var(--border-radius);
+  border-style: none;
 }
 
 .gadget-head {
@@ -707,5 +801,9 @@ width: 100%;
   color: red;
 }
 
+
+.resized-gadget{
+  opacity: 0.5;
+}
 
 </style>

@@ -1,9 +1,23 @@
 <script>
 import page_helper from "../page_helper.ts";
+import tools from "../tools.ts";
+import rest from "../rest.ts";
+import cache from "../cache.ts";
 
 const methods = {
-  new_dashboard: function () {
-    this.$router.push("/dashboard");
+  new_dashboard: async function () {
+
+    let uuid = tools.uuidv4()
+    let dashboard = {
+      uuid: uuid,
+      author_uuid: cache.getObject("profile").uuid,
+      name: 'Дашборд'
+    }
+
+    await rest.run_method('create_dashboards', dashboard)
+
+    window.location.href = "/dashboard/" + uuid
+    //this.$router.push("/dashboard?uuid=" + uuid);
   },
 };
 
@@ -54,12 +68,7 @@ const data = {
       type: "User",
     },
   ],
-  buttons_route: [
-    {
-      name: "Создать",
-      route: "/dashboard",
-    },
-  ],
+  
 };
 
 const mod = await page_helper.create_module(data, methods);
@@ -71,7 +80,7 @@ export default mod;
   <div>
     <div>
       <TopMenu
-        :buttons="buttons_route"
+        :buttons="[{name:'Создать', click: new_dashboard}]"
         :name="name"
         :label="label"
         :collumns="search_collumns"
