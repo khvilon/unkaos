@@ -985,6 +985,7 @@ mod.computed.available_transitions = function () {
 
 
 mod.computed.actions_with_time_entries = function () {
+  if(!this.id) return []
   this.actions_with_time_entries_rk;
   let time_entries_actions = this.get_time_entries_as_actions()
   return [...this.issue[0].actions, ...time_entries_actions]
