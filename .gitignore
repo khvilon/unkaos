@@ -44,3 +44,5 @@ src/conf.ts
 server/db_conf.json
 
 server/cerberus/data.js
+
+server/hermes/conf.ts
