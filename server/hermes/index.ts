@@ -1,39 +1,22 @@
-const https = require('https');
-const cors = require('cors');
-const express = require('express');
-const bodyParser = require('body-parser');
+import  Sender from './sender';
 
-var a = 0
+//let s = new Sender();
 
-//var tools = require('./tools')
+const my_uuid = '9965cb94-17dc-46c4-ac1e-823857289e98'
 
-const app = express()
-
-const port = 3001
-
-
-const dict =
+const init = async function()
 {
-    read: 'get',
-    create: 'post',
-    update: 'put',
-    delete: 'delete',
-    upsert: 'post'
+    await Sender.init()
+
+    //Sender.send('email', 'n@khvilon.ru', 'test title', 'test body')
+    //Sender.send('email', my_uuid, 'test title', 'test body', 'oboz')
+
+    //setTimeout(()=>{Sender.send('telegram', my_uuid, 'test title', 'test body', 'oboz')}, 1000)
+    //setTimeout(()=>{Sender.send('telegram', my_uuid, 'test title', 'test body', 'oboz')}, 20000)
+
+    setTimeout(()=>{Sender.send('discord', my_uuid, 'test title', 'test body', 'oboz')}, 1000)
+
 }
 
-app.use(cors());
-app.use(bodyParser.json({limit: '150mb'}));
-app.use(bodyParser.raw({limit: '150mb'}));
-app.use(bodyParser.urlencoded({limit: '150mb', extended: true}));
-
-
-
-async function init()
-{
-    
-
-    console.log('ts')
-
-}
-    
 init()
+
