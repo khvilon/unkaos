@@ -23,7 +23,7 @@ export default {
 
 <template>
   <div class="issue-comment">
-    <div class="issue-comment-header">
+    <div class="issue-comment-header" :id="'action' + action.uuid">
       <span>{{ dt }}</span> <strong>{{ action.author }}</strong> 
       <div v-if="action.name=='💬'" class="issue-action-icon bx bx-message-dots"></div>
       <div v-if="action.name=='📝'" class="issue-action-icon bx bx-edit"></div>

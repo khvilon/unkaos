@@ -36,6 +36,14 @@ class Sender {
   public send(transport: string, recipient: string, title: string, body: string, workspace: string='') {
     console.log('Try send', transport, recipient, title, workspace)
 
+    if(!transport)
+    {
+      this.send('email',recipient, title, body, workspace)
+      this.send('telegram',recipient, title, body, workspace)
+      this.send('discord',recipient, title, body, workspace)
+      return
+    }
+
     if(!this.isUUID(recipient) && transport == 'email'){
       if(!this.isValidEmail(recipient)){
         console.log('Error - email not valid')
@@ -92,4 +100,4 @@ class Sender {
   }
 }
 
-export default new Sender();
+export default Sender;
