@@ -90,7 +90,7 @@ let methods = {
     if (uuid === undefined) {
       uuid = tools.uuidv4();
     }
-    if (this.issue[0] === undefined || this.issue[0].actions === undefined)
+    if (this.issue[0] === undefined || this.actions === undefined)
       return;
     const action_icons = {
       comment: "💬",
@@ -105,7 +105,7 @@ let methods = {
       author: cache.getObject("profile").name,
     };
     console.log("New action added:", new_action);
-    this.issue[0].actions.unshift(new_action);
+    this.actions.unshift(new_action);
   },
   send_comment: async function () {
     let params = {};
@@ -220,6 +220,7 @@ let methods = {
     this.$store.state["issue"]["issue"][0].status_name = status_name;
     this.$store.state["issue"]["filtered_issue"][0].status_name = status_name;
 
+    if(this.freeze_save) return;
     this.add_action_to_history("transition", "->" + status_name);
 
     let ans = await this.$store.dispatch("save_issue");
@@ -471,6 +472,7 @@ let methods = {
     });
     this.watch = ans.length > 0;
 
+    await this.load_actions()
     await this.load_attachments()
     await this.load_tags()
     await this.load_time_entries()
@@ -520,6 +522,12 @@ let methods = {
   {
     this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
     await this.read_selected_tags()
+  },
+
+  async load_actions()
+  {
+    this.actions = (await rest.run_method("read_issue_formated_actions", 
+      {issue_uuid: this.issue[0].uuid}));
   },
 
   async load_attachments()
@@ -649,6 +657,7 @@ let methods = {
     console.log("type_updated", new_type_uuid);
 
     if(this.id=='') return
+    if(this.freeze_save) return;
 
     //await this.update_data({ uuid: this[this.name][0].uuid });
     //await this.$store.dispatch("get_" + this.name, { uuid: this[this.name][0].uuid });
@@ -792,6 +801,7 @@ const data = {
   parent_relation_type_uuid: "73b0a22e-4632-453d-903b-09804093ef1b",
   current_description: "",
   tags: [],
+  actions: [],
   card_open: false,
   edit_mode: false,
   attachments: [],
@@ -988,7 +998,7 @@ mod.computed.actions_with_time_entries = function () {
   if(!this.id) return []
   this.actions_with_time_entries_rk;
   let time_entries_actions = this.get_time_entries_as_actions()
-  return [...this.issue[0].actions, ...time_entries_actions]
+  return [...this.actions, ...time_entries_actions]
 };
 
 mod.mounted = async function () {

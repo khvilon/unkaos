@@ -189,13 +189,12 @@ crud.load = async function () {
     T1.CREATED_AT,
     ` +
     //T1.UPDATED_AT,
-    `MAX(T15.CREATED_AT) AS UPDATED_AT,
+    `T1.UPDATED_AT,
     T1.DELETED_AT,
     T1.PROJECT_UUID,
     T12.NAME AS PROJECT_NAME,
     T12.SHORT_NAME AS PROJECT_SHORT_NAME,
     CASE WHEN COUNT(T14) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T14) END AS VALUES,
-    CASE WHEN COUNT(T15) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T15) END AS ACTIONS,
     STATUS_UUID,
     T17.NAME AS STATUS_NAME,
     T1.SPRINT_UUID,
@@ -235,21 +234,6 @@ crud.load = async function () {
      ORDER BY F.NAME
 	) T14
 	ON T1.TYPE_UUID = T14.ISSUE_TYPE_UUID
-    LEFT JOIN 
-    (SELECT
-        A.UUID,
-        A.ISSUE_UUID,
-        U.NAME AS AUTHOR,
-        A.VALUE,
-        AT.NAME,
-        A.CREATED_AT
-    FROM ISSUE_ACTIONS A
-    JOIN ISSUE_ACTIONS_TYPES AT
-    ON A.TYPE_UUID = AT.UUID
-    JOIN USERS U
-    ON A.AUTHOR_UUID = U.UUID
-    ) T15
-    ON T1.UUID = T15.ISSUE_UUID
     LEFT JOIN LATERAL
     (SELECT
         ISSUE0_UUID PARENT_UUID,
@@ -462,6 +446,23 @@ crud.load = async function () {
     
 
   `
+
+  crud.querys["issue_formated_actions"] = {};
+  crud.querys["issue_formated_actions"]["read"] = `
+      SELECT
+      T1.UUID,
+      T1.ISSUE_UUID,
+      U.NAME AS AUTHOR,
+      T1.VALUE,
+      AT.NAME,
+      T1.CREATED_AT
+    FROM ISSUE_ACTIONS T1
+    JOIN ISSUE_ACTIONS_TYPES AT
+    ON T1.TYPE_UUID = AT.UUID
+    JOIN USERS U
+    ON T1.AUTHOR_UUID = U.UUID
+    WHERE T1.DELETED_AT IS NULL $@1
+  `
 };
 
 crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is_revert:any) {
@@ -544,60 +545,43 @@ crud.make_query = {
 
       //console.log('user_query', user_query)
 
-      let uuids_query_parts = [`WITH filtered_issues AS (
+      let filtered_issues_query = `WITH filtered_issues AS (
                 SELECT * FROM
                 (
-                SELECT 
-                ISS.UUID,
-                ISS.NUM,
-                ISS.TITLE,
-                ISS.DESCRIPTION,
-                ISS.SPENT_TIME,
-                ISS.TYPE_UUID,
-                ISS.CREATED_AT,
-                MAX(IA.CREATED_AT) AS UPDATED_AT,
-                ISS.DELETED_AT,
-                ISS.PROJECT_UUID,
-                ISS.STATUS_UUID,
-                ISS.SPRINT_UUID,
-                `,
-
-
+                SELECT
+					ISS.NUM,
+					ISS.TITLE,
+					ISS.DESCRIPTION,
+					ISS.SPENT_TIME,
+					ISS.TYPE_UUID,
+					ISS.CREATED_AT,
+					IA.UPDATED_AT,
+					ISS.DELETED_AT,
+					ISS.PROJECT_UUID,
+					ISS.STATUS_UUID,
+					ISS.SPRINT_UUID,
+					IT.TAGS,
+					ISSR.*
+				FROM ISSUES ISS
+				LEFT JOIN (
+					SELECT 
+					ISSUE_UUID,
+					MAX(CREATED_AT) AS UPDATED_AT
+					FROM ISSUE_ACTIONS
+					GROUP BY ISSUE_UUID
+					) IA
+				ON IA.ISSUE_UUID = ISS.UUID
+				LEFT JOIN (
+					SELECT 
+						ISSUE_UUID,
+						STRING_AGG(ISSUE_TAGS_UUID::text,',') AS TAGS
+						FROM ISSUE_TAGS_SELECTED
+						WHERE DELETED_AT IS NULL
+						GROUP BY ISSUE_UUID) IT
+				ON IT.ISSUE_UUID = ISS.UUID
+				LEFT JOIN FIELD_VALUES_ROWS ISSR
+				ON ISSR.uuid = ISS.uuid) I WHERE
                 `
-                STRING_AGG(IT.issue_tags_uuid::text, ',') AS TAGS
-                FROM issues ISS
-                LEFT JOIN issue_actions IA
-                ON IA.ISSUE_UUID = ISS.UUID
-                LEFT JOIN issue_tags_selected IT
-                ON IT.ISSUE_UUID = ISS.UUID AND IT.DELETED_AT IS NULL 
-                `,
-
-                `
-                GROUP BY 
-                ISS.UUID,
-                ISS.NUM,
-                ISS.TITLE,
-                ISS.DESCRIPTION,
-                ISS.SPENT_TIME,
-                ISS.TYPE_UUID,
-                ISS.CREATED_AT,
-                ISS.DELETED_AT,
-                ISS.PROJECT_UUID,
-                ISS.STATUS_UUID,
-                `,
-
-                `ISS.SPRINT_UUID) I
-                WHERE `];
-
-      let f_join_parts = [`LEFT JOIN LATERAL (SELECT 1 AS value_exists FROM field_values WHERE 
-        issue_uuid = ISS.uuid AND field_uuid = '`, 
-       `' AND 
-      value `,
-      ` ) FIELD_VALUES`,
-      ` ON TRUE
-      `]
-
-      let f_sel_parts = [`FIELD_VALUES`, `.value_exists IS NOT NULL as FIELD_VALUES`, `_EXISTS,`]
 
       let q_resolved_uuids = `(SELECT UUID FROM ISSUE_STATUSES WHERE IS_END)`;
       user_query = user_query.replaceAll(
@@ -620,43 +604,23 @@ crud.make_query = {
         
       }
       const field_tag = "fields#"
-      while (user_query.indexOf(field_tag) > -1) {
 
-        
-        let start = user_query.indexOf(field_tag);
-
-        let field_uuid_start = start + field_tag.length
-        let field_uuid_end = user_query.indexOf("#", field_uuid_start)
-        let field_uuid = user_query.substring(field_uuid_start, field_uuid_end)
-        //console.log(field_uuid)
-
-        let field_value_end = user_query.indexOf("#", field_uuid_end+1)
-        let field_value = user_query.substring(field_uuid_end+1, field_value_end)
-        //console.log(field_value)
-
-        fv_str += f_join_parts[0] + field_uuid + f_join_parts[1] + field_value + f_join_parts[2] + fv_count + f_join_parts[3]
-        console.log(fv_str)
-
-        fv_sel_str += f_sel_parts[0] + fv_count + f_sel_parts[1] + fv_count + f_sel_parts[2]
-        console.log(fv_sel_str)
-
-        let field_local_name = 'FIELD_VALUES' + fv_count +  '_EXISTS'
-
-        fv_group_str += field_local_name + ','
-
-        user_query = user_query.substring(0, start) + field_local_name + user_query.substring(field_value_end+1)
-
-       // user_query = user_query.replaceFrom("fields#", f1, start);
-       // user_query = user_query.replaceFrom("#", f2, start);
-       // user_query = user_query.replaceFrom("#", ")", start);
-       // user_query = user_query.replaceFrom("like'", " like '", start);
-
-        fv_count++
+      while (user_query.indexOf("fields#") > -1) {
+        let start = user_query.indexOf("fields#");
+        user_query = user_query.replaceFrom("fields#", 'I."', start);
+        user_query = user_query.replaceFrom("#", '"', start);
+        user_query = user_query.replaceFrom("#", "", start);
+        user_query = user_query.replaceFrom("like'", " like '", start);  
       }
+      
 
       user_query = user_query.replaceAll(
         "I.tags=",
         "I.tags~"
+      );
+      user_query = user_query.replaceAll(
+        "I.tags!=",
+        "I.tags IS NULL or I.tags!~"
       );
 
       user_query = user_query.replaceAll(
@@ -672,9 +636,7 @@ crud.make_query = {
         query = query.replace("$@order", order_by);
       } else query = query.replace("$@order", "");
 
-      let uuids_query = uuids_query_parts[0]  + fv_sel_str +  uuids_query_parts[1] + fv_str + 
-      uuids_query_parts[2] + fv_group_str + uuids_query_parts[3]
-      query = uuids_query + user_query + ")" + query;
+      query = filtered_issues_query + user_query + ")" + query;
 
       delete params["query"];
     } else if (table_name == "issues" || table_name == "issue") {

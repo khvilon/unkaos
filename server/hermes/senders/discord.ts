@@ -1,19 +1,23 @@
 import { discordConfig } from '../conf';
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, Partials } = require('discord.js');
 import UserData from '../users_data';
 
 class DiscordMessage {
     private client;
 
     constructor(userData: UserData) {
-      this.client = new Client({intents: [GatewayIntentBits.Guilds,
+      this.client = new Client({intents: [
+        GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.DirectMessages]});
-      this.client.login(discordConfig.token);
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.MessageContent],
+        partials: [Partials.Channel]});
+    
         let me = this;
 
-        this.client.on('message', async (message:any) => {
+        this.client.on('messageCreate', async (message:any) => {
 
+          if(message.author.bot) return;
           console.log('mmm', message)
             if (!message.author.username) return;
 
@@ -31,8 +35,9 @@ class DiscordMessage {
 
     async send(userId: string, title: string, body: string) {
         try {
-            let user = this.client.users.cache.get(userId);
-            if (!user) return console.log(`Error sending discord msg, user not found`);
+            //let user = this.client.users.cache.get(userId);
+            let user =  await this.client.users.fetch(userId);
+            if (!user) {console.log(`Error sending discord msg, user not found`); return}
             user.send(`${title}\n${body}`);
         } catch (err) {
             console.log(`Error sending discord msg`, err);

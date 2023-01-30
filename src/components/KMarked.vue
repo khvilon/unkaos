@@ -163,13 +163,32 @@ export default {
   },
   images: {
     handler: function (val, oldVal) {
-      this.val.toString()
+      nextTick(() => {
+        this.wait_for_recalc_count++;
+
+        setTimeout(this.recalc_md, 0, this.val)
+      })
+     // this.val.toString()
       // console.log('viiim', val, oldVal)
       // this.md_value = this.md(this.val);
     },
     deep: true,
       immediate: true
   },
+  images_len:  {
+    handler: function (val, oldVal) {
+      nextTick(() => {
+        this.wait_for_recalc_count++;
+
+        setTimeout(this.recalc_md, 0, this.val)
+      })
+     // this.val.toString()
+      // console.log('viiim', val, oldVal)
+      // this.md_value = this.md(this.val);
+    },
+      immediate: true
+  },
+
   },
 };
 </script>
