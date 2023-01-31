@@ -5,6 +5,8 @@ import rest from "../rest.ts";
 import cache from "../cache";
 import wsMon from "../wsMon.ts";
 
+import { nextTick } from "vue";
+
 let methods = {
   pasted: async function (e) {
     console.log(e);
@@ -485,6 +487,12 @@ let methods = {
 
     this.current_description = this.get_field_by_name('Описание').value
 
+    this.scrollToElementByUrl()
+
+
+
+    
+
     /*if(this.url_params.status_uuid != undefined)
     {
       console.log('preset status', this.url_params.status_uuid)
@@ -518,20 +526,42 @@ let methods = {
     this.title;
   },
 
-  async load_tags()
-  {
+
+  scrollToElementByUrl(){
+    const hash = window.location.hash;
+    
+    if (!hash) return
+       
+    const targetRef = hash.substr(1);
+    const target = document.getElementById(targetRef)
+
+    if(!target) return
+
+    const waitCommentsLoaded = 200
+
+    nextTick(() => {
+      setTimeout(()=>{
+        target.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }, waitCommentsLoaded)
+    })
+  },
+
+  async load_tags(){
     this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
     await this.read_selected_tags()
   },
 
-  async load_actions()
-  {
+  async load_actions(){
     this.actions = (await rest.run_method("read_issue_formated_actions", 
       {issue_uuid: this.issue[0].uuid}));
   },
 
-  async load_attachments()
-  {
+  async load_attachments(){
     this.attachments = await rest.run_method("read_attachments", {
       issue_uuid: this.issue[0].uuid,
     });
@@ -545,8 +575,7 @@ let methods = {
     });
   },
 
-  async update_issue(msg)
-  {
+  async update_issue(msg){
     this.freeze_save = true
     const freeze_timeout = 1000//ms
     setTimeout(()=>{this.freeze_save=false}, freeze_timeout)
@@ -1032,6 +1061,8 @@ mod.mounted = async function () {
   this.get_formated_relations();
 
   this.init();
+
+  
 };
 
 export default mod;
