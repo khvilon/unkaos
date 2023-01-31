@@ -16,14 +16,22 @@ export default {
     dt() {
       return tools.format_dt(this.action.created_at);
     },
+    id() {
+      return 'action' + this.action.uuid
+    },
   },
-  methods: {},
+  methods: {
+
+    copyToClipboard(){
+      tools.copyToClipboard(document.location.href.split('#')[0] + '#' + this.id)
+    }
+  },
 };
 </script>
 
 <template>
   <div class="issue-comment">
-    <div class="issue-comment-header" :id="'action' + action.uuid">
+    <div class="issue-comment-header" :ref="id" :id="id" @click="copyToClipboard">
       <span>{{ dt }}</span> <strong>{{ action.author }}</strong> 
       <div v-if="action.name=='💬'" class="issue-action-icon bx bx-message-dots"></div>
       <div v-if="action.name=='📝'" class="issue-action-icon bx bx-edit"></div>
@@ -50,6 +58,7 @@ export default {
 
 .issue-comment-header * {
   margin-right: 5px;
+  cursor: pointer;
 }
 
 .issue-comment-text {

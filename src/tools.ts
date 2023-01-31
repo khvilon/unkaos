@@ -1,4 +1,15 @@
 export default class tools {
+
+  static copyToClipboard = (text:string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("copy");
+    textArea.remove();
+  };
+
+
   static dt_options: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "numeric",
@@ -269,3 +280,5 @@ String.prototype.replaceAll = function (old_substr, new_substr): string {
   // return this.split(old_substr).join(new_substr);
   // while(str.contains(old_substr)) str = str.replace(old_substr, new_substr)
 };
+
+

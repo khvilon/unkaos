@@ -1737,7 +1737,7 @@
   }
 
   #board_down_panel::-webkit-scrollbar{
-    display:none;
+    //display:none;
   }
 
   .board-config {
