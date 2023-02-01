@@ -60,6 +60,8 @@ class Watchers {
     title += authors[0].name
 
     for(let i = 0; i < watchers.length; i++){
+      if(watchers[i].user_uuid == row.user_uuid) continue
+
       let ins = await sql`INSERT INTO 
       ${sql(relation.schema + '.msg_out') }
       (uuid, transport, recipient, title, body)

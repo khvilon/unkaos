@@ -76,7 +76,7 @@ const init = async function()
     app.post('/upsert_watcher', async (req:any, res:any) => {   
         let subdomain = req.headers.subdomain
         let issue_uuid = req.body.issue_uuid
-        let ans = await sql.query(subdomain, `INSERT INTO watchers SET (user_uuid, issue_uuid) VALUES('` + req.headers.user_uuid + `','` + issue_uuid + `') ON CONFLICT DO NOTHING`)
+        let ans = await sql.query(subdomain, `INSERT INTO watchers (user_uuid, issue_uuid) VALUES('` + req.headers.user_uuid + `','` + issue_uuid + `') ON CONFLICT DO NOTHING`)
         res.send(ans)
     })
     listeners.push({"method": 'post',"func":'upsert_watcher'})
@@ -91,7 +91,7 @@ const init = async function()
 
     app.get('/read_watcher', async (req:any, res:any) => {   
         let subdomain = req.headers.subdomain
-        let issue_uuid = req.body.issue_uuid
+        let issue_uuid = req.query.issue_uuid
         let ans = await sql.query(subdomain, `SELECT * FROM watchers WHERE user_uuid = '` + req.headers.user_uuid + `' AND issue_uuid = '` + issue_uuid + `'`)
         res.send(ans)
     })

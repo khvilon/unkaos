@@ -18,8 +18,12 @@ class DiscordMessage {
         this.client.on('messageCreate', async (message:any) => {
 
           if(message.author.bot) return;
-          console.log('mmm', message)
+          console.log('mmm', message.channel.type)
+          if (message.channel.type !== 1) return;
+         // console.log('mmm', message)
             if (!message.author.username) return;
+            
+            
 
             const username = message.author.username;
             const discordId = message.author.id;
