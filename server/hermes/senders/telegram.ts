@@ -28,8 +28,15 @@ class TelegramMessage {
   async send(userId: string, title: string, body: string) {
 
     console.log('userId', userId)
-    try{ this.bot.sendMessage(userId, `${title}\n${body}`) } 
-    catch(err){ console.log(`Error sending ts msg`, err) }
+    try{ 
+      await this.bot.sendMessage(userId, `${title}\n${body}`) 
+      console.log(`Message sent to telegram user ${userId}`) 
+      return {status: 2}
+    } 
+    catch(err){ 
+      let errMsg = `Error sending telegram msg ${err}`
+      console.log(errMsg) 
+      return {status:-1, status_details: errMsg}}
   }
 }
 

@@ -1,5 +1,6 @@
 import  Sender from './sender';
 import  Rest from './rest';
+import  MsgOut from './msg_out';
 
 //let s = new Sender();
 
@@ -11,6 +12,9 @@ const init = async function()
     await sender.init()
 
     Rest.listen(sender)
+
+    let msgOut = new MsgOut(sender);
+    await msgOut.init()
 
     //Sender.send('email', 'n@khvilon.ru', 'test title', 'test body')
     //Sender.send('email', my_uuid, 'test title', 'test body', 'oboz')

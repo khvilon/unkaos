@@ -42,21 +42,23 @@ export default mod;
     <TopMenu :name="name" :label="label" :collumns="search_collumns" />
     <div class="favourites-panel panel">
       <div class="favourites-container" v-if="favourites != undefined">
-        <div v-for="(favourite, index) in favourites" :key="index">
-          <i
-            class="bx bxs-star"
-            v-if="favourite.uuid != null"
-            @click="delete_favourite(favourite)"
-          ></i>
-          <i
-            class="bx bx-star"
-            v-if="!(favourite.uuid != null)"
-            @click="create_favourite(favourite)"
-          ></i>
-          <span>{{ favourite.type[0].name }}</span>
-          <a :href="favourite.link">
-            {{ favourite.name }}
-          </a>
+        <div v-for="(type, index) in ['Доска', 'Сохраненный запрос']">
+          <span>{{ type }}</span>
+          <div v-for="(favourite) in favourites.filter((f)=>f.type[0].name == type)">
+            <i
+              class="bx bxs-star"
+              v-if="favourite.uuid != null"
+              @click="delete_favourite(favourite)"
+            ></i>
+            <i
+              class="bx bx-star"
+              v-if="!(favourite.uuid != null)"
+              @click="create_favourite(favourite)"
+            ></i>
+            <a :href="favourite.link">
+              {{ favourite.name }}
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -76,11 +78,15 @@ export default mod;
 }
 
 .favourites-container {
-  padding: 20px;
+  padding: 0px 20px 20px 20px;
 }
 
 .favourites-container span {
-  padding: 10px;
+  padding-bottom: 10px;
+    padding-top: 10px;
+    font-size: 15px;
+    display: flex;
+    font-weight: 500;
 }
 
 .favourites-container div {

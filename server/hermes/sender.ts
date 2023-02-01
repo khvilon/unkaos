@@ -33,69 +33,75 @@ class Sender {
     await this.userData.init()
   }
 
-  public send(transport: string, recipient: string, title: string, body: string, workspace: string='') {
+  public async send(transport: string, recipient: string, title: string, body: string, workspace: string=''):Promise<any> {
     console.log('Try send', transport, recipient, title, workspace)
 
     if(!transport)
     {
-      this.send('email',recipient, title, body, workspace)
       this.send('telegram',recipient, title, body, workspace)
       this.send('discord',recipient, title, body, workspace)
-      return
+      return await this.send('email',recipient, title, body, workspace)
     }
 
     if(!this.isUUID(recipient) && transport == 'email'){
       if(!this.isValidEmail(recipient)){
-        console.log('Error - email not valid')
-        return
+        let errMsg = 'Error - email not valid'
+        console.log(errMsg) 
+        return {status:-1, status_details: errMsg}
       }
-      this.email.send(recipient, title, body);
+      return await this.email.send(recipient, title, body); 
     }
 
     if(!workspace){
-      console.log('Error - workspace missing')
-      return
+      let errMsg = 'Error - workspace missing'
+      console.log(errMsg) 
+      return {status:-1, status_details: errMsg}
     }
 
     if(!this.isUUID(recipient)){
-      console.log('Error - user uuid not valid')
-      return
+      let errMsg = 'Error - user uuid not valid'
+      console.log(errMsg) 
+      return {status:-1, status_details: errMsg}
     }
 
     let user:any = this.userData.getUser(recipient)
     if(!user){
-      console.log('Error - user', recipient, 'not found')
-      return
+      let errMsg = `Error - user ${recipient} not found`
+      console.log(errMsg) 
+      return {status:-1, status_details: errMsg}
     }
     
     switch (transport) {
       case 'email':
-        this.email.send(user.mail, title, body);
-        break;
+        return await this.email.send(user.mail, title, body);
       case 'discord':
         if(!user.discord){
-          console.log('User', user.name, 'has no registered discord')
-          return
+          let errMsg = `Error - user ${user.name} has no registered discord`
+          console.log(errMsg) 
+          return {status:-1, status_details: errMsg}
         }
         if(!user.discord_id){
-          console.log('User', user.name, user.discord, 'is not registered by the bot, no message received')
-          return
+          let errMsg = `Error - user ${user.name} ${user.discord} is not registered by the discord bot, no message received`
+          console.log(errMsg) 
+          return {status:-1, status_details: errMsg}
         }
-        this.discord.send(user.discord_id, title, body);
-        break;
+        return await this.discord.send(user.discord_id, title, body);
       case 'telegram':
         if(!user.telegram){
-          console.log('User', user.name, 'has no registered telegram')
-          return
+          let errMsg = `Error - user ${user.name} has no registered telegram`
+          console.log(errMsg) 
+          return {status:-1, status_details: errMsg}
         }
         if(!user.telegram_id){
-          console.log('User', user.name, user.telegram, 'is not registered by the bot, no message received')
-          return
+          let errMsg = `Error - user ${user.name} ${user.telegram} is not registered by the telegram bot, no message received`
+          console.log(errMsg) 
+          return {status:-1, status_details: errMsg}
         }
-        this.telegram.send(user.telegram_id, title, body);
-        break;
+        return await this.telegram.send(user.telegram_id, title, body);
       default:
-        console.log(`Invalid transport: ${transport}`);
+        let errMsg = `Invalid transport: ${transport}`
+        console.log(errMsg);
+        return {status:-1, status_details: errMsg}
     }
   }
 }

@@ -20,8 +20,11 @@ class Email {
     try {
       await this.transport.sendMail(message);
       console.log(`Email sent to ${address}`);
+      return {status:2}
     } catch (err) {
-      console.log(`Error sending email: ${err}`);
+      let errMsg = `Error sending email: ${err}`
+      console.log(errMsg);
+      return {status:-1, status_details: errMsg}
     }
   }
 }
