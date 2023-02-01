@@ -29,14 +29,15 @@ class TelegramMessage {
 
     console.log('userId', userId)
     try{ 
-      await this.bot.sendMessage(userId, `${title}\n${body}`) 
+      await this.bot.sendMessage(userId, `**${title}**\n${body}`) 
       console.log(`Message sent to telegram user ${userId}`) 
       return {status: 2}
     } 
     catch(err){ 
       let errMsg = `Error sending telegram msg ${err}`
       console.log(errMsg) 
-      return {status:-1, status_details: errMsg}}
+      return {status:-1, status_details: errMsg}
+    }
   }
 }
 

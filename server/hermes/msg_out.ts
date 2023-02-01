@@ -55,7 +55,7 @@ class MsgOut {
 
   public async init() {
     await this.readOldMessages()
-    sql.subscribe('insert', this.handleNotify.bind(this), this.handleSubscribeConnect)
+    await sql.subscribe('insert', this.handleNotify.bind(this), this.handleSubscribeConnect)
   }    
 
 }

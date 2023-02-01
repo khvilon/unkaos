@@ -57,7 +57,7 @@ class UsersData {
     this.users = users;
     console.log('Users loaded')
 
-    sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect)
+    await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect)
   }
 
     public getUser(uuid:string){

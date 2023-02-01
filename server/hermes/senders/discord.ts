@@ -40,7 +40,7 @@ class DiscordMessage {
                 console.log(`Error sending discord msg, user not found`); 
                 return {status:-1, status_details: 'Discord u not found'}
             }
-            await user.send(`${title}\n${body}`);
+            await user.send(`**${title}**\n${body}`);
             console.log(`Message sent to discord user`);
             return {status:2}
         } 
