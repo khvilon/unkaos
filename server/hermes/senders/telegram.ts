@@ -29,7 +29,7 @@ class TelegramMessage {
 
     console.log('userId', userId)
     try{ 
-      await this.bot.sendMessage(userId, `**${title}**\n${body}`) 
+      await this.bot.sendMessage(userId, `${title}\n${body}`) 
       console.log(`Message sent to telegram user ${userId}`) 
       return {status: 2}
     } 
