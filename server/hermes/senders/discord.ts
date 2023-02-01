@@ -35,12 +35,19 @@ class DiscordMessage {
 
     async send(userId: string, title: string, body: string) {
         try {
-            //let user = this.client.users.cache.get(userId);
             let user =  await this.client.users.fetch(userId);
-            if (!user) {console.log(`Error sending discord msg, user not found`); return}
-            user.send(`${title}\n${body}`);
-        } catch (err) {
-            console.log(`Error sending discord msg`, err);
+            if (!user) {
+                console.log(`Error sending discord msg, user not found`); 
+                return {status:-1, status_details: 'Discord u not found'}
+            }
+            await user.send(`${title}\n${body}`);
+            console.log(`Message sent to discord user`);
+            return {status:2}
+        } 
+        catch (err) {
+            let errMsg = `Error sending discord msg ${err}`
+            console.log(errMsg) 
+            return {status:-1, status_details: errMsg}
         }
     }
 }

@@ -9,11 +9,13 @@ export class Rest {
 
         app.use(express.json());
 
-        app.post('/send', (req: any, res: any) => {
+        app.post('/send', async (req: any, res: any) => {
             try {
                 const { transport, recipient, title, body, workspace } = req.body;
-                sender.send(transport, recipient, title, body, workspace);
-                res.status(200).send({ message: 'message sent' });
+                let ans = await sender.send(transport, recipient, title, body, workspace);
+                if(ans.status) res.status(200).send({ message: 'message sent' });
+                else res.status(500).send({ message: ans.status_details });
+                
             } catch (err:any) {
                 res.status(500).send({ message: err.message });
             }

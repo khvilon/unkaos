@@ -30,8 +30,8 @@ export default {
 </script>
 
 <template>
-  <div class="issue-comment">
-    <div class="issue-comment-header" :ref="id" :id="id" @click="copyToClipboard">
+  <div class="issue-comment" :ref="id" :id="id">
+    <div class="issue-comment-header"  @click="copyToClipboard">
       <span>{{ dt }}</span> <strong>{{ action.author }}</strong> 
       <div v-if="action.name=='💬'" class="issue-action-icon bx bx-message-dots"></div>
       <div v-if="action.name=='📝'" class="issue-action-icon bx bx-edit"></div>
