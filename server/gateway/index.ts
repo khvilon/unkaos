@@ -10,10 +10,16 @@ const app:any = express()
 
 const port = 3001
 
+try{
 app.use(cors());
 app.use(express.json({limit: '150mb'}));
 app.use(express.raw({limit: '150mb'}));
 app.use(express.urlencoded({limit: '150mb', extended: true}));
+}
+catch(err)
+{
+    console.log('Cant ibnit app')
+}
 
 async function init(){ 
     const zeus_listeners = await axios.get(conf.zeusUrl + '/read_listeners');
@@ -34,10 +40,15 @@ async function init(){
                 cerberus_ans = await axios({
                     method: 'get',
                     url: conf.cerberusUrl + '/check_session' ,
-                    headers: req.headers
+                    headers: req.headers,
+                    validateStatus: function (status) {
+                        return true; // Разрешить, только если код состояния меньше 500
+                      }
+                    
                 });
             }
             catch(err){
+                console.log('errrrr')
                 if(cerberus_ans != undefined){
                     res.status(cerberus_ans.status);
                     res.send(cerberus_ans.data);
@@ -64,6 +75,7 @@ async function init(){
             //console.log('cerberus_ans.data', cerberus_ans.data)
 
             req.headers.user_uuid = cerberus_ans.data.uuid
+            
            // req.headers.user_name = cerberus_ans.data.name
 
             let zeus_ans = await axios({
@@ -88,6 +100,8 @@ async function init(){
         res.status(cerberus_ans.status);
         res.send(cerberus_ans.data)
     })
+
+    
 
     app.listen(port, async () => {
         console.log(`Gateway running on port ${port}`)
