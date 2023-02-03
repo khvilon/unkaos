@@ -595,6 +595,8 @@ crud.make_query = {
       let fv_count = 0
       //user_query = user_query.replaceAll("='(resolved)'", '=ANY '  + q_resolved_uuids )
 
+      console.log('>>>>>>>>>>>>>>>>>>>', user_query)
+      
       while (user_query.indexOf("attr#") > -1) {
         let start = user_query.indexOf("attr#");
         user_query = user_query.replaceFrom("attr#", "I.", start);
@@ -617,10 +619,20 @@ crud.make_query = {
       user_query = user_query.replaceAll(
         "I.tags=",
         "I.tags~"
-      );
+      );  
       user_query = user_query.replaceAll(
         "I.tags!=",
         "I.tags IS NULL or I.tags!~"
+      );
+
+      
+      user_query = user_query.replaceAll(
+        "='null'",
+        " is NULL"
+      );
+      user_query = user_query.replaceAll(
+        "!='null'",
+        " is not NULL"
       );
 
       user_query = user_query.replaceAll(
@@ -914,6 +926,7 @@ crud.get_query = function (method:string, table_name:string, params:any) {
 };
 
 crud.get_uuids = function (obj:any) {
+  if(!obj.table_name) return null
   let ans:any = {};
   if (obj.uuid !== undefined) ans[obj.uuid] = obj.table_name;
   for (let i in obj) {
@@ -946,7 +959,9 @@ crud.get_uuids = function (obj:any) {
     // console.log('fff2', fks, 'fdfdfd', obj[i][0].table_name)
 
     for (let j in obj[i]) {
-      ans = tools.obj_join(ans, crud.get_uuids(obj[i][j]));
+      let ch_uuids = crud.get_uuids(obj[i][j])
+      if(ch_uuids == null) return null
+      ans = tools.obj_join(ans, ch_uuids);
     }
   }
 
@@ -1026,6 +1041,9 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
 
       //   console.log('new_uuids', new_uuids)
 
+      if(old_uuids != null && new_uuids != null){
+
+      
       let del_query = "";
       for (let i in old_uuids) {
         if (new_uuids[i] != undefined) continue;
@@ -1079,20 +1097,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
       }
     }
   }
-
-  //  console.log('before while')
-  //  while(query.indexOf("'null'") > -1) query = query.replace("'null'", 'NULL')
-  //  while(query.indexOf('null') > -1) query = query.replace('null', 'NULL')
-
-  //console.log('qqqqq', subdomain, query)
-
-  // console.log('###################################################################################')
-  // console.log(query)
-
-  //  console.log('###################################################################################')
-
-  //   console.log(pg_params)
-  //  console.log('###################################################################################')
+  }
 
   let ans = await sql.query(subdomain, query, pg_params);
 

@@ -22,6 +22,7 @@ export default class cache {
     new Setting('actions_show_time',        'true',   true),
     new Setting('actions_show_edits',       'true',   true),
     new Setting('actions_show_transitions', 'true',   true),
+    new Setting('issues_drafts', '{}',   true)
   ]
 
   static clear() {
@@ -68,7 +69,7 @@ export default class cache {
       const defaultSetting = this.defaultSettings.find( (setting)=> setting.name == settingName)
       if (defaultSetting !== undefined) {
         if (asObject) {
-          localStorage.setItem(settingName, JSON.parse(defaultSetting.default_val))
+          localStorage.setItem(settingName, defaultSetting.default_val)
           return JSON.parse(defaultSetting.default_val)
         } else {
           localStorage.setItem(settingName, defaultSetting.default_val)

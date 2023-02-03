@@ -295,6 +295,7 @@ let methods = {
       });
     }
     await this.$store.dispatch("save_issue");
+    this.clear_issue_draft()
     if (this.old_project_uuid && this.old_project_uuid !== this.issue[0].project_uuid) {
       //this.saved_new()
       let ans = await rest.run_method("read_issues", {uuid: this.issue[0].uuid});
@@ -485,7 +486,17 @@ let methods = {
 
     this.old_project_uuid = this.issue[0].project_uuid
 
-    this.current_description = this.get_field_by_name('Описание').value
+    let issues_drafts = cache.getObject('issues_drafts')
+    console.log('>>>>>>>>>>>>>>issues_drafts', issues_drafts, issues_drafts[this.issue[0].uuid].description)
+    if(issues_drafts[this.issue[0].uuid]){
+      this.saved_descr = this.get_field_by_name("Описание").value;
+      this.saved_name = this.get_field_by_name("Название").value;
+      this.saved_project_uuid = this.issue[0].project_uuid
+      this.current_description = issues_drafts[this.issue[0].uuid].description
+      this.get_field_by_name('Описание').value = issues_drafts[this.issue[0].uuid].description
+      this.issue[0].updated_at = issues_drafts[this.issue[0].uuid].updated_at
+      this.edit_mode = true;
+    }
 
     this.scrollToElementByUrl()
 
@@ -636,6 +647,7 @@ let methods = {
   },
   edit_current_description: function (val) {
     this.current_description = val;
+    this.update_issue_draft(val)
   },
   enter_edit_mode: function () {
     if (this.edit_mode) {
@@ -653,7 +665,20 @@ let methods = {
     this.get_field_by_name("Название").value = this.saved_name;
     this.issue[0].project_uuid = this.saved_project_uuid
     this.current_description = this.saved_descr;
+    this.clear_issue_draft()
     this.edit_mode = false;
+  },
+  update_issue_draft: function(val)
+  {
+    let issues_drafts = cache.getObject('issues_drafts')
+    issues_drafts[this.issue[0].uuid] = {description: val, updated_at: this.issue[0].updated_at}
+    cache.setObject('issues_drafts', issues_drafts)
+  },
+  clear_issue_draft: function()
+  {
+    let issues_drafts = cache.getObject('issues_drafts')
+    delete issues_drafts[this.issue[0].uuid]
+    cache.setObject('issues_drafts', issues_drafts)
   },
   check_issue_changed: async function() {
     let ans = await rest.run_method("read_issue", { uuid: this.issue[0].uuid });
