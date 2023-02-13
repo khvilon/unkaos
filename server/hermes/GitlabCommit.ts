@@ -1,8 +1,13 @@
+/*
 import express from 'express';
 import bodyParser from 'body-parser';
 import { gitlabConfig } from './config';
 
+
 class GitlabCommit {
+
+  private app: express.Express
+
   constructor() {
     this.app = express();
     this.app.use(bodyParser.json());
@@ -30,3 +35,4 @@ class GitlabCommit {
 }
 
 export default GitlabCommit;
+*/

@@ -1,3 +1,4 @@
+// TODO move this to package
 var tools:any = {}
 
 import './string.extensions';
@@ -63,7 +64,7 @@ String.prototype.replaceFrom = function(oldSubstr:string, newSubstr:string, star
 }
 
 
-tools.uuidv4 = function() {
+tools.uuidv4 = function(): string {
     var d = new Date().getTime();//Timestamp
     var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {

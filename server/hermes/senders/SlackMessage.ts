@@ -1,8 +1,9 @@
-import { WebClient } from '@slack/web-api';
+import {UsersListResponse, WebClient} from '@slack/web-api';
 import { slackConfig } from '../conf';
+import {Member} from "@slack/web-api/dist/response/UsersListResponse";
 
 class SlackMessage {
-  private webClient;
+  private webClient : WebClient;
 
   constructor() {
     this.webClient = new WebClient(slackConfig.token);
@@ -10,10 +11,10 @@ class SlackMessage {
 
   async send(username: string, title: string, body: string) {
     try {
-      const userList = await this.webClient.users_list();
-      if (userList.ok) {
-        const user = userList.members.find(user => user.name === username);
-        if(user){
+      const userList: UsersListResponse = await this.webClient.users.list();
+      if (userList !== undefined && userList.ok) {
+        const user: Member | undefined = userList.members?.find((user: Member) => user.name === username);
+        if (user !== undefined && user.id !== undefined) {
           await this.webClient.chat.postMessage({
             channel: user.id,
             text: `${title}\n${body}`

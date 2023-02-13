@@ -1,8 +1,8 @@
 
-import Email from './senders/email';
-import DiscordMessage from './senders/discord';
-import TelegramMessage from './senders/telegram';
-import UserData from './users_data';
+import MailSender from './senders/MailSender';
+import DiscordMessage from './senders/DiscordMessage';
+import TelegramMessage from './senders/TelegramMessage';
+import UserData from './UsersData';
 import { Console } from 'console';
 
 
@@ -14,7 +14,7 @@ class Sender {
 
   constructor() {
     this.userData = new UserData()
-    this.email = new Email();
+    this.email = new MailSender();
     this.discord = new DiscordMessage(this.userData);
     this.telegram = new TelegramMessage(this.userData);
   }
