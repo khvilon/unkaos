@@ -1,4 +1,5 @@
-import sql from "./sql";
+import sql from "./Sql";
+import {User} from "./Types";
 
 class UsersData {
 
@@ -8,22 +9,8 @@ class UsersData {
   constructor() {
   }
 
-  private async loadWorkspaces() {
-    let ans = await sql`    
-        SELECT schema_name
-        FROM information_schema.schemata
-        WHERE schema_name NOT IN 
-        ('pg_toast', 'pg_catalog', 'information_schema', 'admin', 'public')`;
-
-    if (ans == null || ans.length < 1) return [];
-
-    let workspaces = ans.map((r: any) => r.schema_name);
-
-    return workspaces;
-  }
-
-  private async loadWorkspaceUsers(workspace: string) {
-    const ans = await sql`
+  private async loadWorkspaceUsers(workspace: string) : Promise<User[]> {
+    const users = await sql.query()`
         SELECT 
             U.uuid,
             U.name,
@@ -33,20 +20,19 @@ class UsersData {
             U.telegram_id,
             U.discord,
             U.discord_id
-        FROM ${sql(workspace + '.users') } U
+        FROM ${sql.query()(workspace + '.users') } U
         WHERE U.active AND U.deleted_at IS NULL
         `;
     let workspaceUsers: any = {};
 
-    for (let i = 0; i < ans.length; i++) {
-      workspaceUsers[ans[i].uuid] = ans[i];
+    for (let i = 0; i < users.length; i++) {
+      workspaceUsers[users[i].uuid] = users[i];
     }
-
-    return workspaceUsers;
+    return workspaceUsers as User[];
   }
 
   public async init() {
-    this.workspaces = await this.loadWorkspaces();
+    this.workspaces = await sql.workspaces;
 
     let users: any = {};
 
@@ -57,7 +43,7 @@ class UsersData {
     this.users = users;
     console.log('Users loaded')
 
-    await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect)
+    await sql.query().subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect)
   }
 
     public getUser(uuid:string){
@@ -73,8 +59,8 @@ class UsersData {
         console.log('setTelegramtId')
         let found = false
         for (let i = 0; i < this.workspaces.length; i++) {
-            let ans = await sql`
-            UPDATE ${sql(this.workspaces[i] + '.users') } 
+            let ans = await sql.query()`
+            UPDATE ${sql.query()(this.workspaces[i] + '.users') } 
             SET telegram_id = ${id}
             WHERE telegram_id = '' AND telegram = ${username} AND active AND deleted_at IS NULL
             RETURNING uuid`;
@@ -87,8 +73,8 @@ class UsersData {
         console.log('setDiscordId')
         let found = false
         for (let i = 0; i < this.workspaces.length; i++) {
-            let ans = await sql`
-            UPDATE ${sql(this.workspaces[i] + '.users') } 
+            let ans = await sql.query()`
+            UPDATE ${sql.query()(this.workspaces[i] + '.users') } 
             SET discord_id = ${id}
             WHERE discord_id = '' AND discord = ${username} AND active AND deleted_at IS NULL
             RETURNING uuid`;

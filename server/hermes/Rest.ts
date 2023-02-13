@@ -1,5 +1,5 @@
 import express from 'express';
-import  Sender from './sender';
+import  Sender from './Sender';
 import { restConfig } from './conf';
 
 export class Rest {
