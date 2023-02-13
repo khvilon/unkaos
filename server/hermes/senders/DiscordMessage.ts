@@ -1,6 +1,6 @@
 import { discordConfig } from '../conf';
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
-import UserData from '../users_data';
+import UserData from '../UsersData';
 
 class DiscordMessage {
     private client;
