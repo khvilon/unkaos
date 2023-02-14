@@ -1,4 +1,4 @@
-import sql from "./Sql";
+import {sql, Sql} from "./Sql";
 import Sender from "./Sender";
 
 class MsgOut {
@@ -11,12 +11,12 @@ class MsgOut {
 
   private async readOldMessages() {
 
-    let workspaces = await sql.workspaces
+    let workspaces = await Sql.workspaces
 
     for(let w = 0; w < workspaces.length; w++){
-        let ans = await sql.query()`    
+        let ans = await sql`    
         SELECT * 
-        FROM ${sql.query()(workspaces[w] + '.msg_out') } U
+        FROM ${sql(workspaces[w] + '.msg_out') } U
         WHERE status = 0 OR status = 1 
         `;
 
@@ -36,7 +36,7 @@ class MsgOut {
 
   private async send(msgOutRow: any, workspace:string) {
     let ans = await this.sender.send(msgOutRow.transport, msgOutRow.recipient, msgOutRow.title, msgOutRow.body, workspace)
-    await sql.query()`UPDATE ${sql.query()(workspace + '.msg_out') } SET status = ${ans.status}, status_details = ${ans.status ? '' : ans.status_details}, 
+    await sql`UPDATE ${sql(workspace + '.msg_out') } SET status = ${ans.status}, status_details = ${ans.status ? '' : ans.status_details}, 
     updated_at = NOW() WHERE uuid = ${msgOutRow.uuid}`
   }
 
@@ -46,7 +46,7 @@ class MsgOut {
 
   public async init() {
     await this.readOldMessages()
-    await sql.query().subscribe('insert', this.handleNotify.bind(this), this.handleSubscribeConnect)
+    await sql.subscribe('insert', this.handleNotify.bind(this), this.handleSubscribeConnect)
   }    
 
 }

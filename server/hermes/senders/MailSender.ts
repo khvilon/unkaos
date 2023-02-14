@@ -1,4 +1,3 @@
-
 import { emailConfig } from '../conf';
 import nodemailer from 'nodemailer';
 

@@ -19,10 +19,8 @@ export type User = {
   name: string,
   login: string,
   mail: string,
-  telegram : string,
-  telegram_id : string,
+  telegram: string,
   discord: string,
-  discord_id: string
 }
 
 export type ParsedMessage = {
@@ -36,12 +34,43 @@ export type MessagePart = {
   content: DownloadObject
 }
 
-export type MessageClient = {
+export type MsgIn = {
   uuid: string,
-  host: string,
-  login: string,
-  password: string,
-  service: string,
-  name: string,
-  port: string,
+  pipe_uuid: string,
+  message_id: string,
+  message_uid: string,
+  title: string,
+  body: string,
+  from: string,
+  senders: string,
+  cc: string,
+  bcc: string,
+  reply_to: string,
+  to: string,
+  error_message?: string,
+  message_date: Date,
+  created_at: Date,
+  updated_at: Date,
+  deleted_at?: Date,
+  status: MsgStatus
+}
+
+export enum MsgStatus {
+  NEW = "NEW",
+  PROCESSED = "PROCESSED",
+  ERROR = "ERROR"
+}
+
+export type MsgInPart = {
+  uuid: string,
+  msg_in_uuid: string,
+  content: string,
+  type: string,
+  encoding: string,
+  disposition: string,
+  part_id: string,
+  filename: string,
+  created_at?: Date,
+  updated_at?: Date,
+  deleted_at?: Date
 }
