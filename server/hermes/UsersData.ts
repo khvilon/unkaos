@@ -1,4 +1,4 @@
-import sql from "./Sql";
+import {sql, Sql} from "./Sql";
 import {User} from "./Types";
 
 class UsersData {
@@ -10,17 +10,15 @@ class UsersData {
   }
 
   private async loadWorkspaceUsers(workspace: string) : Promise<User[]> {
-    const users = await sql.query()`
+    const users = await sql`
         SELECT 
             U.uuid,
             U.name,
             U.login,
             U.mail,
             U.telegram,
-            U.telegram_id,
-            U.discord,
-            U.discord_id
-        FROM ${sql.query()(workspace + '.users') } U
+            U.discord
+        FROM ${sql(workspace + '.users') } U
         WHERE U.active AND U.deleted_at IS NULL
         `;
     let workspaceUsers: any = {};
@@ -32,7 +30,7 @@ class UsersData {
   }
 
   public async init() {
-    this.workspaces = await sql.workspaces;
+    this.workspaces = await Sql.workspaces;
 
     let users: any = {};
 
@@ -43,7 +41,7 @@ class UsersData {
     this.users = users;
     console.log('Users loaded')
 
-    await sql.query().subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect)
+    await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect)
   }
 
     public getUser(uuid:string){
@@ -59,8 +57,8 @@ class UsersData {
         console.log('setTelegramtId')
         let found = false
         for (let i = 0; i < this.workspaces.length; i++) {
-            let ans = await sql.query()`
-            UPDATE ${sql.query()(this.workspaces[i] + '.users') } 
+            let ans = await sql`
+            UPDATE ${sql(this.workspaces[i] + '.users') } 
             SET telegram_id = ${id}
             WHERE telegram_id = '' AND telegram = ${username} AND active AND deleted_at IS NULL
             RETURNING uuid`;
@@ -73,8 +71,8 @@ class UsersData {
         console.log('setDiscordId')
         let found = false
         for (let i = 0; i < this.workspaces.length; i++) {
-            let ans = await sql.query()`
-            UPDATE ${sql.query()(this.workspaces[i] + '.users') } 
+            let ans = await sql`
+            UPDATE ${sql(this.workspaces[i] + '.users') } 
             SET discord_id = ${id}
             WHERE discord_id = '' AND discord = ${username} AND active AND deleted_at IS NULL
             RETURNING uuid`;

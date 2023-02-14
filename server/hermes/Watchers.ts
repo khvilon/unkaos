@@ -1,4 +1,4 @@
-import sql from "./Sql";
+import {sql} from "./Sql";
 import tools from "../tools";
 import { config } from './conf';
 
@@ -22,7 +22,7 @@ class Watchers {
       body = ''
     } 
     else{
-      let actions = await sql.query()`SELECT issue_uuid, value FROM ${sql.query()(relation.schema + '.issue_actions') } 
+      let actions = await sql`SELECT issue_uuid, value FROM ${sql(relation.schema + '.issue_actions') } 
         WHERE uuid = ${row.target_uuid}`
       if(!actions || actions.length != 1) return
       issue_uuid = actions[0].issue_uuid
@@ -32,16 +32,16 @@ class Watchers {
       body+='\r\n'
     }
 
-    let watchers = await sql.query()`SELECT user_uuid FROM ${sql.query()(relation.schema + '.watchers') } WHERE issue_uuid = ${issue_uuid}`
+    let watchers = await sql`SELECT user_uuid FROM ${sql(relation.schema + '.watchers') } WHERE issue_uuid = ${issue_uuid}`
     if(!watchers || watchers.length < 1) return
 
-    let infos = await sql.query()`SELECT 
+    let infos = await sql`SELECT 
       p.short_name || '-' || i.num AS num,
       fv.value AS title
-      FROM ${sql.query()(relation.schema + '.issues') } i 
-      LEFT JOIN ${sql.query()(relation.schema + '.projects') } p 
+      FROM ${sql(relation.schema + '.issues') } i 
+      LEFT JOIN ${sql(relation.schema + '.projects') } p 
       ON p.uuid = i.project_uuid
-      LEFT JOIN ${sql.query()(relation.schema + '.field_values') } fv
+      LEFT JOIN ${sql(relation.schema + '.field_values') } fv
       ON fv.issue_uuid = i.uuid AND fv.field_uuid = ${titleFieldUuid}
       WHERE i.uuid = ${issue_uuid}`
     
@@ -52,8 +52,8 @@ class Watchers {
 
     body = 'Название: ' + infos[0].title + '\r\n' + body + issue_url
     
-    let authors = await sql.query()`SELECT name
-    FROM ${sql.query()(relation.schema + '.users') } u 
+    let authors = await sql`SELECT name
+    FROM ${sql(relation.schema + '.users') } u 
     WHERE u.uuid = ${row.user_uuid}`
     if(!authors || authors.length != 1) return
 
@@ -62,8 +62,8 @@ class Watchers {
     for(let i = 0; i < watchers.length; i++){
       if(watchers[i].user_uuid == row.user_uuid) continue
 
-      let ins = await sql.query()`INSERT INTO 
-      ${sql.query()(relation.schema + '.msg_out') }
+      let ins = await sql`INSERT INTO 
+      ${sql(relation.schema + '.msg_out') }
       (uuid, transport, recipient, title, body)
       VALUES (
         ${tools.uuidv4()}, 
@@ -73,7 +73,7 @@ class Watchers {
         ${body})`;
     }
 
-    //let project = await sql.query()`SELECT user_uuid FROM ${sql(relation.schema + '.watchers') } WHERE issue_uuid = ${issue_uuid}`
+    //let project = await sql`SELECT user_uuid FROM ${sql(relation.schema + '.watchers') } WHERE issue_uuid = ${issue_uuid}`
 
 
     /*
@@ -90,7 +90,7 @@ class Watchers {
 }
 
   public async init() {
-    await sql.query().subscribe('insert', this.handleNotify.bind(this), this.handleSubscribeConnect)
+    await sql.subscribe('insert', this.handleNotify.bind(this), this.handleSubscribeConnect)
   }    
 
 }
