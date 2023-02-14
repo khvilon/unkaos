@@ -48,7 +48,7 @@ export class MailPoller {
                 parts: await this.fetchParts(client, message)
               })
             } catch (e) {
-              console.log(`[MailPoller] Error while fetching message from: ${message.envelope.sender[0].address}; subject: ${message.envelope.subject}: \n${e}`)
+              console.log(`[MailPoller] Error while fetching message from: ${message.envelope.sender[0].address}; subject: ${message.envelope.subject}: \n${JSON.stringify(e)}`)
             }
           }
           for (const msg of parsedMessages) {
@@ -58,7 +58,7 @@ export class MailPoller {
         }
       }
     } catch (e) {
-      console.log(`[MailPoller] Unexpected error occurred while message sync: \n${e}`)
+      console.log(`[MailPoller] Unexpected error occurred while message sync: \n${JSON.stringify(e)}`)
       throw e
     }
     console.log('[MailPoller] Ended message sync.')
@@ -88,7 +88,7 @@ export class MailPoller {
         await this.parseAndSavePart(workspace, part, msg);
       }
     } catch (e) {
-      console.log(`[MailPoller] Unexpected error occurred while processing message ${msg.message.envelope.subject}: \n${e}`)
+      console.log(`[MailPoller] Unexpected error occurred while processing message ${msg.message.envelope.subject}: \n${JSON.stringify(e)}`)
     }
   }
 
@@ -112,11 +112,11 @@ export class MailPoller {
         encoding: part.structure.encoding,
         disposition: part.structure.disposition,
         part_id: part.structure.id,
-        filename: JSON.parse(part.structure.dispositionParameters).filename || ''
+        filename: JSON.parse(part.structure?.dispositionParameters || 'null')?.filename || ''
       })
       //console.log(`[MailPoller] Content of message ${msg.message.uid}, part '${part.structure.part}': ${decodedPartContent}`)
     } catch (e) {
-      console.log(`[MailPoller] Unexpected error occurred while processing part of message ${msg.message.envelope.subject}: \n${e}`)
+      console.log(`[MailPoller] Unexpected error occurred while processing part of message ${msg.message.envelope.subject}: \n${JSON.stringify(e)}`)
     }
 
   }
@@ -133,7 +133,7 @@ export class MailPoller {
       }
       return messages;
     } catch (e) {
-      console.log(`[MailPoller] Error occurred while fetching new messages: \n${e}`)
+      console.log(`[MailPoller] Error occurred while fetching new messages: \n${JSON.stringify(e)}`)
       return []
     } finally {
       lock.release();

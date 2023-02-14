@@ -47,38 +47,40 @@ export class Sql {
   }
 
   static async insertMsgIn(workspace: string, record: MsgIn) {
-    await sql`
-      INSERT INTO ${sql(workspace)}.msg_in (uuid,title,body,"from",pipe_uuid,status,message_id,message_uid,message_date,senders,cc,bcc,reply_to,"to")
+    const result = sql`
+      INSERT INTO ${sql(workspace+ '.msg_in')} (uuid,title,body,"from",pipe_uuid,status,message_id,message_uid,message_date,senders,cc,bcc,reply_to,"to")
       VALUES (
-        ${sql(record.uuid)}::uuid,
-        ${sql(record.title)},
-        ${sql(record.body)},
-        ${sql(record.from)},
-        ${sql(record.pipe_uuid)}::uuid,
-        ${sql(record.status)}::${sql(workspace)}."msg_status",
-        ${sql(record.message_id)},
-        ${sql(record.message_uid)},
-        ${sql(record.message_date.toISOString())},
-        ${sql(record.senders)},
-        ${sql(record.cc)},
-        ${sql(record.bcc)},
-        ${sql(record.reply_to)},
-        ${sql(record.to)}
+        ${record.uuid}::uuid,
+        ${record.title},
+        ${record.body},
+        ${record.from},
+        ${record.pipe_uuid}::uuid,
+        ${record.status}::${sql(workspace)}."msg_status",
+        ${record.message_id},
+        ${record.message_uid},
+        ${record.message_date.toISOString()},
+        ${record.senders},
+        ${record.cc},
+        ${record.bcc},
+        ${record.reply_to},
+        ${record.to}
       )`
+    console.log(result.raw())
+    return result;
   }
 
   static async insertMsgInPart(workspace: string, record: MsgInPart) {
     await sql`
-      INSERT INTO ${sql(workspace)}.msg_in_parts (uuid,msg_in_uuid,"content","type",created_at,updated_at,"encoding",disposition,part_id,filename)
+      INSERT INTO ${sql(workspace + '.msg_in_parts')} (uuid,msg_in_uuid,"content","type",created_at,updated_at,"encoding",disposition,part_id,filename)
       VALUES (
-        ${sql(record.uuid)}::uuid,
-        ${sql(record.msg_in_uuid)}::uuid,
-        ${sql(record.content)},
-        ${sql(record.type)},
-        ${sql(record.encoding)},
-        ${sql(record.disposition)},
-        ${sql(record.part_id)},
-        ${sql(record.filename)}
+        ${record.uuid}::uuid,
+        ${record.msg_in_uuid}::uuid,
+        ${record.content},
+        ${record.type},
+        ${record.encoding},
+        ${record.disposition},
+        ${record.part_id},
+        ${record.filename}
       )`
   }
 
