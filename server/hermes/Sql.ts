@@ -47,7 +47,7 @@ export class Sql {
   }
 
   static async insertMsgIn(workspace: string, record: MsgIn) {
-    const result = sql`
+    await sql`
       INSERT INTO ${sql(workspace+ '.msg_in')} (uuid,title,body,"from",pipe_uuid,status,message_id,message_uid,message_date,senders,cc,bcc,reply_to,"to")
       VALUES (
         ${record.uuid}::uuid,
@@ -65,13 +65,11 @@ export class Sql {
         ${record.reply_to},
         ${record.to}
       )`
-    console.log(result.raw())
-    return result;
   }
 
   static async insertMsgInPart(workspace: string, record: MsgInPart) {
     await sql`
-      INSERT INTO ${sql(workspace + '.msg_in_parts')} (uuid,msg_in_uuid,"content","type",created_at,updated_at,"encoding",disposition,part_id,filename)
+      INSERT INTO ${sql(workspace + '.msg_in_parts')} (uuid,msg_in_uuid,"content","type","encoding",disposition,part_id,part_num,filename)
       VALUES (
         ${record.uuid}::uuid,
         ${record.msg_in_uuid}::uuid,
@@ -80,6 +78,7 @@ export class Sql {
         ${record.encoding},
         ${record.disposition},
         ${record.part_id},
+        ${record.part_num},
         ${record.filename}
       )`
   }

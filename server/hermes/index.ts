@@ -23,7 +23,7 @@ async function init() {
     const mail_poller = new MailPoller()
     const mailPollerTask = new AsyncTask(
       'scheduler_mail_poller',
-      mail_poller.pollMessages(),
+      () => mail_poller.pollMessages(),
       (e: Error) => {
           console.log(`[Scheduler] Unexpected error occurred in scheduled task: \n${e}`)
       }
