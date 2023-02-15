@@ -90,7 +90,7 @@ class Watchers {
 }
 
   public async init() {
-    await sql.subscribe('insert', this.handleNotify.bind(this), this.handleSubscribeConnect)
+    await sql.subscribe('insert', this.handleNotify.bind(this), () => this.handleSubscribeConnect())
   }    
 
 }

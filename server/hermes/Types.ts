@@ -1,4 +1,4 @@
-import { DownloadObject, FetchMessageObject, MessageStructureObject } from "imapflow";
+import { DownloadObject, MessageStructureObject } from "imapflow";
 
 export type MsgPipe = {
   uuid: string,
@@ -23,12 +23,6 @@ export type User = {
   discord: string,
 }
 
-export type ParsedMessage = {
-  uuid: string,
-  message: FetchMessageObject,
-  parts: MessagePart[]
-}
-
 export type MessagePart = {
   structure: MessageStructureObject,
   content: DownloadObject
@@ -49,8 +43,8 @@ export type MsgIn = {
   to: string,
   error_message?: string,
   message_date: Date,
-  created_at: Date,
-  updated_at: Date,
+  created_at?: Date,
+  updated_at?: Date,
   deleted_at?: Date,
   status: MsgStatus
 }
@@ -69,6 +63,7 @@ export type MsgInPart = {
   encoding: string,
   disposition: string,
   part_id: string,
+  part_num: string,
   filename: string,
   created_at?: Date,
   updated_at?: Date,
