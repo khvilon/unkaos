@@ -17,14 +17,37 @@ let pass = "";
 
 login_page.methods = {
   async login() {
+
+    
+
     let token = await rest.get_token(this.user_name, this.pass);
 
     if (token == null) {
       console.log("wrong email or pass");
       this.wrong = true;
     } else {
-      this.$router.push("/issues");
+     // this.$router.push("/issues");
+     this.goBack()
     }
+  },
+
+  goBack() {
+    const previousUrl = window.document.referrer || null;
+    const currentHost = window.location.host;
+    console.log('>>>>>', currentHost, previousUrl)
+    if (previousUrl) {
+      const previousHost = (new URL(previousUrl)).host;
+      if (previousHost === currentHost) {
+        this.$router.go(-1);
+      }
+      else this.$router.push("/issues");
+    }
+    else this.$router.push("/issues");
+  },
+
+  get_previous_page() {
+    const previous_page = window.document.referrer || null;
+    console.log('>>>>>>>>>>', previous_page);
   },
 
   update_user_name(val) {
