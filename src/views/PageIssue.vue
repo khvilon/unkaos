@@ -318,6 +318,7 @@ let methods = {
     //setTimeout(this.init, 1000)
   },
   saved_new: function () {
+    this.clear_issue_draft()
     window.location.href = "/issue/" + this.issueProjectNum;
   },
   deleted: function (issue) {
@@ -487,8 +488,9 @@ let methods = {
     this.old_project_uuid = this.issue[0].project_uuid
 
     let issues_drafts = cache.getObject('issues_drafts')
-    console.log('>>>>>>>>>>>>>>issues_drafts', issues_drafts, issues_drafts[this.issue[0].uuid].description)
-    if(issues_drafts[this.issue[0].uuid]){
+   // console.log('>>>>>>>>>>>>>>issues_drafts', issues_drafts, issues_drafts[this.issue[0].uuid].description)
+    if(issues_drafts[this.issue[0].uuid] && 
+      this.get_field_by_name("Описание").value != issues_drafts[this.issue[0].uuid].description){
       this.saved_descr = this.get_field_by_name("Описание").value;
       this.saved_name = this.get_field_by_name("Название").value;
       this.saved_project_uuid = this.issue[0].project_uuid
@@ -497,6 +499,9 @@ let methods = {
       this.issue[0].updated_at = issues_drafts[this.issue[0].uuid].updated_at
       this.edit_mode = true;
     }
+    else this.current_description = this.get_field_by_name("Описание").value;
+
+    //this.current_description = this.get_field_by_name('Описание').value
 
     this.scrollToElementByUrl()
 

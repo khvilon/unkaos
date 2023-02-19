@@ -2,6 +2,7 @@ import  Sender from './sender';
 import  Rest from './rest';
 import  MsgOut from './msg_out';
 import  Watchers from './watchers';
+import  Support from './support_temp';
 
 
 //let s = new Sender();
@@ -20,6 +21,9 @@ const init = async function()
 
     let watchers = new Watchers();
     await watchers.init()
+
+    let support = new Support(sender);
+    await support.init()
     
 
     //Sender.send('email', 'n@khvilon.ru', 'test title', 'test body')
