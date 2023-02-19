@@ -1,5 +1,5 @@
 {
-  "name": "gateway",
+  "name": "unkaos-hermes",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@slack/web-api": "^6.8.1",
+    "bunyan": "^1.8.15",
     "discord": "^0.8.2",
     "discord.js": "^14.7.1",
     "express": "^4.18.2",
@@ -27,6 +28,7 @@
     "whatsapp-web.js": "^1.19.4"
   },
   "devDependencies": {
+    "@types/bunyan": "^1.8.8",
     "@types/express": "^4.17.16",
     "@types/imapflow": "^1.0.11",
     "@types/libmime": "^5.0.0",

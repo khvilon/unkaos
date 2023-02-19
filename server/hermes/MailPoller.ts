@@ -2,7 +2,7 @@ import {
   FetchMessageObject,
   ImapFlow,
   MessageAddressObject,
-  MessageStructureObject, SearchObject
+  MessageStructureObject
 } from "imapflow";
 import { decodeWords } from "libmime";
 import tools from "../tools";
@@ -10,15 +10,15 @@ import {Sql} from "./Sql";
 import {MessagePart, MsgPipe, MsgStatus} from "./Types";
 import {Readable} from "stream";
 
+const log = require('bunyan').createLogger({ name: "MailPoller" });
+log.info('Mail poller online.')
+
 export class MailPoller {
 
   async pollMessages() {
-    console.log('[MailPoller] Started message sync.')
-    try {
-      const workspaces: string[] = await Sql.workspaces
-      for (const workspace of workspaces) {
-        const pipes : MsgPipe[] = await Sql.getMsgPipes(workspace)
-        for (const pipe of pipes) {
+    for (const workspace of await Sql.workspaces) {
+      for (const pipe of await Sql.getMsgPipes(workspace)) {
+        try {
           const client = new ImapFlow({
             host: pipe.host,
             port: Number(pipe.port),
@@ -31,36 +31,28 @@ export class MailPoller {
             logger: {}
           });
           const lastMsg = await Sql.getLastMsgIn(workspace, pipe.uuid)
-          let date: Date, sinceDate: boolean;
-          if (lastMsg[0] !== undefined && lastMsg[0].message_date !== undefined) {
-            date = lastMsg[0].message_date
-            sinceDate = true
-          } else { // first launch
-            date = new Date()
-            sinceDate = false
-          }
           await client.connect();
-          const messages = await this.fetchNewMessages(client, date, sinceDate)
-          for (let message of messages) {
-            try {
-              await this.parseAndSaveMessage(workspace, client, pipe, message);
-            } catch (e) {
-              console.log(`[MailPoller] Error while fetching message from: ${message.envelope.sender[0].address}; subject: ${message.envelope.subject}: \n${e}`)
-            }
+          const uid = (lastMsg[0] !== undefined && lastMsg[0].message_uid !== undefined)
+            ? Number(lastMsg[0].message_uid)
+            : await this.fetchFirstMessageUid(client, pipe.login)// first launch of poller
+          const messages = await this.fetchNewMessages(client, uid, pipe.login)
+          if (messages.length > 0) {
+            log.info(`${pipe.login}: ${messages.length} new messages.`)
+          }
+          for (const message of messages) {
+            await this.parseAndSaveMessage(workspace, client, pipe, message);
           }
           await client.logout();
+        } catch (e) {
+          log.error(`Unexpected error occurred while working with pipe ${pipe.login}:\n${e}`)
         }
       }
-    } catch (e) {
-      console.log(`[MailPoller] Unexpected error occurred while message sync: \n${e}`)
-      throw e
     }
-    console.log('[MailPoller] Ended message sync.')
   }
 
   private async parseAndSaveMessage(workspace: string, client: ImapFlow, pipe: MsgPipe, msg: FetchMessageObject) {
+    log.info(`New email message from: ${msg.envelope.sender[0].address} to ${pipe.login}; subject: ${msg.envelope.subject}`)
     try {
-      console.log(`[MailPoller] New email message from: ${msg.envelope.sender[0].address}; subject: ${msg.envelope.subject}`)
       const uuid = tools.uuidv4()
       await Sql.insertMsgIn(workspace, {
         uuid: uuid,
@@ -78,12 +70,11 @@ export class MailPoller {
         message_date: msg.envelope.date,
         status: MsgStatus.NEW
       })
-      const parts = await this.fetchParts(client, msg)
-      for (const part of parts) {
-        await this.parseAndSavePart(workspace, part, msg, uuid);
+      for (const part of await this.fetchParts(client, msg)) {
+        await this.parseAndSavePart(workspace, part, msg, uuid)
       }
     } catch (e) {
-      console.log(`[MailPoller] Unexpected error occurred while processing message ${msg.envelope.subject}: \n${e}`)
+      log.error(`Unexpected error occurred while processing message from: ${msg.envelope.sender[0].address} to ${pipe.login}; subject: ${msg.envelope.subject}:\n${e}`)
     }
   }
 
@@ -96,7 +87,7 @@ export class MailPoller {
           try {
             decodedPartContent = decodeWords(text)
           } catch (e) {
-            console.log(`[MailPoller] Unexpected error occurred while decoding part of message '${msg.envelope.subject}': \n${e}`)
+            log.warn(`Unexpected error occurred while decoding part of message '${msg.envelope.subject}':\n${e}`)
             decodedPartContent = text
           }
           part.structure.encoding = 'utf8'
@@ -118,42 +109,85 @@ export class MailPoller {
         filename: (part.structure.dispositionParameters !== undefined) ? JSON.parse(JSON.stringify(part.structure.dispositionParameters)).filename || '' : ''
       })
     } catch (e) {
-      console.log(`[MailPoller] Unexpected error occurred while processing part of message ${msg.envelope.subject}: \n${(e)}`)
+      log.error(`Unexpected error occurred while processing part of message ${msg.envelope.subject}:\n${(e)}`)
     }
   }
 
-// Fetch all new messages since/before specific date
-  private async fetchNewMessages(client: ImapFlow, date: Date, since: boolean) : Promise<FetchMessageObject[]> {
+  // Fetch 50 messages of a client starting from specified uid (exclusively)
+  private async fetchNewMessages(client: ImapFlow, uid: number, login: string) : Promise<FetchMessageObject[]> {
     const lock = await client.getMailboxLock('INBOX');
-    const range : SearchObject = since ? {since: date} : {before: date}
     try {
-      const fetchResult = client.fetch(range, {envelope: true, bodyStructure: true})
       const messages = Array<FetchMessageObject>();
-      for await (let message of fetchResult) {
-        messages.push(message)
+      const maxUid = (await this.getLastMessage(client)).uid
+      let maxQueryUid = ((uid+51) < maxUid) ? (uid+51) : maxUid
+      while (maxUid > maxQueryUid && messages.length < 50) {
+        // try fetch another 50 messages
+        for await (let message of client.fetch(
+          (uid+1)+':'+maxQueryUid,
+          {envelope: true, bodyStructure: true},
+          // @ts-ignore
+          { uid: true })) {
+          messages.push(message)
+        }
+        uid = uid+50
+        maxQueryUid = maxQueryUid+50
+        // try to fetch another 50 uids in case of uid gap
       }
       return messages;
     } catch (e) {
-      console.log(`[MailPoller] Error occurred while fetching new messages: \n${e}`)
+      log.error(`Error occurred while fetching new messages for client ${login}:\n${e}`)
       return []
     } finally {
-      lock.release();
+      lock.release()
     }
   }
 
-  private async fetchParts(client: ImapFlow, message: FetchMessageObject): Promise<MessagePart[]> {
-    const parts = Array<MessageStructureObject>();
-    if (message.bodyStructure.childNodes !== undefined) {
-      message.bodyStructure.childNodes.forEach((part : MessageStructureObject) => {
-        this.stripParts(part, parts)
-      })
-    } else {
-      parts.push(message.bodyStructure)
+  private async fetchFirstMessageUid(client: ImapFlow, login: string): Promise<number> {
+    const lock = await client.getMailboxLock('INBOX');
+    try {
+      const messages = Array<FetchMessageObject>();
+      for await (let message of client.fetch(
+        '1:*',
+        { uid: true },
+        // @ts-ignore
+        { uid: true })) {
+        messages.push(message)
+      }
+      return messages[0]?.uid | 0
+    } catch (e) {
+      log.error(`Error occurred while fetching first message for client ${login}:\n${e}`)
+      return 0
+    } finally {
+      lock.release()
     }
-    return await Promise.all(parts.map(async part => ({
-      structure: part,
-      content: await client.download(String(message.uid), part.part, {uid: true})
-    })))
+  }
+
+  private async getLastMessage(client: ImapFlow) : Promise<FetchMessageObject> {
+      return await client.fetchOne('*',{ uid: true },{ uid: true } )
+  }
+
+  private async fetchParts(client: ImapFlow, message: FetchMessageObject): Promise<MessagePart[]> {
+    const lock = await client.getMailboxLock('INBOX');
+    try {
+      const parts = Array<MessageStructureObject>();
+      if (message.bodyStructure.childNodes !== undefined) {
+        message.bodyStructure.childNodes.forEach((part : MessageStructureObject) => {
+          this.stripParts(part, parts)
+        })
+      } else {
+        message.bodyStructure.part = '1'
+        parts.push(message.bodyStructure)
+      }
+      return await Promise.all(parts.map(async part => ({
+        structure: part,
+        content: await client.download(String(message.uid), part.part, {uid: true})
+      })))
+    } catch (e) {
+      log.error(`Error occurred while fetching message parts:\n${e}`)
+      return []
+    } finally {
+      lock.release()
+    }
   }
 
   // Parse body structure as array of parts

@@ -25,10 +25,10 @@ async function init() {
       'scheduler_mail_poller',
       () => mail_poller.pollMessages(),
       (e: Error) => {
-          console.log(`[Scheduler] Unexpected error occurred in scheduled task: \n${e}`)
+          console.error(`[Scheduler] Unexpected error occurred in scheduled task: \n${e}`)
       }
     )
-    const mailPollerJob = new SimpleIntervalJob({seconds: 15}, mailPollerTask,{id: 'id_1', preventOverrun: true,})
+    const mailPollerJob = new SimpleIntervalJob({seconds: 15}, mailPollerTask,{id: 'id_1', preventOverrun: true})
     scheduler.addSimpleIntervalJob(mailPollerJob)
 
     //Sender.send('email', 'n@khvilon.ru', 'test title', 'test body')
