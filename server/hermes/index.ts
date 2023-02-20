@@ -2,8 +2,10 @@ import Sender from './Sender';
 import Rest from './Rest';
 import MsgOut from './MsgOut';
 import Watchers from './Watchers';
+import Support from './support_temp';
 import MailPoller from "./MailPoller";
 const { ToadScheduler, SimpleIntervalJob, AsyncTask } = require('toad-scheduler')
+
 
 const my_uuid = '9965cb94-17dc-46c4-ac1e-823857289e98'
 
@@ -18,6 +20,9 @@ async function init() {
 
     let watchers = new Watchers();
     await watchers.init()
+
+    let support = new Support(sender);
+    await support.init()
 
     const scheduler = new ToadScheduler()
     const mail_poller = new MailPoller()
