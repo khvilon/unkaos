@@ -276,8 +276,8 @@ String.prototype.contains = function (substr): boolean {
 };
 
 String.prototype.replaceAll = function (old_substr, new_substr): string {
-  return this.replace(old_substr, new_substr);
-  // return this.split(old_substr).join(new_substr);
+ // return this.replace(old_substr, new_substr);
+   return this.split(old_substr).join(new_substr);
   // while(str.contains(old_substr)) str = str.replace(old_substr, new_substr)
 };
 
