@@ -1,3 +1,4 @@
+/*
 import { Client, Session } from "whatsapp-web.js";
 import { whatsappConfig } from "../conf";
 
@@ -31,3 +32,4 @@ class WhatsappMessage {
 }
 
 export default WhatsappMessage;
+*/

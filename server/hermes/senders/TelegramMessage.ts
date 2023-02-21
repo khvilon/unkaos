@@ -1,6 +1,6 @@
 import { telegramConfig } from '../conf';
 import TelegramBot from 'node-telegram-bot-api';
-import UserData from '../users_data';
+import UserData from '../UsersData';
 
 //var id = 228803942
 class TelegramMessage {
