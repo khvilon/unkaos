@@ -1,4 +1,5 @@
-import sql from "./sql";
+import {sql, Sql} from "./Sql";
+import {User} from "./Types";
 
 class UsersData {
 
@@ -8,45 +9,28 @@ class UsersData {
   constructor() {
   }
 
-  private async loadWorkspaces() {
-    let ans = await sql`    
-        SELECT schema_name
-        FROM information_schema.schemata
-        WHERE schema_name NOT IN 
-        ('pg_toast', 'pg_catalog', 'information_schema', 'admin', 'public')`;
-
-    if (ans == null || ans.length < 1) return [];
-
-    let workspaces = ans.map((r: any) => r.schema_name);
-
-    return workspaces;
-  }
-
-  private async loadWorkspaceUsers(workspace: string) {
-    const ans = await sql`
+  private async loadWorkspaceUsers(workspace: string) : Promise<User[]> {
+    const users = await sql`
         SELECT 
             U.uuid,
             U.name,
             U.login,
             U.mail,
             U.telegram,
-            U.telegram_id,
-            U.discord,
-            U.discord_id
+            U.discord
         FROM ${sql(workspace + '.users') } U
         WHERE U.active AND U.deleted_at IS NULL
         `;
     let workspaceUsers: any = {};
 
-    for (let i = 0; i < ans.length; i++) {
-      workspaceUsers[ans[i].uuid] = ans[i];
+    for (let i = 0; i < users.length; i++) {
+      workspaceUsers[users[i].uuid] = users[i];
     }
-
-    return workspaceUsers;
+    return workspaceUsers as User[];
   }
 
   public async init() {
-    this.workspaces = await this.loadWorkspaces();
+    this.workspaces = await Sql.workspaces;
 
     let users: any = {};
 

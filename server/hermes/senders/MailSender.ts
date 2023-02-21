@@ -1,8 +1,7 @@
-
 import { emailConfig } from '../conf';
 import nodemailer from 'nodemailer';
 
-class Email {
+class MailSender {
   private transport;
 
   constructor() {
@@ -29,7 +28,7 @@ class Email {
   }
 }
 
-export default Email;
+export default MailSender;
 
 
 

@@ -1,10 +1,9 @@
-import sql from "./sql";
-import Sender from "./sender";
+import {sql, Sql} from "./Sql";
+import Sender from "./Sender";
 
 class MsgOut {
 
-    private sender: Sender
-
+  private sender: Sender
 
   constructor(sender: Sender) {
     this.sender = sender
@@ -12,15 +11,7 @@ class MsgOut {
 
   private async readOldMessages() {
 
-    let w_ans = await sql`    
-        SELECT schema_name
-        FROM information_schema.schemata
-        WHERE schema_name NOT IN 
-        ('pg_toast', 'pg_catalog', 'information_schema', 'admin', 'public')`;
-
-    if (w_ans == null || w_ans.length < 1) return [];
-
-    let workspaces = w_ans.map((r: any) => r.schema_name);
+    let workspaces = await Sql.workspaces
 
     for(let w = 0; w < workspaces.length; w++){
         let ans = await sql`    
