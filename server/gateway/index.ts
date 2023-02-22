@@ -1,13 +1,8 @@
 import axios from "axios";
-
 import conf from "./conf.json";
-
 import cors from "cors";
-
 import express from "express";
-
 const app: any = express();
-
 const port = 3001;
 
 try {
@@ -16,7 +11,7 @@ try {
   app.use(express.raw({ limit: "150mb" }));
   app.use(express.urlencoded({ limit: "150mb", extended: true }));
 } catch (err) {
-  console.log("Cant ibnit app");
+  console.log("Cant init app");
 }
 
 async function init() {
