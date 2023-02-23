@@ -1,13 +1,10 @@
-import {sql, Sql} from "./Sql";
+import {sql} from "./Sql";
 import {User} from "./Types";
 
 class UsersData {
 
   private workspaces:string[] = [];
   private users:any = {};
-
-  constructor() {
-  }
 
   private async loadWorkspaceUsers(workspace: string) : Promise<User[]> {
     const users = await sql`
@@ -30,7 +27,7 @@ class UsersData {
   }
 
   public async init() {
-    this.workspaces = await Sql.workspaces;
+    this.workspaces = await this.loadWorkspaces();
 
     let users: any = {};
 
@@ -91,6 +88,16 @@ class UsersData {
     private handleSubscribeConnect(){
         console.log('subscribe sql connected!')
     }
+
+  private async loadWorkspaces() : Promise<string[]> {
+    let workspaces = await sql`    
+        SELECT schema_name
+        FROM information_schema.schemata
+        WHERE schema_name NOT IN 
+        ('pg_toast', 'pg_catalog', 'information_schema', 'admin', 'public')`;
+    if (workspaces == null || workspaces.length < 1) return [];
+    return workspaces.map((r: any) => r.schema_name);
+  }
 
 }
 

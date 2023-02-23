@@ -38,7 +38,7 @@ async function init() {
           },
         });
       } catch (err) {
-        console.log("errrrr");
+        console.log("Check session error: "+JSON.stringify(err));
         if (cerberus_ans != undefined) {
           res.status(cerberus_ans.status);
           res.send(cerberus_ans.data);
@@ -83,25 +83,35 @@ async function init() {
   }
 
   app.get("/get_token", async (req: any, res: any) => {
-    const cerberus_ans = await axios({
-      method: "get",
-      url: conf.cerberusUrl + "/get_token",
-      headers: req.headers,
-    });
-
-    res.status(cerberus_ans.status);
-    res.send(cerberus_ans.data);
+    try {
+      const cerberus_ans = await axios({
+        method: "get",
+        url: conf.cerberusUrl + "/get_token",
+        headers: req.headers,
+      });
+      res.status(cerberus_ans.status);
+      res.send(cerberus_ans.data);
+    } catch (error: any) {
+      console.log('/get_token error: '+JSON.stringify(error))
+      res.status(error?.response?.status | 500)
+      res.send( {message: error?.response?.data?.message ?? 'Internal Server Error' })
+    }
   });
 
   app.post("/upsert_password_rand", async (req: any, res: any) => {
-    const cerberus_ans = await axios({
-      method: "post",
-      url: conf.cerberusUrl + "/upsert_password_rand",
-      headers: req.headers,
-    });
-
-    res.status(cerberus_ans.status);
-    res.send(cerberus_ans.data);
+    try {
+      const cerberus_ans = await axios({
+        method: "post",
+        url: conf.cerberusUrl + "/upsert_password_rand",
+        headers: req.headers,
+      })
+      res.status(cerberus_ans.status);
+      res.send(cerberus_ans.data);
+    } catch (error : any) {
+      console.log('/upsert_password_rand error: '+JSON.stringify(error))
+      res.status(error?.response?.status | 500)
+      res.send( {message: error?.response?.data?.message ?? 'Internal Server Error' })
+    }
   });
 
   app.listen(port, async () => {

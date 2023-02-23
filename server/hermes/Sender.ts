@@ -1,9 +1,7 @@
-
 import MailSender from './senders/MailSender';
 import DiscordMessage from './senders/DiscordMessage';
 import TelegramMessage from './senders/TelegramMessage';
 import UserData from './UsersData';
-import { Console } from 'console';
 
 
 class Sender {
