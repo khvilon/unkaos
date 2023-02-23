@@ -2,10 +2,12 @@ const express = require('express');
 const app = express()
 const port = 3005
 
-var md5 = require('md5')
+const md5 = require('md5');
 
 import data from "./data";
 import security from "./security";
+import axios from "axios";
+import conf from "./conf.json";
 
 const checkSession = function(workspace : string, token : string){
     if(data.sessions[workspace] == null) return null
@@ -18,16 +20,25 @@ const checkSession = function(workspace : string, token : string){
     return user
 }
 
-const handleRequest = async function(req : any, res : any){
-    let workspace = req.headers.subdomain
+const checkHermesAvailable = async function () : Promise<boolean> {
+    try {
+        const hermes_answer = await axios({ method: "get", url: conf.hermesUrl + "/ping"})
+        return (hermes_answer?.data?.status == "OK")
+    } catch (e) {
+        return false
+    }
+}
 
-    if(workspace == undefined || workspace == null || workspace == ''){
+const handleRequest = async function(req : any, res : any){
+    const workspace = req.headers.subdomain
+
+    if(workspace == undefined || workspace == ''){
         res.status(400);
         res.send({message: 'Необходим заголовок subdomain в качестве workspace'});
         return
     }
 
-    let request = req.url.split('/')[1]
+    const request = req.url.split('/')[1]
 
     if(request == 'get_token'){
         let email = req.headers.email
@@ -41,9 +52,8 @@ const handleRequest = async function(req : any, res : any){
         }
 
         res.send(token)
-    }
-    else{
-        let token = req.headers.token
+    } else {
+        const token = req.headers.token
 
         if(!token) {
             res.status(401);
@@ -61,21 +71,50 @@ const handleRequest = async function(req : any, res : any){
 
         if(request == 'check_session') res.send(user)
         else if(request == 'upsert_password'){
-            let params = req.body
-
-            if(user.uuid != params.user.uuid)
-            {
+            const params = req.body
+            if(user.uuid != params.user.uuid) {
                 res.status(403);
-                res.send({message: 'Нельзя задавать пароль других пользователей'});
+                res.send({message: 'Нельзя изменять пароль других пользователей'});
                 return
             }
-        
             await security.setPassword(workspace, params.user, params.password)
         }
-        else if(request == 'upsert_password_rand'){
-            let params = req.body
-        
-            await security.updatePassword(workspace, params.user)
+        else if(request == 'upsert_password_rand') {
+            if (await security.checkUserIsAdmin(workspace, user)) {
+                if (await checkHermesAvailable()) {
+                    const password = await security.setRandomPassword(workspace, user)
+                    try {
+                        const hermes_answer = await axios({
+                            method: "post",
+                            url: conf.hermesUrl + "/send",
+                            headers: req.headers,
+                            data: {
+                                transport: "email",
+                                recipient: user.mail,
+                                title: "Новый пароль Unkaos",
+                                body: "Ваш новый пароль Unkaos: "+password,
+                                workspace: workspace
+                            }
+                        })
+                        res.status(hermes_answer.status);
+                        if (hermes_answer.status == 200) {
+                            res.send({message: 'Пароль упешно изменён'});
+                        } else {
+                            res.send({message: 'Ошибка сброса пароля'});
+                        }
+                    } catch (e) {
+                        console.log('/upsert_password_rand error: '+JSON.stringify(e))
+                        res.status(500)
+                        res.send({message: "Internal Server Error"})
+                    }
+                } else {
+                    res.status(503)
+                    res.send({message: "Service Temporarily Unavailable"})
+                }
+            } else {
+                res.status(403);
+                res.send({message: 'Данное действие доступно только администратору'});
+            }
         }
     }    
 }
@@ -92,7 +131,6 @@ app.post('/upsert_password_rand', async (req : any, res : any) => {
     handleRequest(req, res)   
 })
 
-app.listen(port, async () => 
-{
+app.listen(port, async () => {
     console.log(`Cerberus running on port ${port}`)
 })
