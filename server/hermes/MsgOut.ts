@@ -1,4 +1,4 @@
-import {sql, Sql} from "./Sql";
+import {sql} from "./Sql";
 import Sender from "./Sender";
 
 class MsgOut {
@@ -9,9 +9,18 @@ class MsgOut {
     this.sender = sender
   }
 
+  public async init() {
+    await this.readOldMessages()
+    await sql.subscribe('insert', this.handleNotify.bind(this), this.handleSubscribeConnect)
+  }
+
+  private handleSubscribeConnect(){
+    console.log('subscribe msg_out connected!')
+  }
+
   private async readOldMessages() {
 
-    let workspaces = await Sql.workspaces
+    let workspaces = await this.loadWorkspaces()
 
     for(let w = 0; w < workspaces.length; w++){
         let ans = await sql`    
@@ -40,14 +49,15 @@ class MsgOut {
     updated_at = NOW() WHERE uuid = ${msgOutRow.uuid}`
   }
 
-  private handleSubscribeConnect(){
-    console.log('subscribe msg_out connected!')
-}
-
-  public async init() {
-    await this.readOldMessages()
-    await sql.subscribe('insert', this.handleNotify.bind(this), this.handleSubscribeConnect)
-  }    
+  private async loadWorkspaces() : Promise<string[]> {
+    let workspaces = await sql`    
+        SELECT schema_name
+        FROM information_schema.schemata
+        WHERE schema_name NOT IN 
+        ('pg_toast', 'pg_catalog', 'information_schema', 'admin', 'public')`;
+    if (workspaces == null || workspaces.length < 1) return [];
+    return workspaces.map((r: any) => r.schema_name);
+  }
 
 }
 
