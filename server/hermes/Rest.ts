@@ -21,6 +21,11 @@ export class Rest {
             }
         });
 
+        app.get('/ping', async (req: any, res: any) => {
+            res.status(200)
+            res.send({status: "OK"})
+        });
+
         app.listen(restConfig.port, () => {
             console.log(`Server running on port ${restConfig.port}`);
         });
