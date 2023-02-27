@@ -1,5 +1,5 @@
-import sql from "./sql";
-import  Sender from './sender';
+import {sql} from "./Sql";
+import Sender from './Sender';
 
 class Support {
 

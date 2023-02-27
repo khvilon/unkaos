@@ -29,22 +29,29 @@ security.setPassword = async function(workspace : String, user : any, newPasswor
     sql`UPDATE  ${sql(workspace + '.users') } SET password = MD5(${ newPassword }) WHERE uuid=${ user.uuid }`
 }
 
+security.checkUserIsAdmin = async function (workspace: string, user: any) : Promise<boolean> {
+    const roles = await sql`SELECT r.name FROM ${sql(workspace + '.users')} u 
+        INNER JOIN ${sql(workspace + '.users_to_roles')} ur on u.uuid = ur.users_uuid
+        INNER JOIN ${sql(workspace + '.roles')} r on ur.roles_uuid = r.uuid
+        WHERE u.uuid=${ user.uuid }`
+    return (roles.find((role: any) => role.name == 'Администратор') !== undefined)
+}
+
 const generateRandomPassword = function(){
     const pass_chars = "0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const pass_len = 12;
-
     let password = ''
-
     for (var i = 0; i <= pass_len; i++) {
         let rand_num = Math.floor(Math.random() * pass_chars.length);
         password += pass_chars.substring(rand_num, rand_num +1);
     }
-
     return password
 }
 
-security.updatePassword = async function(workspace : String, user : any){
-    security.setPassword(workspace, user, generateRandomPassword())
+security.setRandomPassword = async function(workspace : String, user : any) : Promise<string> {
+    const password = generateRandomPassword()
+    await security.setPassword(workspace, user, password)
+    return password
 }
 
 export default security
