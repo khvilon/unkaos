@@ -53,6 +53,7 @@ let methods = {
 			return
 		}
 
+
 		this.title
 
 		for (let i in this.issue_statuses) {
@@ -66,16 +67,20 @@ let methods = {
 		//check not double
 		if (!this.selected_board.is_new) return
 
+		
+
 
 		if (this.selected_board.uuid != this.board[0].uuid) this.$store.commit('select_board', this.board[0].uuid);
 
+		
+
 		if (this.selected_board.is_new) this.configs_open = true
 
+		console.log('>>>>>>>>>>>>0', this.board[0].boards_columns[0].num, this.board[0].boards_columns[0].uuid)
+		this.selected_board.boards_columns = this.selected_board.boards_columns.sort((a, b) => { return a.num - b.num })
 		this.sprints = (await rest.run_method('read_sprints', {})).sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
-		this.curr_sprint_num = this.get_curr_sprint_num()
-
-		console.log('>>>>>>>>>>>>', this.curr_sprint_num)
-
+		console.log('>>>>>>>>>>>>1', this.board[0].boards_columns[0].num, this.board[0].boards_columns[0].uuid)
+		this.curr_sprint_num = this.get_curr_sprint_num()		
 
 		this.selected_board.boards_columns = this.selected_board.boards_columns.sort((a, b) => { return a.num - b.num })
 		this.selected_board.boards_fields = this.selected_board.boards_fields.sort((a, b) => { return a.num - b.num })
