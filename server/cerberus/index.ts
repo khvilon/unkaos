@@ -9,6 +9,11 @@ import security from "./security";
 import axios from "axios";
 import conf from "./conf.json";
 
+
+app.use(express.json({limit: '150mb'}));
+app.use(express.raw({limit: '150mb'}));
+app.use(express.urlencoded({limit: '150mb', extended: true}));
+
 const checkSession = function(workspace : string, token : string){
     if(data.sessions[workspace] == null) return null
     const md5Token = md5(token)
@@ -80,17 +85,18 @@ const handleRequest = async function(req : any, res : any){
             await security.setPassword(workspace, params.user, params.password)
         }
         else if(request == 'upsert_password_rand') {
+            //console.log('upsert_password_rand0', req.body.user)
             if (await security.checkUserIsAdmin(workspace, user)) {
                 if (await checkHermesAvailable()) {
-                    const password = await security.setRandomPassword(workspace, user)
+                    const password = await security.setRandomPassword(workspace, req.body.user)
                     try {
                         const hermes_answer = await axios({
                             method: "post",
                             url: conf.hermesUrl + "/send",
-                            headers: req.headers,
+                           // headers: req.headers,
                             data: {
                                 transport: "email",
-                                recipient: user.mail,
+                                recipient: req.body.user.mail,
                                 title: "Новый пароль Unkaos",
                                 body: "Ваш новый пароль Unkaos: "+password,
                                 workspace: workspace
