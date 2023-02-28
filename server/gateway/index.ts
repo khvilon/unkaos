@@ -99,11 +99,14 @@ async function init() {
   });
 
   app.post("/upsert_password_rand", async (req: any, res: any) => {
+
+    console.log('upsert_password_rand', req.body)
     try {
       const cerberus_ans = await axios({
         method: "post",
         url: conf.cerberusUrl + "/upsert_password_rand",
         headers: req.headers,
+        data: req.body
       })
       res.status(cerberus_ans.status);
       res.send(cerberus_ans.data);
