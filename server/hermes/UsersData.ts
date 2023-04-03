@@ -14,7 +14,9 @@ class UsersData {
             U.login,
             U.mail,
             U.telegram,
-            U.discord
+            U.discord,
+            U.telegram_id,
+            U.discord_id
         FROM ${sql(workspace + '.users') } U
         WHERE U.active AND U.deleted_at IS NULL
         `;

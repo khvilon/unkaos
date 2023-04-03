@@ -1389,6 +1389,9 @@ export default mod;
             v-model:actions="actions_with_time_entries"
             :images="images"
         />
+
+        <GptPanel
+        />
       </div>
       <div
         id="issue_card"
