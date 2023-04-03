@@ -10,10 +10,12 @@ class Support {
         'ec14b6c7-ce77-47b0-ab31-6f2b879c5626': 'SDG'
     }
     private readonly  check_interval = 1000 * 30
+    // TODO switch to roles
     private readonly  support_channel_user_uuids = [
-        '9965cb94-17dc-46c4-ac1e-823857289e98', //хвилон
-        'f33410b5-b829-4eae-9a0e-cd4629e8c712', //матюшечко
-        'c2c5debe-e9ae-4667-8534-5868dc68d2a7' //юдина
+        '9965cb94-17dc-46c4-ac1e-823857289e98', //khvilon
+        'f33410b5-b829-4eae-9a0e-cd4629e8c712', //matyushechko
+        'c2c5debe-e9ae-4667-8534-5868dc68d2a7', //yudina
+        '27f1c60f-f1da-4d46-a6f5-825c6c5f52ae'  //repin
     ]
 
     //private readonly  support_channel_user_uuid = '23b87377-6c7a-44f8-9b56-667ab951a8aa'
