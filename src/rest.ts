@@ -44,6 +44,7 @@ export default class rest {
     return data;
   }
 
+
   static async run_method(method: string, body: any): Promise<any> {
     const alert_id = tools.uuidv4(); //new Date()
     store.state["alerts"][alert_id] = {

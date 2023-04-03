@@ -51,6 +51,8 @@ import KMarkdownInput from "./components/KMarkdownInput.vue";
 import IWatcher from "./icons/IWatcher.vue";
 import RelativeBox from "./components/RelativeBox.vue";
 
+import GptPanel from "./components/GptPanel.vue";
+
 const app = createApp(App);
 
 app.use(router);
@@ -95,6 +97,7 @@ app.component("EditTagModal", EditTagModal);
 app.component("KMarkdownInput", KMarkdownInput);
 app.component("IWatcher", IWatcher)
 app.component("RelativeBox", RelativeBox)
+app.component("GptPanel", GptPanel)
 
 const clickOutside = {
     beforeMount: (el, binding) => {
