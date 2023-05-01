@@ -225,7 +225,6 @@ export class Data {
   
     return [command, humanCommand];
   }
-  
 }
 
 export default Data;
