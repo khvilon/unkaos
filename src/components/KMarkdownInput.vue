@@ -3,7 +3,7 @@ import {nextTick} from "vue";
 
 export default {
   name: "KMarkdownInput",
-  emits: ["update_parent_from_input", "input_focus", "attachment_added", "attachment_deleted"],
+  emits: ["update_parent_from_input", "input_focus", "attachment_added", "attachment_deleted", "save"],
   data() {
     return {
       val: "",
@@ -173,6 +173,11 @@ export default {
             case 82: { // Ctrl + R
               event.preventDefault()
               this.mdLine()
+              break;
+            }
+            case 83: { // Ctrl + S
+              event.preventDefault()
+              this.$emit('save')
               break;
             }
           }

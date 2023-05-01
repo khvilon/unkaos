@@ -1,4 +1,8 @@
 <script>
+
+import matrix from "../matrix.ts";
+import rest from "../rest.ts";
+
 export default {
   props: {
     context: {
@@ -9,29 +13,104 @@ export default {
   data() {
     return {
       userInput: '',
-      result: '',
+      gptResultHuman: '',
+      gptResult: '',
       panelVisible: false,
       animationVisible: false,
+      actionDone: false,
+      issues: []
     };
   },
   methods: {
     togglePanel() {
       this.panelVisible = !this.panelVisible;
     },
-    async send() {
+    explain(gptJson){
+      let ans = ''
+
+      if(gptJson.command == 'update') ans += 'Изменить'
+      else if(gptJson.command == 'create') ans += 'Создать'
+
+      if( gptJson.useChildren && gptJson.command == 'update') ans += ' дочерние задачи'
+      else if( gptJson.useChildren) ans += ' дочернюю задачу'
+      else if( gptJson.useCurrent && gptJson.command == 'update') ans += ' текущие/ую задачу'
+      else ans += ' задачу'
+      
+      if(gptJson.filter) ans += ', удовлетворяющие условию:\r\n' + gptJson.filter
+
+      ans += '\r\nзадав значения:\r\n'
+      for(let i = 0; i < gptJson.set.length; i++){
+        ans += gptJson.set[i].name + '=' + gptJson.set[i].value + '; '
+      }
+
+      if(!this.issues.length) ans += '\r\n\r\nНе найдено задач, удовлетворяющих условиям'
+      else ans += '\r\n\r\nНайдено задач: ' + this.issues.length + '. Выполнить?'
+
+      return ans
+    },
+    async getIssues(){
+      this.issues = []
+      let uuids = []
+      if(this.gptResult.useChildren){
+        const type_uuid = '73b0a22e-4632-453d-903b-09804093ef1b' //parent relation type
+        for(let i = 0; i < this.context.length; i++){
+          let options = {issue0_uuid: this.context[i].uuid, type_uuid: type_uuid}
+          let relations = await rest.run_method('read_relations', options)
+          for(let j = 0; j < relations.length; j++){
+            uuids.push(relations[j].issue1_uuid)
+          }
+        }
+      }
+      else if(this.gptResult.useCurrent){
+       uuids = this.context.map((issue)=>issue.uuid)
+      }
+
+      let query = ''
+      for(let i = 0; i < uuids.length; i++){
+        if(query != '') query += ' or '
+        query += "attr#uuid#='" + uuids[i] + "'#"
+      }
+
+      if(this.gptResult.filter){
+        if(query) query = '(' + query + ') and '
+        query += this.gptResult.filter
+      }
+
+      console.log('query:', query)
+
+      query = btoa(encodeURIComponent(query))
+
+      this.issues = await rest.run_method('read_issues', {query: query})
+    },
+    runMatrix(){
+      if(this.userInput.length==0 || this.gptResultHuman.length || this.animationVisible) return
+      matrix.initScreensaver('gpt_canvas')
+    },
+    async send(e) {
+
+      if(e) e.preventDefault()
+
+      
+      this.runMatrix()
       this.animationVisible = true;
-      alert(this.userInput)
+      
       try {
         const response = await fetch('http://localhost:5010/gpt?userInput=' + this.userInput, {
           method: 'GET',
         });
 
         if (!response.ok) {
+          this.gptResultHuman = `Не удалось распознать требуемое действие`
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const data = await response.json();
-        this.result = JSON.stringify(data, null, 2);
+        
+        this.gptResult= data.gpt;
+        await this.getIssues()
+        this.gptResultHuman = this.explain(data.humanGpt);
+        
+        console.log('this.gptResult', this.gptResult)
       } catch (error) {
         console.error('Request error:', error);
         this.result = 'Error: Unable to process your request';
@@ -40,32 +119,118 @@ export default {
       }
     },
 
-    run() {
-      console.log('Running function with GPT answer:', this.result);
-      // Implement the logic for the "run" function here
+    writeValue(issue, v){
+
+      let parent
+      if(v.value.toLowerCase() == 'inherit'){
+        for(let i = 0; i < this.context.length; i++){
+          if(this.context[i].uuid == issue.parent_uuid){
+            parent = this.context[i]
+            break
+          }
+        }
+      }
+
+      console.log('>>>0', issue[v.name] != undefined, v.name, issue['sprint_uuid'], issue[v.name], issue)
+      if(v.name in issue) {
+        if(parent != undefined) issue[v.name] = parent[v.name]
+        else issue[v.name] = v.value
+      }
+      else {
+        console.log('>>>00')
+        for(let i = 0; i < issue.values.length; i++ ){
+          console.log('>>>01', issue.values[i].label, v.name)
+          if(issue.values[i].label == v.name){
+            console.log('>>>02', issue.values[i].label, v.name)
+            if(parent != undefined){
+              for(let j = 0; j < parent.values.length; j++ ){
+                console.log('>>>03', parent.values[j].label, v.name)
+                if(parent.values[j].label == v.name){
+                  issue.values[i].value = parent.values[j].value
+                  break
+                }
+              }
+            }
+            else issue.values[i].value = v.value
+            break
+          }
+        }
+      }
+
+      console.log('>>>2', v, issue)
+    },
+
+    async run() {
+      if(!this.gptResult) return
+      console.log('Running function with GPT answer:', this.gptResult);
+      if(this.gptResult.command == 'update'){
+        for(let i = 0; i < this.issues.length; i++){
+          console.log('issues', this.gptResult.set, this.issues[i],  this.gptResult )
+          for(let j = 0; j < this.gptResult.set.length; j++){
+            console.log('this.gptResult.set[j]', this.gptResult.set[j])
+            this.writeValue(this.issues[i], this.gptResult.set[j])
+          }
+          console.log('update_issues', this.issues[i])
+          await rest.run_method('update_issues', this.issues[i]);
+        }
+      }
+      if(this.gptResult.command == 'create'){
+        
+      }
+
+      this.actionDone = true
     },
   },
 };
 </script>
 
 <template>
-  <div class="gpt-panel panel">
+  <div 
+    @keydown.esc.exact.prevent="panelVisible=false"
+    class="gpt-panel panel"
+  >
     <div :class="['toggle-panel', panelVisible ? 'open' : 'closed']" @click="togglePanel">
       <i v-if="!panelVisible" class='bx bxs-magic-wand toggle-icon'></i>
       <i v-else class='bx bx-chevron-down toggle-icon'></i>
     </div>
     <transition name="expand">
-      <div :class="['gpt-down-panel', panelVisible ? 'open' : 'closed']">
-        <TextInput @update_parent_from_input="(v)=>userInput=v" label="Команда произвольным текстом"/>
-        <TextInput :class="[animationVisible ? 'gradient-background' : '']" :disabled="true" v-model="result" label="Трактовка ИИ"/> 
-        <i @click="send" class='bx bxs-brain'></i>  
-        <i @click="run" class='bx bx-play-circle'></i>  
+      <div :class="['gpt-down-panel', panelVisible ? 'open' : 'closed', animationVisible ? 'gradient-background' : '']"> 
+        <div class="gpt-down-panel-half">
+          <TextInput 
+            @keydown.enter.exact.prevent="()=>{if(gptResult) run(); else if(userInput.length) send()}" 
+            @update_parent_from_input="(v)=>{gptResultHuman='';gptResult=undefined;actionDone=false;userInput=v}" 
+            label="Команда произвольным текстом"
+            :resize="false"
+          />
+          <i 
+          :class="[userInput.length && gptResultHuman.length == 0 && !animationVisible ? 'active_icon' : '']"
+          @click="send" class='bx bxs-brain'
+          ></i> 
+        </div> 
+        <div class="gpt-down-panel-half gpt-down-panel-right gradient-animation">
+          <TextInput 
+            class="fade-background"
+            :value="gptResultHuman" 
+            :disabled="true" 
+            label="Трактовка ИИ"
+            :resize="false"
+          />
+          <div class="gpt-result-loader">
+            <canvas 
+            v-show="animationVisible"
+            id="gpt_canvas" class="gpt-canvas" ></canvas>
+          </div>
+          <i 
+          :class="[gptResultHuman.length && gptResult && !actionDone ? 'active_icon' : '', actionDone ? 'bx-check-circle' : 'bx-play-circle']"
+          @click="run" class='bx'></i> 
+        </div>
       </div>
     </transition>
   </div>
 </template>
 
-<style scoped>
+<style lang="scss">
+@import "../css/global.scss";
 .gpt-panel {
   position: absolute;
   bottom: 0;
@@ -75,6 +240,8 @@ export default {
   height: auto;
 }
 
+
+
 .toggle-panel {
   right: 0;
   bottom: 0;
@@ -83,6 +250,7 @@ export default {
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
+  
 }
 
 .toggle-panel.closed {
@@ -100,62 +268,88 @@ export default {
   overflow: hidden;
   transition: height 0.2s ease;
 
-  padding-left: 25px;
-  padding-right: 25px;
+  display: flex;
 }
 
 .gpt-down-panel.open {
-  height: 240px;
+  height: 205px;
 }
 
 .gpt-down-panel.closed {
   height: 0px;
 }
 
-.gpt-down-panel i{
-  font-size: 30px;
-  padding-top: 15px;
-    padding-right: 10px;
-    cursor: pointer;
+.gpt-down-panel .text .text-input{
+  min-height: 140px;
+  height: 140px ;
 }
 
-.gpt-down-panel textarea {
-  width: 100%;
-  resize: none;
-}
-
-.animation-container {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  background-color: rgba(255, 255, 255, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-@keyframes gradient-animation {
+@keyframes active_icon_blink {
   0% {
-    background-position: 0% 50%;
+    color: var(--off-button-icon-color);
+    text-shadow: -1px 0 transparent, 0 1px transparent, 1px 0 transparent, 0 -1px transparent;
   }
-  50% {
-    background-position: 100% 50%;
+  70% {
+    color: var(--on-button-icon-color);
+    text-shadow: -1px 0 var(--on-button-icon-color), 0 1px var(--on-button-icon-color), 1px 0 var(--on-button-icon-color), 0 -1px var(--on-button-icon-color);
+  }
+  80% {
+    color: var(--on-button-icon-color);
+    font-size: 31px;
+    text-shadow: -1px 0 var(--on-button-icon-color), 0 1px var(--on-button-icon-color), 1px 0 var(--on-button-icon-color), 0 -1px var(--on-button-icon-color);
   }
   100% {
-    background-position: 0% 50%;
+    color: var(--off-button-icon-color);
+    text-shadow: -1px 0 transparent, 0 1px transparent, 1px 0 transparent, 0 -1px transparent;
   }
 }
 
-.gradient-background  {
-  background: linear-gradient(270deg, #3498db, #9b59b6, #f1c40f);
-  background-size: 600% 600%;
-  animation: gradient-animation 8s ease infinite;
-  color: white;
-  border: none;
-  outline: none;
+.gpt-down-panel i{
+  font-size: 30px;
+  padding-bottom: 10px;
+    padding-right: 10px;
+ opacity: 0.3;
+    color: var(--off-button-icon-color);
+    text-shadow: -1px 0 transparent, 0 1px transparent, 1px 0 transparent, 0 -1px transparent;
 }
+
+.gpt-down-panel .active_icon{
+  animation: active_icon_blink 1.5s infinite ;
+  cursor: pointer;
+  opacity: 1;
+}
+
+
+
+.gpt-down-panel-half {
+  width: 100%;
+  padding-left: 25px;
+  padding-right: 25px;
+}
+
+
+
+.gpt-result-loader{
+    width: 50%;
+    height: 140px;
+    position: absolute;
+    top: 44px;
+    left: 50%;
+    padding-left:25px;
+    padding-right:25px;
+}
+
+.gpt-canvas{
+  opacity: 0.6;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+}
+
+
+
 
 
 </style>
