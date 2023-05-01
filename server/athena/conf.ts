@@ -2,7 +2,7 @@
     
       
       export const openaiConfig = {
-        key: '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'
+        key: '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'
       };
       
       export const restConfig = {

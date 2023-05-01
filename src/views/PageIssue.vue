@@ -1289,6 +1289,7 @@ export default mod;
             @paste="pasted"
             @attachment_added="add_attachment"
             @attachment_deleted="delete_attachment"
+            @save="save"
         />
 
         <div id="issue_footer_buttons"
@@ -1391,6 +1392,8 @@ export default mod;
         />
 
         <GptPanel
+          v-if="!loading && id !== '' && !$store.state['common']['is_mobile']"
+          :context="issue"
         />
       </div>
       <div

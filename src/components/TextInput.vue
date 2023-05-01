@@ -38,13 +38,17 @@ export default {
       type: String,
       default: "",
     },
+    resize: {
+      type: Boolean,
+      default: true,
+    },
   },
 
   emits: ["update_parent_from_input", "input_focus"],
 
   methods: {
     resize() {
-      
+      if(!this.resize) return
       console.log("resizing");
       if (this.$refs.text_input == undefined) return;
       this.$refs.text_input.style.height = `${
@@ -71,6 +75,22 @@ export default {
     pasted(e) {
       console.log(e);
     },
+    
+    countTextareaCapacity(event) {
+      const textarea = event.target;
+
+      console.log('ta', (textarea))
+      console.log('tas',  textarea.maxlength)
+      const lineHeight = parseInt(getComputedStyle(textarea).lineHeight);
+      console.log('lh', getComputedStyle(textarea).lineHeight)
+      const paddingTop = parseInt(getComputedStyle(textarea).paddingTop);
+      const paddingBottom = parseInt(getComputedStyle(textarea).paddingBottom);
+      const height = textarea.clientHeight - paddingTop - paddingBottom;
+      const rows = Math.floor(height / lineHeight);
+      const cols = this.defaultCols && !isNaN(this.defaultCols) ? Math.floor(textarea.clientWidth / this.defaultCols) : 0;
+      const capacity = cols * rows;
+      console.log(`Textarea capacity: ${capacity}, ${cols}, ${rows}`);
+    }
   },
   updated() {
     //this.resize();
@@ -135,6 +155,7 @@ export default {
       :type="type"
       v-model="val"
       :disabled="disabled"
+      @click="countTextareaCapacity"
     ></textarea>
   </div>
 </template>
