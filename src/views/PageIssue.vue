@@ -837,8 +837,7 @@ let methods = {
     })
     this.field_updated()
   },
-  get_time_entries_as_actions()
-  {
+  get_time_entries_as_actions(){
     
     return this.time_entries.map(function(t){
       let comment = t.comment ? (' с комментарием: ' + t.comment) : ''
@@ -853,6 +852,52 @@ let methods = {
         created_at: created_at
       }
     })
+  },
+  async implant(taskNum){
+    let [project_short_name, num] = taskNum.split('-')
+    if(!project_short_name || !num) return 'Ошибка инъекции - не найдена задача ' + taskNum
+    let project = await rest.run_method("read_projects", {short_name: project_short_name});
+    if(!project) return 'Ошибка инъекции - не найден проект' + project_short_name
+    console.log('proj', {num: num, project_uuid: project[0].uuid })
+    let implant_issue = await rest.run_method("read_issues", {num: num, project_uuid: project[0].uuid });
+    if(!implant_issue) return 'Ошибка инъекции - не найдена задача ' + taskNum
+
+    let implant_attachments = await rest.run_method("read_attachments", {
+      issue_uuid: implant_issue[0].uuid,
+    });
+    let implant_images = implant_attachments.filter((a) => a.type.indexOf("image/") > -1);
+
+    for(let i = 0; i < implant_images.length; i++){
+      this.implants_images.push(implant_images[i])
+    }
+
+    const fieldUuidToFind = "4a095ff5-c1c4-4349-9038-e3c35a2328b9";
+    for(let i = 0; i < implant_issue[0].values.length; i++){
+      
+      if (implant_issue[0].values[i].field_uuid === fieldUuidToFind) {
+        return implant_issue[0].values[i].value;
+      }
+    };
+
+    return ''
+  },
+  async add_implants() {
+    this.implants_images = []
+    const regex = /!implant\((.+?)\)/g;
+    const parts = this.current_description.split(regex);
+    const processedParts = [];
+
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 2 === 0) {
+        processedParts.push(parts[i]);
+      } else {
+        const task_num = parts[i];
+        const implantText = await this.implant(task_num);
+        processedParts.push(implantText);
+      }
+    }
+
+    this.current_description_with_implants = processedParts.join('');
   }
 };
 
@@ -928,6 +973,8 @@ const data = {
   is_in_dev_mode: false,
   must_reload: false,
   freeze_save: false,
+  current_description_with_implants: '',
+  implants_images: [],
   instance: {
     values: [
       {
@@ -1059,6 +1106,25 @@ mod.computed.actions_with_time_entries = function () {
   let time_entries_actions = this.get_time_entries_as_actions()
   return [...this.actions, ...time_entries_actions]
 };
+
+mod.computed.images_with_implants_images = function () {
+  if(!this.id) return []
+  this.images
+  this.implant_images
+  if(this.images == undefined) return []
+  if(this.implants_images == undefined) return this.images
+  return [...this.images, ...this.implants_images]
+};
+
+mod.watch = {
+    current_description: {
+      handler: function() {
+        this.add_implants();
+      },
+      deep: true
+    }
+  }
+
 
 mod.mounted = async function () {
   
@@ -1322,8 +1388,8 @@ export default mod;
 
 			<Transition name="element_fade">
         <KMarked v-if="!loading"
-          :val="current_description ? current_description : ''"
-          :images="images"
+          :val="current_description ? current_description_with_implants : ''"
+          :images="images_with_implants_images"
           :use_bottom_images="true"
         >
         </KMarked>
