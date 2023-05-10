@@ -117,6 +117,20 @@ async function init() {
     }
   });
 
+  app.get("/gpt", async (req: any, res: any) => {
+    const athena_ans = await axios({
+      method: 'get',
+      url: conf.athenaUrl + req.url,
+      headers: {
+        subdomain: req.headers.subdomain,
+        user_uuid: '-',
+      },
+    });
+
+    res.status(athena_ans.status);
+    res.send(athena_ans.data);
+  });
+
   app.listen(port, async () => {
     console.log(`Gateway running on port ${port}`);
   });

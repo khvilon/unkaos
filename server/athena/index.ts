@@ -17,7 +17,7 @@ app.use(cors());
 app.use(json());
 app.use(urlencoded({ extended: true }));
 
-const dataClass = new Data();
+
 const gpt = new Gpt();
 
 
@@ -51,12 +51,18 @@ app.get('/gpt', async (req, res) => {
 
 
   const userInput = req.query.userInput as string;
+  const userUuid = req.query.userUuid as string;
   const workspace = req.header('workspace') || 'oboz';
+  const dataClass = new Data(workspace);
+
+  let logUuid = await dataClass.log(userInput, userUuid)
 
   console.log('User request:', userInput + '\r\n');
 
   const data: any = await dataClass.get(workspace);
   const parsedCommand = await gpt.parseUserCommand(userInput, data.field);
+
+  dataClass.updateLogGpt(logUuid, JSON.stringify(parsedCommand, null, 2))
 
   console.log('AI answer:', JSON.stringify(parsedCommand, null, 2));
 
@@ -66,10 +72,16 @@ app.get('/gpt', async (req, res) => {
   }
 
   try{
-    const [updatedCommand, updatedHumanCommand] = dataClass.check(parsedCommand);
+    const [updatedCommand, updatedHumanCommand] = await dataClass.check(parsedCommand);
+    if(!updatedCommand || !updatedHumanCommand){
+      console.log('Unable to process gpt ans')
+      res.status(400).json({ error: 'Unable to process gpt ans' });
+      return
+    }
     console.log('AI updated answer:', JSON.stringify(updatedCommand, null, 2));
     console.log('AI updated human answer:', JSON.stringify(updatedHumanCommand, null, 2));
 
+    dataClass.updateLogAthena(logUuid, JSON.stringify({ gpt: updatedCommand, humanGpt: updatedHumanCommand }, null, 2))
     res.status(200).json({ gpt: updatedCommand, humanGpt: updatedHumanCommand });
   }
   catch(e){

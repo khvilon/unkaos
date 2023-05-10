@@ -1420,7 +1420,7 @@ export default mod;
         <KAttachment
             transition="element_fade"
             id="issue-attachments"
-            v-if="!loading"
+            v-if="!loading && id != ''"
             :attachments="attachments"
             @attachment_added="add_attachment"
             @attachment_deleted="delete_attachment"
@@ -1452,7 +1452,7 @@ export default mod;
           />
         </Transition>
         <CommentList
-            v-if="!loading && !edit_mode"
+            v-if="!loading && !edit_mode && id != ''"
             v-model:actions="actions_with_time_entries"
             :images="images"
         />
