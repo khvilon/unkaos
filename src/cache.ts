@@ -13,6 +13,12 @@ class Setting {
 // LocalStorage wrapper
 export default class cache {
 
+  static profile_listener_callback: any
+
+  static set_profile_listener(callback: any){
+    this.profile_listener_callback = callback
+  }
+
   static defaultSettings: Array<Setting> = [
     new Setting('theme',                    'dark',   false),
     new Setting('issues_query',             '',       false),
@@ -48,6 +54,7 @@ export default class cache {
   // Write object to localStorage as JSON string
   static setObject(settingName: string, object: any) {
     localStorage.setItem(settingName, JSON.stringify(object))
+    if(this.profile_listener_callback) this.profile_listener_callback(object)
   }
 
   // Write string to localStorage

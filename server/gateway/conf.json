@@ -1,4 +1,5 @@
 {
     "zeusUrl":"http://127.0.0.1:3006",
-    "cerberusUrl": "http://127.0.0.1:3005"
+    "cerberusUrl": "http://127.0.0.1:3005",
+    "athenaUrl": "http://127.0.0.1:3010"
 }

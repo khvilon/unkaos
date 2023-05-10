@@ -111,6 +111,12 @@ mod.methods.change_pass_var = function (val) {
   this.new_pass = val;
 };
 
+mod.methods.saved = function (users) {
+  if(!this.is_this_user()) return
+
+  cache.setObject("profile", users[0]);
+};
+
 export default mod;
 </script>
 
@@ -163,6 +169,7 @@ export default mod;
             class="table_card_footer_btn"
             :name="'Сохранить'"
             :func="'save_users'"
+            @button_ans="saved"
           />
           <KButton
             class="table_card_footer_btn"

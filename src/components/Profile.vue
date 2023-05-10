@@ -55,15 +55,20 @@ export default {
     this.lock_main_menu = cache.getObject("lock_main_menu");
 //document.addEventListener("click", this.close_menu);
 
-    try {
-      this.user = cache.getObject("profile");
-    } catch (err) {}
+    this.update_user()
+
+    cache.set_profile_listener(this.update_user)
   },
   updated() {
     //console.log('uuuuu')
   },
 
   methods: {
+    update_user(){
+      try {
+        this.user = cache.getObject("profile");
+      } catch (err) {}
+    },
     logout() {
       cache.setString("user_token", "");
       cache.setObject("profile", {});

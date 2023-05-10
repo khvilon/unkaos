@@ -1,5 +1,6 @@
 import sql from './sql';
 import tools from '../tools';
+import { isNumber } from 'util';
 
 const attributeHumanDictionary: Record<string, string> = {
   sprint: 'Спринт',
@@ -11,6 +12,26 @@ const attributeHumanDictionary: Record<string, string> = {
 
 export class Data {
   private data: any;
+  private workspace: string;
+
+  constructor(workspace: string) {
+    this.workspace = workspace;
+  }
+
+  public async log(prompt: string, user_uuid: string): Promise<string> {
+    let uuid = tools.uuidv4()
+    await sql`INSERT INTO  ${sql(this.workspace + '.gpt_logs')} (uuid, prompt, user_uuid) VALUES (${uuid}, ${prompt}, ${user_uuid})`
+    return uuid
+  }
+
+  public async updateLogGpt(uuid: string, gptAns: string){
+    await sql`UPDATE ${sql(this.workspace + '.gpt_logs')} SET gpt_answer = ${gptAns} WHERE uuid = ${uuid}`
+  }
+
+  public async updateLogAthena(uuid: string, athenaAns: string){
+    await sql`UPDATE ${sql(this.workspace + '.gpt_logs')} SET athena_answer = ${athenaAns} WHERE uuid = ${uuid}`
+  }
+  
 
   public async getFields(workspace: string): Promise<Array<object>> {
     const fields = await sql`SELECT f.name, f.available_values, ft.code AS type, f.uuid FROM  ${sql(
@@ -43,6 +64,13 @@ export class Data {
   public async getUsers(workspace: string): Promise<Array<object>> {
     const users = await sql`SELECT uuid, name, login FROM  ${sql(workspace + '.users')}`;
     return users;
+  }
+
+  private async getIssue(projectShortName: string, num: number){
+      const issue = await sql`SELECT i.uuid FROM  ${sql(this.workspace + '.issues')} i
+      LEFT JOIN ${sql(this.workspace + '.projects')} p ON p.uuid = i.project_uuid
+      WHERE i.num = ${num} AND LOWER(p.short_name) = LOWER(${projectShortName})`;
+      return issue[0];
   }
 
   public async get(workspace: string): Promise<object> {
@@ -85,11 +113,35 @@ export class Data {
     return -1;
   }
 
-  private checkValue(name: string, value: string, forFilter: boolean = true): Record<string, any> | null {
+  private async checkValue(name: string, value: string, forFilter: boolean = true) {
     const validAttributes = ['sprint', 'status', 'project', 'type', 'author'];
-    if (validAttributes.includes(name.toLowerCase())) {
+    if(name.toLowerCase() == 'parent' && !forFilter){
+
+ 
+      let [shortProjectName, numStr] = value.split('-')
+
+      if(!shortProjectName || !numStr) return null
+     
+      let num
+      try{
+        num = Number.parseInt(numStr)
+      }
+      catch{return null}
+      
+      let issue = await this.getIssue(shortProjectName, num)
+      
+      if(!issue || !issue.uuid) return null
+      return {
+        name: 'parent_uuid',
+        value:  issue.uuid,
+        human_name: 'Родительская задача',
+        human_value: value,
+      }
+    }
+    else if (validAttributes.includes(name.toLowerCase())) {
+      
       name = name.toLocaleLowerCase()
-      console.log(name)
+
       const values = this.data[name];
       const foundIndex = this.isMatchingIn(value, values.map((v: any) => v.name));
   
@@ -153,14 +205,14 @@ export class Data {
     return null;
   }
 
-  private processFilter(filter: any, checkValueFn: (name: string, value: string) => any, human: boolean = false): void {
+  private async processFilter(filter: any, checkValueFn: (name: string, value: string) => any, human: boolean = false) {
     if (filter && filter.conditions) {
       for (let i = 0; i < filter.conditions.length; i++) {
         const condition = filter.conditions[i];
         if (condition.conditions) {
-          this.processFilter(condition, checkValueFn, human);
+          await this.processFilter(condition, checkValueFn, human);
         } else {
-          const improvedCondition = checkValueFn(condition.name, condition.value);
+          const improvedCondition = await checkValueFn(condition.name, condition.value);
           if (improvedCondition) {
             condition.name = human && improvedCondition.human_name !== undefined
               ? improvedCondition.human_name
@@ -194,11 +246,11 @@ export class Data {
     return '';
   }
   
-  public check(command: any): any {
+  public async check(command: any) {
     const humanCommand = tools.obj_clone(command);
   
     for (let i = 0; i < command.set.length; i++) {
-      const result = this.checkValue(command.set[i].name, command.set[i].value, false);
+      const result = await this.checkValue(command.set[i].name, command.set[i].value, false);
       if (result) {
         command.set[i].name = result.name;
         command.set[i].value = result.value;
@@ -206,12 +258,12 @@ export class Data {
         humanCommand.set[i].value = result.human_value ? result.human_value : result.value;
       } else {
         console.log('Not found ' + JSON.stringify(command.set[i]));
-        return null;
+        return [null, null];
       }
     }
   
-    this.processFilter(command.filter, this.checkValue.bind(this));
-    this.processFilter(humanCommand.filter, this.checkValue.bind(this), true);
+    await this.processFilter(command.filter, this.checkValue.bind(this));
+    await this.processFilter(humanCommand.filter, this.checkValue.bind(this), true);
   
     // Convert the filter object to a query string
     const queryString = this.convertFilterToQueryString(command.filter);

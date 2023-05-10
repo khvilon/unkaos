@@ -2,6 +2,10 @@
 
 import matrix from "../matrix.ts";
 import rest from "../rest.ts";
+import tools from "../tools.ts";
+import cache from "../cache.ts";
+import conf from "../conf.ts";
+
 
 export default {
   props: {
@@ -18,7 +22,8 @@ export default {
       panelVisible: false,
       animationVisible: false,
       actionDone: false,
-      issues: []
+      issues: [],
+      parent_relation_type_uuid: '73b0a22e-4632-453d-903b-09804093ef1b'
     };
   },
   methods: {
@@ -31,9 +36,12 @@ export default {
       if(gptJson.command == 'update') ans += 'Изменить'
       else if(gptJson.command == 'create') ans += 'Создать'
 
-      if( gptJson.useChildren && gptJson.command == 'update') ans += ' дочерние задачи'
-      else if( gptJson.useChildren) ans += ' дочернюю задачу'
-      else if( gptJson.useCurrent && gptJson.command == 'update') ans += ' текущие/ую задачу'
+      if( gptJson.target == 'children' && gptJson.command == 'update') ans += ' дочерние задачи'
+      else if(gptJson.target == 'children') ans += ' дочернюю задачу'
+      else if( gptJson.target == 'parent' && gptJson.command == 'update') ans += ' родительские задачи'
+      else if(gptJson.target == 'parent') ans += ' родительскую задачу'
+      else if( gptJson.target == 'current' && gptJson.command == 'update') ans += ' текущие/ую задачу'
+      else if( gptJson.target == 'global' && gptJson.command == 'update') ans += ' задачи'
       else ans += ' задачу'
       
       if(gptJson.filter) ans += ', удовлетворяющие условию:\r\n' + gptJson.filter
@@ -51,19 +59,28 @@ export default {
     async getIssues(){
       this.issues = []
       let uuids = []
-      if(this.gptResult.useChildren){
-        const type_uuid = '73b0a22e-4632-453d-903b-09804093ef1b' //parent relation type
+      if(this.gptResult.target == 'children'){
+         //parent relation type
         for(let i = 0; i < this.context.length; i++){
-          let options = {issue0_uuid: this.context[i].uuid, type_uuid: type_uuid}
+          let options = {issue0_uuid: this.context[i].uuid, type_uuid: this.parent_relation_type_uuid}
           let relations = await rest.run_method('read_relations', options)
           for(let j = 0; j < relations.length; j++){
             uuids.push(relations[j].issue1_uuid)
           }
         }
       }
-      else if(this.gptResult.useCurrent){
+      else if(this.gptResult.target == 'current'){
        uuids = this.context.map((issue)=>issue.uuid)
       }
+      else if(this.gptResult.target == 'parent'){
+       uuids = this.context.map((issue)=>issue.parent_uuid)
+      }
+
+      if(this.gptResult.target != 'global' && (!uuids || uuids.length == 0)){
+        this.issues = []
+        return
+      }
+      
 
       let query = ''
       for(let i = 0; i < uuids.length; i++){
@@ -89,13 +106,15 @@ export default {
     async send(e) {
 
       if(e) e.preventDefault()
-
-      
+    
       this.runMatrix()
       this.animationVisible = true;
       
       try {
-        const response = await fetch('http://localhost:5010/gpt?userInput=' + this.userInput, {
+        let user = cache.getObject("profile");
+
+        //const response = await fetch('http://localhost:5010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
+        const response = await fetch(conf.base_url + 'gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
           method: 'GET',
         });
 
@@ -119,7 +138,7 @@ export default {
       }
     },
 
-    writeValue(issue, v){
+    async writeValue(issue, v){
 
       let parent
       if(v.value.toLowerCase() == 'inherit'){
@@ -132,7 +151,15 @@ export default {
       }
 
       console.log('>>>0', issue[v.name] != undefined, v.name, issue['sprint_uuid'], issue[v.name], issue)
-      if(v.name in issue) {
+
+      if(v.name == 'parent_uuid'){
+        let options_del = {issue1_uuid: issue.uuid, type_uuid: this.parent_relation_type_uuid}
+        let rel = await rest.run_method('read_relations', options_del)
+        if(rel && rel[0]) {await rest.run_method('delete_relations', {uuid: rel[0].uuid})}
+        let options_add = {uuid: tools.uuidv4(), issue0_uuid: v.value, issue1_uuid: issue.uuid, type_uuid: this.parent_relation_type_uuid}
+        await rest.run_method('upsert_relations', options_add)
+      }
+      else if(v.name in issue) {
         if(parent != undefined) issue[v.name] = parent[v.name]
         else issue[v.name] = v.value
       }
@@ -168,14 +195,14 @@ export default {
           console.log('issues', this.gptResult.set, this.issues[i],  this.gptResult )
           for(let j = 0; j < this.gptResult.set.length; j++){
             console.log('this.gptResult.set[j]', this.gptResult.set[j])
-            this.writeValue(this.issues[i], this.gptResult.set[j])
+            await this.writeValue(this.issues[i], this.gptResult.set[j])
           }
           console.log('update_issues', this.issues[i])
           await rest.run_method('update_issues', this.issues[i]);
         }
       }
       if(this.gptResult.command == 'create'){
-        
+        alert('Функция создания задачи через ИИ в разработке!')
       }
 
       this.actionDone = true

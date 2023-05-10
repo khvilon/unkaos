@@ -13,17 +13,15 @@ const openai = new OpenAIApi(configuration);
 const commandAnswerSchemma =
 `{
   "type": "object",
-  "required": ["command", "set"],
+  "required": ["command", "set", "target"],
   "properties": {
     "command": {
       "type": "string",
       "enum": ["create", "update"]
     },
-    "useCurrent": {
-      "type": "boolean"
-    },
-    "useChildren": {
-      "type": "boolean"
+    "target":{
+      "type": "string",
+      "enum": ["global", "current", "children"]
     },
     "filter": {
       "type": "object",
@@ -90,16 +88,21 @@ Note that verbs resembling a status applied to issues indicate setting the statu
 For example, to close an issue means just to change its status to a status like 'closed' without filtering, 
 and to put aside means to set the status to 'put aside'.
 
-The 'command' attribute represents the action that the user wants to perform. 
-context issues are current issues on the page or all issues.
-The 'useCurrent' attribute is true by default but is false if the user wants to use all issues of the tracker as context. 
-The 'useChildren' attribute is false by default, but is true if the user wants to apply the command to the children of the context issues.
+'command' attribute represents the action that the user wants to perform. 
+
+context issues are current issues on the page.
+'target' are issues to modify. by default it is the context issues. 
+it can be children of context current issues. 
+Asking to perform actions on all issues of the tracker should be represented by 'global' value for target.
+
 
 The 'set' attribute should contain an array of objects, each with a 'name' and 'value' attribute. 
 The 'name' attribute should indicate the name of the field that the user wants to set or update, 
 and the 'value' attribute should contain the new value for that field. If the field accepts a limited set of values, 
 the 'value' attribute must be one of the available values or set to 'inherit' to copy the value from the context issues (can be current or all).
-dont use 'parent...' value, use inherit instead. 
+dont use 'parent...' value, use inherit instead.
+also the name of 'set' item can be 'parent' if the user want to change the parent issue, in this case the value is the full number of new parent.
+the full number consists of the short project name, '-' and the numeric part.
 If the field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from the available values list.
 
 The 'filter' is a JSON-based query to select issues to be changed. If rules on selected issues are not specified, 
@@ -118,11 +121,14 @@ const checkDescr = `
 
 `
 
+//const model = 'gpt-3.5-turbo'
+const model = 'gpt-4'
+
 export class Gpt {
 
   private async ask(input: string, context: string = '', temper=0.3): Promise<string> {
     const completion = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
+      model: model,
       messages: [{role: "system", content: context},{role: "user", content: input}],
       temperature: temper,
     });
