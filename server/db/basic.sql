@@ -1,7 +1,3 @@
-
-
-CREATE DATABASE unkaos ENCODING = 'UTF8';
-
 -----------------------------------------------------------
 CREATE SCHEMA admin;
 
