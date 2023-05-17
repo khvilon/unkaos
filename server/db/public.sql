@@ -244,7 +244,7 @@ CREATE TABLE public.issue_actions (
     type_uuid uuid DEFAULT 'f53d8ecc-c26e-4909-a070-5c33e6f7a196'::uuid NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    deleted_at timestamp without time zone,
+    deleted_at timestamp without time zone
 );
 ALTER TABLE ONLY public.issue_actions
     ADD CONSTRAINT issue_actions_pkey PRIMARY KEY (uuid);
@@ -263,7 +263,7 @@ CREATE TABLE public.issue_statuses (
     is_end boolean,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    deleted_at timestamp without time zone,
+    deleted_at timestamp without time zone
 );
 ALTER TABLE ONLY public.issue_statuses
     ADD CONSTRAINT issue_statuses_pkey PRIMARY KEY (uuid);
@@ -277,7 +277,7 @@ CREATE TABLE public.issue_tags (
     text_color text,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    deleted_at timestamp without time zone,
+    deleted_at timestamp without time zone
 );
 ALTER TABLE ONLY public.issue_tags
     ADD CONSTRAINT issue_tags_pkey PRIMARY KEY (uuid);
