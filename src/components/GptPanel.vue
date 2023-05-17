@@ -18,7 +18,8 @@ export default {
     return {
       userInput: '',
       gptResultHuman: '',
-      gptResult: '',
+      gptResult: {},
+      gptResultHumanData: {},
       panelVisible: false,
       animationVisible: false,
       actionDone: false,
@@ -35,6 +36,7 @@ export default {
 
       if(gptJson.command == 'update') ans += 'Изменить'
       else if(gptJson.command == 'create') ans += 'Создать'
+      else if(gptJson.command == 'find') ans += 'Найти'
 
       if( gptJson.target == 'children' && gptJson.command == 'update') ans += ' дочерние задачи'
       else if(gptJson.target == 'children') ans += ' дочернюю задачу'
@@ -46,13 +48,17 @@ export default {
       
       if(gptJson.filter) ans += ', удовлетворяющие условию:\r\n' + gptJson.filter
 
-      ans += '\r\nзадав значения:\r\n'
-      for(let i = 0; i < gptJson.set.length; i++){
-        ans += gptJson.set[i].name + '=' + gptJson.set[i].value + '; '
+      if(gptJson.set){
+        ans += '\r\nзадав значения:\r\n'
+        for(let i = 0; i < gptJson.set.length; i++){
+          ans += gptJson.set[i].name + '=' + gptJson.set[i].value + '; '
+        }
       }
 
       if(!this.issues.length) ans += '\r\n\r\nНе найдено задач, удовлетворяющих условиям'
-      else ans += '\r\n\r\nНайдено задач: ' + this.issues.length + '. Выполнить?'
+      else ans += '\r\n\r\nНайдено задач: ' + this.issues.length + '. '
+      
+      ans += (gptJson.command == 'find') ? 'Перейти?' : 'Выполнить?'
 
       return ans
     },
@@ -113,8 +119,8 @@ export default {
       try {
         let user = cache.getObject("profile");
 
-        //const response = await fetch('http://localhost:5010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
-        const response = await fetch(conf.base_url + 'gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
+        const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
+        //const response = await fetch(conf.base_url + 'gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
           method: 'GET',
         });
 
@@ -126,6 +132,7 @@ export default {
         const data = await response.json();
         
         this.gptResult= data.gpt;
+        this.gptResultHumanData = data.humanGpt
         await this.getIssues()
         this.gptResultHuman = this.explain(data.humanGpt);
         
@@ -201,8 +208,13 @@ export default {
           await rest.run_method('update_issues', this.issues[i]);
         }
       }
-      if(this.gptResult.command == 'create'){
+      else if(this.gptResult.command == 'create'){
         alert('Функция создания задачи через ИИ в разработке!')
+      }
+      else if(this.gptResult.command == 'find'){
+        //alert(this.gptResultHumanData.filter)
+        console.log('>>>F', this.gptResultHumanData)
+        window.location.href = '/issues?query=' + encodeURIComponent(this.gptResultHumanData.filter)
       }
 
       this.actionDone = true

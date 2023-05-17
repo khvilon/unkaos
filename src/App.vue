@@ -8,6 +8,10 @@ import dict from "./dict.ts";
 import tools from "./tools.ts";
 import cache from "./cache.ts";
 
+import { useYandexMetrika } from 'yandex-metrika-vue3'
+
+
+
 let uri = window.location.href;
 
 let lang = tools.get_uri_param(uri, "lang");
@@ -48,6 +52,44 @@ export default {
       "this.$store.state[common][is_mobile]",
       this.$store.state["common"]["is_mobile"], this.$store.state["common"]["in_iframe"]
     );
+
+
+    /*
+
+    const yandexMetrika = useYandexMetrika()
+
+    console.log('ym0', yandexMetrika)
+
+    console.log('ym1', yandexMetrika.userParams())
+    console.log('ym11', yandexMetrika.userParams('browserInfo'))
+    console.log('ym12', yandexMetrika.userParams('os'))
+
+    console.log('ym2', yandexMetrika.device)
+
+    console.log('ym3', yandexMetrika.ip)
+
+    console.log('ym4', yandexMetrika.hit(uri))
+
+    console.log('ym00', yandexMetrika)
+
+    console.log('ym000', yandexMetrika.getClientID((id)=>console.log('id', id)))
+
+    yandexMetrika.setUserID('111')
+
+    console.log('ym0000', yandexMetrika)
+
+    console.log('ym00000', yandexMetrika.getClientID((id)=>console.log('id', id)))*/
+/*
+    const browserInfo = yandexMetrika.$metrika.getBrowserInfo();
+    const device = browserInfo.device;
+    const os = browserInfo.os;
+    const browser = browserInfo.browser;
+    const ip = yandexMetrika.$metrika.getClientIP();
+
+    console.log('>>>Device:', device);
+    console.log('>>>OS:', os);
+    console.log('>>>Browser:', browser);
+    console.log('>>>IP:', ip);*/
   },
   computed: {
     loading: function () {
