@@ -17,7 +17,7 @@ const commandAnswerSchemma =
   "properties": {
     "command": {
       "type": "string",
-      "enum": ["create", "update"]
+      "enum": ["create", "update", "find"]
     },
     "target":{
       "type": "string",
@@ -95,7 +95,6 @@ context issues are current issues on the page.
 it can be children of context current issues. 
 Asking to perform actions on all issues of the tracker should be represented by 'global' value for target.
 
-
 The 'set' attribute should contain an array of objects, each with a 'name' and 'value' attribute. 
 The 'name' attribute should indicate the name of the field that the user wants to set or update, 
 and the 'value' attribute should contain the new value for that field. If the field accepts a limited set of values, 
@@ -109,6 +108,13 @@ The 'filter' is a JSON-based query to select issues to be changed. If rules on s
 do not use the 'filter' attribute at all. Be careful not to use any rule that was not strictly asked. Use single quotes for filter strings, 
 and do not use quotes for field and attribute names in the filter query. 
 A field/attribute name can be only '=', '>', '<', or 'like' to its value. Logical conditions are only 'and', 'or'.
+like is used as in postgresql with % if needed. 
+When a prompt asks for issues about something, it means that either the field 'Название' or the field 'Описание' contains that. 
+Therefore, for this condition in the filter, use '(Название like ... or Описание like ...)', 
+taking into account that the operator for this expression is 'or', not 'and'. Make sure to enclose this expression in parenthesis. 
+Other conditions can be used as usual.
+
+dont use ' for attributes values, always use "
 
 Do not translate any values. Ignore unuseful information like emotions and use only the relevant information.
 
@@ -116,17 +122,12 @@ Available issue attributes are 'sprint', 'status', 'project', 'type', and 'autho
 The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Available issue fields are:
 `
 
-const checkDescr = `
-
-
-`
-
 //const model = 'gpt-3.5-turbo'
 const model = 'gpt-4'
 
 export class Gpt {
 
-  private async ask(input: string, context: string = '', temper=0.3): Promise<string> {
+  private async ask(input: string, context: string = '', temper=0.1): Promise<string> {
     const completion = await openai.createChatCompletion({
       model: model,
       messages: [{role: "system", content: context},{role: "user", content: input}],

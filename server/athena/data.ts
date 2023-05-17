@@ -52,7 +52,7 @@ export class Data {
   }
 
   public async getProjects(workspace: string): Promise<Array<object>> {
-    const projects = await sql`SELECT uuid, name FROM  ${sql(workspace + '.projects')}`;
+    const projects = await sql`SELECT uuid, name, short_name FROM  ${sql(workspace + '.projects')}`;
     return projects;
   }
 
@@ -133,7 +133,7 @@ export class Data {
       if(!issue || !issue.uuid) return null
       return {
         name: 'parent_uuid',
-        value:  issue.uuid,
+        value:  "'" + issue.uuid + "'",
         human_name: 'Родительская задача',
         human_value: value,
       }
@@ -143,12 +143,13 @@ export class Data {
       name = name.toLocaleLowerCase()
 
       const values = this.data[name];
-      const foundIndex = this.isMatchingIn(value, values.map((v: any) => v.name));
+      let foundIndex = this.isMatchingIn(value, values.map((v: any) => v.name));
+      if(name == 'project' && foundIndex == -1) foundIndex = this.isMatchingIn(value, values.map((v: any) => v.short_name));
   
       if (foundIndex > -1) {
         return {
           name: forFilter ? 'attr#' + name + '_uuid#' : name+ '_uuid',
-          value: forFilter ?  values[foundIndex].uuid + '#' : values[foundIndex].uuid,
+          value: forFilter ?  "'" + values[foundIndex].uuid + "'#" : "'" + values[foundIndex].uuid + "'",
           human_name: attributeHumanDictionary[name],
           human_value: values[foundIndex].name,
         }
@@ -156,19 +157,23 @@ export class Data {
       else if(!forFilter && value.toLocaleLowerCase() == 'inherit'){
         return {
           name: name+ '_uuid',
-          value: 'inherit',
+          value: "'inherit'",
           human_name: attributeHumanDictionary[name],
           human_value: 'Как у текущей',
         }
       }
+      else return null
     } else {
+
+      console.log('>>>', name, this.data.field)
+
       for (let i = 0; i < this.data.field.length; i++) {
         if (!this.isMatching(name, this.data.field[i].name)) continue;
 
         if(!forFilter && value.toLocaleLowerCase() == 'inherit'){
           return {
             name: this.data.field[i].name,
-            value: 'inherit',
+            value: "'inherit'",
             human_name: this.data.field[i].name,
             human_value: 'Как у текущей',
           }
@@ -186,14 +191,21 @@ export class Data {
             const updatedHumanValue = this.data.author.map((u: any) => u.name)[foundIndex];
             return {
               name:  forFilter ?  'fields#' + this.data.field[i].uuid + '#' : this.data.field[i].name,
-              value:  forFilter ?  updatedValue + '#' : updatedValue,
+              value:  forFilter ?  "'" + updatedValue + "'#" : "'" + updatedValue + "'",
               human_name: this.data.field[i].name,
               human_value: updatedHumanValue,
             };
           }
         }
   
-        if (!this.data.field[i].available_values) return { name: this.data.field[i].name, value: value };
+        if (!this.data.field[i].available_values){ 
+          return { 
+              name:  forFilter ?  'fields#' + this.data.field[i].uuid + '#' : this.data.field[i].name,
+              value: forFilter ?  "'" + value + "'#" : "'" + value + "'",
+              human_name: this.data.field[i].name,
+              human_value: "'" + value + "'",
+          }
+        }
   
         const values = this.data.field[i].available_values.split(',');
         const foundIndex = this.isMatchingIn(value, values);
@@ -236,7 +248,7 @@ export class Data {
         if (condition.conditions) {
           return this.convertFilterToQueryString(condition);
         } else {
-          return `${condition.name}${condition.operator}'${condition.value}'`;
+          return `${condition.name} ${condition.operator} ${condition.value}`;
         }
       });
   
@@ -249,16 +261,18 @@ export class Data {
   public async check(command: any) {
     const humanCommand = tools.obj_clone(command);
   
-    for (let i = 0; i < command.set.length; i++) {
-      const result = await this.checkValue(command.set[i].name, command.set[i].value, false);
-      if (result) {
-        command.set[i].name = result.name;
-        command.set[i].value = result.value;
-        humanCommand.set[i].name = result.human_name ? result.human_name : result.name;
-        humanCommand.set[i].value = result.human_value ? result.human_value : result.value;
-      } else {
-        console.log('Not found ' + JSON.stringify(command.set[i]));
-        return [null, null];
+    if(command.set){
+      for (let i = 0; i < command.set.length; i++) {
+        const result = await this.checkValue(command.set[i].name, command.set[i].value, false);
+        if (result) {
+          command.set[i].name = result.name;
+          command.set[i].value = result.value;
+          humanCommand.set[i].name = result.human_name ? result.human_name : result.name;
+          humanCommand.set[i].value = result.human_value ? result.human_value : result.value;
+        } else {
+          console.log('Not found ' + JSON.stringify(command.set[i]));
+          return [null, null];
+        }
       }
     }
   

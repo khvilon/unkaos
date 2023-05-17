@@ -9,6 +9,8 @@ import store from "./stores";
 import App from "./App.vue";
 import vSelect from "vue-select";
 
+import { initYandexMetrika } from 'yandex-metrika-vue3';
+
 import "vue-select/dist/vue-select.css";
 
 import StringInput from "./components/StringInput.vue";
@@ -57,6 +59,12 @@ const app = createApp(App);
 
 app.use(router);
 app.use(store);
+
+app.use(initYandexMetrika, {
+  id: 93544300,
+  router: router, // экземпляр Vue Router
+});
+
 
 app.component("v-select", vSelect);
 
