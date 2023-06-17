@@ -286,6 +286,7 @@ crud.load = async function () {
   crud.querys["issue_actions"][
     "read"
   ] = `SELECT * FROM issue_actions t1 WHERE deleted_at IS NULL $@1`;
+  crud.querys["issue_actions"]["delete"] = `UPDATE issue_actions SET archived_at = now() WHERE uuid = $@1`;
 
   crud.querys["attachments"]["read"] = `SELECT * FROM attachments T1 WHERE TRUE $@1`;
   crud.querys["attachments"]["delete"] = `DELETE FROM attachments WHERE uuid = $@1`;
@@ -443,8 +444,6 @@ crud.load = async function () {
     JOIN PROJECTS P
     ON P.UUID = I.PROJECT_UUID
     WHERE T1.DELETED_AT IS NULL $@1
-    
-
   `
 
   crud.querys["issue_formated_actions"] = {};
@@ -453,12 +452,14 @@ crud.load = async function () {
       T1.UUID,
       T1.ISSUE_UUID,
       U.NAME AS AUTHOR,
+      U.UUID AS AUTHOR_UUID,
       T1.VALUE,
-      AT.NAME,
-      T1.CREATED_AT
+      IAT.NAME,
+      T1.CREATED_AT,
+      T1.ARCHIVED_AT
     FROM ISSUE_ACTIONS T1
-    JOIN ISSUE_ACTIONS_TYPES AT
-    ON T1.TYPE_UUID = AT.UUID
+    JOIN ISSUE_ACTIONS_TYPES IAT
+    ON T1.TYPE_UUID = IAT.UUID
     JOIN USERS U
     ON T1.AUTHOR_UUID = U.UUID
     WHERE T1.DELETED_AT IS NULL $@1

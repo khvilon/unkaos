@@ -40,11 +40,13 @@
     <div class="issue-actions-list">
       <TransitionGroup name="element_fade">
         <Comment
-          v-for="action in sorted_filtered_actions"
+          v-for="(action, index) in sorted_filtered_actions"
+          :images="images"
+          :show-avatar="needToShowAvatar(action)"
           :key="action.uuid"
           :action="action"
-          style="margin-bottom: 10px"
-          :images="images"
+          :selected="index === selectedComment"
+          @selected="selectComment(index)"
         />
       </TransitionGroup>
     </div>
@@ -53,6 +55,7 @@
 
 <script>
 import cache from "../cache.ts";
+
 export default {
   name: "CommentList",
   data() {
@@ -62,6 +65,7 @@ export default {
       showEdits:       cache.getObject("actions_show_edits"),
       showTransitions: cache.getObject("actions_show_transitions"),
       sortOrder:       cache.getObject("actions_sort_order"),
+      selectedComment: null,
     };
   },
   props: {
@@ -125,6 +129,13 @@ export default {
       cache.setObject('actions_show_transitions', !this.showTransitions);
       this.showTransitions = !this.showTransitions;
     },
+    needToShowAvatar(action) {
+      return action.name === "💬";
+    },
+    selectComment(actionIndex) {
+      console.log("SELECTED: ", actionIndex)
+      this.selectedComment = actionIndex;
+    }
   },
 };
 </script>

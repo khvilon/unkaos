@@ -782,8 +782,7 @@ let methods = {
     if(d_vals[0] == undefined) return
     await rest.run_method("delete_issue_tags_selected", {uuid: d_vals[0].uuid})
   },
-  new_time_entry: async function()
-  {
+  new_time_entry: async function() {
     //console.log('new_time_entry')
     let author = cache.getObject("profile")
     this.selected_time_entry = 
@@ -797,13 +796,11 @@ let methods = {
     }
     this.time_entry_modal_visible = true
   },
-  edit_time_entry: async function(time_entry)
-  {
+  edit_time_entry: async function(time_entry) {
     this.selected_time_entry = time_entry
     this.time_entry_modal_visible = true
   },
-  ok_time_entry_modal: async function(time_entry)
-  {
+  ok_time_entry_modal: async function(time_entry) {
     if(!time_entry.uuid) {
       time_entry.uuid = tools.uuidv4()
       this.time_entries.push(time_entry)
@@ -817,15 +814,13 @@ let methods = {
     rest.run_method("upsert_time_entries", time_entry);
     this.recalc_spent_time()
   },
-  delete_time_entry: async function(time_entry)
-  {
+  delete_time_entry: async function(time_entry) {
     this.time_entry_modal_visible = false
     this.time_entries = this.time_entries.filter((t)=>t.uuid!=time_entry.uuid)
     rest.run_method("delete_time_entries", {uuid: time_entry.uuid});
     this.recalc_spent_time()
   },
-  recalc_spent_time()
-  {
+  recalc_spent_time() {
     let spent_time = 0
     for(let i = 0; i < this.time_entries.length; i++){
       spent_time += Number(this.time_entries[i].duration)
@@ -837,7 +832,7 @@ let methods = {
     })
     this.field_updated()
   },
-  get_time_entries_as_actions(){
+  get_time_entries_as_actions() {
     
     return this.time_entries.map(function(t){
       let comment = t.comment ? (' с комментарием: ' + t.comment) : ''

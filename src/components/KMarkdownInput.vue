@@ -349,7 +349,7 @@ export default {
           <Transition :name="transition">
             <RelativeBox
                 v-if="fontSelectorVisible"
-                :child_style="'margin: 2px 0 0 -2px'"
+                :childStyle="'margin: 2px 0 0 -2px'"
             >
             </RelativeBox>
           </Transition>
@@ -371,7 +371,7 @@ export default {
              :class="{ md_button_selected: imgSelectorVisible }">
           <Transition :name="transition">
             <RelativeBox
-                :child_style="'margin: 2px 0 0 -2px'"
+                :childStyle="'margin: 2px 0 0 -2px'"
                 v-if="imgSelectorVisible"
             >
               <KTabPanel>
