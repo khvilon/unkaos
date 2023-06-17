@@ -16,8 +16,8 @@ try {
 
 async function init() {
   const zeus_listeners = await axios.get(conf.zeusUrl + "/read_listeners");
-  console.log("Zeus listeners loaded: ")
-  console.table(zeus_listeners.data)
+  //console.log("Zeus listeners loaded: ")
+  //console.table(zeus_listeners.data)
 
   for (let i = 0; i < zeus_listeners.data.length; i++) {
     const method = zeus_listeners.data[i].method;
