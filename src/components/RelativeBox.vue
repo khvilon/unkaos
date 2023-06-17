@@ -6,7 +6,7 @@ export default {
       type: Boolean,
       default: true,
     },
-    child_style: {
+    childStyle: {
       type: String,
       default: ""
     }
@@ -20,7 +20,7 @@ export default {
         class="relative-box"
         title=""
         v-show="visible"
-        :style="child_style"
+        :style="childStyle"
     >
       <slot></slot>
     </div>
