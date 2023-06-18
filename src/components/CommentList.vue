@@ -133,7 +133,6 @@ export default {
       return action.name === "💬";
     },
     selectComment(actionIndex) {
-      console.log("SELECTED: ", actionIndex)
       this.selectedComment = actionIndex;
     }
   },

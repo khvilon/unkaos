@@ -1,6 +1,7 @@
 <script>
 import tools from "../tools";
 import rest from "@/rest";
+import cache from "@/cache";
 
 export default {
   name: "Comment",
@@ -37,6 +38,13 @@ export default {
     },
     commentIsArchived() {
       return (this.action.archived_at) !== null;
+    },
+    removalAvailable() {
+      const currentUserUuid = cache.getObject("profile").uuid
+      return (this.hovered || this.selected)
+          && currentUserUuid === this.action.author_uuid
+          && this.action.name === '💬'
+          && !this.commentIsArchived
     }
   },
   methods: {
@@ -55,7 +63,7 @@ export default {
     deleteComment() {
       this.action.archived_at = new Date().toISOString();
       rest.run_method("delete_issue_actions", {uuid: this.action.uuid});
-    }
+    },
   },
 };
 </script>
@@ -91,7 +99,7 @@ export default {
         </div>
         <div
             class="comment-actions"
-            v-if="(hovered || selected) && action.name === '💬' && !commentIsArchived"
+            v-if="removalAvailable"
         >
           <div
                @click.self="toggleSettingsBox"
