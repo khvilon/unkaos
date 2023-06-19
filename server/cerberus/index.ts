@@ -6,7 +6,8 @@ const md5 = require('md5');
 
 import data from "./data";
 import security from "./security";
-import axios from "axios";
+const axios = require('axios');
+//import axios from "axios";
 import conf from "./conf.json";
 
 
