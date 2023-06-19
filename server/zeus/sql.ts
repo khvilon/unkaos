@@ -3,6 +3,7 @@ import postgres from "postgres";
 import tools from "../tools";
 import dbConf from '../db_conf.json';
 
+console.log('dbConf', dbConf)
 
 var sql:any = {}
 

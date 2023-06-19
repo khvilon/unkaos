@@ -14,7 +14,7 @@ const getWorkspaces = async function(){
         SELECT schema_name
         FROM information_schema.schemata
         WHERE schema_name NOT IN 
-        ('pg_toast', 'pg_catalog', 'information_schema', 'admin', 'public')`
+        ('information_schema', 'admin', 'public') AND schema_name NOT LIKE 'pg_%'`
 
     if(ans == null || ans.length < 1) return []
 
