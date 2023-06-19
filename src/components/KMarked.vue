@@ -51,7 +51,7 @@ export default {
         return html
       }
       html = this.moveWidthInfos(html)
-      console.log('html', html)
+      //console.log('html', html)
 
       let found_images = []
 

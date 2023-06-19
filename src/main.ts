@@ -54,6 +54,7 @@ import IWatcher from "./icons/IWatcher.vue";
 import RelativeBox from "./components/RelativeBox.vue";
 
 import GptPanel from "./components/GptPanel.vue";
+import KAvatar from "@/components/KAvatar.vue";
 
 const app = createApp(App);
 
@@ -106,6 +107,7 @@ app.component("KMarkdownInput", KMarkdownInput);
 app.component("IWatcher", IWatcher)
 app.component("RelativeBox", RelativeBox)
 app.component("GptPanel", GptPanel)
+app.component("KAvatar", KAvatar)
 
 const clickOutside = {
     beforeMount: (el, binding) => {

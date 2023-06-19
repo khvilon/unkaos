@@ -30,8 +30,8 @@ app.use(express.json({limit: '150mb'}));
 app.use(express.raw({limit: '150mb'}));
 app.use(express.urlencoded({limit: '150mb', extended: true}));
 
-const handleRequest = async function(req:any, res:any)
-{
+const handleRequest = async function(req:any, res:any) {
+    // console.log("request: ", req)
     let req_uuid = tools.uuidv4()
     dbLoger.writeLogIncoming(req_uuid,  req)
 
@@ -68,8 +68,7 @@ const handleRequest = async function(req:any, res:any)
     res.send(ans)
 }
 
-const init = async function()
-{
+const init = async function() {
     await sql.init()
     await crud.load()
  
