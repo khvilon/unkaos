@@ -16,6 +16,8 @@ try {
 
 async function init() {
   const zeus_listeners = await axios.get(conf.zeusUrl + "/read_listeners");
+  //console.log("Zeus listeners loaded: ")
+  //console.table(zeus_listeners.data)
 
   for (let i = 0; i < zeus_listeners.data.length; i++) {
     const method = zeus_listeners.data[i].method;
@@ -32,7 +34,7 @@ async function init() {
         cerberus_ans = await axios({
           method: "get",
           url: conf.cerberusUrl + "/check_session",
-          headers: req.headers,
+          headers: { token: req.headers.token, subdomain: req.headers.subdomain },
           validateStatus: function (status) {
             return true; // Разрешить, только если код состояния меньше 500
           },
