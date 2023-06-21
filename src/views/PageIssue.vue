@@ -105,6 +105,8 @@ let methods = {
       created_at: new Date(),
       value: val,
       author: cache.getObject("profile").name,
+      author_uuid: cache.getObject("profile").uuid,
+      archived_at: null
     };
     console.log("New action added:", new_action);
     this.actions.unshift(new_action);
