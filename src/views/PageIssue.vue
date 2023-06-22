@@ -791,6 +791,7 @@ let methods = {
     {
       comment: '',
       author: [author],
+      archived_at: null,
       author_uuid: author.uuid,
       issue_uuid: this.issue[0].uuid,
       duration: 0,
