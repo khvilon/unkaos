@@ -223,7 +223,7 @@ a {
 }
 
 .marked-container img {
-  max-width: -webkit-fill-available;
+  max-width: 100%;
   box-sizing: border-box;
   outline: var(--text-color) solid 1px;
   cursor: zoom-in;
