@@ -275,6 +275,7 @@ a {
     "Courier New", Courier, monospace;
   font-size: 95%;
   color: inherit;
+  text-wrap: wrap;
 }
 
 .marked-container code {
