@@ -94,7 +94,7 @@ export default {
     <div class="comment-right-section">
       <div class="comment-header-container">
         <div class="comment-header" @click="copyToClipboard">
-          <strong>{{ action.author }}</strong>
+          <strong class="comment-author">{{ action.author }}</strong>
           <label class="comment-date-time">{{ dateTime }}</label>
         </div>
         <div
@@ -163,22 +163,29 @@ export default {
 .comment-header-container {
   display: flex;
   justify-content: space-between;
+  margin-bottom: -3px;
 }
 
 .comment-header {
+  height: 16px;
   display: flex;
-  text-align: center;
 }
 
 .comment-header * {
+  line-height: 0.7;
   margin-right: 5px;
   cursor: pointer;
 }
 
+.comment-author {
+  align-self: flex-start;
+}
+
 .comment-date-time {
+  line-height: 11px;
   opacity: 60%;
   font-size: 11px;
-  align-self: flex-end;
+  align-self: flex-start;
 }
 
 .comment-actions {
