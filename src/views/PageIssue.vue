@@ -842,7 +842,8 @@ let methods = {
       let created_at = t.created_at ? t.created_at : new Date()
       return{
         uuid: t.uuid,
-        created_at: t.created_at, 
+        created_at: t.created_at,
+        archived_at: null,
         author: t.author[0].name,
         name: 'time_entry', 
         value: val,
