@@ -89,7 +89,11 @@ async function init() {
       const cerberus_ans = await axios({
         method: "get",
         url: conf.cerberusUrl + "/get_token",
-        headers: req.headers,
+        headers: {
+          subdomain: req.headers.subdomain,
+          email: req.headers.email,
+          password: req.headers.password
+        },
       });
       res.status(cerberus_ans.status);
       res.send(cerberus_ans.data);
