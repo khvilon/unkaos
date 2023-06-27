@@ -1,10 +1,10 @@
-import Security from "./security";
 import axios from "axios";
+import express from 'express';
+import Security from "./security";
 import conf from "./conf.json";
 import Data from "./data";
 import User from "./types/User";
 
-const express = require('express');
 const app = express()
 const port = 3005
 
@@ -44,7 +44,7 @@ export default class Rest {
     const request = req.url.split('/')[1]
     if (request == 'get_token') {
       await this.handleGetToken(req, workspace, res);
-      return;
+      return
     } else {
       const token = req.headers.token
       if (!token) {
@@ -58,18 +58,19 @@ export default class Rest {
         res.send({ message: 'Пользовательский токен не валиден' });
         return
       }
-      if (request == 'check_session') res.send(user)
-      else if (request == 'upsert_password') {
+      if (request == 'check_session') {
+        res.send(user)
+      } else if (request == 'upsert_password') {
         const params = req.body
         if (user.uuid != params.user.uuid) {
           res.status(403);
           res.send({ message: 'Нельзя изменять пароль других пользователей' });
           return
         }
-        await Security.setPassword(workspace, params.user, params.password)
-      }
-      else if (request == 'upsert_password_rand') {
+        await Security.setUserPassword(workspace, params.user, params.password)
+      } else if (request == 'upsert_password_rand') {
         await this.upsertPasswordRand(workspace, user, req, res);
+        return
       } else {
         res.status(501)
         res.send("Несуществующий метод")
@@ -121,7 +122,7 @@ export default class Rest {
     let token = await Security.newToken(workspace, email, pass)
     if (token == null) {
       res.status(401);
-      res.send({message: 'Не верное имя пользователя или пароль'});
+      res.send({message: 'Неверное имя пользователя или пароль'});
     } else {
       res.send(token)
     }
