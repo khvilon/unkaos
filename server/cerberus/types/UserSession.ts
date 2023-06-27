@@ -1,4 +1,5 @@
-export default interface Session {
+export default interface UserSession {
+  uuid: string,
   user_uuid: string,
   token: string,
   token_created_at: Date,

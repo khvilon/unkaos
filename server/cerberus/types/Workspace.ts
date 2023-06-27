@@ -1,8 +1,8 @@
 import User from "./User";
-import Session from "./Session";
+import UserSession from "./UserSession";
 
 export default interface Workspace {
   name: string,
   users: User[],
-  sessions: Session[]
+  sessions: UserSession[]
 }

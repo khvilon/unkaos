@@ -1,8 +1,7 @@
 import sql from "./sql";
 import Workspace from "./types/Workspace";
-import Session from "./types/Session";
+import UserSession from "./types/UserSession";
 import User from "./types/User";
-// @ts-ignore
 import md5 from "md5";
 import {Row} from "postgres";
 
@@ -15,12 +14,12 @@ export default class Data {
   async init() {
     this.workspaces = await this.getWorkspaces()
     for (const workspace of this.workspaces) {
-      await this.fillWorkspaceUsers(workspace.name)
-      await this.fillWorkspaceSessions(workspace.name)
+      await this.updateWorkspaceUsers(workspace.name)
+      await this.updateWorkspaceSessions(workspace.name)
       console.log(`Loaded workspace: ${workspace.name}, users: ${workspace.users.length}, sessions: ${workspace.sessions.length}`)
     }
-    this.checkExpired()
-    await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect) // bind to keep context
+    this.removeExpiredTokens()
+    await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect) // bind to keep `this` reference
   }
 
   async getWorkspaces() : Promise<Workspace[]> {
@@ -39,8 +38,8 @@ export default class Data {
     })
   }
 
-  async fillWorkspaceUsers(workspaceName: string) {
-    this.workspaces.find(ws => ws.name === workspaceName)!.users = (await sql`
+  async updateWorkspaceUsers(workspaceName: string) {
+    this.workspaces.find(ws => ws.name === workspaceName)!.users = (await sql<User>`
       SELECT 
           U.uuid,
           U.name,
@@ -48,65 +47,54 @@ export default class Data {
           U.mail,
           U.telegram
       FROM ${sql(workspaceName + '.users')} U
-      WHERE U.active AND U.deleted_at IS NULL
-    `).map((user: any) => {
-      return {
-        uuid: user.uuid,
-        name: user.name,
-        login: user.login,
-        mail: user.mail,
-        telegram: user.telegram
-      } as User
-    })
+      WHERE U.active 
+      AND U.deleted_at IS NULL
+    `)
   }
 
-  async fillWorkspaceSessions(workspaceName: string) {
-    this.workspaces.find(ws => ws.name === workspaceName)!.sessions = (await sql`
+  async updateWorkspaceSessions(workspaceName: string) {
+    this.workspaces.find(ws => ws.name === workspaceName)!.sessions = (await sql<UserSession>`
       SELECT 
+        US.uuid,
         US.user_uuid,
         US.token,
         US.created_at AS token_created_at,
-        US.created_at + ${this.tokenExpirationTimeSec} * interval '1 second' as expires_at
+        (US.created_at + ${this.tokenExpirationTimeSec} * interval '1 second') as expires_at
       FROM ${sql(workspaceName + '.user_sessions')} US
       LEFT JOIN ${sql(workspaceName + '.users')} U
-      ON US.user_uuid = U.uuid
+        ON US.user_uuid = U.uuid
       WHERE U.active 
-      AND U.deleted_at IS NULL 
-      AND US.created_at + ${this.tokenExpirationTimeSec} * interval '1 second' > NOW() 
-    `).map((result: any) => {
-      return {
-        user_uuid: result.user_uuid,
-        token: result.token,
-        token_created_at: result.token_created_at.toUTCString(),
-        expires_at: result.expires_at.toUTCString()
-      } as Session
-    })
+        AND U.deleted_at IS NULL 
+        AND (US.created_at + ${this.tokenExpirationTimeSec} * interval '1 second') > NOW() 
+        AND US.deleted_at IS NULL
+      ORDER BY US.CREATED_AT
+    `)
   }
 
-  checkExpired() {
+  removeExpiredTokens() {
     // removes expired user tokens
     const now = new Date()
     this.workspaces.forEach((workspace: Workspace, workspaceIndex: number) => {
-      workspace.sessions.forEach((session: Session, sessionIndex: number) => {
+      workspace.sessions.forEach((session: UserSession, sessionIndex: number) => {
         if (session.expires_at !== undefined && session.expires_at < now) {
-          this.workspaces[workspaceIndex].sessions = this.workspaces[workspaceIndex].sessions.splice(sessionIndex, 1)
-          console.log("Removed expired token of session: ", session)
+          this.workspaces[workspaceIndex].sessions.splice(sessionIndex, 1)
+          console.log("Removed expired token: ", session.token)
         }
       })
     })
-    setTimeout(() => { this.checkExpired() }, this.checkExpiredIntervalMs)
+    setTimeout(() => { this.removeExpiredTokens() }, this.checkExpiredIntervalMs)
   }
 
   async handleNotify(row: Row, { command, relation, _key, _old }: any) {
     if (relation.table == 'user_sessions' && command == 'insert') {
       row.expires_at = new Date(Date.parse(row.created_at) + this.tokenExpirationTimeSec * 1000 )
-      this.workspaces.find(ws => ws.name === relation.schema)?.sessions?.push(row as Session)
+      this.workspaces.find(ws => ws.name === relation.schema)?.sessions?.push(row as UserSession)
     } else if (relation.table == 'users') {
       // is users table is updated, update users of a workspace
-      await this.fillWorkspaceUsers(relation.schema)
+      await this.updateWorkspaceUsers(relation.schema)
     } else if (relation.table == 'user_sessions') {
       // is user_sessions table is updated, update sessions of a workspace
-      await this.fillWorkspaceSessions(relation.schema)
+      await this.updateWorkspaceSessions(relation.schema)
     }
   }
 

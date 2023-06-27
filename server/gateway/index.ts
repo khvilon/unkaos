@@ -62,13 +62,7 @@ async function init() {
         res.send(cerberus_ans.data);
         return;
       }
-
-      //console.log('cerberus_ans.data', cerberus_ans.data)
-
       req.headers.user_uuid = cerberus_ans.data.uuid;
-
-      // req.headers.user_name = cerberus_ans.data.name
-
       const zeus_ans = await axios({
         data: req.body,
         method: method,
@@ -78,7 +72,6 @@ async function init() {
           user_uuid: cerberus_ans.data.uuid,
         },
       });
-
       res.status(zeus_ans.status);
       res.send(zeus_ans.data);
     });
@@ -99,13 +92,12 @@ async function init() {
       res.send(cerberus_ans.data);
     } catch (error: any) {
       console.log('/get_token error: '+JSON.stringify(error))
-      res.status(error?.response?.status | 500)
-      res.send( {message: error?.response?.data?.message ?? 'Internal Server Error' })
+      res.status(error?.response?.status ?? 500)
+      res.send({ message: error?.response?.data?.message ?? 'Internal Server Error' })
     }
   });
 
   app.post("/upsert_password_rand", async (req: any, res: any) => {
-
     console.log('upsert_password_rand', req.body)
     try {
       const cerberus_ans = await axios({
@@ -118,12 +110,13 @@ async function init() {
       res.send(cerberus_ans.data);
     } catch (error : any) {
       console.log('/upsert_password_rand error: '+JSON.stringify(error))
-      res.status(error?.response?.status | 500)
+      res.status(error?.response?.status ?? 500)
       res.send( {message: error?.response?.data?.message ?? 'Internal Server Error' })
     }
   });
 
   app.get("/gpt", async (req: any, res: any) => {
+    // TODO protect this method with cerberus
     const athena_ans = await axios({
       method: 'get',
       url: conf.athenaUrl + req.url,
