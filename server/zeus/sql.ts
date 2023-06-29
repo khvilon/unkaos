@@ -55,7 +55,7 @@ sql.query = async function(subdomain:string, query_arr:any, params_arr:any){
             continue
         }
 
-        try{
+        try {
             if(params != undefined && params != null && params.length > 0){
                 for(let j in params){
                     if(params[j] == 'NOW()') params[j] = new Date()//workspaceSqls[subdomain]('NOW()')
@@ -66,7 +66,7 @@ sql.query = async function(subdomain:string, query_arr:any, params_arr:any){
         }
         catch(e){
             console.log('sql error', e, query, params)
-            ans = {error: 'Ошибка запроса в БД', http_code: 400}
+            ans = {error: 'Ошибка запроса в БД', trace: e, http_code: 400}
         }
     }        
     
