@@ -9,6 +9,8 @@ import store from "./stores";
 import App from "./App.vue";
 import vSelect from "vue-select";
 
+import { initYandexMetrika } from 'yandex-metrika-vue3';
+
 import "vue-select/dist/vue-select.css";
 
 import StringInput from "./components/StringInput.vue";
@@ -51,10 +53,19 @@ import KMarkdownInput from "./components/KMarkdownInput.vue";
 import IWatcher from "./icons/IWatcher.vue";
 import RelativeBox from "./components/RelativeBox.vue";
 
+import GptPanel from "./components/GptPanel.vue";
+import KAvatar from "@/components/KAvatar.vue";
+
 const app = createApp(App);
 
 app.use(router);
 app.use(store);
+
+app.use(initYandexMetrika, {
+  id: 93544300,
+  router: router, // экземпляр Vue Router
+});
+
 
 app.component("v-select", vSelect);
 
@@ -95,5 +106,28 @@ app.component("EditTagModal", EditTagModal);
 app.component("KMarkdownInput", KMarkdownInput);
 app.component("IWatcher", IWatcher)
 app.component("RelativeBox", RelativeBox)
+app.component("GptPanel", GptPanel)
+app.component("KAvatar", KAvatar)
+
+const clickOutside = {
+    beforeMount: (el, binding) => {
+      el.clickOutsideEvent = event => {
+        // here I check that click was outside the el and his children
+        if (!(el == event.target || el.contains(event.target))) {
+          // and if it did, call method provided in attribute value
+          binding.value();
+        }
+      };
+      document.addEventListener("click", el.clickOutsideEvent);
+    },
+    unmounted: el => {
+      document.removeEventListener("click", el.clickOutsideEvent);
+    },
+  };
+
+app.directive("click-outside", clickOutside)
+
 
 app.mount("#app");
+
+

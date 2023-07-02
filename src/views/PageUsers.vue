@@ -52,6 +52,16 @@ const data = {
       type: "String",
     },
     {
+      label: "Телеграм",
+      id: "telegram",
+      type: "String",
+    },
+    {
+      label: "Discord",
+      id: "discord",
+      type: "String",
+    },
+    {
       label: "Активен",
       id: "active",
       type: "Boolean",
@@ -99,6 +109,12 @@ mod.methods.change_password = function () {
 mod.methods.change_pass_var = function (val) {
   console.log(val);
   this.new_pass = val;
+};
+
+mod.methods.saved = function (users) {
+  if(!this.is_this_user()) return
+
+  cache.setObject("profile", users[0]);
 };
 
 export default mod;
@@ -153,6 +169,7 @@ export default mod;
             class="table_card_footer_btn"
             :name="'Сохранить'"
             :func="'save_users'"
+            @button_ans="saved"
           />
           <KButton
             class="table_card_footer_btn"

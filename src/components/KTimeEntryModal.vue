@@ -48,7 +48,7 @@ export default {
     time_entry_ok() {
       this.save_try_done = true;
 
-      if(!this.modif_time_entry.work_date || !this.modif_time_entry.duration || this.modif_time_entry.duration < 1) return
+      if(!this.modif_time_entry.work_date || !this.modif_time_entry.duration || this.modif_time_entry.duration <= 0) return
       this.$emit("ok_time_entry_modal", this.modif_time_entry);
     },
     close() {
@@ -72,7 +72,7 @@ export default {
       ></i>
 
       <div 
-      v-if="save_try_done && (!modif_time_entry.work_date || !modif_time_entry.duration || modif_time_entry.duration < 1)"
+      v-if="save_try_done && (!modif_time_entry.work_date || !modif_time_entry.duration || modif_time_entry.duration <= 0)"
       class="save-alert">{{ !modif_time_entry.work_date ? alert_text[0] : alert_text[1] }}</div>
 
 

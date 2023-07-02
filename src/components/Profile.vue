@@ -53,29 +53,34 @@ export default {
       if (cache.getString("theme") === this.themes[i].val) this.theme = this.themes[i];
     }
     this.lock_main_menu = cache.getObject("lock_main_menu");
-    document.addEventListener("click", this.close_menu);
+//document.addEventListener("click", this.close_menu);
 
-    try {
-      this.user = cache.getObject("profile");
-    } catch (err) {}
+    this.update_user()
+
+    cache.set_profile_listener(this.update_user)
   },
   updated() {
     //console.log('uuuuu')
   },
 
   methods: {
+    update_user(){
+      try {
+        this.user = cache.getObject("profile");
+      } catch (err) {}
+    },
     logout() {
       cache.setString("user_token", "");
       cache.setObject("profile", {});
       this.$router.push("/login");
     },
     close_menu(e) {
-      console.log('ccc', e);
-      if(e.target.localName == "img") return
-      for (let i in e.path) {
+    //  console.log('ccc', e);
+    //  if(e.target.localName == "img") return
+    //  for (let i in e.path) {
         //if (e.path[i].className == "profile") return;
-        localName
-      }
+    //    localName
+    //  }
       this.menu_visible = false;
     },
     set_theme(theme) {
@@ -110,7 +115,7 @@ export default {
 </script>
 
 <template>
-  <div class="profile" v-if="common.is_in_workspace">
+  <div class="profile" v-if="common.is_in_workspace" v-click-outside="close_menu">
     <div class="profile-top">
       <img @click="toggle_menu()" :src="get_avatar()"  />
       <div class="profile-username">{{ user.name }}</div>

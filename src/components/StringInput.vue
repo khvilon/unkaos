@@ -33,6 +33,12 @@ export default {
 
   emits: ["update_parent_from_input", "updated"],
 
+  methods: {
+    blur:function() {
+      this.$emit("updated", this.value);
+    },
+  },
+
   watch: {
     value: function (val, oldVal) {
       //console.log(val, oldVal, this.id, this.parent_name);
@@ -68,9 +74,7 @@ export default {
       //data[this.id] = val
       //this.$store.commit('push_update_' + this.parent_name, data)
     },
-    blur() {
-      this.$emit("updated");
-    },
+    
   },
 };
 </script>

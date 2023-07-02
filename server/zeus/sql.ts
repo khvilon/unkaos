@@ -1,8 +1,26 @@
 
 import postgres from "postgres";
 import tools from "../tools";
-import dbConf from '../db_conf.json';
 
+let dbConf: any;
+
+try {
+  const dbConfFile = require('../db_conf.json');
+  dbConf = dbConfFile;
+} catch (error) {
+  dbConf = {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE
+  };
+}
+
+
+
+
+console.log('dbConf', dbConf)
 
 var sql:any = {}
 
@@ -54,7 +72,7 @@ sql.query = async function(subdomain:string, query_arr:any, params_arr:any){
             continue
         }
 
-        try{
+        try {
             if(params != undefined && params != null && params.length > 0){
                 for(let j in params){
                     if(params[j] == 'NOW()') params[j] = new Date()//workspaceSqls[subdomain]('NOW()')
@@ -65,7 +83,7 @@ sql.query = async function(subdomain:string, query_arr:any, params_arr:any){
         }
         catch(e){
             console.log('sql error', e, query, params)
-            ans = {error: 'Ошибка запроса в БД', http_code: 400}
+            ans = {error: 'Ошибка запроса в БД', trace: e, http_code: 400}
         }
     }        
     

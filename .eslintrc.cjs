@@ -24,6 +24,6 @@ module.exports = {
   ],
   "rules": {
     "linebreak-style": ["warn", "unix"],
-    "max-len": ["warn", { "code": 100 }]
+    "max-len": ["warn", { "code": 120 }]
   }
 }

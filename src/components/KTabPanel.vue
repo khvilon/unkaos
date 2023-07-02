@@ -16,7 +16,7 @@ export default {
   },
   methods: {
     select_tab(event) {
-      this.selected = event.path[0].innerHTML;
+      this.selected = event.target.innerHTML;
     },
   },
 };

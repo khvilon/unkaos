@@ -5,6 +5,8 @@ import rest from "../rest.ts";
 import cache from "../cache";
 import wsMon from "../wsMon.ts";
 
+import { nextTick } from "vue";
+
 let methods = {
   pasted: async function (e) {
     console.log(e);
@@ -90,7 +92,7 @@ let methods = {
     if (uuid === undefined) {
       uuid = tools.uuidv4();
     }
-    if (this.issue[0] === undefined || this.issue[0].actions === undefined)
+    if (this.issue[0] === undefined || this.actions === undefined)
       return;
     const action_icons = {
       comment: "💬",
@@ -103,9 +105,11 @@ let methods = {
       created_at: new Date(),
       value: val,
       author: cache.getObject("profile").name,
+      author_uuid: cache.getObject("profile").uuid,
+      archived_at: null
     };
     console.log("New action added:", new_action);
-    this.issue[0].actions.unshift(new_action);
+    this.actions.unshift(new_action);
   },
   send_comment: async function () {
     let params = {};
@@ -119,14 +123,21 @@ let methods = {
       //const spend_time_field_uuid = '60d53a40-cda9-4cb2-a207-23f8236ee9a7'
       let h = Number(this.comment.substr(2));
       if (!isNaN(h)) {
-        let field = this.get_field_by_name("Spent time");
-        if (field != null) {
-          if (field.value == null) field.value = 0;
-          field.value = Number(field.value) + h;
-          let ans = await rest.run_method("upsert_field_values", field);
-          console.log("sptime", field);
-          params.value = "Добавил " + h + "ч работы на задачу";
+
+        let author = cache.getObject("profile")
+        let time_entry = {
+          comment: '',
+          author: [author],
+          author_uuid: author.uuid,
+          issue_uuid: this.issue[0].uuid,
+          duration: h,
+          work_date: new Date()
         }
+        
+        this.ok_time_entry_modal(time_entry)
+        
+        return;
+        
       }
     }
 
@@ -213,6 +224,7 @@ let methods = {
     this.$store.state["issue"]["issue"][0].status_name = status_name;
     this.$store.state["issue"]["filtered_issue"][0].status_name = status_name;
 
+    if(this.freeze_save) return;
     this.add_action_to_history("transition", "->" + status_name);
 
     let ans = await this.$store.dispatch("save_issue");
@@ -285,6 +297,7 @@ let methods = {
       });
     }
     await this.$store.dispatch("save_issue");
+    this.clear_issue_draft()
     if (this.old_project_uuid && this.old_project_uuid !== this.issue[0].project_uuid) {
       //this.saved_new()
       let ans = await rest.run_method("read_issues", {uuid: this.issue[0].uuid});
@@ -307,6 +320,7 @@ let methods = {
     //setTimeout(this.init, 1000)
   },
   saved_new: function () {
+    this.clear_issue_draft()
     window.location.href = "/issue/" + this.issueProjectNum;
   },
   deleted: function (issue) {
@@ -464,6 +478,7 @@ let methods = {
     });
     this.watch = ans.length > 0;
 
+    await this.load_actions()
     await this.load_attachments()
     await this.load_tags()
     await this.load_time_entries()
@@ -474,12 +489,24 @@ let methods = {
 
     this.old_project_uuid = this.issue[0].project_uuid
 
-    this.current_description = this.get_field_by_name('Описание').value
+    let issues_drafts = cache.getObject('issues_drafts')
+   // console.log('>>>>>>>>>>>>>>issues_drafts', issues_drafts, issues_drafts[this.issue[0].uuid].description)
+    if(issues_drafts[this.issue[0].uuid] && 
+      this.get_field_by_name("Описание").value != issues_drafts[this.issue[0].uuid].description){
+      this.saved_descr = this.get_field_by_name("Описание").value;
+      this.saved_name = this.get_field_by_name("Название").value;
+      this.saved_project_uuid = this.issue[0].project_uuid
+      this.current_description = issues_drafts[this.issue[0].uuid].description
+      this.get_field_by_name('Описание').value = issues_drafts[this.issue[0].uuid].description
+      this.issue[0].updated_at = issues_drafts[this.issue[0].uuid].updated_at
+      this.edit_mode = true;
+    }
+    else this.current_description = this.get_field_by_name("Описание").value;
 
-    /*if(this.url_params.status_uuid != undefined)
-    {
-      console.log('preset status', this.url_params.status_uuid)
-    }*/
+    this.scrollToElementByUrl()
+
+    // ans = await rest.run_method("read_time_report", 
+    //{author_uuid: '9965cb94-17dc-46c4-ac1e-823857289e98', date_from:'2023-01-02', date_to:'2023-01-13'});
 
     console.log('this.url_params', this.url_params)
     if(uri_params.parent_uuid != undefined)
@@ -506,14 +533,42 @@ let methods = {
     this.title;
   },
 
-  async load_tags()
-  {
+
+  scrollToElementByUrl(){
+    const hash = window.location.hash;
+    
+    if (!hash) return
+       
+    const targetRef = hash.substr(1);
+    const target = document.getElementById(targetRef)
+
+    if(!target) return
+
+    const waitCommentsLoaded = 200
+
+    nextTick(() => {
+      setTimeout(()=>{
+        target.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }, waitCommentsLoaded)
+    })
+  },
+
+  async load_tags(){
     this.issue_tags = (await rest.run_method("read_issue_tags", {})).sort(tools.compare_obj('name'));
     await this.read_selected_tags()
   },
 
-  async load_attachments()
-  {
+  async load_actions(){
+    this.actions = (await rest.run_method("read_issue_formated_actions", 
+      {issue_uuid: this.issue[0].uuid}));
+  },
+
+  async load_attachments(){
     this.attachments = await rest.run_method("read_attachments", {
       issue_uuid: this.issue[0].uuid,
     });
@@ -527,8 +582,7 @@ let methods = {
     });
   },
 
-  async update_issue(msg)
-  {
+  async update_issue(msg){
     this.freeze_save = true
     const freeze_timeout = 1000//ms
     setTimeout(()=>{this.freeze_save=false}, freeze_timeout)
@@ -589,6 +643,7 @@ let methods = {
   },
   edit_current_description: function (val) {
     this.current_description = val;
+    this.update_issue_draft(val)
   },
   enter_edit_mode: function () {
     if (this.edit_mode) {
@@ -606,7 +661,20 @@ let methods = {
     this.get_field_by_name("Название").value = this.saved_name;
     this.issue[0].project_uuid = this.saved_project_uuid
     this.current_description = this.saved_descr;
+    this.clear_issue_draft()
     this.edit_mode = false;
+  },
+  update_issue_draft: function(val)
+  {
+    let issues_drafts = cache.getObject('issues_drafts')
+    issues_drafts[this.issue[0].uuid] = {description: val, updated_at: this.issue[0].updated_at}
+    cache.setObject('issues_drafts', issues_drafts)
+  },
+  clear_issue_draft: function()
+  {
+    let issues_drafts = cache.getObject('issues_drafts')
+    delete issues_drafts[this.issue[0].uuid]
+    cache.setObject('issues_drafts', issues_drafts)
   },
   check_issue_changed: async function() {
     let ans = await rest.run_method("read_issue", { uuid: this.issue[0].uuid });
@@ -639,6 +707,7 @@ let methods = {
     console.log("type_updated", new_type_uuid);
 
     if(this.id=='') return
+    if(this.freeze_save) return;
 
     //await this.update_data({ uuid: this[this.name][0].uuid });
     //await this.$store.dispatch("get_" + this.name, { uuid: this[this.name][0].uuid });
@@ -704,14 +773,14 @@ let methods = {
     if(d_vals[0] == undefined) return
     await rest.run_method("delete_issue_tags_selected", {uuid: d_vals[0].uuid})
   },
-  new_time_entry: async function()
-  {
+  new_time_entry: async function() {
     //console.log('new_time_entry')
     let author = cache.getObject("profile")
     this.selected_time_entry = 
     {
       comment: '',
       author: [author],
+      archived_at: null,
       author_uuid: author.uuid,
       issue_uuid: this.issue[0].uuid,
       duration: 0,
@@ -719,25 +788,104 @@ let methods = {
     }
     this.time_entry_modal_visible = true
   },
-  edit_time_entry: async function(time_entry)
-  {
+  edit_time_entry: async function(time_entry) {
     this.selected_time_entry = time_entry
     this.time_entry_modal_visible = true
   },
-  ok_time_entry_modal: async function(time_entry)
-  {
+  ok_time_entry_modal: async function(time_entry) {
     if(!time_entry.uuid) {
       time_entry.uuid = tools.uuidv4()
       this.time_entries.push(time_entry)
+      this.actions_with_time_entries_rk++
+      console.log('>>>>>>>>>>>>>rrr', this.get_time_entries_as_actions())
+     // this.time_entries_as_actions
+     // this.actions_with_time_entries
     }
     this.time_entry_modal_visible = false
+    
     rest.run_method("upsert_time_entries", time_entry);
+    this.recalc_spent_time()
   },
-  delete_time_entry: async function(time_entry)
-  {
+  delete_time_entry: async function(time_entry) {
     this.time_entry_modal_visible = false
     this.time_entries = this.time_entries.filter((t)=>t.uuid!=time_entry.uuid)
     rest.run_method("delete_time_entries", {uuid: time_entry.uuid});
+    this.recalc_spent_time()
+  },
+  recalc_spent_time() {
+    let spent_time = 0
+    for(let i = 0; i < this.time_entries.length; i++){
+      spent_time += Number(this.time_entries[i].duration)
+    }
+    this.issue[0].spent_time = spent_time
+    this.$store.commit("id_push_update_issue", {
+      id: 'spent_time',
+      val: spent_time,
+    })
+    this.field_updated()
+  },
+  get_time_entries_as_actions() {
+    
+    return this.time_entries.map(function(t){
+      let comment = t.comment ? (' с комментарием: ' + t.comment) : ''
+      let val = 'Списал на задачу ' + t.duration + 'ч за ' + tools.format_date(t.work_date) + comment
+      let created_at = t.created_at ? t.created_at : new Date()
+      return{
+        uuid: t.uuid,
+        created_at: t.created_at,
+        archived_at: null,
+        author: t.author[0].name,
+        name: 'time_entry', 
+        value: val,
+        created_at: created_at
+      }
+    })
+  },
+  async implant(taskNum){
+    let [project_short_name, num] = taskNum.split('-')
+    if(!project_short_name || !num) return 'Ошибка инъекции - не найдена задача ' + taskNum
+    let project = await rest.run_method("read_projects", {short_name: project_short_name});
+    if(!project) return 'Ошибка инъекции - не найден проект' + project_short_name
+    console.log('proj', {num: num, project_uuid: project[0].uuid })
+    let implant_issue = await rest.run_method("read_issues", {num: num, project_uuid: project[0].uuid });
+    if(!implant_issue) return 'Ошибка инъекции - не найдена задача ' + taskNum
+
+    let implant_attachments = await rest.run_method("read_attachments", {
+      issue_uuid: implant_issue[0].uuid,
+    });
+    let implant_images = implant_attachments.filter((a) => a.type.indexOf("image/") > -1);
+
+    for(let i = 0; i < implant_images.length; i++){
+      this.implants_images.push(implant_images[i])
+    }
+
+    const fieldUuidToFind = "4a095ff5-c1c4-4349-9038-e3c35a2328b9";
+    for(let i = 0; i < implant_issue[0].values.length; i++){
+      
+      if (implant_issue[0].values[i].field_uuid === fieldUuidToFind) {
+        return implant_issue[0].values[i].value;
+      }
+    };
+
+    return ''
+  },
+  async add_implants() {
+    this.implants_images = []
+    const regex = /!implant\((.+?)\)/g;
+    const parts = this.current_description.split(regex);
+    const processedParts = [];
+
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 2 === 0) {
+        processedParts.push(parts[i]);
+      } else {
+        const task_num = parts[i];
+        const implantText = await this.implant(task_num);
+        processedParts.push(implantText);
+      }
+    }
+
+    this.current_description_with_implants = processedParts.join('');
   }
 };
 
@@ -745,6 +893,7 @@ const data = {
   parent_relation_type_uuid: "73b0a22e-4632-453d-903b-09804093ef1b",
   current_description: "",
   tags: [],
+  actions: [],
   card_open: false,
   edit_mode: false,
   attachments: [],
@@ -761,6 +910,7 @@ const data = {
   collumns: [],
   formated_relations: [],
   time_entries: [],
+  actions_with_time_entries_rk: 0,
   inputs: [
     {
       label: "Воркфлоу",
@@ -811,6 +961,9 @@ const data = {
   is_in_dev_mode: false,
   must_reload: false,
   freeze_save: false,
+  full_size_image: null,
+  current_description_with_implants: '',
+  implants_images: [],
   instance: {
     values: [
       {
@@ -934,6 +1087,34 @@ mod.computed.available_transitions = function () {
   //console.log('statusesstatusesstatuses', this.statuses_to)
 };
 
+
+
+mod.computed.actions_with_time_entries = function () {
+  if(!this.id) return []
+  this.actions_with_time_entries_rk;
+  let time_entries_actions = this.get_time_entries_as_actions()
+  return [...this.actions, ...time_entries_actions]
+};
+
+mod.computed.images_with_implants_images = function () {
+  if(!this.id) return []
+  this.images
+  this.implant_images
+  if(this.images == undefined) return []
+  if(this.implants_images == undefined) return this.images
+  return [...this.images, ...this.implants_images]
+};
+
+mod.watch = {
+    current_description: {
+      handler: function() {
+        this.add_implants();
+      },
+      deep: true
+    }
+  }
+
+
 mod.mounted = async function () {
   
   this.is_in_dev_mode = (process.env.NODE_ENV === "development")
@@ -965,6 +1146,8 @@ mod.mounted = async function () {
   this.get_formated_relations();
 
   this.init();
+
+  
 };
 
 export default mod;
@@ -990,6 +1173,14 @@ export default mod;
         :time_entry="selected_time_entry"
       />
     </Transition>
+      <div
+        v-if="full_size_image"
+        @click="full_size_image=null"
+        class="issue_full_size_image" 
+      >
+      <img :src="full_size_image"/>
+    </div>
+
     <div id="issue_top_panel" class="panel"   >
 
     <div class="issue-top-buttons">
@@ -1161,6 +1352,7 @@ export default mod;
             @paste="pasted"
             @attachment_added="add_attachment"
             @attachment_deleted="delete_attachment"
+            @save="save"
         />
 
         <div id="issue_footer_buttons"
@@ -1193,8 +1385,8 @@ export default mod;
 
 			<Transition name="element_fade">
         <KMarked v-if="!loading"
-          :val="current_description ? current_description : ''"
-          :images="images"
+          :val="current_description ? current_description_with_implants : ''"
+          :images="images_with_implants_images"
           :use_bottom_images="true"
         >
         </KMarked>
@@ -1225,10 +1417,11 @@ export default mod;
         <KAttachment
             transition="element_fade"
             id="issue-attachments"
-            v-if="!loading"
+            v-if="!loading && id != ''"
             :attachments="attachments"
             @attachment_added="add_attachment"
             @attachment_deleted="delete_attachment"
+            @img_zoomed="(data)=>full_size_image=data"
         >
         </KAttachment>
         <KMarkdownInput
@@ -1257,9 +1450,14 @@ export default mod;
           />
         </Transition>
         <CommentList
-            v-if="!loading && !edit_mode"
-            v-model:actions="issue[0].actions"
+            v-if="!loading && !edit_mode && id != ''"
+            v-model:actions="actions_with_time_entries"
             :images="images"
+        />
+
+        <GptPanel
+          v-if="!loading && id !== '' && !$store.state['common']['is_mobile']"
+          :context="issue"
         />
       </div>
       <div
@@ -1357,6 +1555,19 @@ export default mod;
               @updated="field_updated(val)"
             >
             </SelectInput>
+
+            <NumericInput
+              label="Затраченное время"
+              v-if="!loading"
+              class="issue-spent-time-input"
+              :value="issue[0].spent_time"
+              :parent_name="'issue'"
+              :disabled="true"
+              id="spent_time"
+              @updated="field_updated(val)"
+              @click="new_time_entry()"
+            >
+            </NumericInput>
 
             <component
               v-bind:is="input.type + 'Input'"
@@ -1686,6 +1897,37 @@ $code-width: 160px;
 
 .issue-author-container .string-input{
   width: 130px !important;
+}
+
+.issue-spent-time-input *{
+  cursor: pointer !important;
+}
+
+.issue-spent-time-input:hover input{
+  color: green !important;
+}
+
+
+.issue_full_size_image {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+}
+
+
+/* Стили для картинки */
+.issue_full_size_image img {
+  //display: block; /* Чтобы убрать возможные пробелы, вызванные inline-размещением */
+  width: auto; /* Растягиваем картинку на 100% ширины контейнера */
+  height: auto; /* Позволяем высоте меняться пропорционально ширине, чтобы не искажать картинку */
+  max-width: 100%;
+  max-height: 100%;
 }
 
 

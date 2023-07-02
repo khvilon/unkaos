@@ -15,29 +15,14 @@ export default {
     images: {
       type: Array,
       default: [],
-    },
-    use_bottom_images: {
-      type: Boolean,
-      default: false,
-    },
+    }
   },
-  computed:
-  {
-    images_len: function(){return this.images.length}
+  computed:{
+    imagesLen(){ return this.images.length }
   },
   methods: {
-    get_palette_param: function (name) {
-      let theme = "[theme=" + cache.getString("theme") + "]";
-      let val = palette.split(theme);
-      val = val[1];
-      val = val.split(name + ": ");
-      val = val[1];
-      val = val.split(";")[0];
-      return val;
-    },
-
-    move_width_infos(html)
-    {
+ 
+    moveWidthInfos(html){
       const w_search_text = '/>{width='
       const max_val_length = 20
       const max_image_count = 1000;
@@ -58,15 +43,15 @@ export default {
       return html
     },
 
-    inject_images(html, start_search) {
+    injectImages(html, start_search) {
 
       if(this.wait_for_recalc_count > 1)
       {
         this.wait_for_recalc_count--
         return html
       }
-      html = this.move_width_infos(html)
-      //console.log(html)
+      html = this.moveWidthInfos(html)
+      //console.log('html', html)
 
       let found_images = []
 
@@ -108,13 +93,20 @@ export default {
       return new_html
     },
 
+    updateExternalLinksToNewTab: (html) => {
+
+      html = html.replaceAll('<a href="http', '<a target="_ blank" href="http');
+    
+      return html
+    },
+
     md: function (input) {
       let html = marked(input);
-      html = html.replaceAll('<a href="http', '<a target="_ blank" href="http');
-      html = this.inject_images(html);
+      html = this.updateExternalLinksToNewTab(html)
+      html = this.injectImages(html);
       return html;
     },
-    recalc_md: async function(val)
+    recalcMd: async function(val)
     {
       //let start = new Date()
       this.md_value = this.md(val);
@@ -135,7 +127,7 @@ export default {
       xhtml: true,
     });
 
-    this.images_len
+    this.imagesLen
     
     nextTick(() => {
       this.md_value = this.md(this.val);
@@ -156,20 +148,39 @@ export default {
       nextTick(() => {
         this.wait_for_recalc_count++;
 
-        setTimeout(this.recalc_md, 0, val)
+        setTimeout(this.recalcMd, 0, val)
       })
     },
     deep: true
   },
   images: {
     handler: function (val, oldVal) {
-      this.val.toString()
+      nextTick(() => {
+        this.wait_for_recalc_count++;
+
+        setTimeout(this.recalcMd, 0, this.val)
+      })
+     // this.val.toString()
       // console.log('viiim', val, oldVal)
       // this.md_value = this.md(this.val);
     },
     deep: true,
       immediate: true
   },
+  imagesLen:  {
+    handler: function (val, oldVal) {
+      nextTick(() => {
+        this.wait_for_recalc_count++;
+
+        setTimeout(this.recalcMd, 0, this.val)
+      })
+     // this.val.toString()
+      // console.log('viiim', val, oldVal)
+      // this.md_value = this.md(this.val);
+    },
+      immediate: true
+  },
+
   },
 };
 </script>
@@ -212,7 +223,7 @@ a {
 }
 
 .marked-container img {
-  max-width: -webkit-fill-available;
+  max-width: 100%;
   box-sizing: border-box;
   outline: var(--text-color) solid 1px;
   cursor: zoom-in;
@@ -264,6 +275,7 @@ a {
     "Courier New", Courier, monospace;
   font-size: 95%;
   color: inherit;
+  text-wrap: wrap;
 }
 
 .marked-container code {

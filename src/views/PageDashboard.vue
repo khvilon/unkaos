@@ -3,6 +3,9 @@ import page_helper from "../page_helper.ts";
 
 import IssuesTable from "../gadgets/IssuesTable.vue";
 import IssuesTableConfig from "../gadgets/IssuesTableConfig.vue";
+import TimeReport from "../gadgets/TimeReport.vue";
+import TimeReportConfig from "../gadgets/TimeReportConfig.vue";
+
 
 import d from "../dict.ts";
 import rest from "../rest";
@@ -16,11 +19,17 @@ let methods = {
     if (
       this.selected_dashboard == undefined ||
       this.dashboard == undefined ||
-      this.dashboard[0] != undefined
+      this.dashboard[0] == undefined
     ) {
-      setTimeout(this.init, 5000);
+      setTimeout(this.init, 200);
       return;
     }
+
+    this.gadgets = await rest.run_method('read_gadgets', {dashboard_uuid: this.dashboard[0].uuid})
+
+    this.gadgets = this.gadgets.filter((g)=>!g.deleted_at)
+
+  
 
     console.log(
       "sselected_dashboard1",
@@ -52,9 +61,16 @@ let methods = {
       x: e.clientX,
       y: e.clientY,
     };
+
+    this.shadow_gadget.width = this.resize_data.gadget.width
+    this.shadow_gadget.height = this.resize_data.gadget.height
+    this.shadow_gadget.x0 = this.resize_data.gadget.x0
+    this.shadow_gadget.y0 = this.resize_data.gadget.y0
   },
   end_resize: async function (e) {
     if (!this.resize_data) return;
+
+    
 
     let diff;
     if (
@@ -87,7 +103,7 @@ let methods = {
 
     console.log("resize1", this.resize_data.border);
 
-    await await rest.run_method("update_gadgets", this.resize_data.gadget);
+    await rest.run_method("update_gadgets", this.resize_data.gadget);
 
     this.resize_data = null;
 
@@ -96,9 +112,97 @@ let methods = {
   stop_resize: function () {
     this.resize_data = null;
   },
-  show_resize: function () {
+  show_resize: function (e) {
+
+    console.log('show_resize')
     if (!this.resize_data) return;
+
+    
+
+    let diff;
+    if (
+      this.resize_data.border == "right" ||
+      this.resize_data.border == "left"
+    ) {
+      diff = e.clientX - this.resize_data.x;
+      diff = diff / this.uh;
+    } else {
+      diff = e.clientY - this.resize_data.y;
+      diff = diff / this.uv;
+    }
+
+    if (diff > 0) diff = Math.ceil(diff);
+    else diff = Math.floor(diff);
+
+    console.log("resize0", diff);
+
+
+    this.shadow_gadget.width = this.resize_data.gadget.width
+    this.shadow_gadget.height = this.resize_data.gadget.height
+    this.shadow_gadget.x0 = this.resize_data.gadget.x0
+    this.shadow_gadget.y0 = this.resize_data.gadget.y0
+
+    if (this.resize_data.border == "right") {
+      this.shadow_gadget.width += diff;
+    } else if (this.resize_data.border == "bottom") {
+      this.shadow_gadget.height += diff;
+    } else if (this.resize_data.border == "left") {
+      this.shadow_gadget.x0 += diff;
+      this.shadow_gadget.width -= diff;
+    } else if (this.resize_data.border == "top") {
+      this.shadow_gadget.y0 += diff;
+      this.shadow_gadget.height -= diff;
+    }
+
+
+
+
   },
+  save_gadget: function(e, gadget){
+    console.log('saving_gadget',e)
+    gadget.config_open = false;
+    gadget.name = e.name
+    gadget.config = JSON.stringify(e.config)
+    console.log('save_gadget',gadget)
+    rest.run_method('upsert_gadgets', gadget)
+  },
+  new_gadget:  function(type){
+    if(type.code != 'TimeReport') return
+
+    let gadget = {
+      uuid: tools.uuidv4(),
+      dashboard_uuid: this.dashboard[0].uuid,
+      x0: 0,
+      width: 8,
+      height: 3,
+      y0: this.max_y,
+      type_uuid: type.uuid,
+      type: [type],
+      name:  type.name
+    }
+
+    //console.log('new_gadget', gadget)
+    this.gadgets.push(gadget)
+
+    rest.run_method('upsert_gadgets', gadget)
+
+    this.gadget_types_modal_visible = false;
+  },
+  delete_gadget: function(gadget){
+    this.gadgets = this.gadgets.filter((g)=>g.uuid != gadget.uuid)
+    //gadget.deleted_at = new Date()
+    rest.run_method('delete_gadgets', {uuid: gadget.uuid})
+    //rest.run_method('upsert_gadgets', gadget)
+  },
+  delete_dashboard: async function(){
+    await rest.run_method('delete_dashboards', {uuid: this.dashboard[0].uuid})
+    window.location.href = "/dashboards"
+  },
+  update_name: async function(name){
+    this.dashboard[0].name = name
+    this.dashboard[0].table_name = 'dashboards'
+    await rest.run_method('update_dashboards', this.dashboard[0])
+  }
 };
 
 const data = {
@@ -110,13 +214,15 @@ const data = {
   instance: {
     name: "",
   },
-
+  gadgets: [],
   v_units: 8,
   h_units: 8,
   uv: 0,
   uh: 0,
   virtual_border_width: 10,
   gadget_padding: 5,
+  gadget_types_modal_visible: false,
+  shadow_gadget: {x0:0, y0:0, width: 0, height: 0},
   collumns: [
     {
       name: "№",
@@ -193,6 +299,12 @@ const data = {
       id: "",
       dictionary: "issue_types",
     },
+    {
+      label: "gadget_types",
+      id: "",
+      dictionary: "gadget_types",
+    },
+
   ],
 };
 
@@ -217,27 +329,32 @@ mod.computed.title = function () {
   }
 };
 
+mod.computed.max_y = function () {
+  let max_y = 0;
+  for (let i in this.gadgets) {
+    let end =
+      Number(this.gadgets[i].y0) +
+      Number(this.gadgets[i].height);
+      max_y = Math.max(max_y, end);
+
+
+  }
+  return max_y
+}
+
 mod.computed.total_height = function () {
   this.uv;
   if (this.dashboard == undefined || this.dashboard[0] == undefined) return 0;
 
-  let max_height = 0;
-  for (let i in this.dashboard[0].gadgets) {
-    let end =
-      Number(this.dashboard[0].gadgets[i].y0) +
-      Number(this.dashboard[0].gadgets[i].height);
-    max_height = Math.max(max_height, end);
-
-    this.dashboard[0].gadgets[i].config_open = false;
-  }
-
-  console.log("aaa1", (max_height + this.v_units / 2) * this.uv);
-  return (max_height + this.v_units / 2) * this.uv;
+  
+  return (this.max_y + this.v_units / 2) * this.uv;
 };
 
 mod.components = {
   IssuesTable,
   IssuesTableConfig,
+  TimeReport,
+  TimeReportConfig,
 };
 
 export default mod;
@@ -245,6 +362,27 @@ export default mod;
 
 <template ref="dashboard">
   <div>
+
+
+    <div v-if="gadget_types_modal_visible" class = gadget-types-modal-container>
+      <div class="modal-bg" @mousedown.self="gadget_types_modal_visible=false">
+        <div class="panel modal gadget-types-modal">
+          <div class="gadget-types-cells">
+            <div
+            v-for="(gadget_type) in gadget_types"
+            @click="new_gadget(gadget_type)"
+            class="gadget-types-cell"
+            :class="{'gadget-types-cell-disabled' : gadget_type.code != 'TimeReport'}"
+            >
+            <span>{{ gadget_type.name }}</span>
+            </div>
+          </div>
+          <KButton name="Отменить" @click="gadget_types_modal_visible=false" />
+        </div>
+      </div>
+    </div>
+
+
     <div class="panel topbar">
       <div
         style="
@@ -261,9 +399,15 @@ export default mod;
           :parent_name="'dashboard'"
           class="dashboard-name-input"
           :value="get_json_val(dashboard[0], 'name')"
+          @updated="update_name"
         >
         </StringInput>
 
+        <i
+          class="bx bx-extension top-menu-icon-btn add-gadget-btn"
+          @click="gadget_types_modal_visible=true"
+        >
+        </i>
         <i
           class="bx bx-trash top-menu-icon-btn delete-dashboard-btn"
           @click="delete_dashboard()"
@@ -281,17 +425,27 @@ export default mod;
         @mousemove="show_resize"
       >
         <div
-          v-for="(gadget, index) in dashboard == undefined ||
-          dashboard[0] == undefined
-            ? []
-            : dashboard[0].gadgets"
+          v-bind:style="{
+            width: Number(uh) * Number(shadow_gadget.width) + 'px',
+            height: Number(uv) * Number(shadow_gadget.height) + 'px',
+            'margin-left': Number(uh) * Number(shadow_gadget.x0) + 'px',
+            'margin-top': Number(uv) * Number(shadow_gadget.y0) + 'px',
+          }"
+          class="shadow-gadget-container"
+          v-show="resize_data && resize_data.gadget"
+        >
+          <div class="shadow-gadget"></div>
+        </div>
+        <div
+          v-for="(gadget, index) in gadgets"
           v-bind:style="{
             width: Number(uh) * Number(gadget.width) + 'px',
             height: Number(uv) * Number(gadget.height) + 'px',
             'margin-left': Number(uh) * Number(gadget.x0) + 'px',
-            'margin-top': Number(uv) * Number(0) + 'px',
+            'margin-top': Number(uv) * Number(gadget.y0) + 'px',
           }"
           class="gadget"
+          :class="{'resized-gadget': resize_data && resize_data.gadget && resize_data.gadget.uuid == gadget.uuid}"
         >
           <div class="gadget-head">
             <span>{{ gadget.name }}</span>
@@ -299,17 +453,25 @@ export default mod;
               class="bx bx-dots-horizontal-rounded gadget-btn"
               @click="gadget.config_open = !gadget.config_open"
             ></i>
+            <i
+              class="bx bx-trash gadget-btn"
+              @click="delete_gadget(gadget)"
+            ></i>
           </div>
           <div class="gadget-body">
             <component
               v-show="!gadget.config_open"
-              v-bind:is="gadget.type_code"
+              v-bind:is="gadget.type[0].code"
+              :config="gadget.config ? JSON.parse(gadget.config) : {}"
             ></component>
 
             <component
               v-show="gadget.config_open"
-              v-bind:is="gadget.type_code + 'Config'"
+              v-bind:is="gadget.type[0].code + 'Config'"
               :name="gadget.name"
+              :config="gadget.config ? JSON.parse(gadget.config) : {}"
+              @cancel="gadget.config_open=false"
+              @ok="save_gadget($event, gadget)"
             ></component>
           </div>
           <div class="gadget-borders">
@@ -420,6 +582,22 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   padding: 5px;
 }
 
+.shadow-gadget-container{
+
+  position: absolute;
+  padding: 5px;
+}
+
+.shadow-gadget{
+  background-color: var(--on-button-icon-color);
+  opacity: 0.3;
+  width: 100%;
+  height: 100%;
+  border-color: var(--border-color);
+  border-radius: var(--border-radius);
+  border-style: none;
+}
+
 .gadget-head {
   height: $input-height;
   background-color: var(--table-row-color);
@@ -444,6 +622,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
 
 .gadget-head span {
   padding-left: 10px;
+  width: 100%;
 }
 
 .gadget-body {
@@ -451,6 +630,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   width: 100%;
   position: relative;
   overflow: scroll;
+  background-color: var(--panel-bg-color);
 
   border-style: var(--border-style);
   border-color: var(--border-color);
@@ -510,8 +690,8 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
 }
 
 .gadget-btn {
-  height: 28px;
-  width: 28px;
+  height: 22px;
+  width: 22px;
   font-size: 15px;
   border-radius: var(--border-radius);
   margin-left: 10px;
@@ -523,9 +703,107 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   border-style: outset;
   cursor: pointer;
   text-align: center;
-  padding: 6px;
+  padding-top: 3px;
+  margin-right: 1px;
 
   text-align: center;
   //padding-top: 4px;
 }
+
+.delete-dashboard-btn:hover{
+  color: red;
+}
+
+.add-gadget-btn:hover{
+  color: green;
+}
+
+
+
+
+
+
+.gadget-types-modal {
+  padding: 20px;
+  position: absolute;
+  width: 60%;
+  height: fit-content !important;
+  width: fit-content !important;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.gadget-types-modal > *:not(:last-child) {
+  margin-bottom: 10px;
+}
+
+.gadget-types-modal SelectInut {
+  width: 100%;
+  height: $input-height;
+}
+
+
+.gadget-types-modal .btn {
+  width: 100%;
+  justify-content: center;
+    display: flex;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.gadget-types-modal .btn input{
+  width: 340px;
+}
+
+
+.gadget-types-modal #create-relation-btn {
+  padding-right: 20px;
+}
+
+.gadget-types-cells {
+  display: flex;
+  justify-content: center;
+}
+
+
+.gadget-types-cell {
+  width: 100px;
+  height: 100px;
+
+    font-size: 20px;
+
+    border-radius: var(--border-radius);
+    color: var(--text-color);
+    background-color: var(--button-color);
+    border-width: 1px;
+    border-color: var(--border-color);
+    border-style: solid;
+    border-style: outset;
+    cursor: pointer;
+    text-align: center;
+
+    margin: 10px;
+    align-items: center;
+    display: flex;
+}
+
+.gadget-types-cell-disabled{
+  cursor:not-allowed;
+  opacity: 0.5;
+}
+
+.gadget-types-cell span{
+width: 100%;
+}
+
+.gadget-head .bx-trash:hover{
+  color: red;
+}
+
+
+.resized-gadget{
+  opacity: 0.5;
+}
+
 </style>

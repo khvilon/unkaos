@@ -1,39 +1,37 @@
-const https = require('https');
-const cors = require('cors');
-const express = require('express');
-const bodyParser = require('body-parser');
+import Sender from './Sender';
+import Rest from './Rest';
+import MsgOut from './MsgOut';
+import Watchers from './Watchers';
+import Support from './support_temp';
+import MailPoller from "./MailPoller";
 
-var a = 0
+const my_uuid = '9965cb94-17dc-46c4-ac1e-823857289e98'
 
-//var tools = require('./tools')
+async function init() {
+    const sender = new Sender()
+    await sender.init()
 
-const app = express()
+    Rest.listen(sender)
 
-const port = 3001
+    const msgOut = new MsgOut(sender);
+    await msgOut.init()
 
+    const watchers = new Watchers();
+    await watchers.init()
 
-const dict =
-{
-    read: 'get',
-    create: 'post',
-    update: 'put',
-    delete: 'delete',
-    upsert: 'post'
-}
+    const support = new Support(sender);
+    await support.init()
 
-app.use(cors());
-app.use(bodyParser.json({limit: '150mb'}));
-app.use(bodyParser.raw({limit: '150mb'}));
-app.use(bodyParser.urlencoded({limit: '150mb', extended: true}));
+    const mail_poller = new MailPoller()
+    await mail_poller.init()
 
-
-
-async function init()
-{
-    
-
-    console.log('ts')
+    //Sender.send('email', 'n@khvilon.ru', 'test title', 'test body')
+    //Sender.send('email', my_uuid, 'test title', 'test body', 'oboz')
+    //setTimeout(()=>{Sender.send('telegram', my_uuid, 'test title', 'test body', 'oboz')}, 1000)
+    //setTimeout(()=>{Sender.send('telegram', my_uuid, 'test title', 'test body', 'oboz')}, 20000)
+    //setTimeout(()=>{Sender.send('discord', my_uuid, 'test title', 'test body', 'oboz')}, 1000)
 
 }
-    
+
 init()
+
