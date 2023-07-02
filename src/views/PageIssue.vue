@@ -503,18 +503,7 @@ let methods = {
     }
     else this.current_description = this.get_field_by_name("Описание").value;
 
-    //this.current_description = this.get_field_by_name('Описание').value
-
     this.scrollToElementByUrl()
-
-
-
-    
-
-    /*if(this.url_params.status_uuid != undefined)
-    {
-      console.log('preset status', this.url_params.status_uuid)
-    }*/
 
     // ans = await rest.run_method("read_time_report", 
     //{author_uuid: '9965cb94-17dc-46c4-ac1e-823857289e98', date_from:'2023-01-02', date_to:'2023-01-13'});
@@ -972,6 +961,7 @@ const data = {
   is_in_dev_mode: false,
   must_reload: false,
   freeze_save: false,
+  full_size_image: null,
   current_description_with_implants: '',
   implants_images: [],
   instance: {
@@ -1183,6 +1173,14 @@ export default mod;
         :time_entry="selected_time_entry"
       />
     </Transition>
+      <div
+        v-if="full_size_image"
+        @click="full_size_image=null"
+        class="issue_full_size_image" 
+      >
+      <img :src="full_size_image"/>
+    </div>
+
     <div id="issue_top_panel" class="panel"   >
 
     <div class="issue-top-buttons">
@@ -1423,6 +1421,7 @@ export default mod;
             :attachments="attachments"
             @attachment_added="add_attachment"
             @attachment_deleted="delete_attachment"
+            @img_zoomed="(data)=>full_size_image=data"
         >
         </KAttachment>
         <KMarkdownInput
@@ -1906,6 +1905,29 @@ $code-width: 160px;
 
 .issue-spent-time-input:hover input{
   color: green !important;
+}
+
+
+.issue_full_size_image {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+}
+
+
+/* Стили для картинки */
+.issue_full_size_image img {
+  //display: block; /* Чтобы убрать возможные пробелы, вызванные inline-размещением */
+  width: auto; /* Растягиваем картинку на 100% ширины контейнера */
+  height: auto; /* Позволяем высоте меняться пропорционально ширине, чтобы не искажать картинку */
+  max-width: 100%;
+  max-height: 100%;
 }
 
 
