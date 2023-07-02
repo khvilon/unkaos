@@ -39,8 +39,6 @@ server/yt-prod-jsonOnly-20220929-2215/
 
 server/conf.js
 
-src/conf.ts
-
 server/db_conf.json
 
 server/cerberus/data.js
