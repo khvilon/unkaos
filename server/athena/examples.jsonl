@@ -1,0 +1,10 @@
+[
+  { "input": "Перенеси все задачи автора Иванов с типом разработка и приоритетом critical на следующий спринт", "output": { "command": "update", "filter": { "conditions": [{ "name": "author", "operator": "=", "value": "Иванов" }, { "name": "type", "operator": "=", "value": "разработка" }, { "name": "priority", "operator": "=", "value": "critical" }], "operator": "and" }, "set": [{ "name": "sprint", "value": "inherit" }], "useChildren": false, "useCurrent": false } }
+
+{ "input": "Создай подзадачу 'Написать тест-кейсы' для текущей задачи с типом разработка и приоритетом major", "output": { "command": "create", "filter": { "conditions": [{ "name": "type", "operator": "=", "value": "разработка" }, { "name": "priority", "operator": "=", "value": "major" }], "operator": "and" }, "set": [{ "name": "Название", "value": "Написать тест-кейсы" }, { "name": "type", "value": "тестирование" }, { "name": "priority", "value": "major" }], "useChildren": true, "useCurrent": true }}
+
+  { "input": "Перенеси все задачи с приоритетом critical и типом разработка на Петрову.", "output": { "command": "update", "filter": { "conditions": [{ "name": "priority", "operator": "=", "value": "critical" }, { "name": "type", "operator": "=", "value": "разработка" }], "operator": "and" }, "set": [{ "name": "author", "value": "Петрова" }], "useChildren": false, "useCurrent": false } }
+
+{ "input": "Перенеси все задачи из спринта 34 в спринт 35, назначь на Иванова для задач с типом тестирование и Story points меньше 3", "output": { "command": "update", "filter": { "conditions": [{ "name": "sprint", "operator": "=", "value": "34" }, { "name": "type", "operator": "=", "value": "тестирование" }, { "name": "Story points", "operator": "<", "value": "3" }], "operator": "and" }, "set": [{ "name": "sprint", "value": "35" }, { "name": "Assignee", "value": "Иванова" }], "useChildren": false, "useCurrent": false } }
+
+]

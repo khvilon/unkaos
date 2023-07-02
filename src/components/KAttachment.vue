@@ -3,7 +3,7 @@ import tools from "../tools.ts";
 import rest from "../rest.ts";
 
 export default {
-  emits: ["attachment_added", "attachment_deleted", "img_selected"],
+  emits: ["attachment_added", "attachment_deleted", "img_selected", "img_zoomed"],
   props: {
     value: {
       type: String,
@@ -32,6 +32,10 @@ export default {
     copy_img_markdown: function (img) {
       if(img.type.indexOf('image') === -1) return
       this.$emit('img_selected', img)
+    },
+    img_zoomed: function (img) {
+      if(img.type.indexOf('image') === -1) return
+      this.$emit('img_zoomed', img.data)
     },
     get_src: function (value) {
       if (value) return value;
@@ -118,8 +122,9 @@ export default {
         :style="[attachment.type.indexOf('image') > -1 ? {'background-image': 'url(' + attachment.data + ')'} : {'background-image': 'none'}]"
         :class="{'attachment-image-file':attachment.type.indexOf('image') > -1}"
         :key="index"
+        @click.self="img_zoomed(attachment)"
       >
-        <span @click="copy_img_markdown(attachment)">{{ attachment.extention }}<br />{{ attachment.name }}</span>
+        <span @click="img_zoomed(attachment)">{{ attachment.extention }}<br />{{ attachment.name }}</span>
         <div>
           <i
             class="bx bxs-download"
@@ -238,12 +243,13 @@ $attachment_input_border_width: 2px;
 }
 
 .attachment-image-file span{
-  cursor: pointer;
-}
-.attachment-image-file span:hover{
-  color: green;
+  cursor: zoom-in;
 }
 
+
+.attachment-image-file {
+  cursor: zoom-in;
+}
 
 
 .attachment-image-file span, .attachment-image-file div {

@@ -183,6 +183,7 @@ export default {
       //  console.log('parent_query', val)
       if (val != this.value) {
         this.value = val;
+        console.log('>>>>>>>parent_query')
         this.emit_query();
       }
     },

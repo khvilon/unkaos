@@ -1,3 +1,4 @@
+// TODO move this to package
 var tools:any = {}
 
 import './string.extensions';
@@ -63,7 +64,7 @@ String.prototype.replaceFrom = function(oldSubstr:string, newSubstr:string, star
 }
 
 
-tools.uuidv4 = function() {
+tools.uuidv4 = function(): string {
     var d = new Date().getTime();//Timestamp
     var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -113,5 +114,55 @@ tools.uuidv4 = function() {
       }
       return arr_obj
   }  
+
+  tools.jaroWinkler = function(s1: string, s2: string): number {
+    const p = 0.1;
+    const m = Math.floor(Math.min(s1.length, s2.length) / 2);
+  
+    let matches1 = Array(s1.length).fill(false);
+    let matches2 = Array(s2.length).fill(false);
+  
+    let matches = 0;
+    let transpositions = 0;
+  
+    for (let i = 0; i < s1.length; i++) {
+      const start = Math.max(0, i - m);
+      const end = Math.min(i + m + 1, s2.length);
+  
+      for (let j = start; j < end; j++) {
+        if (matches2[j]) continue;
+        if (s1[i] !== s2[j]) continue;
+        matches1[i] = true;
+        matches2[j] = true;
+        matches++;
+        break;
+      }
+    }
+  
+    if (matches === 0) return 0;
+  
+    let k = 0;
+    for (let i = 0; i < s1.length; i++) {
+      if (!matches1[i]) continue;
+      while (!matches2[k]) k++;
+      if (s1[i] !== s2[k]) transpositions++;
+      k++;
+    }
+  
+    const jaro = (1 / 3) * (matches / s1.length + matches / s2.length + (matches - transpositions / 2) / matches);
+    
+    // Get the length of the common prefix (up to 4 characters)
+    let commonPrefix = 0;
+    for (let i = 0; i < Math.min(4, s1.length, s2.length); i++) {
+      if (s1[i] === s2[i]) {
+        commonPrefix++;
+      } else {
+        break;
+      }
+    }
+  
+    return jaro + commonPrefix * p * (1 - jaro);
+  }
+  
 
   export default tools

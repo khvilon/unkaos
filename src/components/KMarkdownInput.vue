@@ -3,7 +3,7 @@ import {nextTick} from "vue";
 
 export default {
   name: "KMarkdownInput",
-  emits: ["update_parent_from_input", "input_focus", "attachment_added", "attachment_deleted"],
+  emits: ["update_parent_from_input", "input_focus", "attachment_added", "attachment_deleted", "save"],
   data() {
     return {
       val: "",
@@ -175,6 +175,11 @@ export default {
               this.mdLine()
               break;
             }
+            case 83: { // Ctrl + S
+              event.preventDefault()
+              this.$emit('save')
+              break;
+            }
           }
         } else { // Ctrl + Shift
           switch (event.keyCode) {
@@ -344,7 +349,7 @@ export default {
           <Transition :name="transition">
             <RelativeBox
                 v-if="fontSelectorVisible"
-                :child_style="'margin: 2px 0 0 -2px'"
+                :childStyle="'margin: 2px 0 0 -2px'"
             >
             </RelativeBox>
           </Transition>
@@ -366,7 +371,7 @@ export default {
              :class="{ md_button_selected: imgSelectorVisible }">
           <Transition :name="transition">
             <RelativeBox
-                :child_style="'margin: 2px 0 0 -2px'"
+                :childStyle="'margin: 2px 0 0 -2px'"
                 v-if="imgSelectorVisible"
             >
               <KTabPanel>

@@ -34,9 +34,14 @@ var monTypes: Map<string, MonType[]> = new Map([
 //key, type, connection
 var monTasks: Map<string, Map<string, WebSocket[]> > = new Map() 
 
+const handleWatchers = async function(table:string, command:string, row_uuid:string){
+
+}
+
 const handleNotify = async function(row:any, { command, relation, key, old }: any){
 
     console.log('notify', command, relation.table, row.uuid, row)
+
     let mts = monTypes.get(relation.table)
     console.log(mts)
     if(!mts) return
@@ -55,6 +60,9 @@ const handleNotify = async function(row:any, { command, relation, key, old }: an
         let msg = {command: command, relation: relation, key: mt_key, type: mt.type}
         for(let j = 0; j < connections.length; j++) connections[j].send(JSON.stringify(msg))
     }
+
+    handleWatchers(relation.table, command, row.uuid)
+
    // console.log('test_alert', row, command, relation, key, old)
    
 }

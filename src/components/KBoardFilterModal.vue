@@ -3,7 +3,7 @@ import rest from "../rest.ts";
 import tools from "../tools.ts";
 
 export default {
-  emits: ["close_board_filter_modal", "ok_board_filter_modal"],
+  emits: ["close_board_filter_modal", "ok_board_filter_modal", "delete_board_filter"],
   props: {
     filter:{
       type: Object,
@@ -92,6 +92,11 @@ export default {
   <div class="modal-bg" @mousedown.self="close()">
     <div class="panel modal board-filter-modal">
 
+      <i
+        v-if="modif_filter.uuid"
+        class="delete-board-filter-btn bx bx-trash"
+        @click="() => $emit('delete_board_filter', modif_filter)"
+      ></i>
       <div 
       v-if="save_try_done && (!modif_filter.name || !modif_filter.converted_query)"
       class="save-alert">{{ !modif_filter.name ? alert_text[0] : alert_text[1] }}</div>
@@ -209,5 +214,17 @@ export default {
     color: red;
     top: 0px;
     left: 0px;
+}
+
+.board-filter-modal .delete-board-filter-btn{
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.board-filter-modal .delete-board-filter-btn:hover{
+  color:red;
 }
 </style>

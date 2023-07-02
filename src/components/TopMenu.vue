@@ -55,6 +55,7 @@ export default {
         :name="button.name"
         :func="button.func"
         :route="button.route"
+        @click="()=>{if(button.click) button.click()}"
       />
     </div>
   </div>
