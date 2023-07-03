@@ -1,6 +1,7 @@
 <script>
 import { nextTick } from "vue";
 import cache from "../cache.ts";
+import conf from "../conf.ts";
 
 export default {
   props: {
