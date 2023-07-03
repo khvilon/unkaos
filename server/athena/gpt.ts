@@ -107,8 +107,9 @@ If the field or issue attribute has a list of available values, any values in 's
 The 'filter' is a JSON-based query to select issues to be changed. If rules on selected issues are not specified, 
 do not use the 'filter' attribute at all. Be careful not to use any rule that was not strictly asked. Use single quotes for filter strings, 
 and do not use quotes for field and attribute names in the filter query. 
-A field/attribute name can be only '=', '>', '<', or 'like' to its value. Logical conditions are only 'and', 'or'.
-like is used as in postgresql with % if needed. 
+A field/attribute name can be only '=', '>', '<', or 'like' to its value. Logical conditions are only 'and', 'or'. Dont confuse 'and', 'or'! 
+filtering multiple values for same field/attr they should be executed together like if it was in brackets if another priority is not specified.
+'like' is used as in postgresql with % if needed. 
 When a prompt asks for issues about something, it means that either the field 'Название' or the field 'Описание' contains that. 
 Therefore, for this condition in the filter, use '(Название like ... or Описание like ...)', 
 taking into account that the operator for this expression is 'or', not 'and'. Make sure to enclose this expression in parenthesis. 
@@ -118,7 +119,7 @@ dont use ' for attributes values, always use "
 
 Do not translate any values. Ignore unuseful information like emotions and use only the relevant information.
 
-Available issue attributes are 'sprint', 'status', 'project', 'type', and 'author'. 
+Available issue attributes are 'sprint', 'status', 'project', 'type'. 
 The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Available issue fields are:
 `
 
