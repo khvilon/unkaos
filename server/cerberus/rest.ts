@@ -52,7 +52,7 @@ export default class Rest {
         res.send({ message: 'Требуется токен авторизации' });
         return
       }
-      const user = this.data.checkSession(workspace, token)
+      const user = await this.data.checkSession(workspace, token)
       if (!user) {
         res.status(401);
         res.send({ message: 'Пользовательский токен не валиден' });
