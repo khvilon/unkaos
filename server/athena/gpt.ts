@@ -5,6 +5,7 @@ import { openaiConfig } from './conf';
 
 const key = openaiConfig.key
 
+
 const configuration = new Configuration({
   apiKey: key,
 });
