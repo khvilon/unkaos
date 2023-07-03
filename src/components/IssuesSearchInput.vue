@@ -1,5 +1,6 @@
 <script>
 import { nextTick } from "vue";
+import cache from "../cache.ts";
 
 export default {
   props: {
@@ -132,6 +133,8 @@ export default {
       converted_query: "",
       select_values: [],
       resolved_name: "Решенные",
+      gpt_pnts: '',
+      gpt_loader_visible: false
     };
   },
   computed: {
@@ -190,10 +193,16 @@ export default {
   },
   mounted() {
     this.value = this.parent_query;
+
+    setInterval(this.update_gpt_pnts, 500)
     //this.emit_query()
   },
 
   methods: {
+    update_gpt_pnts(){
+      if(this.gpt_pnts.length < 3) this.gpt_pnts += '.'
+      else this.gpt_pnts = '.'
+    },
     search_key_enter() {
       let suggestion = this.suggestions[this.selected_suggestion_id];
       console.log(this.selected_suggestion_id, this.suggestions);
@@ -236,7 +245,7 @@ export default {
     get_suggestions() {
       return this.suggestions;
     },
-    emit_query() {
+    async emit_query() {
       //  console.log('this.fields.length * this.projects.length * this.issue_types.length', this.fields.length , this.projects.length , this.issue_types.length)
       if (this.fields.length * this.projects.length * this.issue_types.length == 0) {
         setTimeout(this.emit_query, 200);
@@ -244,7 +253,28 @@ export default {
       }
 
       if (this.value == undefined) return;
-      if (!this.convert_query(this.value, true)) return;
+      if (!this.convert_query(this.value, true)){
+
+        this.gpt_loader_visible = true
+        let user = cache.getObject("profile");
+
+        //const response = await fetch('http://localhost:3010/gpt?userInput=Найди задачи, у которых ' + this.value  + '&userUuid=' + user.uuid, {
+        const response = await fetch(conf.base_url + 'gpt?userInput=Найди задачи, у которых ' + this.value  + '&userUuid=' + user.uuid, {
+          method: 'GET',
+        });
+        this.gpt_loader_visible = false
+
+        if (!response.ok) {
+          this.value = `Не удалось распознать требуемое действие`
+          throw new Error(`HTTP error! Status: ${response.status}`);
+          return
+        }
+
+        const data = await response.json();
+        
+        if (!this.convert_query(data.humanGpt.filter, true)) return
+        this.value = data.humanGpt.filter
+      }
 
       this.$emit("update_parent_from_input", this.value);
       this.$refs.issues_search_input.blur();
@@ -675,6 +705,9 @@ export default {
 
 <template>
   <div class="text">
+    <div class="gpt-loader" v-if="gpt_loader_visible">
+      Запрос обрабатывается искусственным интеллектом{{ gpt_pnts }}
+    </div>
     <div class="label">{{ label }}</div>
     <div class="issue-search-div">
       <div
@@ -817,5 +850,15 @@ export default {
   padding: 0px !important;
   width: 50vw;
 }
-
+.gpt-loader{
+  position: absolute;
+  width: 50vw;
+  height: $input-height;
+  background: var(--disabled-bg-color);
+  padding: 5px;
+  border-color: var(--border-color);
+  border-style: groove;
+  border-width: var(--border-width);
+  border-radius: var(--border-radius);
+}
 </style>
