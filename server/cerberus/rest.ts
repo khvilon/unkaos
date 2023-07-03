@@ -1,9 +1,19 @@
 import axios from "axios";
 import express from 'express';
 import Security from "./security";
-import conf from "./conf.json";
 import Data from "./data";
 import User from "./types/User";
+
+let conf: any;
+
+try {
+  const dbConfFile = require('./conf.json');
+  conf = dbConfFile;
+} catch (error) {
+  conf = {
+    hermesUrl: process.env.HERMES_URL
+  };
+}
 
 const app = express()
 const port = 3005
