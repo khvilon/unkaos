@@ -260,7 +260,13 @@ export default class tools {
     document.body.removeChild(textArea)
     return;
   }  
+
+  static encodeURIComponent(filter:string) {
+    return encodeURIComponent(filter).replace(/\./g, '%2E').replace(/-/g, '%2D')
+  }
 }
+
+
 
 declare global {
   interface String {
