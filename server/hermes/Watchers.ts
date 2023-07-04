@@ -1,6 +1,17 @@
 import {sql} from "./Sql";
 import tools from "../tools";
-import { config } from './conf';
+
+let conf: any;
+
+try {
+  const { config } = require('./conf');
+  conf = config;
+} catch (error) {
+  conf = {
+    base_url: process.env.BASE_URL
+  };
+}
+
 
 const titleFieldUuid = 'c96966ea-a591-47a9-992c-0a2f6443bc80'
 
@@ -15,7 +26,7 @@ class Watchers {
     if(row.table_name == 'issue' && row.table_name == 'issue_actions') return
     
 
-    let issue_url = config.base_url + 'issue/'
+    let issue_url = conf.base_url + 'issue/'
     let title, body, issue_uuid
     if(row.table_name == 'issue'){
       issue_uuid = row.target_uuid
