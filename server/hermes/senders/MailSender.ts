@@ -1,11 +1,28 @@
-import { emailConfig } from '../conf';
 import nodemailer from 'nodemailer';
+
+let emailConf: any;
+
+try {
+  const { emailConfig } = require('../conf');
+  emailConf = emailConfig;
+} catch (error) {
+  emailConf = {
+    transport: {
+      service: process.env.EMAIL_SERVICE,
+      auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
+      }
+    },
+    from: process.env.EMAIL_FROM
+  };
+}
 
 class MailSender {
   private transport;
 
   constructor() {
-    this.transport = nodemailer.createTransport(emailConfig.transport);
+    this.transport = nodemailer.createTransport(emailConf.transport);
   }
 
   async send(address: string, title: string, body: string) {

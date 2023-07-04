@@ -1,12 +1,22 @@
 import {UsersListResponse, WebClient} from '@slack/web-api';
-import { slackConfig } from '../conf';
 import {Member} from "@slack/web-api/dist/response/UsersListResponse";
+
+let slackConf: any;
+
+try {
+  const { slackConfig } = require('../conf');
+  slackConf = slackConfig;
+} catch (error) {
+  slackConf = {
+    token: process.env.SLACK_TOKEN
+  };
+}
 
 class SlackMessage {
   private webClient : WebClient;
 
   constructor() {
-    this.webClient = new WebClient(slackConfig.token);
+    this.webClient = new WebClient(slackConf.token);
   }
 
   async send(username: string, title: string, body: string) {
