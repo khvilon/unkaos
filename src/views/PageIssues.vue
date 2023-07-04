@@ -24,7 +24,6 @@ let methods = {
     return arr;
   },
   get_issues: async function (query, offset) {
-    let url = "query=" + encodeURIComponent(this.search_query);
     this.$router.replace({});
     cache.setString("issues_query", this.search_query);
     cache.setString("issues_query_encoded", this.search_query_encoded);
@@ -84,14 +83,6 @@ let methods = {
         );
     }
 
-   /* console.log(
-      "this.loaded_issues1",
-      this.loaded_issues,
-      this.loaded_issues_tree
-    );*/
-
-    //this.loaded_issues = issues
-    //console.log(this.loaded_issues[0], this.issues[0])
   },
   get_field_path_by_name: function (name) {
     if (this.issue == undefined || this.issue.length != 1) return {};
@@ -118,7 +109,7 @@ let methods = {
       uuid: this.favourite_uuid,
       type_uuid: this.favourite_issues_type_uuid,
       name: this.search_query,
-      link: "/issues?query=" + encodeURIComponent(this.search_query),
+      link: "/issues?query=" + tools.encodeURIComponent(this.search_query),
     };
 
 

@@ -1,10 +1,20 @@
 
 import { Configuration, OpenAIApi } from 'openai';
 
-import { openaiConfig } from './conf';
+let openaiConf;
 
-const key = openaiConfig.key
+try {
+  const { openaiConfig } = require('./conf');
+  openaiConf = openaiConfig;
+} catch (error) {
+  openaiConf = {
+    key: process.env.OPENAI_KEY
+  };
+}
 
+const key = openaiConf.key
+
+console.log(key)
 
 const configuration = new Configuration({
   apiKey: key,
