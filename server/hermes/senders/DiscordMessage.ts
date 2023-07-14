@@ -1,6 +1,16 @@
-import { discordConfig } from '../conf';
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
 import UserData from '../UsersData';
+
+let discordConf: any;
+
+try {
+  const { discordConfig } = require('../conf');
+  discordConf = discordConfig;
+} catch (error) {
+    discordConf = {
+    token: process.env.DISCORD_TOKEN
+  };
+}
 
 class DiscordMessage {
     private client;
@@ -33,7 +43,7 @@ class DiscordMessage {
             message.reply(username + ', ' + ans);
         });
 
-        this.client.login(discordConfig.token);
+        this.client.login(discordConf.token);
         console.log('discord bot up');
     }
 

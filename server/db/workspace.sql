@@ -69,8 +69,6 @@ CREATE INDEX idx_relations_issue1_uuid ON hermes.relations USING btree (issue1_u
 CREATE INDEX idx_relations_type_uuid ON hermes.relations USING btree (type_uuid);
 CREATE INDEX idx_relations_uuid ON hermes.relations USING btree (uuid);
 CREATE INDEX idx_users_uuid ON hermes.users USING btree (uuid);
-CREATE INDEX idx_issue_tags_selected_issue_uuid ON public.issue_tags_selected USING btree (issue_uuid);
-CREATE INDEX idx_issue_tags_selected_tag_uuid ON public.issue_tags_selected USING btree (issue_tags_uuid);
 
 CREATE TRIGGER delete_col_field_values_rows AFTER UPDATE ON hermes.fields FOR EACH ROW WHEN (((old.deleted_at IS NULL) AND (new.deleted_at IS NOT NULL))) EXECUTE FUNCTION hermes.delete_col_field_values_rows();
 CREATE TRIGGER insert_into_field_values_rows AFTER INSERT ON hermes.issues FOR EACH ROW EXECUTE FUNCTION hermes.insert_into_field_values_rows();

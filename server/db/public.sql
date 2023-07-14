@@ -1,12 +1,12 @@
-CREATE SCHEMA public;
+CREATE schema IF not exists public;
 
-CREATE TYPE public.msg_status AS ENUM (
+CREATE TYPE  public.msg_status AS ENUM (
     'NEW',
     'PROCESSED',
     'ERROR'
 );
 
-CREATE TABLE public.attachments (
+CREATE TABLE IF NOT exists public.attachments (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     name text NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE public.attachments (
 ALTER TABLE ONLY public.attachments
     ADD CONSTRAINT attachments_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.boards (
+CREATE TABLE IF NOT exists public.boards (
     uuid uuid NOT NULL,
     name text NOT NULL,
     query text,
@@ -38,7 +38,7 @@ CREATE TABLE public.boards (
 ALTER TABLE ONLY public.boards
     ADD CONSTRAINT boards_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.boards_columns (
+CREATE TABLE IF NOT exists public.boards_columns (
     uuid uuid NOT NULL,
     boards_uuid uuid NOT NULL,
     status_uuid uuid NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE public.boards_columns (
 ALTER TABLE ONLY public.boards_columns
     ADD CONSTRAINT boards_columns_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.boards_fields (
+CREATE TABLE IF NOT exists public.boards_fields (
     uuid uuid NOT NULL,
     boards_uuid uuid NOT NULL,
     fields_uuid uuid NOT NULL,
@@ -63,7 +63,7 @@ ALTER TABLE ONLY public.boards_fields
     ADD CONSTRAINT boards_fields_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE public.boards_filters (
+CREATE TABLE IF NOT exists public.boards_filters (
     uuid uuid NOT NULL,
     board_uuid uuid NOT NULL,
     name text NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE public.boards_filters (
 ALTER TABLE ONLY public.boards_filters
     ADD CONSTRAINT boards_filters_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.configs (
+CREATE TABLE IF NOT exists public.configs (
     uuid uuid NOT NULL,
     name text NOT NULL,
     value text NOT NULL,
@@ -89,7 +89,7 @@ CREATE TABLE public.configs (
 ALTER TABLE ONLY public.configs
     ADD CONSTRAINT configs_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.dashboards (
+CREATE TABLE IF NOT exists public.dashboards (
     uuid uuid NOT NULL,
     name text NOT NULL,
     author_uuid uuid,
@@ -100,7 +100,7 @@ CREATE TABLE public.dashboards (
 ALTER TABLE ONLY public.dashboards
     ADD CONSTRAINT dashboards_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.favourites (
+CREATE TABLE IF NOT exists public.favourites (
     uuid uuid NOT NULL,
     type_uuid uuid NOT NULL,
     author_uuid uuid NOT NULL,
@@ -113,7 +113,7 @@ CREATE TABLE public.favourites (
 ALTER TABLE ONLY public.favourites
     ADD CONSTRAINT favourites_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.favourites_types (
+CREATE TABLE IF NOT exists public.favourites_types (
     uuid uuid NOT NULL,
     name text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -124,7 +124,7 @@ ALTER TABLE ONLY public.favourites_types
     ADD CONSTRAINT favourites_types_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE public.field_values (
+CREATE TABLE IF NOT exists public.field_values (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     field_uuid uuid NOT NULL,
@@ -138,7 +138,7 @@ ALTER TABLE ONLY public.field_values
 --ALTER TABLE ONLY public.field_values
 --    ADD CONSTRAINT field_values_pkey PRIMARY KEY (issue_uuid, field_uuid);
 
-CREATE TABLE public.field_types (
+CREATE TABLE IF NOT exists public.field_types (
     uuid uuid NOT NULL,
     name text NOT NULL,
     code text,
@@ -151,7 +151,7 @@ ALTER TABLE ONLY public.field_types
 
 
 --todo - write default custom fields
-CREATE TABLE public.field_values_rows (
+CREATE TABLE IF NOT exists public.field_values_rows (
     uuid uuid NOT NULL,
     "b6ddb33f-eea9-40c0-b1c2-d9ab983026a1" text,
     "a985bb07-cd07-4b4e-b9b6-f41c8015e5fe" text,
@@ -177,7 +177,7 @@ ALTER TABLE ONLY public.field_values_rows
     ADD CONSTRAINT field_values_rows_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE public.fields (
+CREATE TABLE IF NOT exists public.fields (
     uuid uuid NOT NULL,
     name text NOT NULL,
     type_uuid uuid NOT NULL,
@@ -194,7 +194,7 @@ ALTER TABLE ONLY public.fields
     ADD CONSTRAINT fields_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE public.gadget_types (
+CREATE TABLE IF NOT exists public.gadget_types (
     uuid uuid NOT NULL,
     name text NOT NULL,
     code text NOT NULL,
@@ -206,7 +206,7 @@ ALTER TABLE ONLY public.gadget_types
     ADD CONSTRAINT gadget_types_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE public.gadgets (
+CREATE TABLE IF NOT exists public.gadgets (
     uuid uuid NOT NULL,
     dashboard_uuid uuid NOT NULL,
     config text,
@@ -224,7 +224,7 @@ ALTER TABLE ONLY public.gadgets
     ADD CONSTRAINT gadgets_pkey PRIMARY KEY (uuid);
 
 ---?
-CREATE TABLE public.gpt_logs (
+CREATE TABLE IF NOT exists public.gpt_logs (
     uuid uuid NOT NULL,
     user_uuid uuid,
     prompt text NOT NULL,
@@ -236,7 +236,7 @@ ALTER TABLE ONLY public.gpt_logs
     ADD CONSTRAINT gpt_logs_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE public.issue_actions (
+CREATE TABLE IF NOT exists public.issue_actions (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     author_uuid uuid NOT NULL,
@@ -249,14 +249,14 @@ CREATE TABLE public.issue_actions (
 ALTER TABLE ONLY public.issue_actions
     ADD CONSTRAINT issue_actions_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.issue_actions_types (
+CREATE TABLE IF NOT exists public.issue_actions_types (
     uuid uuid NOT NULL,
     name text NOT NULL
 );
 ALTER TABLE ONLY public.issue_actions_types
     ADD CONSTRAINT issue_actions_types_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.issue_statuses (
+CREATE TABLE IF NOT exists public.issue_statuses (
     uuid uuid NOT NULL,
     name text NOT NULL,
     is_start boolean,
@@ -268,7 +268,7 @@ CREATE TABLE public.issue_statuses (
 ALTER TABLE ONLY public.issue_statuses
     ADD CONSTRAINT issue_statuses_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.issue_tags (
+CREATE TABLE IF NOT exists public.issue_tags (
     uuid uuid NOT NULL,
     name text NOT NULL,
     color text,
@@ -282,7 +282,7 @@ CREATE TABLE public.issue_tags (
 ALTER TABLE ONLY public.issue_tags
     ADD CONSTRAINT issue_tags_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.issue_tags_selected (
+CREATE TABLE IF NOT exists public.issue_tags_selected (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     issue_tags_uuid uuid NOT NULL,
@@ -294,7 +294,7 @@ ALTER TABLE ONLY public.issue_tags_selected
     ADD CONSTRAINT issue_tags_selected_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE public.issue_types (
+CREATE TABLE IF NOT exists public.issue_types (
     uuid uuid NOT NULL,
     name text NOT NULL,
     workflow_uuid uuid NOT NULL,
@@ -306,14 +306,14 @@ ALTER TABLE ONLY public.issue_types
     ADD CONSTRAINT issue_types_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE public.issue_types_to_fields (
+CREATE TABLE IF NOT exists public.issue_types_to_fields (
     issue_types_uuid uuid NOT NULL,
     fields_uuid uuid NOT NULL
 );
 ALTER TABLE ONLY public.issue_types_to_fields
     ADD CONSTRAINT issue_types_to_fields_pkey PRIMARY KEY (issue_types_uuid, fields_uuid);
 
-CREATE TABLE public.issues (
+CREATE TABLE IF NOT exists public.issues (
     uuid uuid NOT NULL,
     type_uuid uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -333,7 +333,7 @@ CREATE TABLE public.issues (
 ALTER TABLE ONLY public.issues
     ADD CONSTRAINT issues_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.logs_done (
+CREATE TABLE IF NOT exists public.logs_done (
     uuid uuid NOT NULL,
     user_uuid uuid,
     table_name text,
@@ -346,7 +346,7 @@ ALTER TABLE ONLY public.logs_done
     ADD CONSTRAINT logs_done_pkey PRIMARY KEY (uuid);
 
 --all msg not in public?
-CREATE TABLE public.msg_in (
+CREATE TABLE IF NOT exists public.msg_in (
     uuid uuid NOT NULL,
     title text DEFAULT ''::text NOT NULL,
     body text NOT NULL,
@@ -371,7 +371,7 @@ ALTER TABLE ONLY public.msg_in
 ALTER TABLE ONLY public.msg_in
     ADD CONSTRAINT msg_in_pipe_uuid_message_uid_key UNIQUE (pipe_uuid, message_uid);
 
-CREATE TABLE public.msg_in_parts (
+CREATE TABLE IF NOT exists public.msg_in_parts (
     uuid uuid NOT NULL,
     msg_in_uuid uuid NOT NULL,
     content text,
@@ -389,7 +389,7 @@ ALTER TABLE ONLY public.msg_in_parts
     ADD CONSTRAINT msg_in_parts_pk PRIMARY KEY (uuid);
 
 
-CREATE TABLE public.msg_out (
+CREATE TABLE IF NOT exists public.msg_out (
     uuid uuid NOT NULL,
     transport text,
     recipient text NOT NULL,
@@ -404,7 +404,7 @@ CREATE TABLE public.msg_out (
 ALTER TABLE ONLY public.msg_out
     ADD CONSTRAINT msg_out_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.msg_pipes (
+CREATE TABLE IF NOT exists public.msg_pipes (
     uuid uuid NOT NULL,
     host text,
     login text NOT NULL,
@@ -420,7 +420,7 @@ CREATE TABLE public.msg_pipes (
 ALTER TABLE ONLY public.msg_pipes
     ADD CONSTRAINT msg_pipes_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.old_issues_num (
+CREATE TABLE IF NOT exists public.old_issues_num (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     project_uuid uuid NOT NULL,
@@ -432,7 +432,7 @@ CREATE TABLE public.old_issues_num (
 ALTER TABLE ONLY public.old_issues_num
     ADD CONSTRAINT old_issues_num_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.permition_targets (
+CREATE TABLE IF NOT exists public.permition_targets (
     uuid uuid NOT NULL,
     name text NOT NULL,
     table_name text
@@ -440,7 +440,7 @@ CREATE TABLE public.permition_targets (
 ALTER TABLE ONLY public.permition_targets
     ADD CONSTRAINT permition_targets_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.permitions (
+CREATE TABLE IF NOT exists public.permitions (
     uuid uuid NOT NULL,
     role_uuid uuid NOT NULL,
     target_uuid uuid NOT NULL,
@@ -454,7 +454,7 @@ ALTER TABLE ONLY public.permitions
 
 
 
-CREATE TABLE public.permitions_for_issues (
+CREATE TABLE IF NOT exists public.permitions_for_issues (
     uuid uuid NOT NULL,
     project_uuid uuid,
     permits boolean DEFAULT true NOT NULL,
@@ -467,7 +467,7 @@ CREATE TABLE public.permitions_for_issues (
 ALTER TABLE ONLY public.permitions_for_issues
     ADD CONSTRAINT permitions_for_issues_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.projects (
+CREATE TABLE IF NOT exists public.projects (
     uuid uuid NOT NULL,
     name text NOT NULL,
     short_name text NOT NULL,
@@ -483,7 +483,7 @@ ALTER TABLE ONLY public.projects
 ALTER TABLE ONLY public.projects
     ADD CONSTRAINT projects_uuid_key UNIQUE (short_name);
 
-CREATE TABLE public.relation_types (
+CREATE TABLE IF NOT exists public.relation_types (
     uuid uuid NOT NULL,
     name text NOT NULL,
     revert_name text NOT NULL,
@@ -494,7 +494,7 @@ CREATE TABLE public.relation_types (
 ALTER TABLE ONLY public.relation_types
     ADD CONSTRAINT relation_types_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.relations (
+CREATE TABLE IF NOT exists public.relations (
     uuid uuid NOT NULL,
     issue0_uuid uuid NOT NULL,
     issue1_uuid uuid NOT NULL,
@@ -506,7 +506,7 @@ CREATE TABLE public.relations (
 ALTER TABLE ONLY public.relations
     ADD CONSTRAINT relations_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.roles (
+CREATE TABLE IF NOT exists public.roles (
     uuid uuid NOT NULL,
     name text NOT NULL,
     is_custom boolean DEFAULT true NOT NULL,
@@ -518,7 +518,7 @@ CREATE TABLE public.roles (
 ALTER TABLE ONLY public.roles
     ADD CONSTRAINT roles_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.sprints (
+CREATE TABLE IF NOT exists public.sprints (
     uuid uuid NOT NULL,
     name text NOT NULL,
     start_date timestamp with time zone DEFAULT now() NOT NULL,
@@ -533,7 +533,7 @@ CREATE TABLE public.sprints (
 ALTER TABLE ONLY public.sprints
     ADD CONSTRAINT sprints_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.time_entries (
+CREATE TABLE IF NOT exists public.time_entries (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     work_date date NOT NULL,
@@ -547,7 +547,7 @@ CREATE TABLE public.time_entries (
 ALTER TABLE ONLY public.time_entries
     ADD CONSTRAINT time_entries_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.transitions (
+CREATE TABLE IF NOT exists public.transitions (
     uuid uuid NOT NULL,
     status_from_uuid uuid NOT NULL,
     status_to_uuid uuid NOT NULL,
@@ -560,7 +560,7 @@ CREATE TABLE public.transitions (
 ALTER TABLE ONLY public.transitions
     ADD CONSTRAINT transitions_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.user_sessions (
+CREATE TABLE IF NOT exists public.user_sessions (
     uuid uuid NOT NULL,
     user_uuid uuid NOT NULL,
     token text NOT NULL,
@@ -571,7 +571,7 @@ CREATE TABLE public.user_sessions (
 ALTER TABLE ONLY public.user_sessions
     ADD CONSTRAINT user_sessions_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.users (
+CREATE TABLE IF NOT exists public.users (
     uuid uuid NOT NULL,
     name text NOT NULL,
     login text NOT NULL,
@@ -593,7 +593,7 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE public.users_to_roles (
+CREATE TABLE IF NOT exists public.users_to_roles (
     users_uuid uuid NOT NULL,
     roles_uuid uuid NOT NULL
 );
@@ -601,14 +601,14 @@ ALTER TABLE ONLY public.users_to_roles
     ADD CONSTRAINT users_to_roles_pkey PRIMARY KEY (users_uuid, roles_uuid);
 
 
-CREATE TABLE public.watchers (
+CREATE TABLE IF NOT exists public.watchers (
     user_uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL
 );
 ALTER TABLE ONLY public.watchers
     ADD CONSTRAINT watchers_pkey PRIMARY KEY (user_uuid, issue_uuid);
 
-CREATE TABLE public.workflow_nodes (
+CREATE TABLE IF NOT exists public.workflow_nodes (
     uuid uuid NOT NULL,
     x integer NOT NULL,
     y integer NOT NULL,
@@ -621,7 +621,7 @@ CREATE TABLE public.workflow_nodes (
 ALTER TABLE ONLY public.workflow_nodes
     ADD CONSTRAINT workflow_nodes_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.workflows (
+CREATE TABLE IF NOT exists public.workflows (
     uuid uuid NOT NULL,
     name text NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
