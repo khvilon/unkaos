@@ -3,6 +3,8 @@ import tools from "./tools";
 import conf from "./conf";
 import cache from "./cache";
 
+console.log('>>>>>>>>>>>>>conf', conf)
+
 export default class rest {
 
   static dict: Map<string, string> = new Map([

@@ -1,13 +1,23 @@
-import { telegramConfig } from '../conf';
 import TelegramBot from 'node-telegram-bot-api';
 import UserData from '../UsersData';
+
+let telegramConf: any;
+
+try {
+  const { telegramConfig } = require('../conf');
+  telegramConf = telegramConfig;
+} catch (error) {
+  telegramConf = {
+    token: process.env.TELEGRAM_TOKEN
+  };
+}
 
 //var id = 228803942
 class TelegramMessage {
   private bot;
 
   constructor(userData: UserData) {
-    this.bot = new TelegramBot(telegramConfig.token, { polling: true });
+    this.bot = new TelegramBot(telegramConf.token, { polling: true });
     let me = this
 
     this.bot.onText(/.*?/, async (msg, match) => {
