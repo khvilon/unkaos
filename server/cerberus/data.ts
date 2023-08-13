@@ -2,7 +2,7 @@ import sql from "./sql";
 import Workspace from "./types/Workspace";
 import UserSession from "./types/UserSession";
 import User from "./types/User";
-import md5 from "md5";
+//import md5 from "md5";
 import {Row} from "postgres";
 
 export default class Data {
@@ -71,6 +71,14 @@ export default class Data {
     `)
   }
 
+  async md5(text: string){
+    
+    let md5text = (await sql`SELECT MD5( ${text})`)[0].md5
+    console.log('md5', md5text)
+    return await md5text
+  }
+  
+
   removeExpiredTokens() {
     // removes expired user tokens
     const now = new Date()
@@ -102,8 +110,9 @@ export default class Data {
     console.log('subscribe connected!')
   }
 
-  checkSession(workspaceName: string, token: string): User | null {
-    const md5Token = md5(token)
+  async checkSession(workspaceName: string, token: string): Promise<User | null> {
+    //const md5Token = md5(token)
+    const md5Token = await this.md5(token)
     const workspace = this.workspaces.find(workspace => workspace.name === workspaceName)
     if (!workspace) return null
     const session = workspace.sessions.find((sess) => sess?.token === md5Token)

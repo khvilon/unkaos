@@ -1,0 +1,40 @@
+@import "../../css/global.scss";
+@import "../../css/palette.scss";
+
+// TABLE-PAGE specific options
+$table-panel-width: 25% !default;
+$table-card-width: calc(100% - $table-panel-width);
+
+.table_down_panel {
+  display: flex;
+}
+
+.table_panel {
+  display: flex;
+  width: $table-panel-width;
+  height: calc(100vh - $top-menu-height);
+}
+
+.table_card {
+  height: calc(100vh - $top-menu-height);
+  padding: 10px 20px 10px 20px;
+  width: $table-card-width;
+  display: inline-block;
+}
+
+.table_card > *:not(:last-child) {
+  margin-bottom: 20px;
+}
+
+.table_card_footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.table_card_footer_btn {
+  width: 45%;
+
+  input {
+    width: 100%;
+  }
+}
