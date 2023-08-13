@@ -18,8 +18,6 @@ try {
 }
 
 
-
-
 console.log('dbConf', dbConf)
 
 var sql:any = {}
