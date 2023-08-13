@@ -25,7 +25,8 @@
     "telegraf": "^4.11.2",
     "tg-resolve": "^1.3.1",
     "toad-scheduler": "^2.2.0",
-    "whatsapp-web.js": "^1.19.4"
+    "whatsapp-web.js": "^1.19.4",
+    "typescript": ""
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.8",
