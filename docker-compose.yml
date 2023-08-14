@@ -142,6 +142,11 @@ services:
      - domain=${DOMAIN}
     depends_on:
       - gateway
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
   postgres:
     image: "postgres:${POSTGRES_VERSION}"
@@ -159,8 +164,8 @@ services:
       - "-c"
       - "wal_level=logical"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -Uunkaos -dunkaos"]
+      interval: 30s
       timeout: 5s
       retries: 5
 
