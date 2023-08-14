@@ -10,7 +10,17 @@ import cors from 'cors';
 import { json, urlencoded } from 'body-parser';
 import Gpt from "./gpt";
 import Data from "./data";
-import { restConfig } from './conf';
+
+let restConf: any;
+
+try {
+  const { restConfig } = require('./conf');
+  restConf = restConfig;
+} catch (error) {
+  restConf = {
+    port: process.env.ATHENA_PORT
+  };
+}
 
 const app = express();
 app.use(cors());
@@ -90,6 +100,6 @@ app.get('/gpt', async (req, res) => {
   }
 });
 
-app.listen(restConfig.port, () => {
-  console.log(`Listening on port ${restConfig.port}`);
+app.listen(restConf.port, () => {
+  console.log(`Listening on port ${restConf.port}`);
 });
