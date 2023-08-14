@@ -149,7 +149,7 @@ export class Data {
       if (foundIndex > -1) {
         return {
           name: forFilter ? 'attr#' + name + '_uuid#' : name+ '_uuid',
-          value: forFilter ?  "'" + values[foundIndex].uuid + "'#" : "'" + values[foundIndex].uuid + "'",
+          value: forFilter ?  "'" + values[foundIndex].uuid + "'#" : values[foundIndex].uuid,
           human_name: attributeHumanDictionary[name],
           human_value: values[foundIndex].name,
         }

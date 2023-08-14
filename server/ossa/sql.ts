@@ -16,8 +16,6 @@ try {
   };
 }
 
-console.log('dbConf', dbConf)
-
 let ossaDbConf = tools.obj_clone(dbConf)
 ossaDbConf.publications = 'ossa_publication'
 

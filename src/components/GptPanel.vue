@@ -213,8 +213,8 @@ export default {
       }
       else if(this.gptResult.command == 'find'){
         //alert(this.gptResultHumanData.filter)
-        console.log('>>>F', this.gptResultHumanData)
-        window.location.href = '/issues?query=' + encodeURIComponent(this.gptResultHumanData.filter)
+        console.log('>>>F', this.gptResultHumanData, '/issues?query=' + tools.encodeURIComponent(this.gptResultHumanData.filter))
+        window.location.href = '/issues?query=' + tools.encodeURIComponent(this.gptResultHumanData.filter)
       }
 
       this.actionDone = true
