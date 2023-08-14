@@ -15,7 +15,7 @@ try {
   };
 }
 
-let dbConf: any;
+
 
 try {
   const dbConfFile = require('../db_conf.json');
@@ -29,7 +29,6 @@ try {
     database: process.env.DB_DATABASE
   };
 }
-
 
 console.log('dbConf', dbConf)
 let cerberusDbConf = tools.obj_clone(dbConf)
