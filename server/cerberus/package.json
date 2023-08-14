@@ -17,6 +17,9 @@
     "jsonwebtoken": "^9.0.0",
     "md5": "^2.3.0",
     "postgres": "^3.3.2",
+    "ts-node": "^10.9.1",
+    "axios": "1.4.0",
+    "typescript": ""
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
