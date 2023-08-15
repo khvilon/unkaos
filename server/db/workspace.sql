@@ -1,4 +1,4 @@
-CREATE SCHEMA IF NOT EXIST hermes;
+CREATE SCHEMA IF NOT EXISTS test;
 CREATE FUNCTION test.add_col_field_values_rows() RETURNS trigger
     LANGUAGE plpgsql
     AS $$

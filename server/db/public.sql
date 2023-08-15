@@ -1,4 +1,4 @@
-CREATE SCHEMA IF NOT EXIST public;
+CREATE SCHEMA IF NOT EXISTS public;
 
 CREATE TYPE test.msg_status AS ENUM (
     'NEW',
