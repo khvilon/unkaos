@@ -1,3 +1,4 @@
+CREATE SCHEMA IF NOT EXIST hermes;
 CREATE FUNCTION hermes.add_col_field_values_rows() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
