@@ -27,7 +27,7 @@ class MailSender {
 
   async send(address: string, title: string, body: string) {
     const message = {
-      from: emailConfig.from,
+      from: emailConf.from,
       to: address,
       subject: title,
       text: body

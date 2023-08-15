@@ -1,4 +1,4 @@
-CREATE SCHEMA public;
+CREATE SCHEMA IF NOT EXIST public;
 
 CREATE TYPE public.msg_status AS ENUM (
     'NEW',
