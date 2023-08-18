@@ -1,12 +1,12 @@
 CREATE SCHEMA IF NOT EXISTS public;
 
-CREATE TYPE test.msg_status AS ENUM (
+CREATE TYPE public.msg_status AS ENUM (
     'NEW',
     'PROCESSED',
     'ERROR'
 );
 
-CREATE TABLE test.attachments (
+CREATE TABLE public.attachments (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     name text NOT NULL,
@@ -17,10 +17,10 @@ CREATE TABLE test.attachments (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     daleted_at timestamp with time zone
 );
-ALTER TABLE ONLY test.attachments
+ALTER TABLE ONLY public.attachments
     ADD CONSTRAINT attachments_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.boards (
+CREATE TABLE public.boards (
     uuid uuid NOT NULL,
     name text NOT NULL,
     query text,
@@ -35,10 +35,10 @@ CREATE TABLE test.boards (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone
 );
-ALTER TABLE ONLY test.boards
+ALTER TABLE ONLY public.boards
     ADD CONSTRAINT boards_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.boards_columns (
+CREATE TABLE public.boards_columns (
     uuid uuid NOT NULL,
     boards_uuid uuid NOT NULL,
     status_uuid uuid NOT NULL,
@@ -47,10 +47,10 @@ CREATE TABLE test.boards_columns (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone
 );
-ALTER TABLE ONLY test.boards_columns
+ALTER TABLE ONLY public.boards_columns
     ADD CONSTRAINT boards_columns_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.boards_fields (
+CREATE TABLE public.boards_fields (
     uuid uuid NOT NULL,
     boards_uuid uuid NOT NULL,
     fields_uuid uuid NOT NULL,
@@ -59,11 +59,11 @@ CREATE TABLE test.boards_fields (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone
 );
-ALTER TABLE ONLY test.boards_fields
+ALTER TABLE ONLY public.boards_fields
     ADD CONSTRAINT boards_fields_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE test.boards_filters (
+CREATE TABLE public.boards_filters (
     uuid uuid NOT NULL,
     board_uuid uuid NOT NULL,
     name text NOT NULL,
@@ -75,10 +75,10 @@ CREATE TABLE test.boards_filters (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.boards_filters
+ALTER TABLE ONLY public.boards_filters
     ADD CONSTRAINT boards_filters_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.configs (
+CREATE TABLE public.configs (
     uuid uuid NOT NULL,
     name text NOT NULL,
     value text NOT NULL,
@@ -86,10 +86,10 @@ CREATE TABLE test.configs (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone
 );
-ALTER TABLE ONLY test.configs
+ALTER TABLE ONLY public.configs
     ADD CONSTRAINT configs_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.dashboards (
+CREATE TABLE public.dashboards (
     uuid uuid NOT NULL,
     name text NOT NULL,
     author_uuid uuid,
@@ -97,10 +97,10 @@ CREATE TABLE test.dashboards (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone
 );
-ALTER TABLE ONLY test.dashboards
+ALTER TABLE ONLY public.dashboards
     ADD CONSTRAINT dashboards_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.favourites (
+CREATE TABLE public.favourites (
     uuid uuid NOT NULL,
     type_uuid uuid NOT NULL,
     author_uuid uuid NOT NULL,
@@ -110,35 +110,35 @@ CREATE TABLE test.favourites (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone
 );
-ALTER TABLE ONLY test.favourites
+ALTER TABLE ONLY public.favourites
     ADD CONSTRAINT favourites_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.favourites_types (
+CREATE TABLE public.favourites_types (
     uuid uuid NOT NULL,
     name text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone
 );
-ALTER TABLE ONLY test.favourites_types
+ALTER TABLE ONLY public.favourites_types
     ADD CONSTRAINT favourites_types_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE test.field_values (
+CREATE TABLE public.field_values (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     field_uuid uuid NOT NULL,
     value text,
-    created_at timestamp without time zone DEFAULT now() NOT NULL, --nnot present in test. Shouold it be?
+    created_at timestamp without time zone DEFAULT now() NOT NULL, --nnot present in public. Shouold it be?
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.field_values
+ALTER TABLE ONLY public.field_values
     ADD CONSTRAINT field_values_pkey PRIMARY KEY (uuid);
---ALTER TABLE ONLY test.field_values
+--ALTER TABLE ONLY public.field_values
 --    ADD CONSTRAINT field_values_pkey PRIMARY KEY (issue_uuid, field_uuid);
 
-CREATE TABLE test.field_types (
+CREATE TABLE public.field_types (
     uuid uuid NOT NULL,
     name text NOT NULL,
     code text,
@@ -146,12 +146,12 @@ CREATE TABLE test.field_types (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.field_types
+ALTER TABLE ONLY public.field_types
     ADD CONSTRAINT field_types_pkey PRIMARY KEY (uuid);
 
 
 --todo - write default custom fields
-CREATE TABLE test.field_values_rows (
+CREATE TABLE public.field_values_rows (
     uuid uuid NOT NULL,
     "b6ddb33f-eea9-40c0-b1c2-d9ab983026a1" text,
     "a985bb07-cd07-4b4e-b9b6-f41c8015e5fe" text,
@@ -173,11 +173,11 @@ CREATE TABLE test.field_values_rows (
     "60d53a40-cda9-4cb2-a207-23f8236ee9a7" text,
     "c7eccf13-8f02-4990-89ae-fc6ab83de0cb" text
 );
-ALTER TABLE ONLY test.field_values_rows
+ALTER TABLE ONLY public.field_values_rows
     ADD CONSTRAINT field_values_rows_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE test.fields (
+CREATE TABLE public.fields (
     uuid uuid NOT NULL,
     name text NOT NULL,
     type_uuid uuid NOT NULL,
@@ -190,11 +190,11 @@ CREATE TABLE test.fields (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.fields
+ALTER TABLE ONLY public.fields
     ADD CONSTRAINT fields_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE test.gadget_types (
+CREATE TABLE public.gadget_types (
     uuid uuid NOT NULL,
     name text NOT NULL,
     code text NOT NULL,
@@ -202,11 +202,11 @@ CREATE TABLE test.gadget_types (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.gadget_types
+ALTER TABLE ONLY public.gadget_types
     ADD CONSTRAINT gadget_types_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE test.gadgets (
+CREATE TABLE public.gadgets (
     uuid uuid NOT NULL,
     dashboard_uuid uuid NOT NULL,
     config text,
@@ -220,11 +220,11 @@ CREATE TABLE test.gadgets (
     deleted_at timestamp without time zone,
     name text
 );
-ALTER TABLE ONLY test.gadgets
+ALTER TABLE ONLY public.gadgets
     ADD CONSTRAINT gadgets_pkey PRIMARY KEY (uuid);
 
 ---?
-CREATE TABLE test.gpt_logs (
+CREATE TABLE public.gpt_logs (
     uuid uuid NOT NULL,
     user_uuid uuid,
     prompt text NOT NULL,
@@ -232,11 +232,11 @@ CREATE TABLE test.gpt_logs (
     athena_answer text,
     created_at timestamp without time zone DEFAULT now() NOT NULL
 );
-ALTER TABLE ONLY test.gpt_logs
+ALTER TABLE ONLY public.gpt_logs
     ADD CONSTRAINT gpt_logs_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE test.issue_actions (
+CREATE TABLE public.issue_actions (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     author_uuid uuid NOT NULL,
@@ -246,17 +246,17 @@ CREATE TABLE test.issue_actions (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.issue_actions
+ALTER TABLE ONLY public.issue_actions
     ADD CONSTRAINT issue_actions_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.issue_actions_types (
+CREATE TABLE public.issue_actions_types (
     uuid uuid NOT NULL,
     name text NOT NULL
 );
-ALTER TABLE ONLY test.issue_actions_types
+ALTER TABLE ONLY public.issue_actions_types
     ADD CONSTRAINT issue_actions_types_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.issue_statuses (
+CREATE TABLE public.issue_statuses (
     uuid uuid NOT NULL,
     name text NOT NULL,
     is_start boolean,
@@ -265,10 +265,10 @@ CREATE TABLE test.issue_statuses (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.issue_statuses
+ALTER TABLE ONLY public.issue_statuses
     ADD CONSTRAINT issue_statuses_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.issue_tags (
+CREATE TABLE public.issue_tags (
     uuid uuid NOT NULL,
     name text NOT NULL,
     color text,
@@ -279,10 +279,10 @@ CREATE TABLE test.issue_tags (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.issue_tags
+ALTER TABLE ONLY public.issue_tags
     ADD CONSTRAINT issue_tags_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.issue_tags_selected (
+CREATE TABLE public.issue_tags_selected (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     issue_tags_uuid uuid NOT NULL,
@@ -290,11 +290,11 @@ CREATE TABLE test.issue_tags_selected (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone  
 );
-ALTER TABLE ONLY test.issue_tags_selected
+ALTER TABLE ONLY public.issue_tags_selected
     ADD CONSTRAINT issue_tags_selected_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE test.issue_types (
+CREATE TABLE public.issue_types (
     uuid uuid NOT NULL,
     name text NOT NULL,
     workflow_uuid uuid NOT NULL,
@@ -302,18 +302,18 @@ CREATE TABLE test.issue_types (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone  
 );
-ALTER TABLE ONLY test.issue_types
+ALTER TABLE ONLY public.issue_types
     ADD CONSTRAINT issue_types_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE test.issue_types_to_fields (
+CREATE TABLE public.issue_types_to_fields (
     issue_types_uuid uuid NOT NULL,
     fields_uuid uuid NOT NULL
 );
-ALTER TABLE ONLY test.issue_types_to_fields
+ALTER TABLE ONLY public.issue_types_to_fields
     ADD CONSTRAINT issue_types_to_fields_pkey PRIMARY KEY (issue_types_uuid, fields_uuid);
 
-CREATE TABLE test.issues (
+CREATE TABLE public.issues (
     uuid uuid NOT NULL,
     type_uuid uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -330,10 +330,10 @@ CREATE TABLE test.issues (
     description text DEFAULT ''::text NOT NULL,
     parent_uuid uuid
 );
-ALTER TABLE ONLY test.issues
+ALTER TABLE ONLY public.issues
     ADD CONSTRAINT issues_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.logs_done (
+CREATE TABLE public.logs_done (
     uuid uuid NOT NULL,
     user_uuid uuid,
     table_name text,
@@ -342,11 +342,11 @@ CREATE TABLE test.logs_done (
     parameters text,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
-ALTER TABLE ONLY test.logs_done
+ALTER TABLE ONLY public.logs_done
     ADD CONSTRAINT logs_done_pkey PRIMARY KEY (uuid);
 
 --all msg not in test?
-CREATE TABLE test.msg_in (
+CREATE TABLE public.msg_in (
     uuid uuid NOT NULL,
     title text DEFAULT ''::text NOT NULL,
     body text NOT NULL,
@@ -355,7 +355,7 @@ CREATE TABLE test.msg_in (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone,
-    status test.msg_status DEFAULT 'NEW'::test.msg_status NOT NULL,
+    status public.msg_status DEFAULT 'NEW'::public.msg_status NOT NULL,
     message_id text,
     message_uid text,
     senders text,
@@ -366,12 +366,12 @@ CREATE TABLE test.msg_in (
     message_date timestamp with time zone,
     error_message text
 );
-ALTER TABLE ONLY test.msg_in
+ALTER TABLE ONLY public.msg_in
     ADD CONSTRAINT msg_in_pkey PRIMARY KEY (uuid);
-ALTER TABLE ONLY test.msg_in
+ALTER TABLE ONLY public.msg_in
     ADD CONSTRAINT msg_in_pipe_uuid_message_uid_key UNIQUE (pipe_uuid, message_uid);
 
-CREATE TABLE test.msg_in_parts (
+CREATE TABLE public.msg_in_parts (
     uuid uuid NOT NULL,
     msg_in_uuid uuid NOT NULL,
     content text,
@@ -385,11 +385,11 @@ CREATE TABLE test.msg_in_parts (
     part_num text,
     filename text
 );
-ALTER TABLE ONLY test.msg_in_parts
+ALTER TABLE ONLY public.msg_in_parts
     ADD CONSTRAINT msg_in_parts_pk PRIMARY KEY (uuid);
 
 
-CREATE TABLE test.msg_out (
+CREATE TABLE public.msg_out (
     uuid uuid NOT NULL,
     transport text,
     recipient text NOT NULL,
@@ -401,10 +401,10 @@ CREATE TABLE test.msg_out (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.msg_out
+ALTER TABLE ONLY public.msg_out
     ADD CONSTRAINT msg_out_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.msg_pipes (
+CREATE TABLE public.msg_pipes (
     uuid uuid NOT NULL,
     host text,
     login text NOT NULL,
@@ -417,10 +417,10 @@ CREATE TABLE test.msg_pipes (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone
 );
-ALTER TABLE ONLY test.msg_pipes
+ALTER TABLE ONLY public.msg_pipes
     ADD CONSTRAINT msg_pipes_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.old_issues_num (
+CREATE TABLE public.old_issues_num (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     project_uuid uuid NOT NULL,
@@ -429,18 +429,18 @@ CREATE TABLE test.old_issues_num (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.old_issues_num
+ALTER TABLE ONLY public.old_issues_num
     ADD CONSTRAINT old_issues_num_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.permition_targets (
+CREATE TABLE public.permition_targets (
     uuid uuid NOT NULL,
     name text NOT NULL,
     table_name text
 );
-ALTER TABLE ONLY test.permition_targets
+ALTER TABLE ONLY public.permition_targets
     ADD CONSTRAINT permition_targets_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.permitions (
+CREATE TABLE public.permitions (
     uuid uuid NOT NULL,
     role_uuid uuid NOT NULL,
     target_uuid uuid NOT NULL,
@@ -449,12 +449,12 @@ CREATE TABLE test.permitions (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.permitions
+ALTER TABLE ONLY public.permitions
     ADD CONSTRAINT permitions_pkey PRIMARY KEY (uuid);
 
 
 
-CREATE TABLE test.permitions_for_issues (
+CREATE TABLE public.permitions_for_issues (
     uuid uuid NOT NULL,
     project_uuid uuid,
     permits boolean DEFAULT true NOT NULL,
@@ -464,10 +464,10 @@ CREATE TABLE test.permitions_for_issues (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.permitions_for_issues
+ALTER TABLE ONLY public.permitions_for_issues
     ADD CONSTRAINT permitions_for_issues_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.projects (
+CREATE TABLE public.projects (
     uuid uuid NOT NULL,
     name text NOT NULL,
     short_name text NOT NULL,
@@ -478,12 +478,12 @@ CREATE TABLE test.projects (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.projects
+ALTER TABLE ONLY public.projects
     ADD CONSTRAINT projects_pkey PRIMARY KEY (uuid);
-ALTER TABLE ONLY test.projects
+ALTER TABLE ONLY public.projects
     ADD CONSTRAINT projects_uuid_key UNIQUE (short_name);
 
-CREATE TABLE test.relation_types (
+CREATE TABLE public.relation_types (
     uuid uuid NOT NULL,
     name text NOT NULL,
     revert_name text NOT NULL,
@@ -491,10 +491,10 @@ CREATE TABLE test.relation_types (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.relation_types
+ALTER TABLE ONLY public.relation_types
     ADD CONSTRAINT relation_types_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.relations (
+CREATE TABLE public.relations (
     uuid uuid NOT NULL,
     issue0_uuid uuid NOT NULL,
     issue1_uuid uuid NOT NULL,
@@ -503,10 +503,10 @@ CREATE TABLE test.relations (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.relations
+ALTER TABLE ONLY public.relations
     ADD CONSTRAINT relations_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.roles (
+CREATE TABLE public.roles (
     uuid uuid NOT NULL,
     name text NOT NULL,
     is_custom boolean DEFAULT true NOT NULL,
@@ -515,10 +515,10 @@ CREATE TABLE test.roles (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone  
 );
-ALTER TABLE ONLY test.roles
+ALTER TABLE ONLY public.roles
     ADD CONSTRAINT roles_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.sprints (
+CREATE TABLE public.sprints (
     uuid uuid NOT NULL,
     name text NOT NULL,
     start_date timestamp with time zone DEFAULT now() NOT NULL,
@@ -530,10 +530,10 @@ CREATE TABLE test.sprints (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.sprints
+ALTER TABLE ONLY public.sprints
     ADD CONSTRAINT sprints_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.time_entries (
+CREATE TABLE public.time_entries (
     uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL,
     work_date date NOT NULL,
@@ -544,10 +544,10 @@ CREATE TABLE test.time_entries (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.time_entries
+ALTER TABLE ONLY public.time_entries
     ADD CONSTRAINT time_entries_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.transitions (
+CREATE TABLE public.transitions (
     uuid uuid NOT NULL,
     status_from_uuid uuid NOT NULL,
     status_to_uuid uuid NOT NULL,
@@ -557,10 +557,10 @@ CREATE TABLE test.transitions (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.transitions
+ALTER TABLE ONLY public.transitions
     ADD CONSTRAINT transitions_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.user_sessions (
+CREATE TABLE public.user_sessions (
     uuid uuid NOT NULL,
     user_uuid uuid NOT NULL,
     token text NOT NULL,
@@ -568,10 +568,10 @@ CREATE TABLE test.user_sessions (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.user_sessions
+ALTER TABLE ONLY public.user_sessions
     ADD CONSTRAINT user_sessions_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.users (
+CREATE TABLE public.users (
     uuid uuid NOT NULL,
     name text NOT NULL,
     login text NOT NULL,
@@ -589,26 +589,26 @@ CREATE TABLE test.users (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.users
+ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (uuid);
 
 
-CREATE TABLE test.users_to_roles (
+CREATE TABLE public.users_to_roles (
     users_uuid uuid NOT NULL,
     roles_uuid uuid NOT NULL
 );
-ALTER TABLE ONLY test.users_to_roles
+ALTER TABLE ONLY public.users_to_roles
     ADD CONSTRAINT users_to_roles_pkey PRIMARY KEY (users_uuid, roles_uuid);
 
 
-CREATE TABLE test.watchers (
+CREATE TABLE public.watchers (
     user_uuid uuid NOT NULL,
     issue_uuid uuid NOT NULL
 );
-ALTER TABLE ONLY test.watchers
+ALTER TABLE ONLY public.watchers
     ADD CONSTRAINT watchers_pkey PRIMARY KEY (user_uuid, issue_uuid);
 
-CREATE TABLE test.workflow_nodes (
+CREATE TABLE public.workflow_nodes (
     uuid uuid NOT NULL,
     x integer NOT NULL,
     y integer NOT NULL,
@@ -618,157 +618,157 @@ CREATE TABLE test.workflow_nodes (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.workflow_nodes
+ALTER TABLE ONLY public.workflow_nodes
     ADD CONSTRAINT workflow_nodes_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE test.workflows (
+CREATE TABLE public.workflows (
     uuid uuid NOT NULL,
     name text NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY test.workflows
+ALTER TABLE ONLY public.workflows
     ADD CONSTRAINT workflows_pkey PRIMARY KEY (uuid);
 
 
-ALTER TABLE ONLY test.attachments
-    ADD CONSTRAINT fk_attachments_to_issues FOREIGN KEY (issue_uuid) REFERENCES test.issues(uuid) NOT VALID;
+ALTER TABLE ONLY public.attachments
+    ADD CONSTRAINT fk_attachments_to_issues FOREIGN KEY (issue_uuid) REFERENCES public.issues(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.boards_columns
-    ADD CONSTRAINT fk_boards_columns_to_statuses FOREIGN KEY (status_uuid) REFERENCES test.issue_statuses(uuid) NOT VALID;
+ALTER TABLE ONLY public.boards_columns
+    ADD CONSTRAINT fk_boards_columns_to_statuses FOREIGN KEY (status_uuid) REFERENCES public.issue_statuses(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.boards_fields
-    ADD CONSTRAINT fk_boards_fields_to_fields FOREIGN KEY (fields_uuid) REFERENCES test.fields(uuid);
+ALTER TABLE ONLY public.boards_fields
+    ADD CONSTRAINT fk_boards_fields_to_fields FOREIGN KEY (fields_uuid) REFERENCES public.fields(uuid);
 
-ALTER TABLE ONLY test.boards_filters
-    ADD CONSTRAINT fk_boards_filters_to_author FOREIGN KEY (author_uuid) REFERENCES test.users(uuid) NOT VALID;
+ALTER TABLE ONLY public.boards_filters
+    ADD CONSTRAINT fk_boards_filters_to_author FOREIGN KEY (author_uuid) REFERENCES public.users(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.boards_filters
-    ADD CONSTRAINT fk_boards_filters_to_boards FOREIGN KEY (board_uuid) REFERENCES test.boards(uuid) NOT VALID;
+ALTER TABLE ONLY public.boards_filters
+    ADD CONSTRAINT fk_boards_filters_to_boards FOREIGN KEY (board_uuid) REFERENCES public.boards(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.boards
-    ADD CONSTRAINT fk_boards_to_author FOREIGN KEY (author_uuid) REFERENCES test.users(uuid) NOT VALID;
+ALTER TABLE ONLY public.boards
+    ADD CONSTRAINT fk_boards_to_author FOREIGN KEY (author_uuid) REFERENCES public.users(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.boards_columns
-    ADD CONSTRAINT fk_boards_to_columns FOREIGN KEY (boards_uuid) REFERENCES test.boards(uuid) NOT VALID;
+ALTER TABLE ONLY public.boards_columns
+    ADD CONSTRAINT fk_boards_to_columns FOREIGN KEY (boards_uuid) REFERENCES public.boards(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.dashboards
-    ADD CONSTRAINT fk_dashboards_to_author FOREIGN KEY (author_uuid) REFERENCES test.users(uuid) NOT VALID;
+ALTER TABLE ONLY public.dashboards
+    ADD CONSTRAINT fk_dashboards_to_author FOREIGN KEY (author_uuid) REFERENCES public.users(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.boards
-    ADD CONSTRAINT fk_boards_to_estimate FOREIGN KEY (estimate_uuid) REFERENCES test.fields(uuid) NOT VALID;
+ALTER TABLE ONLY public.boards
+    ADD CONSTRAINT fk_boards_to_estimate FOREIGN KEY (estimate_uuid) REFERENCES public.fields(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.boards_fields
-    ADD CONSTRAINT fk_boards_to_fields FOREIGN KEY (boards_uuid) REFERENCES test.boards(uuid);
+ALTER TABLE ONLY public.boards_fields
+    ADD CONSTRAINT fk_boards_to_fields FOREIGN KEY (boards_uuid) REFERENCES public.boards(uuid);
 
-ALTER TABLE ONLY test.favourites
-    ADD CONSTRAINT fk_favourites_to_owner FOREIGN KEY (author_uuid) REFERENCES test.users(uuid) NOT VALID;
+ALTER TABLE ONLY public.favourites
+    ADD CONSTRAINT fk_favourites_to_owner FOREIGN KEY (author_uuid) REFERENCES public.users(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.favourites
-    ADD CONSTRAINT fk_favourites_to_type FOREIGN KEY (type_uuid) REFERENCES test.favourites_types(uuid) NOT VALID;
+ALTER TABLE ONLY public.favourites
+    ADD CONSTRAINT fk_favourites_to_type FOREIGN KEY (type_uuid) REFERENCES public.favourites_types(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.field_values
-    ADD CONSTRAINT fk_field_values_to_fields FOREIGN KEY (field_uuid) REFERENCES test.fields(uuid) NOT VALID;
+ALTER TABLE ONLY public.field_values
+    ADD CONSTRAINT fk_field_values_to_fields FOREIGN KEY (field_uuid) REFERENCES public.fields(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.field_values
-    ADD CONSTRAINT fk_field_values_to_issues FOREIGN KEY (issue_uuid) REFERENCES test.issues(uuid) NOT VALID;
+ALTER TABLE ONLY public.field_values
+    ADD CONSTRAINT fk_field_values_to_issues FOREIGN KEY (issue_uuid) REFERENCES public.issues(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.issue_types_to_fields
-    ADD CONSTRAINT fk_fields_to_issue_types FOREIGN KEY (fields_uuid) REFERENCES test.fields(uuid) NOT VALID;
+ALTER TABLE ONLY public.issue_types_to_fields
+    ADD CONSTRAINT fk_fields_to_issue_types FOREIGN KEY (fields_uuid) REFERENCES public.fields(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.fields
-    ADD CONSTRAINT fk_fields_to_type FOREIGN KEY (type_uuid) REFERENCES test.field_types(uuid) NOT VALID;
+ALTER TABLE ONLY public.fields
+    ADD CONSTRAINT fk_fields_to_type FOREIGN KEY (type_uuid) REFERENCES public.field_types(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.gadgets
-    ADD CONSTRAINT fk_gadgets_to_dashboards FOREIGN KEY (dashboard_uuid) REFERENCES test.dashboards(uuid) NOT VALID;
+ALTER TABLE ONLY public.gadgets
+    ADD CONSTRAINT fk_gadgets_to_dashboards FOREIGN KEY (dashboard_uuid) REFERENCES public.dashboards(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.gadgets
-    ADD CONSTRAINT fk_gadgets_to_type FOREIGN KEY (type_uuid) REFERENCES test.gadget_types(uuid) NOT VALID;
+ALTER TABLE ONLY public.gadgets
+    ADD CONSTRAINT fk_gadgets_to_type FOREIGN KEY (type_uuid) REFERENCES public.gadget_types(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.issue_actions
-    ADD CONSTRAINT fk_issue_actions_to_issue_actions_types FOREIGN KEY (type_uuid) REFERENCES test.issue_actions_types(uuid) NOT VALID;
+ALTER TABLE ONLY public.issue_actions
+    ADD CONSTRAINT fk_issue_actions_to_issue_actions_types FOREIGN KEY (type_uuid) REFERENCES public.issue_actions_types(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.issue_actions
-    ADD CONSTRAINT fk_issue_actions_to_issues FOREIGN KEY (issue_uuid) REFERENCES test.issues(uuid) NOT VALID;
+ALTER TABLE ONLY public.issue_actions
+    ADD CONSTRAINT fk_issue_actions_to_issues FOREIGN KEY (issue_uuid) REFERENCES public.issues(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.issue_actions
-    ADD CONSTRAINT fk_issue_actions_to_users FOREIGN KEY (author_uuid) REFERENCES test.users(uuid) NOT VALID;
+ALTER TABLE ONLY public.issue_actions
+    ADD CONSTRAINT fk_issue_actions_to_users FOREIGN KEY (author_uuid) REFERENCES public.users(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.issue_tags
-    ADD CONSTRAINT fk_issue_tags_to_author FOREIGN KEY (author_uuid) REFERENCES test.users(uuid) NOT VALID;
+ALTER TABLE ONLY public.issue_tags
+    ADD CONSTRAINT fk_issue_tags_to_author FOREIGN KEY (author_uuid) REFERENCES public.users(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.issue_types_to_fields
-    ADD CONSTRAINT fk_issue_types_to_fields FOREIGN KEY (issue_types_uuid) REFERENCES test.issue_types(uuid) NOT VALID;
+ALTER TABLE ONLY public.issue_types_to_fields
+    ADD CONSTRAINT fk_issue_types_to_fields FOREIGN KEY (issue_types_uuid) REFERENCES public.issue_types(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.issue_types
-    ADD CONSTRAINT fk_issue_types_to_workflows FOREIGN KEY (workflow_uuid) REFERENCES test.workflows(uuid) NOT VALID;
+ALTER TABLE ONLY public.issue_types
+    ADD CONSTRAINT fk_issue_types_to_workflows FOREIGN KEY (workflow_uuid) REFERENCES public.workflows(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.issues
-    ADD CONSTRAINT fk_issues_to_project FOREIGN KEY (project_uuid) REFERENCES test.projects(uuid) NOT VALID;
+ALTER TABLE ONLY public.issues
+    ADD CONSTRAINT fk_issues_to_project FOREIGN KEY (project_uuid) REFERENCES public.projects(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.issues
-    ADD CONSTRAINT fk_issues_to_sprint FOREIGN KEY (sprint_uuid) REFERENCES test.sprints(uuid) NOT VALID;
+ALTER TABLE ONLY public.issues
+    ADD CONSTRAINT fk_issues_to_sprint FOREIGN KEY (sprint_uuid) REFERENCES public.sprints(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.issues
-    ADD CONSTRAINT fk_issues_to_type FOREIGN KEY (type_uuid) REFERENCES test.issue_types(uuid) NOT VALID;
+ALTER TABLE ONLY public.issues
+    ADD CONSTRAINT fk_issues_to_type FOREIGN KEY (type_uuid) REFERENCES public.issue_types(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.logs_done
-    ADD CONSTRAINT fk_logs_done_to_users FOREIGN KEY (user_uuid) REFERENCES test.users(uuid);
+ALTER TABLE ONLY public.logs_done
+    ADD CONSTRAINT fk_logs_done_to_users FOREIGN KEY (user_uuid) REFERENCES public.users(uuid);
 
-ALTER TABLE ONLY test.old_issues_num
-    ADD CONSTRAINT fk_old_issues_num_to_projects FOREIGN KEY (project_uuid) REFERENCES test.projects(uuid);
+ALTER TABLE ONLY public.old_issues_num
+    ADD CONSTRAINT fk_old_issues_num_to_projects FOREIGN KEY (project_uuid) REFERENCES public.projects(uuid);
 
-ALTER TABLE ONLY test.permitions_for_issues
-    ADD CONSTRAINT fk_permitions_for_issues_to_roles FOREIGN KEY (role_uuid) REFERENCES test.roles(uuid) NOT VALID;
+ALTER TABLE ONLY public.permitions_for_issues
+    ADD CONSTRAINT fk_permitions_for_issues_to_roles FOREIGN KEY (role_uuid) REFERENCES public.roles(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.permitions
-    ADD CONSTRAINT fk_permitions_to_permition_targets FOREIGN KEY (target_uuid) REFERENCES test.permition_targets(uuid) NOT VALID;
+ALTER TABLE ONLY public.permitions
+    ADD CONSTRAINT fk_permitions_to_permition_targets FOREIGN KEY (target_uuid) REFERENCES public.permition_targets(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.permitions
-    ADD CONSTRAINT fk_permitions_to_roles FOREIGN KEY (role_uuid) REFERENCES test.roles(uuid) NOT VALID;
+ALTER TABLE ONLY public.permitions
+    ADD CONSTRAINT fk_permitions_to_roles FOREIGN KEY (role_uuid) REFERENCES public.roles(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.projects
-    ADD CONSTRAINT fk_projects_to_owner FOREIGN KEY (owner_uuid) REFERENCES test.users(uuid) ON DELETE RESTRICT NOT VALID;
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT fk_projects_to_owner FOREIGN KEY (owner_uuid) REFERENCES public.users(uuid) ON DELETE RESTRICT NOT VALID;
 
-ALTER TABLE ONLY test.relations
-    ADD CONSTRAINT fk_relation_issue0_to_issues FOREIGN KEY (issue0_uuid) REFERENCES test.issues(uuid) NOT VALID;
+ALTER TABLE ONLY public.relations
+    ADD CONSTRAINT fk_relation_issue0_to_issues FOREIGN KEY (issue0_uuid) REFERENCES public.issues(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.relations
-    ADD CONSTRAINT fk_relation_issue1_to_issues FOREIGN KEY (issue1_uuid) REFERENCES test.issues(uuid) NOT VALID;
+ALTER TABLE ONLY public.relations
+    ADD CONSTRAINT fk_relation_issue1_to_issues FOREIGN KEY (issue1_uuid) REFERENCES public.issues(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.relations
-    ADD CONSTRAINT fk_relations_to_relation_types FOREIGN KEY (type_uuid) REFERENCES test.relation_types(uuid) NOT VALID;
+ALTER TABLE ONLY public.relations
+    ADD CONSTRAINT fk_relations_to_relation_types FOREIGN KEY (type_uuid) REFERENCES public.relation_types(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.boards
-    ADD CONSTRAINT fk_swimlanes_field FOREIGN KEY (swimlanes_field_uuid) REFERENCES test.fields(uuid) NOT VALID;
+ALTER TABLE ONLY public.boards
+    ADD CONSTRAINT fk_swimlanes_field FOREIGN KEY (swimlanes_field_uuid) REFERENCES public.fields(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.users_to_roles
-    ADD CONSTRAINT fk_users_to_roles_to_roles FOREIGN KEY (roles_uuid) REFERENCES test.roles(uuid) NOT VALID;
+ALTER TABLE ONLY public.users_to_roles
+    ADD CONSTRAINT fk_users_to_roles_to_roles FOREIGN KEY (roles_uuid) REFERENCES public.roles(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.users_to_roles
-    ADD CONSTRAINT fk_users_to_roles_to_users FOREIGN KEY (users_uuid) REFERENCES test.users(uuid) NOT VALID;
+ALTER TABLE ONLY public.users_to_roles
+    ADD CONSTRAINT fk_users_to_roles_to_users FOREIGN KEY (users_uuid) REFERENCES public.users(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.watchers
-    ADD CONSTRAINT fk_watchers_to_issues FOREIGN KEY (issue_uuid) REFERENCES test.issues(uuid);
+ALTER TABLE ONLY public.watchers
+    ADD CONSTRAINT fk_watchers_to_issues FOREIGN KEY (issue_uuid) REFERENCES public.issues(uuid);
 
-ALTER TABLE ONLY test.watchers
-    ADD CONSTRAINT fk_watchers_to_users FOREIGN KEY (user_uuid) REFERENCES test.users(uuid);
+ALTER TABLE ONLY public.watchers
+    ADD CONSTRAINT fk_watchers_to_users FOREIGN KEY (user_uuid) REFERENCES public.users(uuid);
 
-ALTER TABLE ONLY test.workflow_nodes
-    ADD CONSTRAINT fk_workflow_nodes_to_statuses FOREIGN KEY (issue_statuses_uuid) REFERENCES test.issue_statuses(uuid) NOT VALID;
+ALTER TABLE ONLY public.workflow_nodes
+    ADD CONSTRAINT fk_workflow_nodes_to_statuses FOREIGN KEY (issue_statuses_uuid) REFERENCES public.issue_statuses(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.transitions
-    ADD CONSTRAINT fk_workflows_to_transitions FOREIGN KEY (workflows_uuid) REFERENCES test.workflows(uuid) NOT VALID;
+ALTER TABLE ONLY public.transitions
+    ADD CONSTRAINT fk_workflows_to_transitions FOREIGN KEY (workflows_uuid) REFERENCES public.workflows(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.workflow_nodes
-    ADD CONSTRAINT fk_workflows_to_workflow_nodes FOREIGN KEY (workflows_uuid) REFERENCES test.workflows(uuid) NOT VALID;
+ALTER TABLE ONLY public.workflow_nodes
+    ADD CONSTRAINT fk_workflows_to_workflow_nodes FOREIGN KEY (workflows_uuid) REFERENCES public.workflows(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.time_entries
-    ADD CONSTRAINT time_entries_to_author FOREIGN KEY (author_uuid) REFERENCES test.users(uuid) NOT VALID;
+ALTER TABLE ONLY public.time_entries
+    ADD CONSTRAINT time_entries_to_author FOREIGN KEY (author_uuid) REFERENCES public.users(uuid) NOT VALID;
 
-ALTER TABLE ONLY test.user_sessions
-    ADD CONSTRAINT user_sessions_to_user FOREIGN KEY (user_uuid) REFERENCES test.users(uuid) NOT VALID;
+ALTER TABLE ONLY public.user_sessions
+    ADD CONSTRAINT user_sessions_to_user FOREIGN KEY (user_uuid) REFERENCES public.users(uuid) NOT VALID;
 
 
 

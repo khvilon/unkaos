@@ -158,7 +158,14 @@ services:
      - '5432:5432'
     volumes:
       - ./server/db:/docker-entrypoint-initdb.d
-      - unkaos-pg-data:/var/lib/postgresql/data    
+      - unkaos-pg-data:/var/lib/postgresql/data
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        cp /docker-entrypoint-initdb.d/public.sql /docker-entrypoint-initdb.d/test.sql &&
+        sed -i 's/\bpublic\b/test/g' /docker-entrypoint-initdb.d/test.sql &&
+        docker-entrypoint.sh postgres 
     command:
       - "postgres"
       - "-c"
