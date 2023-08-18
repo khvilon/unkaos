@@ -49,7 +49,7 @@ mv $TEMP_FILE $ENV_FILE
 echo "Updated .env file saved."
 
 # 3. Make a copy of the server/db/public.sql with the changed schema
-read -p "Enter your first workspace name: " schema_name
+read -p "Enter your first workspace name: " schema_name < /dev/tty
 cp server/db/public.sql server/db/0_$schema_name.sql
 sed -i "s/\bpublic\b/$schema_name/g" server/db/0_$schema_name.sql
 sed -i "s/\btest\b/$schema_name/g" server/db/workspace.sql
