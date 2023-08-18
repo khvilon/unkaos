@@ -11,7 +11,7 @@ while read -r line || [[ -n "$line" ]]; do
         echo "Prompting for $var_name..."
         read -p "Set value for $var_name (current: $current_value) or press enter to skip: " new_value
         if [ ! -z "$new_value" ]; then
-            sed -i "s|^$var_name=.*$|$var_name=$new_value|" /var/app/unkaos/.env
+            sed -i "s|^$var_name=[^ ]*|$var_name=$new_value|" /var/app/unkaos/.env
         fi
     fi
 done < /var/app/unkaos/.env
