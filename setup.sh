@@ -6,6 +6,7 @@ sudo update
 mkdir /var/app
 cd /var/app
 git clone -b dev https://github.com/khvilon/unkaos.git
+cd /var/app/unkaos
 
 
 # 2. set your env variables
