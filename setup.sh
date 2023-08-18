@@ -16,7 +16,7 @@ do
         value=$(echo $line | cut -d'=' -f2)
 
         # Prompt the user to change the value or skip
-        read -p "$key [$value]: " new_value
+        read -p "$key [$value]: " new_value < /dev/tty
 
         # If the user entered a new value, use it; otherwise, use the original value
         if [[ -z $new_value ]]; then
@@ -34,6 +34,7 @@ done < $ENV_FILE
 mv $TEMP_FILE $ENV_FILE
 
 echo "Updated .env file saved."
+
 
 
 # 2. Make a copy of the server/db/public.sql with the changed schema
