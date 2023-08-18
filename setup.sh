@@ -1,17 +1,20 @@
 #!/bin/bash
 
+echo "Starting setup script..."
+
 # 1. Prompt user to set each variable in .env (or skip)
 while IFS= read -r line; do
+    echo "Reading line: $line"
     if [[ $line != \#* && $line = *'='* ]]; then
         var_name="${line%=*}"
         current_value="${line#*=}"
+        echo "Prompting for $var_name..."
         read -p "Set value for $var_name (current: $current_value) or press enter to skip: " new_value
         if [ ! -z "$new_value" ]; then
-            # Using | as delimiter instead of /
-            sed -i "s|^$var_name=.*$|$var_name=$new_value|" .env
+            sed -i "s|^$var_name=.*$|$var_name=$new_value|" /absolute/path/to/.env
         fi
     fi
-done < .env
+done < /absolute/path/to/.env
 
 
 
