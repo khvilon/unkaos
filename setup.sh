@@ -3,7 +3,7 @@
 
 # 1. clone the repo
 echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
-sudo update
+sudo apt update
 mkdir /var/app
 cd /var/app
 git clone -b dev https://github.com/khvilon/unkaos.git
