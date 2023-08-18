@@ -3,7 +3,7 @@
 echo "Starting setup script..."
 
 # 1. Prompt user to set each variable in .env (or skip)
-while IFS= read -r line; do
+while read -r line || [[ -n "$line" ]]; do
     echo "Reading line: $line"
     if [[ $line != \#* && $line = *'='* ]]; then
         var_name="${line%=*}"
@@ -11,10 +11,10 @@ while IFS= read -r line; do
         echo "Prompting for $var_name..."
         read -p "Set value for $var_name (current: $current_value) or press enter to skip: " new_value
         if [ ! -z "$new_value" ]; then
-            sed -i "s|^$var_name=.*$|$var_name=$new_value|" /absolute/path/to/.env
+            sed -i "s|^$var_name=.*$|$var_name=$new_value|" /var/app/unkaos/.env
         fi
     fi
-done < /absolute/path/to/.env
+done < /var/app/unkaos/.env
 
 
 
