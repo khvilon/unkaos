@@ -16,7 +16,8 @@ do
         value=$(echo $line | cut -d'=' -f2)
 
         # Prompt the user to change the value or skip
-        read -p "$key [$value]: " new_value < /dev/tty
+        echo "Current value for $key is: $value"
+        read -p "Enter a new value or press ENTER to keep the current value: " new_value < /dev/tty
 
         # If the user entered a new value, use it; otherwise, use the original value
         if [[ -z $new_value ]]; then
