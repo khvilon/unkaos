@@ -1,5 +1,14 @@
 #!/bin/bash
 
+
+# 1. clone the repo
+sudo update
+mkdir /var/app
+cd /var/app
+git clone -b dev https://github.com/khvilon/unkaos.git
+
+
+# 2. set your env variables
 # Path to the .env file
 ENV_FILE=".env"
 TEMP_FILE=".env.tmp"
@@ -37,11 +46,11 @@ mv $TEMP_FILE $ENV_FILE
 echo "Updated .env file saved."
 
 
+# 3. Make a copy of the server/db/public.sql with the changed schema
+read -p "Enter your first workspace name: " schema_name
+cp server/db/public.sql server/db/$schema_name.sql
+sed -i "s/\bpublic\b/$schema_name/g" server/db/$schema_name.sql
 
-# 2. Make a copy of the server/db/public.sql with the changed schema
-cp server/db/public.sql server/db/test.sql
-sed -i 's/\bpublic\b/test/g' server/db/test.sql
-
-# 3. Run docker-compose up -d
+# 4. Run docker-compose up -d
 apt install docker-compose
 docker-compose up -d
