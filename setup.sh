@@ -6,6 +6,7 @@ echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
 sudo apt update
 mkdir /var/app
 cd /var/app
+sudo apt install git -y
 git clone -b dev https://github.com/khvilon/unkaos.git
 cd /var/app/unkaos
 
@@ -54,5 +55,5 @@ sed -i "s/\bpublic\b/$schema_name/g" server/db/0_$schema_name.sql
 sed -i "s/\btest\b/$schema_name/g" server/db/workspace.sql
 
 # 4. Run docker-compose up -d
-apt install docker-compose
+apt install docker-compose -y
 docker-compose up -d
