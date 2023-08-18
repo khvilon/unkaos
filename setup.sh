@@ -7,10 +7,14 @@ while IFS= read -r line; do
         current_value="${line#*=}"
         read -p "Set value for $var_name (current: $current_value) or press enter to skip: " new_value
         if [ ! -z "$new_value" ]; then
-            sed -i "s/^$var_name=.*$/$var_name=$new_value/" .env
+            # Using | as delimiter instead of /
+            sed -i "s|^$var_name=.*$|$var_name=$new_value|" .env
         fi
     fi
 done < .env
+
+
+
 
 # 2. Make a copy of the server/db/public.sql with the changed schema
 cp server/db/public.sql server/db/test.sql
