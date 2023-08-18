@@ -2,6 +2,7 @@
 
 
 # 1. clone the repo
+echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
 sudo update
 mkdir /var/app
 cd /var/app
