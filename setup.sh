@@ -2,8 +2,11 @@
 
 echo "Starting setup script..."
 
+# Temporary array to store modified lines
+declare -a modified_lines=()
+
 # 1. Prompt user to set each variable in .env (or skip)
-while read -r line || [[ -n "$line" ]]; do
+while IFS= read -r line; do
     echo "Reading line: $line"
     if [[ $line != \#* && $line = *'='* ]]; then
         var_name="${line%=*}"
@@ -11,10 +14,14 @@ while read -r line || [[ -n "$line" ]]; do
         echo "Prompting for $var_name..."
         read -p "Set value for $var_name (current: $current_value) or press enter to skip: " new_value
         if [ ! -z "$new_value" ]; then
-            sed -i "s|^$var_name=[^ ]*|$var_name=$new_value|" /var/app/unkaos/.env
+            line="$var_name=$new_value"
         fi
     fi
+    modified_lines+=("$line")
 done < /var/app/unkaos/.env
+
+# Write modified content back to .env
+printf "%s\n" "${modified_lines[@]}" > /var/app/unkaos/.env
 
 
 
