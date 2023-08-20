@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # 1. clone the repo
 echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
 sudo apt update
@@ -9,7 +8,6 @@ cd /var/app
 sudo apt install git -y
 git clone -b dev https://github.com/khvilon/unkaos.git
 cd /var/app/unkaos
-
 
 # 2. set your env variables
 # Path to the .env file

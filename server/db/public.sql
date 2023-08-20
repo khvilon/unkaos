@@ -152,26 +152,7 @@ ALTER TABLE ONLY public.field_types
 
 --todo - write default custom fields
 CREATE TABLE public.field_values_rows (
-    uuid uuid NOT NULL,
-    "b6ddb33f-eea9-40c0-b1c2-d9ab983026a1" text,
-    "a985bb07-cd07-4b4e-b9b6-f41c8015e5fe" text,
-    "b71398c5-6f63-45e5-9819-6df3112a4770" text,
-    "ccc05be8-67e8-426e-82ab-b52a393a5c23" text,
-    "22cf17d4-b21c-4141-8a54-356af786940f" text,
-    "f01a053e-41ba-49a2-95ea-6ec804fbed02" text,
-    "62b89984-aa91-4501-8fbe-74e02c8f74cb" text,
-    "4a095ff5-c1c4-4349-9038-e3c35a2328b9" text,
-    "733f669a-9584-4469-a41b-544e25b8d91a" text,
-    "c96966ea-a591-47a9-992c-0a2f6443bc80" text,
-    "863bd194-e1b3-4c64-90ab-b4e30393a9fb" text,
-    "3a46dffc-11c8-4d56-8254-64bcf786ecd2" text,
-    "1b54a2db-3df4-485e-9ebc-77bb51f2d490" text,
-    "f950027e-a1b7-4922-8958-ef0394bc2674" text,
-    "a09bf4d5-3962-4c80-ac3c-4efe82d561db" text,
-    "e85ccb15-c1d2-433b-bb45-473a9a36a02c" text,
-    "849644a4-cf93-4506-96d8-1027967ae253" text,
-    "60d53a40-cda9-4cb2-a207-23f8236ee9a7" text,
-    "c7eccf13-8f02-4990-89ae-fc6ab83de0cb" text
+    uuid uuid NOT NULL
 );
 ALTER TABLE ONLY public.field_values_rows
     ADD CONSTRAINT field_values_rows_pkey PRIMARY KEY (uuid);
