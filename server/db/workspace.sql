@@ -122,7 +122,7 @@ INSERT INTO test.relation_types (uuid, name, revert_name) VALUES ('d279639b-2a7b
 
 INSERT INTO test.roles (uuid, name, is_custom) VALUES ('556972a6-0370-4f00-aca2-73a477e48999', 'Администратор', false);
 
-INSERT INTO test.users (uuid, name, login, mail, password, is_active) VALUES ('dbe1a000-40de-428c-bc0a-4fd590a466a5', 'my_name', 'my_login', 'my_mail', md5('my_password'), true);
+--INSERT INTO test.users (uuid, name, login, mail, password, is_active) VALUES ('dbe1a000-40de-428c-bc0a-4fd590a466a5', 'my_name', 'my_login', 'my_mail', md5('my_password'), true);
 
 INSERT INTO test.users_to_roles (users_uuid, roles_uuid) VALUES ('dbe1a000-40de-428c-bc0a-4fd590a466a5', '556972a6-0370-4f00-aca2-73a477e48999');
 
