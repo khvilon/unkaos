@@ -98,8 +98,8 @@ INSERT INTO test.fields (uuid, name, type_uuid, is_custom) VALUES ('e85ccb15-c1d
 INSERT INTO test.fields (uuid, name, type_uuid, is_custom, available_values) VALUES ('b6ddb33f-eea9-40c0-b1c2-d9ab983026a1', 'Priority', '457da84d-2d1d-3595-6fba-4d4d674af63f', true, 'Show-stopper,Critical,Major,Normal,Minor');
 INSERT INTO test.fields (uuid, name, type_uuid, is_custom) VALUES ('733f669a-9584-4469-a41b-544e25b8d91a', 'Автор', 'd57da84f-ed1b-4596-9fb9-9d4c500af63d', false);
 
-CREATE INDEX "field_values_rows_1b54a2db-3df4-485e-9ebc-77bb51f2d490_idx" ON test.field_values_rows USING btree ("1b54a2db-3df4-485e-9ebc-77bb51f2d490");
-CREATE INDEX "field_values_rows_22cf17d4-b21c-4141-8a54-356af786940f_idx" ON test.field_values_rows USING btree ("22cf17d4-b21c-4141-8a54-356af786940f");
+--CREATE INDEX "field_values_rows_1b54a2db-3df4-485e-9ebc-77bb51f2d490_idx" ON test.field_values_rows USING btree ("1b54a2db-3df4-485e-9ebc-77bb51f2d490");
+--CREATE INDEX "field_values_rows_22cf17d4-b21c-4141-8a54-356af786940f_idx" ON test.field_values_rows USING btree ("22cf17d4-b21c-4141-8a54-356af786940f");
 
 INSERT INTO test.gadget_types (uuid, name, code) VALUES ('4a20ebc1-2740-4304-b2ea-8527f423dacd', 'Диаграмма Ганта', 'Gantt');
 INSERT INTO test.gadget_types (uuid, name, code) VALUES ('a558d34b-0bfb-4494-bb22-40ec15e97f0a', 'Таблица задач', 'IssuesTable');
