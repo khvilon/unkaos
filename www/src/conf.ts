@@ -4,10 +4,14 @@ let wsUrl: any = import.meta.env.WS_URL;
 //if(!base_url || (base_url.length < 3)) base_url = "https://unkaos.oboz.tech:3002/";
 //if(!wsUrl || (wsUrl.length < 3)) wsUrl = "wss://unkaos.oboz.tech:3003/";
 
-base_url = base_url.replace ('https://', window.location.href.split('.')[0])
-wsUrl = wsUrl.replace ('wss://',  window.location.href.split('.')[0].replace('https://', 'wss://'))
+console.log('>>>>>>>>>>>base_url0', base_url)
 
-console.log('>>>>>>>>>>>base_url', base_url)
+
+console.log('>>>>>>>>>>>window.location.href', window.location.href)
+//base_url = base_url.replace ('https://', window.location.href.split('.')[0])
+//wsUrl = wsUrl.replace ('wss://',  window.location.href.split('.')[0].replace('https://', 'wss://'))
+
+//console.log('>>>>>>>>>>>base_url', base_url)
 
 export default class conf {
   //static base_url = "http://localhost:3001/";
