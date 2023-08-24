@@ -5,8 +5,8 @@
 //if(!wsUrl || (wsUrl.length < 3)) wsUrl = "wss://unkaos.oboz.tech:3003/";
 
 let origin = window.location.origin
-let base_url = origin + ':3002'
-let wsUrl = origin.replace('https://', 'wss://') + ':3003'
+let base_url = origin + ':3002/'
+let wsUrl = origin.replace('https://', 'wss://') + ':3003/'
 
 console.log('>>>>>>>>>>>base_url0', base_url, wsUrl)
 //console.log('>>>>>>>>>>>base_url', base_url)
