@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Function to generate a random 8-letter password
+generate_password() {
+    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1
+}
+
+
+
 # 1. clone the repo
 echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
 sudo apt update
@@ -51,6 +58,9 @@ read -p "Enter your first workspace name: " schema_name < /dev/tty
 cp server/db/public.sql server/db/0_$schema_name.sql
 sed -i "s/\bpublic\b/$schema_name/g" server/db/0_$schema_name.sql
 sed -i "s/\btest\b/$schema_name/g" server/db/workspace.sql
+random_password=$(generate_password)
+sed -i "s/mypass/$random_password/g" server/db/workspace.sql
+
 
 # 4. Run docker-compose up -d
 apt install docker-compose -y
