@@ -1,16 +1,14 @@
-let base_url: any = import.meta.env.BASE_URL; 
-let wsUrl: any = import.meta.env.WS_URL;
+//let base_url: any = import.meta.env.BASE_URL; 
+//let wsUrl: any = import.meta.env.WS_URL;
 
 //if(!base_url || (base_url.length < 3)) base_url = "https://unkaos.oboz.tech:3002/";
 //if(!wsUrl || (wsUrl.length < 3)) wsUrl = "wss://unkaos.oboz.tech:3003/";
 
-console.log('>>>>>>>>>>>base_url0', base_url)
+let origin = window.location.origin
+let base_url = origin + ':3002'
+let wsUrl = origin.replace('https://', 'wss://') + ':3003'
 
-
-console.log('>>>>>>>>>>>window.location.href', window.location.href)
-//base_url = base_url.replace ('https://', window.location.href.split('.')[0])
-//wsUrl = wsUrl.replace ('wss://',  window.location.href.split('.')[0].replace('https://', 'wss://'))
-
+console.log('>>>>>>>>>>>base_url0', base_url, wsUrl)
 //console.log('>>>>>>>>>>>base_url', base_url)
 
 export default class conf {
