@@ -68,7 +68,7 @@ if [[ $use_certbot != "no" ]]; then
     # Install Certbot
     sudo apt install certbot -y
 
-    cp -rf /etc/letsencrypt/live/${DOMAIN}/* ./nginx/ssl
+    cp -rfL /etc/letsencrypt/live/${DOMAIN}/* ./nginx/ssl
 
     echo "try install cert 0"
 
