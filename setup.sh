@@ -53,8 +53,6 @@ mv $TEMP_FILE $ENV_FILE
 
 echo "Updated .env file saved."
 
-source $ENV_FILE
-
 # 3. Make a copy of the server/db/public.sql with the changed schema
 read -p "Enter your first workspace name: " schema_name < /dev/tty
 cp server/db/public.sql server/db/0_$schema_name.sql
@@ -69,8 +67,13 @@ if [[ $use_certbot != "no" ]]; then
     # Install Certbot
     sudo apt install certbot -y
 
+    echo "try install cert 0"
+
     # Generate certificates
+    source $ENV_FILE
     sudo certbot certonly --standalone -d $DOMAIN --register-unsafely-without-email --agree-tos --no-eff-email
+
+    echo "try install cert 1"
 
     # Create a Cron Job for auto renewal of certificates
     (crontab -l ; echo "0 */12 * * * /usr/bin/certbot renew --quiet --post-hook \"docker-compose -f /var/app/unkaos/docker-compose.yml restart nginx\"") | crontab -
