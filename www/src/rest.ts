@@ -3,8 +3,6 @@ import tools from "./tools";
 import conf from "./conf";
 import cache from "./cache";
 
-console.log('>>>>>>>>>>>>>conf', conf)
-
 export default class rest {
 
   static dict: Map<string, string> = new Map([
@@ -20,13 +18,13 @@ export default class rest {
   });
 
   static get_subdomain(): string {
-    const uri = window.location.href;
+    const uri = window.location.hostname;
     const uri_parts = uri.split(".");
     if (uri_parts.length < 3) return "public";
-    if (uri_parts[1] == "unkaos")
-      return uri_parts[0].replace("http://", "").replace("https://", "");
+    if (uri_parts[0] == "unkaos") return uri_parts[1];
+    return uri_parts[0]
     // console.log('ddd', this.$store.state['domain']
-    return uri_parts[1];
+    
   }
 
   static async get_token(email: string, pass: string): Promise<string | null> {
