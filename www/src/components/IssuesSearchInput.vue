@@ -79,6 +79,7 @@ export default {
   emits: ["update_parent_from_input", "input_focus", "search_issues", "converted"],
   data() {
     return {
+      gpt_controller: null,
       suggestions: [],
       selected_suggestion_id: -1,
       suggestions_offset: 0,
@@ -246,6 +247,9 @@ export default {
     get_suggestions() {
       return this.suggestions;
     },
+    async stop_query() {
+      this.gpt_controller.abort();
+    },
     async emit_query() {
       //  console.log('this.fields.length * this.projects.length * this.issue_types.length', this.fields.length , this.projects.length , this.issue_types.length)
       if (this.fields.length * this.projects.length * this.issue_types.length == 0) {
@@ -259,10 +263,24 @@ export default {
         this.gpt_loader_visible = true
         let user = cache.getObject("profile");
 
+        this.gpt_controller = new AbortController();
+        const signal = this.gpt_controller.signal;
+
         //const response = await fetch('http://localhost:3010/gpt?userInput=Найди задачи, у которых ' + this.value  + '&userUuid=' + user.uuid, {
-        const response = await fetch(conf.base_url + 'gpt?userInput=Найди задачи, у которых ' + this.value  + '&userUuid=' + user.uuid, {
+        
+        try{
+          const response = await fetch(conf.base_url + 'gpt?userInput=Найди задачи, у которых ' + this.value  + '&userUuid=' + user.uuid, {
           method: 'GET',
-        });
+          signal
+          });
+        }
+        catch (err) {
+          if (err.name === 'AbortError') {
+              console.log('Fetch aborted');
+          } else {
+              console.error('Fetch error:', err);
+          }
+        }
         this.gpt_loader_visible = false
 
         if (!response.ok) {
@@ -706,12 +724,13 @@ export default {
 
 <template>
   <div class="text">
-    <div class="gpt-loader" v-if="gpt_loader_visible">
-      Запрос обрабатывается искусственным интеллектом{{ gpt_pnts }}
-    </div>
+    
     <div class="label">{{ label }}</div>
     <div class="issue-search-div">
-      <div
+      <div class="gpt-loader" v-show="gpt_loader_visible">
+        Запрос обрабатывается искусственным интеллектом{{ gpt_pnts }}
+      </div>
+      <div v-show="!gpt_loader_visible"
         contenteditable=""
         ref="issues_search_input"
         @focus="focus"
@@ -729,11 +748,18 @@ export default {
         @keydown.up="move_suggestion_select(-1)"
         @keydown.esc="suggestions = []"
       ></div>
+      
       <KButton
         name="bx-search-alt-2"
         class="issue-search-input-btn"
         @click="emit_query"
-        v-show="!disabled"
+        v-show="!disabled && !gpt_loader_visible"
+      />
+      <KButton
+        name="bx-stop-circle"
+        class="issue-stop-search-input-btn"
+        @click="stop_query"
+        v-show="!disabled && gpt_loader_visible"
       />
     </div>
     <div
@@ -757,7 +783,7 @@ export default {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import "../css/global.scss";
 
 .issue-search-div .text-input {
@@ -852,7 +878,6 @@ export default {
   width: 50vw;
 }
 .gpt-loader{
-  position: absolute;
   width: 50vw;
   height: $input-height;
   background: var(--disabled-bg-color);
@@ -861,5 +886,24 @@ export default {
   border-style: groove;
   border-width: var(--border-width);
   border-radius: var(--border-radius);
+}
+
+.issue-search-input-btn {
+  padding: 0px;
+  //width: $input-height;
+}
+.issue-search-input-btn .btn_input, .issue-stop-search-input-btn .btn_input {
+  padding: 0px;
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+  margin-left: -$input-height;
+  width: $input-height !important;
+  height: $input-height;
+
+  border-top-width: var(--issue-search-btn-top-border-width) !important;
+  border-bottom-width: var(--border-width) !important;
+  border-left-color: var(--border-color) !important;
+  border-top-color: var(--border-color) !important;
+  //border-bottom-color: $border-color !important;
 }
 </style>

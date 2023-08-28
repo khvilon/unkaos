@@ -495,24 +495,7 @@ $loading-bar-width: 200vw;
   width: 100%;
 }
 
-.issue-search-input-btn {
-  padding: 0px;
-  //width: $input-height;
-}
-.issue-search-input-btn .btn_input {
-  padding: 0px;
-  border-top-left-radius: 0px !important;
-  border-bottom-left-radius: 0px !important;
-  margin-left: -$input-height;
-  width: $input-height !important;
-  height: $input-height;
 
-  border-top-width: var(--issue-search-btn-top-border-width) !important;
-  border-bottom-width: var(--border-width) !important;
-  border-left-color: var(--border-color) !important;
-  border-top-color: var(--border-color) !important;
-  //border-bottom-color: $border-color !important;
-}
 
 .issue-top-button {
   height: 38px;
