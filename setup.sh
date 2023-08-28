@@ -68,11 +68,9 @@ if [[ $use_certbot != "no" ]]; then
     # Install Certbot
     sudo apt install certbot -y
 
-    echo "try install cert 0"
-
-    # Generate certificates
+   # Generate certificates
     source $ENV_FILE
-    sudo certbot certonly --standalone -d $DOMAIN --register-unsafely-without-email --agree-tos --no-eff-email
+    sudo certbot certonly --standalone -d $DOMAIN -d *.$DOMAIN --register-unsafely-without-email --agree-tos --no-eff-email
 
     echo "try install cert 1"
 
