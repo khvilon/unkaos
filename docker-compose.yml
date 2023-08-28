@@ -125,7 +125,7 @@ services:
     restart: always
     volumes:
      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-     - /etc/letsencrypt/live/${DOMAIN}:/etc/nginx/ssl:ro
+     - /etc/letsencrypt/live/${DOMAIN}:/etc/nginx/ssl
      - ./nginx/conf.d:/etc/nginx/conf.d
      - ./nginx/templates:/etc/nginx/templates
      - ./www:/var/www
