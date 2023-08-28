@@ -63,9 +63,12 @@ sed -i "s/mypass/$random_password/g" server/db/workspace.sql
 
 # 4. Setting up SSL with Certbot if user have no sertificate
 read -p "Do you want to use Certbot for SSL setup? (yes by default, press ENTER) or type 'no' to skip: " use_certbot < /dev/tty
+use_certbot=${use_certbot:-yes}  # Set default value
 if [[ $use_certbot != "no" ]]; then
     # Install Certbot
     sudo apt install certbot -y
+
+    cp /etc/letsencrypt/live/${DOMAIN} ./nginx/ssl
 
     echo "try install cert 0"
 
