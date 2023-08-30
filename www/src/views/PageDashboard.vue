@@ -196,7 +196,7 @@ let methods = {
   },
   delete_dashboard: async function(){
     await rest.run_method('delete_dashboards', {uuid: this.dashboard[0].uuid})
-    window.location.href = "/dashboards"
+    window.location.href = '/' + this.$store.state['common'].workspace + "/dashboards"
   },
   update_name: async function(name){
     this.dashboard[0].name = name

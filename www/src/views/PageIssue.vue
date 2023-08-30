@@ -302,7 +302,7 @@ let methods = {
       //this.saved_new()
       let ans = await rest.run_method("read_issues", {uuid: this.issue[0].uuid});
       if (ans != null && ans[0] !== undefined) {
-        window.location.href = "/issue/" + ans[0].project_short_name + '-' +  ans[0].num
+        window.location.href = '/' + this.$store.state['common'].workspace + "/issue/" + ans[0].project_short_name + '-' +  ans[0].num
       }
       console.log(ans);
     }
@@ -316,15 +316,15 @@ let methods = {
     cache.setString("last_saved_issue_params", this.get_params_for_localstorage())
     this.title;
     if (this.id !== "") return;
-    window.location.href = "/issue/" + this.issueProjectNum;
+    window.location.href = '/' + this.$store.state['common'].workspace + "/issue/" + this.issueProjectNum;
     //setTimeout(this.init, 1000)
   },
   saved_new: function () {
     this.clear_issue_draft()
-    window.location.href = "/issue/" + this.issueProjectNum;
+    window.location.href = '/' + this.$store.state['common'].workspace + "/issue/" + this.issueProjectNum;
   },
   deleted: function (issue) {
-    window.location.href = "/issues/";
+    window.location.href = '/' + this.$store.state['common'].workspace + "/issues/";
   },
   add_attachment: async function (att) {
     att.issue_uuid = this.issue[0].uuid;
@@ -622,7 +622,7 @@ let methods = {
   },
   get_clone_url: function () {
     cache.setString("cloned_params", this.get_params_for_localstorage());
-    return "/issue?clone=true";
+    return '/' + this.$store.state['common'].workspace + "/issue?clone=true";
 
     let url = "/issue?t=" + new Date().getTime();
     for (let i in params) {
@@ -630,8 +630,6 @@ let methods = {
     }
 
     url = encodeURI(url);
-
-    //url = this.$router.resolve({path: '/issue', query: params}).href
 
     return url;
   },
@@ -1237,7 +1235,7 @@ export default mod;
             !$store.state['common']['is_mobile']"
             class="make-child-btn issue-top-button bx bx-subdirectory-right"
             title="Создать дочернюю задачу"
-            :href="('/issue?t=' + new Date().getTime() + '&parent_uuid=' + issue[0].uuid)"
+            :href="('/' + $store.state['common'].workspace + '/issue?t=' + new Date().getTime() + '&parent_uuid=' + issue[0].uuid)"
           >
           </a>
         </div>

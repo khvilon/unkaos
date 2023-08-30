@@ -3,7 +3,7 @@ import page_helper from "../page_helper.ts";
 
 const methods = {
   new_board: function () {
-    this.$router.push("/board");
+    this.$router.push('/' + this.$store.state['common'].workspace + "/board");
   },
 };
 

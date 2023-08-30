@@ -1342,7 +1342,7 @@ export default mod
 							'⯆' : '⯈'
 					}}</span>
 					<span v-if="swimlane.link == undefined">{{ swimlane.name }}</span>
-					<a v-if="swimlane.link != undefined" :href="swimlane.link" tag="li"
+					<a v-if="swimlane.link != undefined" :href="'/' + $store.state['common'].workspace + swimlane.link" tag="li"
 						:class="{ 'resolved-issue': swimlane.is_resolved, link: true }">
 						{{ swimlane.num }} {{ swimlane.name }}
 
@@ -1386,7 +1386,7 @@ export default mod
 									<div class="issue-card-title">
 										<div>
 											<a
-												:href="'/issue/' + issue.project_short_name + '-' + issue.num">{{ issue.project_short_name }}-{{ issue.num }}</a>
+												:href="'/' + $store.state['common'].workspace + '/issue/' + issue.project_short_name + '-' + issue.num">{{ issue.project_short_name }}-{{ issue.num }}</a>
 											<span>{{ issue.type_name }}</span>
 											<i @click="selected_issue = issue" class='bx bx-window-open'></i>
 										</div>

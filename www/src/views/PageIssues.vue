@@ -93,7 +93,7 @@ let methods = {
     }
   },
   new_issue: function () {
-    this.$router.push("/issue");
+    this.$router.push('/' + this.$store.state['common'].workspace + "/issue");
   },
   update_search_query: function (val) {
     //console.log('update_search_query', val)

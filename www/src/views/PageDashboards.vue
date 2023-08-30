@@ -16,7 +16,7 @@ const methods = {
 
     await rest.run_method('create_dashboards', dashboard)
 
-    window.location.href = "/dashboard/" + uuid
+    window.location.href = '/' + this.$store.state['common'].workspace + "/dashboard/" + uuid
     //this.$router.push("/dashboard?uuid=" + uuid);
   },
 };

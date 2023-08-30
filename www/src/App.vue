@@ -18,14 +18,10 @@ let lang = tools.get_uri_param(uri, "lang");
 dict.set_lang(lang);
 
 export default {
-  data() {
-    return {
-      is_in_workspace: false,
-    };
-  },
+
 
   created() {
-    this.check_is_in_workspace();
+   
     /*
       let uri = window.location.href
      
@@ -115,27 +111,6 @@ export default {
     pasted: function (e) {
       console.log(e);
     },
-    check_is_in_workspace() {
-      console.log("check_is_in_workspace");
-      let uri = window.location.href;
-
-      let uri_parts = uri.split(".");
-
-      if (uri_parts.length != 3) {
-        this.is_in_workspace = false;
-        this.$router.push("/");
-        return;
-      }
-
-      let subdomain = "public";
-
-      if (uri.contains("/login")) {
-        console.log("main menu off");
-        this.is_in_workspace = false;
-      }
-
-      this.is_in_workspace = true;
-    },
     show() {
       console.log("alerter", Object.values(this.$store.state["alerts"]));
     },
@@ -153,7 +128,7 @@ export default {
   <div
     id="router-view-container"
     v-bind:class="{
-      'no-menu-container': !is_in_workspace,
+      'no-menu-container': !$store.state['common']['is_in_workspace'],
       loading: loading,
       'mobile-view': $store.state['common']['is_mobile'],
       'iframe-view': $store.state['common']['in_iframe'],
@@ -184,7 +159,7 @@ export default {
     v-if="$store.state['common'] && !$store.state['common']['in_iframe']"
     v-bind:class="{ 'mobile-sidebar': $store.state['common']['is_mobile'] }"
   />
-  <Profile v-if="is_in_workspace && $store.state['common'] && !$store.state['common']['in_iframe']" />
+  <Profile v-if="$store.state['common']['is_in_workspace'] && $store.state['common'] && !$store.state['common']['in_iframe']" />
   <KAlerter />
 </template>
 

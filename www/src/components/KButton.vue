@@ -31,7 +31,7 @@ export default {
         this.$emit("button_ans", ans);
       }
       if (this.route != undefined && this.route != "") {
-        this.$router.push(this.route);
+        this.$router.push('/' + this.$store.state['common'].workspace + this.route);
       }
     },
   },
