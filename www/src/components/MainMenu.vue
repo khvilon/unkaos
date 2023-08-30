@@ -3,39 +3,28 @@ import dict from "../dict.ts";
 import tools from "../tools.ts";
 import cache from "../cache";
 
-export default {
-  props: {
-    //! Menu settings
-    isMenuOpen: {
-      type: Boolean,
-      default: false,
-    },
-
-    //! Menu items
-    menuItems: {
-      type: Array,
-      default: () => [
+let items = [
         {
           link: "/favourites",
-          name: dict.get("Избранное"),
+          name: "Избранное",
           icon: "bx-star",
           level: 1,
         },
         {
           link: "/dashboards",
-          name: dict.get("Дашборды"),
+          name: "Дашборды",
           icon: "bxs-dashboard",
           level: 1,
         },
         {
           link: "/boards",
-          name: dict.get("Доски"),
+          name: "Доски",
           icon: "bx-columns",
           level: 1,
         },
         {
           link: "/issues",
-          name: dict.get("Задачи"),
+          name: "Задачи",
           icon: "bx-detail",
           level: 1,
         },
@@ -47,72 +36,90 @@ export default {
           },*/
         {
           link: "/projects",
-          name: dict.get("Проекты"),
+          name: "Проекты",
           icon: "bx-briefcase-alt-2",
           level: 1,
         },
         {
           link: "/configs",
-          name: dict.get("Настройки"),
+          name: "Настройки",
           icon: "bx-cog",
           level: 1,
         },
         {
           link: "/configs/sprints",
-          name: dict.get("Спринты"),
+          name: "Спринты",
           icon: "bx-timer",
           level: 2,
           admin_only: true,
         },
         {
           link: "/configs/users",
-          name: dict.get("Пользователи"),
+          name: "Пользователи",
           icon: "bx-user",
           level: 2,
         },
         {
           link: "/configs/roles",
-          name: dict.get("Роли"),
+          name: "Роли",
           icon: "bx-group",
           level: 2,
           admin_only: true,
         },
         {
           link: "/configs/fields",
-          name: dict.get("Поля"),
+          name: "Поля",
           icon: "bx-bracket",
           level: 2,
           admin_only: true,
         },
         {
           link: "/configs/issue_statuses",
-          name: dict.get("Статусы задач"),
+          name: "Статусы задач",
           icon: "bx-flag",
           level: 2,
           admin_only: true,
         },
         {
           link: "/configs/workflows",
-          name: dict.get("Воркфлоу задач"),
+          name: "Воркфлоу задач",
           icon: "bx-sitemap",
           level: 2,
           admin_only: true,
         },
         {
           link: "/configs/issue_types",
-          name: dict.get("Типы задач"),
+          name: "Типы задач",
           icon: "bx-category-alt",
           level: 2,
           admin_only: true,
         },
         {
           link: "/configs/automations",
-          name: dict.get("Автоматизации"),
+          name: "Автоматизации",
           icon: "bx-bot",
           level: 2,
           admin_only: true,
         },
-      ],
+      ]
+
+    for(let i in items){
+      items[i].name = dict.get(items[i].name)
+    }
+
+export default {
+
+  props: {
+    //! Menu settings
+    isMenuOpen: {
+      type: Boolean,
+      default: false,
+    },
+
+    //! Menu items
+    menuItems: {
+      type: Array,
+      default: () => items,
     },
   },
   data() {
@@ -151,6 +158,13 @@ export default {
       if (e != undefined && e.x < 210) return; //todo magic number to variable
       this.is_opened = 0;
     },
+  },
+  watch: {
+    "$store.state.common.workspace": function(newWorkspace) {
+      for(let i in items){
+        items[i].link = '/' + newWorkspace + items[i].link;
+      }
+    }
   },
   mounted() {
     this.environment = process.env.NODE_ENV;

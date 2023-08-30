@@ -78,6 +78,7 @@ let routes = [
 ]
 
 for(let i in routes){
+  if(routes[i].path == '/') continue
   routes[i].path = '/:workspace/' + routes[i].path
 }
 
@@ -91,6 +92,8 @@ router.beforeEach((to, from, next) => {
   rest.setWorkspace(to.params.workspace)
   ws.setWorkspace(to.params.workspace)
   store.state["common"].workspace = to.params.workspace;
+  store.state["common"].is_in_workspace = !to.path.contains("/login") && to.params.workspace;
+
   document.title = to.name;
   if (to.matched != undefined && to.matched[0] != undefined) {
     if (to.matched[0].path == "/issue/:id")
@@ -103,7 +106,7 @@ router.beforeEach((to, from, next) => {
   if(window.location.host.indexOf('unkaos.oboz.tech')  > -1 && to.path.indexOf('/oboz') < 0){
     next('/oboz' + to.path);
   }
-  else if(!to.params.workspace){
+  else if(!to.params.workspace && to.path != '/'){
     next('/');
   }
   else next();
@@ -126,9 +129,7 @@ router.afterEach((to, from) => {
 
   store.state["common"].uri = to.fullPath;
   store.state["common"].subdomain = to.params.workspace;
-  store.state["common"].is_in_workspace =
-    !store.state["common"].uri.contains("/login") &&
-    store.state["common"].subdomain != "";
+  
   //console.log('too', to.fullPath, store.state['common'].is_in_workspace)
 });
 

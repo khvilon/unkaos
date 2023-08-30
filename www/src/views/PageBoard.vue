@@ -1013,6 +1013,18 @@ let methods = {
 	toggle_filter: function (filter) {
 		filter.is_active = !filter.is_active
 		this.get_issues()
+	},
+	sprint_changed: function(sprint)
+	{
+		if(sprint.uuid == this.sprints[this.curr_sprint_num].uuid) return
+
+		console.log('spr>>>>>>>>>>>', sprint)
+		for(let i in this.sprints){
+			if(this.sprints[i].uuid == sprint.uuid) {
+				this.update_sprint_num(i)
+				return
+			}
+		}
 	}
 }
 
@@ -1279,9 +1291,13 @@ export default mod
 				<div v-if="board != undefined && selected_board != undefined && selected_board.use_sprint_filter && sprints.length > 0"
 					class="board-sprint-filter">
 					<span class='board-sprint-filter-btn' @click="update_sprint_num(curr_sprint_num - 1)">❮</span>
-					<StringInput class="board-sprint-filter-string" label='' disabled="true"
-						:value="sprints[curr_sprint_num].name">
-					</StringInput>
+					<SelectInput class="board-sprint-filter-string" label=''
+						:value="sprints[curr_sprint_num]"
+						:values="sprints"
+						@updated="sprint_changed"
+						:parameters="{clearable:false}"
+						>
+					</SelectInput>
 					<span class='board-sprint-filter-btn' @click="update_sprint_num(curr_sprint_num + 1)">❯</span>
 				</div>
 

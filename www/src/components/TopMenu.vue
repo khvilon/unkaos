@@ -92,7 +92,7 @@ export default {
   height: $input-height;
 }
 
-.topbar input {
+.topbar input, .topbar .vs__dropdown-toggle {
   font-size: 15px;
   font-weight: 400;
   border-radius: var(--border-radius);
@@ -100,6 +100,10 @@ export default {
   //background: var(--secondary-color);
   margin-left: 10px;
   height: $input-height;
+}
+
+.topbar .vs__selected{
+  margin: 0;
 }
 
 .search-input {

@@ -4,10 +4,9 @@ export default {
     return {
       //  alerts: this.$store.state['alerts'].arr,//[{type: 'loading'}, {type: 'ok'}, {type: 'error', text: 'Это очень страшная ошибка!'}],
       icons: {
-        loading: "../unkaos_loader.png",
-        ok: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Check_icon.svg/1200px-Check_icon.svg.png",
-        error:
-          "https://i.siteapi.org/tSCjeOTESUHufL0SV-8lW_rXMM0=/fit-in/1024x768/center/top/d9c4db369208e1b.ru.s.siteapi.org/img/5zmr7n1p0t8gkscggssk048ks08swk",
+        loading: "/unkaos_loader.png",
+        ok: "/ok.png",
+        error: "/err.png",
       },
     };
   },
