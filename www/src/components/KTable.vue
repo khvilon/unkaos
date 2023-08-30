@@ -237,7 +237,7 @@ export default {
 
             <a
               v-if="collumn.type == 'link'"
-              :href="collumn.link + get_json_val(row, collumn.link_id)"
+              :href="(collumn.link[0] == '/' ? '/' + $store.state.common.workspace : '') + collumn.link + get_json_val(row, collumn.link_id)"
               tag="li"
               class="link"
             >
