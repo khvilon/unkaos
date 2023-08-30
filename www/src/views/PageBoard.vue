@@ -741,6 +741,8 @@ let methods = {
 		return 0
 	},
 	update_sprint_num(new_num) {
+
+		console.log('uspn>>>>>>',this.curr_sprint_num, new_num)
 		if (new_num < 0) return
 		if (new_num > this.sprints.length - 1) return
 
@@ -1021,7 +1023,8 @@ let methods = {
 		console.log('spr>>>>>>>>>>>', sprint)
 		for(let i in this.sprints){
 			if(this.sprints[i].uuid == sprint.uuid) {
-				this.update_sprint_num(i)
+				this.update_sprint_num(Number(i))
+				console.log('spri>>>>>>>>>>>', i)
 				return
 			}
 		}
