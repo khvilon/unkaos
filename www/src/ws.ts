@@ -25,24 +25,18 @@ export default class ws {
 
 	static s : WebSocket
 	static monRequests: Map<string, monRequest> = new Map([])
-	static isAlife = true
-	static subdomain:string = ws.getSubdomain()
+	static isAlife = true;
 
-	static getSubdomain(): string {
-		const uri = window.location.href;
-		const uriParts = uri.split(".");
-		if (uriParts.length < 3) return "public";
-		if (uriParts[1] == "unkaos")
-			return uriParts[0].replace("http://", "").replace("https://", "");
-		return uriParts[1];
+	static workspace: string = "public"; // Default value
+  
+	static setWorkspace(sub: string) {
+		this.workspace = sub;
 	}
 
 	static connect() {
-		//if(ws.s != undefined && ws.s.readyState !== WebSocket.CLOSED) return
-		//else if(ws.s != undefined)
+		
 		console.log('WS try connect');
-		//ws.subdomain = ws.getSubdomain()
-		//if(!this.subdomain || this.subdomain == '') return
+		
 		ws.s = new WebSocket(conf.wsUrl)
 		
 
@@ -57,9 +51,8 @@ export default class ws {
 		};
 
 		ws.s.onopen = ()=>{
-			
 			console.log('WS open')
-			ws.s.send(JSON.stringify({action:'AUTH', token:cache.getString("user_token"), subdomain:ws.getSubdomain()}))
+			ws.s.send(JSON.stringify({action:'AUTH', token:cache.getString("user_token"), subdomain:ws.workspace}))
 			ws.isAlife = true;
 			for (let [key, value] of ws.monRequests) {
 				console.log('WS send mon req'); ws.s.send(value.monMsg) 
@@ -96,7 +89,6 @@ export default class ws {
 	
 
 	static ping() {
-		//if(!ws.subdomain) return
 		console.log('WS try ping')
 		try{
 			if(ws.s != undefined && ws.s.readyState !== WebSocket.CLOSED) 

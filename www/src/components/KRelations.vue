@@ -70,7 +70,7 @@ export default {
     >
       <span v-if="relation != undefined">
         {{ relation.type_name }}
-        <a :href="'/issue/' + relation.id" v-bind:class="{ relation_resolved: relation.issue_resolved }"
+        <a :href="'/' + $store.state['common'].workspace + '/issue/' + relation.id" v-bind:class="{ relation_resolved: relation.issue_resolved }"
           >{{ relation.id }} {{ relation.issue_name }}</a
         >
         <i

@@ -72,7 +72,7 @@ export default {
     logout() {
       cache.setString("user_token", "");
       cache.setObject("profile", {});
-      this.$router.push("/login");
+      this.$router.push('/' + this.$store.state['common'].workspace + "/login");
     },
     close_menu(e) {
     //  console.log('ccc', e);
@@ -123,7 +123,7 @@ export default {
         <a
             class="bx bx-plus new-issue-btn"
             title="Создать новую задачу"
-            :href="'/issue?t=' + new Date().getTime()"
+            :href="'/' + $store.state['common'].workspace + '/issue?t=' + new Date().getTime()"
             tag="i"
         >
         </a>

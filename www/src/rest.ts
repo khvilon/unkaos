@@ -5,6 +5,12 @@ import cache from "./cache";
 
 export default class rest {
 
+  static workspace: string = "public"; // Default value
+  
+  static setWorkspace(sub: string) {
+    this.workspace = sub;
+  }
+
   static dict: Map<string, string> = new Map([
     ["read", "get"],
     ["update", "put"],
@@ -17,18 +23,8 @@ export default class rest {
     "content-type": "application/json",
   });
 
-  static get_subdomain(): string {
-    const uri = window.location.hostname;
-    const uri_parts = uri.split(".");
-    if (uri_parts.length < 3) return "public";
-    if (uri_parts[0] == "unkaos") return uri_parts[1];
-    return uri_parts[0]
-    // console.log('ddd', this.$store.state['domain']
-    
-  }
-
   static async get_token(email: string, pass: string): Promise<string | null> {
-    rest.headers.set("subdomain", rest.get_subdomain());
+    rest.headers.set("subdomain", rest.workspace);
     rest.headers.set("email", email);
     rest.headers.set("password", pass);
     const options = {
@@ -38,15 +34,28 @@ export default class rest {
     const resp = await fetch(conf.base_url + "get_token", options);
     if (resp.status != 200) return null;
     const data = await resp.json();
-    //rest.headers.token = data.user_token
+    
     cache.setString("user_token", data.user_token)
     cache.setObject("profile", data.profile)
     return data;
   }
 
 
+  
+
+  static async run_gpt(input: string): Promise<any> {
+    let user = cache.getObject("profile");
+
+        //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
+        return fetch(conf.base_url + 'gpt?userInput=' + input  + '&userUuid=' + user.uuid, {
+          method: 'GET',
+        });
+  }
+
   static async run_method(method: string, body: any): Promise<any> {
-    const alert_id = tools.uuidv4(); //new Date()
+
+    console.log('rw>>>>>>>', rest.workspace)
+    const alert_id = tools.uuidv4();
     store.state["alerts"][alert_id] = {
       type: "loading",
       status: "new",
@@ -54,7 +63,7 @@ export default class rest {
     };
     method = method.replace("create", "upsert").replace("update", "upsert");
     rest.headers.set("token", cache.getString("user_token"));
-    rest.headers.set("subdomain", rest.get_subdomain());
+    rest.headers.set("subdomain", rest.workspace);
     //console.log('hhhh', rest.headers)
     const method_array = tools.split2(method, "_");
     const options = {

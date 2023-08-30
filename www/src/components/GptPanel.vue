@@ -117,12 +117,12 @@ export default {
       this.animationVisible = true;
       
       try {
-        let user = cache.getObject("profile");
-
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
-        const response = await fetch(conf.base_url + 'gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
+        const response = await rest.run_gpt(this.userInput)
+        
+        /*await fetch(conf.base_url + 'gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
           method: 'GET',
-        });
+        });*/
 
         if (!response.ok) {
           this.gptResultHuman = `Не удалось распознать требуемое действие`
@@ -214,7 +214,7 @@ export default {
       else if(this.gptResult.command == 'find'){
         //alert(this.gptResultHumanData.filter)
         console.log('>>>F', this.gptResultHumanData, '/issues?query=' + tools.encodeURIComponent(this.gptResultHumanData.filter))
-        window.location.href = '/issues?query=' + tools.encodeURIComponent(this.gptResultHumanData.filter)
+        window.location.href = '/' + this.$store.state['common'].workspace + '/issues?query=' + tools.encodeURIComponent(this.gptResultHumanData.filter)
       }
 
       this.actionDone = true

@@ -40,9 +40,9 @@ login_page.methods = {
       if (previousHost === currentHost) {
         this.$router.go(-1);
       }
-      else this.$router.push("/issues");
+      else this.$router.push('/' + this.$store.state['common'].workspace + "/issues");
     }
-    else this.$router.push("/issues");
+    else this.$router.push('/' + this.$store.state['common'].workspace + "/issues");
   },
 
   get_previous_page() {
