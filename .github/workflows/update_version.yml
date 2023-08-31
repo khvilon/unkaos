@@ -16,6 +16,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         ref: dev
+        token: ${{ secrets.GITHUB_TOKEN }}  # Explicitly set the token
 
     - name: Update meta.json version
       run: |
@@ -31,4 +32,4 @@ jobs:
         git config --local user.name "GitHub Action"
         git add meta.json
         git commit -m "Automatically update meta.json version to $NEW_VERSION"
-        git push
+        git push origin dev  # Push to the dev branch
