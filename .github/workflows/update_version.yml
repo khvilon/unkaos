@@ -24,7 +24,7 @@ jobs:
         
         # Read and update version
         VERSION=$(jq -r '.version' meta.json)
-        NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$2++; print}')
+        NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$3++; print}')
         jq ".version=\"$NEW_VERSION\"" meta.json > tmp.json && mv tmp.json meta.json
 
         # Commit and push
