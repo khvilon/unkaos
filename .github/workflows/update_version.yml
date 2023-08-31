@@ -12,23 +12,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        ref: dev
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
     - name: Update meta.json version
       run: |
         echo "Updating meta.json version..."
         
-        # Fetch meta.json using wget from the dev branch
-        wget -O meta.json "https://raw.githubusercontent.com/${{ github.repository }}/dev/meta.json"
+        # Read and update version
+        const fs = require('fs');
+        const data = JSON.parse(fs.readFileSync('meta.json', 'utf8'));
+        const [major, minor, patch] = data.version.split('.').map(Number);
+        const newVersion = `${major}.${minor + 1}.${patch}`;
+        data.version = newVersion;
+        fs.writeFileSync('meta.json', JSON.stringify(data, null, 2));
         
-        # Update version
-        VERSION=$(cat meta.json | jq -r '.version')
-        NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$2++; print}')
-        jq ".version=\"$NEW_VERSION\"" meta.json > tmp.json && mv tmp.json meta.json
-
-        # Commit and push (this part will require a token for authentication)
-        git init
+        # Commit and push
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add meta.json
-        git commit -m "Automatically update meta.json version to $NEW_VERSION"
-        git remote add origin https://github.com/${{github.repository}}.git
-        git push -u origin HEAD:${{github.ref}}
+        git commit -m "Automatically update meta.json version to $newVersion"
+        git push
