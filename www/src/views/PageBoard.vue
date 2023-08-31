@@ -1463,7 +1463,7 @@ export default mod
 			<div class="board-card-frame" :class="{ 'board-card-frame-closed': !selected_issue }">
 				<div>
 					<iframe v-if="selected_issue"
-						:src="('/issue/' + selected_issue.project_short_name + '-' + selected_issue.num)"></iframe>
+						:src="('/' + $store.state.common.workspace + '/issue/' + selected_issue.project_short_name + '-' + selected_issue.num)"></iframe>
 					<i v-if="selected_issue" @click="(selected_issue = undefined)" class='bx bx-x'></i>
 				</div>
 			</div>

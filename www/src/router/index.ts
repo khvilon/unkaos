@@ -88,7 +88,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  console.log("beforeEach>>>>>>>>>>>>>>>>>",window.location.host, to);
+  console.log("beforeEach>>>>>>>>>>>>>>>>>",to.params.workspace, window.location.host, to);
   rest.setWorkspace(to.params.workspace)
   ws.setWorkspace(to.params.workspace)
   store.state["common"].workspace = to.params.workspace;
@@ -103,7 +103,7 @@ router.beforeEach((to, from, next) => {
   //if(to.path.indexOf('unkaos.oboz.tech')  > -1 && to.path.indexOf('/oboz') < 0){
   //  next(to.path.replace('unkaos.oboz.tech/', 'unkaos.oboz.tech/oboz/'));
   
-  if(window.location.host.indexOf('unkaos.oboz.tech')  > -1 && to.path.indexOf('/oboz') < 0){
+  if(window.location.host.indexOf('unkaos.oboz.tech')  > -1 && to.path.indexOf('/oboz') < 0 && to.path != '/'){
     next('/oboz' + to.path);
   }
   else if(!to.params.workspace && to.path != '/'){
