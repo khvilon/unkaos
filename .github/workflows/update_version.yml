@@ -1,0 +1,34 @@
+name: Update Meta Version
+
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - 'meta.json' # Don't run this action if only meta.json is changed
+
+jobs:
+  update_version:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Update meta.json version
+      run: |
+        echo "Updating meta.json version..."
+        
+        # Fetch meta.json using wget from the dev branch
+        wget -O meta.json "https://raw.githubusercontent.com/${{ github.repository }}/dev/meta.json"
+        
+        # Update version
+        VERSION=$(cat meta.json | jq -r '.version')
+        NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$2++; print}')
+        jq ".version=\"$NEW_VERSION\"" meta.json > tmp.json && mv tmp.json meta.json
+
+        # Commit and push (this part will require a token for authentication)
+        git init
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add meta.json
+        git commit -m "Automatically update meta.json version to $NEW_VERSION"
+        git remote add origin https://github.com/${{github.repository}}.git
+        git push -u origin HEAD:${{github.ref}}
