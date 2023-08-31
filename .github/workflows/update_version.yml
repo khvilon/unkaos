@@ -17,26 +17,18 @@ jobs:
       with:
         ref: dev
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
-
     - name: Update meta.json version
       run: |
         echo "Updating meta.json version..."
         
         # Read and update version
-        const fs = require('fs');
-        const data = JSON.parse(fs.readFileSync('meta.json', 'utf8'));
-        const [major, minor, patch] = data.version.split('.').map(Number);
-        const newVersion = `${major}.${minor + 1}.${patch}`;
-        data.version = newVersion;
-        fs.writeFileSync('meta.json', JSON.stringify(data, null, 2));
-        
+        VERSION=$(jq -r '.version' meta.json)
+        NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$2++; print}')
+        jq ".version=\"$NEW_VERSION\"" meta.json > tmp.json && mv tmp.json meta.json
+
         # Commit and push
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add meta.json
-        git commit -m "Automatically update meta.json version to $newVersion"
+        git commit -m "Automatically update meta.json version to $NEW_VERSION"
         git push
