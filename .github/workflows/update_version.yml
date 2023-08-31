@@ -16,7 +16,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         ref: dev
-        token: ${{ secrets.GITHUB_TOKEN }}  # Explicitly set the token
+        token: ${{ secrets.AUTOVERSION_TOKEN }}  # Explicitly set the token
 
     - name: Update meta.json version
       run: |
