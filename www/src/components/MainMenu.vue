@@ -275,7 +275,7 @@ $logo-icon-size: 32px;
 
   transition-property: all !important;
   transition-duration: $main-menu-open-time !important;
-  z-index: 0;
+  z-index: 3;
 
   margin: 1px;
 }
