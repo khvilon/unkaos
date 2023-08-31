@@ -3,6 +3,7 @@ import express from 'express';
 import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import * as yaml from 'js-yaml';
 
 // Configuration
 const app = express();
@@ -17,7 +18,12 @@ const config = {
 // State
 let currentVersion = readCurrentVersion();
 let newVersion: string;
-let metaFileUrl = 'https://raw.githubusercontent.com/khvilon/unkaos/dev/meta.json'
+const metaFileUrl = 'https://raw.githubusercontent.com/khvilon/unkaos/dev/meta.json'
+const ymlPath = '../../docker-compose.yml'
+
+interface DockerCompose {
+    services?: { [key: string]: any };
+}
 
 // Utility Functions
 function readCurrentVersion(): string {
@@ -33,21 +39,37 @@ function isTimeAllowed(): boolean {
 
 async function performUpdate(newVersion: string): Promise<void> {
   console.log('Performing update...');
-  return
-  exec('docker-compose down');
+
+  // Read docker-compose.yml and get service names
+  const doc = yaml.load(fs.readFileSync(ymlPath, 'utf8')) as DockerCompose;
+  const services = Object.keys(doc.services || {}).filter(service => service !== 'eos');
+
+  // Stop services
+  exec(`docker-compose stop ${services.join(' ')}`);
+
+  // Pull the latest code and restart services
   exec('git pull');
+
+  // Run SQL migrations
   const migrationFiles = fs.readdirSync('./migrations').filter(file => {
     const version = path.basename(file, '.sql').split('_')[0];
     return version > currentVersion;
   });
   migrationFiles.forEach(file => exec(`mysql < ./migrations/${file}`));
-  exec('docker-compose up');
+
+  // Start all services
+  exec(`docker-compose up -d ${services.join(' ')}`);
+  
   currentVersion = newVersion;
+
+  // Rebuild and restart the current service ('eos' in this case)
+  exec('nohup sh -c "docker-compose build eos && docker-compose up -d eos" &');
 }
 
 async function checkLastVersion(): Promise<any> {
     try {
       const response = await axios.get(metaFileUrl);
+      console.log(response.data)
       newVersion = response.data.version;
       if (newVersion !== currentVersion) {
         console.log(`New version ${newVersion} available.`);

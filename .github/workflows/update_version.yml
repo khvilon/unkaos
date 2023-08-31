@@ -27,9 +27,16 @@ jobs:
         NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$3++; print}')
         jq ".version=\"$NEW_VERSION\"" meta.json > tmp.json && mv tmp.json meta.json
 
+        # Rename SQL migration files
+        cd server/eos/migrations
+        for file in m*.sql; do
+          mv "$file" "${NEW_VERSION}_${file:1}"
+        done
+        cd -
+
         # Commit and push
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add meta.json
-        git commit -m "Automatically update meta.json version to $NEW_VERSION"
+        git add meta.json server/eos/migrations/*.sql
+        git commit -m "Automatically update meta.json version to $NEW_VERSION and rename SQL files"
         git push origin dev  # Push to the dev branch
