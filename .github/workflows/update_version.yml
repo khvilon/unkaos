@@ -36,6 +36,7 @@ jobs:
           cp "$ORIGINAL_FILE" "$NEW_FILE"
           echo "Deleting $ORIGINAL_FILE"
           rm -fv "$ORIGINAL_FILE" || echo "Failed to delete $ORIGINAL_FILE"
+          git rm "$ORIGINAL_FILE"  # Remove the file from Git index
         else
           echo "$ORIGINAL_FILE does not exist"
         fi
