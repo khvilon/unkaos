@@ -1,0 +1,49 @@
+name: Update Meta Version
+
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - 'meta.json' # Don't run this action if only meta.json is changed
+
+jobs:
+  update_version:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'Automatically update')"
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        ref: dev
+        token: ${{ secrets.AUTOVERSION_TOKEN }}  # Explicitly set the token
+
+    - name: Update meta.json version
+      run: |
+        echo "Updating meta.json version..."
+        
+        # Read and update version
+        VERSION=$(jq -r '.version' meta.json)
+        NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$3++; print}')
+        jq ".version=\"$NEW_VERSION\"" meta.json > tmp.json && mv tmp.json meta.json
+
+        # Copy and delete m.sql if it exists
+        ORIGINAL_FILE="server/eos/migrations/m.sql"
+        NEW_FILE="server/eos/migrations/${NEW_VERSION}_m.sql"
+        if [ -f "$ORIGINAL_FILE" ]; then
+          echo "Copying $ORIGINAL_FILE to $NEW_FILE"
+          cp "$ORIGINAL_FILE" "$NEW_FILE"
+          echo "Deleting $ORIGINAL_FILE"
+          rm -fv "$ORIGINAL_FILE" || echo "Failed to delete $ORIGINAL_FILE"
+          git rm "$ORIGINAL_FILE"  # Remove the file from Git index
+        else
+          echo "$ORIGINAL_FILE does not exist"
+        fi
+
+        # Commit and push
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add meta.json server/eos/migrations/*.sql
+        git commit -m "Automatically update meta.json version to $NEW_VERSION and copy SQL files"
+        git push origin dev  # Push to the dev branch

@@ -16,7 +16,8 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "openai": "^3.2.1",
-    "postgres": "^3.3.4"
+    "postgres": "^3.3.4",
+    "typescript": ""
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",

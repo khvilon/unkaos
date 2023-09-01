@@ -1,5 +1,5 @@
 -----------------------------------------------------------
-CREATE SCHEMA admin;
+CREATE SCHEMA IF NOT EXISTS admin;
 
 CREATE TABLE admin.logs_incoming (
     method text NOT NULL,

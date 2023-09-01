@@ -1,0 +1,9 @@
+FROM node:16.19.0-bullseye-slim
+
+COPY ./server /app
+WORKDIR /app/athena
+RUN yarn install
+
+USER node
+
+CMD [ "npx", "ts-node", "index.ts" ]

@@ -2,75 +2,172 @@ version: '3.7'
 
 services:
   ossa:
-    image: node:16.19.0-bullseye-slim
+    build:
+      context: .
+      dockerfile: server/docker/ossa
     restart: always
-    volumes:
-      - ./:/src
     container_name: unkaos-ossa
     ports:
-      - '3004:3004'
-    command: npx ts-node /src/ossa/index.ts
+     - '3004:3004'
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+    depends_on:
+      - postgres
+
   cerberus:
-    image: node:16.19.0-bullseye-slim
+    build:
+      context: .
+      dockerfile: server/docker/cerberus
     restart: always
-    volumes:
-      - ./:/src
     container_name: unkaos-cerberus
     ports:
       - '3005:3005'
-    command: npx ts-node /src/cerberus/index.ts
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+      - HERMES_URL=${HERMES_URL}
+    depends_on:
+      - postgres
+
   zeus:
-    image: node:16.19.0-bullseye-slim
+    build:
+      context: .
+      dockerfile: server/docker/zeus
     restart: always
-    volumes:
-      - ./:/src
     container_name: unkaos-zeus
     ports:
       - '3006:3006'
-    command: npx ts-node /src/zeus/index.ts
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+    depends_on:
+      - postgres
+
   gateway:
-    image: node:16.19.0-bullseye-slim
+    build:
+      context: .
+      dockerfile: server/docker/gateway
     restart: always
-    volumes:
-      - ./:/src
     container_name: unkaos-gateway
     ports:
       - '3001:3001'
-    command: npx ts-node /src/gateway/index.ts
+    environment:
+      - ZEUS_URL=${ZEUS_URL}
+      - CERBERUS_URL=${CERBERUS_URL}
+      - ATHENA_URL=${ATHENA_URL}
+      - DOMAIN=${DOMAIN}
+    depends_on:
+      - zeus
+      - cerberus
+      - athena
+
   hermes:
-    image: node:16.19.0-bullseye-slim
+    build:
+      context: .
+      dockerfile: server/docker/hermes
     restart: always
-    volumes:
-      - ./:/src
     container_name: unkaos-hermes
     ports:
       - '5009:5009'
-    command: npx ts-node /src/hermes/index.ts
+    environment:
+      - BASE_URL="https://${DOMAIN}/"
+      - HERMES_PORT=${HERMES_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - EMAIL_SERVICE=${EMAIL_SERVICE}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - EMAIL_FROM=${EMAIL_FROM}
+      - SLACK_TOKEN=${SLACK_TOKEN}
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - WHATSAPP_CODE=${WHATSAPP_CODE}
+      - WHATSAPP_PHONE=${WHATSAPP_PHONE}
+    depends_on:
+      - postgres
 
   athena:
-    image: node:16.19.0-bullseye-slim
+    build:
+      context: .
+      dockerfile: server/docker/athena
     restart: always
-    volumes:
-      - ./:/src
     container_name: unkaos-athena
     ports:
       - '5010:5010'
-    command: npx ts-node /src/athena/index.ts
+    environment:
+      - OPENAI_KEY=${OPENAI_KEY}
+      - ATHENA_PORT=${ATHENA_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+    depends_on:
+      - postgres
 
+  nginx:
+    build:
+      context: .
+      dockerfile: server/docker/nginx
+    restart: always
+    volumes:
+     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+     - ./nginx/ssl:/etc/nginx/ssl
+     - ./nginx/conf.d:/etc/nginx/conf.d
+     - ./nginx/templates:/etc/nginx/templates
+     - ./www:/var/www
+    container_name: unkaos-nginx
+    ports:
+     - '80:80'
+     - '443:443'
+     - '3003:3003'
+     - '3002:3002'
+    environment:
+     - BASE_URL="https://${DOMAIN}:3002/"
+     - WS_URL="wss://${DOMAIN}:3003/"
+     - DOMAIN=${DOMAIN}
+     - domain=${DOMAIN}
+    depends_on:
+      - gateway
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
-#  nginx:
-#    image: nginx:alpine
-#    restart: always
-#    volumes:
-#      - /var/app/unkaos/server/nginx/logs:/var/log/nginx
-#      - /srv/tls/certs:/etc/pki/tls/certs
-#      - /srv/tls/keys:/etc/pki/tls/private
-#      - /var/app/unkaos/server/nginx/nginx.conf:/etc/nginx/nginx.conf
-#      - /var/app/unkaos/server/nginx/conf.d:/etc/nginx/conf.d
-#      - /var/app/unkaos/server/www:/var/www
-#    container_name: unkaos-nginx
-#    ports:
-#      - '80:80'
-#      - '443:443'
-#      - '3003:3003'
- #     - '3002:3002'
+  postgres:
+    image: "postgres:${POSTGRES_VERSION}"
+    environment:
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+     - '5432:5432'
+    volumes:
+      - ./server/db:/docker-entrypoint-initdb.d
+      - unkaos-pg-data:/var/lib/postgresql/data 
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -Uunkaos -dunkaos"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  unkaos-pg-data:
