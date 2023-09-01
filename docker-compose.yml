@@ -53,6 +53,23 @@ services:
     depends_on:
       - postgres
 
+  eos:
+    build:
+      context: .
+      dockerfile: server/docker/eos
+    restart: always
+    container_name: unkaos-eos
+    ports:
+      - '5011:5011'
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+    depends_on:
+      - postgres
+
   gateway:
     build:
       context: .

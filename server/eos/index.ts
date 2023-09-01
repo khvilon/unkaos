@@ -4,6 +4,7 @@ import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import * as yaml from 'js-yaml';
+import sql from './sql'
 
 // Configuration
 const app = express();
@@ -40,7 +41,10 @@ function isTimeAllowed(): boolean {
 async function performUpdate(newVersion: string): Promise<void> {
   console.log('Performing update...');
 
-  /*
+  let workspaces = (await sql`SELECT name FROM admin.workspaces`).map((w:any)=>w.name)
+  console.log('wsp', workspaces)
+
+  
   // Read docker-compose.yml and get service names
   const doc = yaml.load(fs.readFileSync(ymlPath, 'utf8')) as DockerCompose;
   const services = Object.keys(doc.services || {}).filter(service => service !== 'eos');
@@ -49,7 +53,7 @@ async function performUpdate(newVersion: string): Promise<void> {
   exec(`docker-compose stop ${services.join(' ')}`);
 
   // Pull the latest code and restart services
-  exec('git pull');*/
+  exec('git pull');
 
   // Run SQL migrations
   const migrationFiles = fs.readdirSync('./migrations').filter(file => {
@@ -59,9 +63,22 @@ async function performUpdate(newVersion: string): Promise<void> {
 
   console.log('mf', migrationFiles)
 
-  //migrationFiles.forEach(file => exec(`mysql < ./migrations/${file}`));
+  for (const file of migrationFiles) {
+    const filePath = `./migrations/${file}`;
+      const sqlContent: string = fs.readFileSync(filePath, 'utf-8');
 
-  /*
+      // Run migration as-is
+      console.log(`Running ${file} as-is`);
+      await sql`${sqlContent}`;
+
+      // Run migration for each workspace
+      for (const workspace of services) {
+        const workspaceSql = sqlContent.replace(/"public"/g, `"${workspace}"`);
+        console.log(`Running ${file} for workspace ${workspace}`);
+        await sql`${workspaceSql}`;
+      }
+}
+
   // Start all services
   exec(`docker-compose up -d ${services.join(' ')}`);
   
@@ -69,7 +86,7 @@ async function performUpdate(newVersion: string): Promise<void> {
 
   // Rebuild and restart the current service ('eos' in this case)
   exec('nohup sh -c "docker-compose build eos && docker-compose up -d eos" &');
-  */
+  
 }
 
 async function checkLastVersion(): Promise<any> {
