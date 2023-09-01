@@ -30,7 +30,8 @@ jobs:
         # Rename SQL migration files
         cd server/eos/migrations
         for file in m*.sql; do
-          mv "$file" "${NEW_VERSION}_${file:1}"
+          NEW_FILE_NAME="${NEW_VERSION}_${file:1}"
+          mv "$file" "$NEW_FILE_NAME"
         done
         cd -
 
