@@ -40,6 +40,7 @@ function isTimeAllowed(): boolean {
 async function performUpdate(newVersion: string): Promise<void> {
   console.log('Performing update...');
 
+  /*
   // Read docker-compose.yml and get service names
   const doc = yaml.load(fs.readFileSync(ymlPath, 'utf8')) as DockerCompose;
   const services = Object.keys(doc.services || {}).filter(service => service !== 'eos');
@@ -48,15 +49,19 @@ async function performUpdate(newVersion: string): Promise<void> {
   exec(`docker-compose stop ${services.join(' ')}`);
 
   // Pull the latest code and restart services
-  exec('git pull');
+  exec('git pull');*/
 
   // Run SQL migrations
   const migrationFiles = fs.readdirSync('./migrations').filter(file => {
     const version = path.basename(file, '.sql').split('_')[0];
     return version > currentVersion;
   });
-  migrationFiles.forEach(file => exec(`mysql < ./migrations/${file}`));
 
+  console.log('mf', migrationFiles)
+
+  //migrationFiles.forEach(file => exec(`mysql < ./migrations/${file}`));
+
+  /*
   // Start all services
   exec(`docker-compose up -d ${services.join(' ')}`);
   
@@ -64,6 +69,7 @@ async function performUpdate(newVersion: string): Promise<void> {
 
   // Rebuild and restart the current service ('eos' in this case)
   exec('nohup sh -c "docker-compose build eos && docker-compose up -d eos" &');
+  */
 }
 
 async function checkLastVersion(): Promise<any> {
