@@ -1,6 +1,17 @@
 /*
 import { Client, Session } from "whatsapp-web.js";
-import { whatsappConfig } from "../conf";
+
+let whatsappConf: any;
+
+try {
+  const { whatsappConfig } = require('../conf');
+  whatsappConf = whatsappConfig;
+} catch (error) {
+  whatsappConf = {
+    phoneNumber: process.env.WHATSAPP_PHONE,
+    qrCode: process.env.WHATSAPP_CODE,
+  };
+}
 
 class WhatsappMessage {
   private client;
@@ -10,8 +21,8 @@ class WhatsappMessage {
     this.session = new Session();
     this.client = new Client({ session: this.session });
     this.session.setAuthCredentials({
-      phoneNumber: whatsappConfig.phoneNumber,
-      qrCode: whatsappConfig.qrCode,
+      phoneNumber: whatsappConf.phoneNumber,
+      qrCode: whatsappConf.qrCode,
     });
   }
 

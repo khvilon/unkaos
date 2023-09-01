@@ -1,9 +1,20 @@
 import axios from "axios";
-import conf from "./conf.json";
 import cors from "cors";
 import express from "express";
 const app: any = express();
 const port = 3001;
+
+let conf: any;
+try {
+  const confFile = require('./conf.json');
+  conf = confFile;
+} catch (error) {
+  conf = {
+    zeusUrl:process.env.ZEUS_URL,
+    cerberusUrl: process.env.CERBERUS_URL,
+    athenaUrl: process.env.ATHENA_URL
+  };
+}
 
 try {
   app.use(cors());

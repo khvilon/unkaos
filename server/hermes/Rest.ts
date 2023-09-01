@@ -1,6 +1,16 @@
 import express from 'express';
 import Sender from './Sender';
-import { restConfig } from './conf';
+
+let restConf: any;
+
+try {
+  const { restConfig } = require('./conf');
+  restConf = restConfig;
+} catch (error) {
+    restConf = {
+    port: process.env.HERMES_PORT
+  };
+}
 
 export class Rest {
 
@@ -30,8 +40,8 @@ export class Rest {
             res.send({status: "OK"})
         });
 
-        app.listen(restConfig.port, () => {
-            console.log(`Server running on port ${restConfig.port}`);
+        app.listen(restConf.port, () => {
+            console.log(`Server running on port ${restConf.port}`);
         });
     }
 }

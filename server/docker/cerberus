@@ -1,0 +1,11 @@
+FROM node:16.19.0-bullseye-slim
+
+COPY ./server /app
+WORKDIR /app/cerberus
+RUN yarn install
+RUN npm i --save-dev @types/express
+RUN yarn build
+
+USER node
+
+CMD [ "npx", "ts-node", "index.ts" ]
