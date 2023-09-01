@@ -74,7 +74,11 @@ async function performUpdate(newVersion: string): Promise<void> {
 
 async function checkLastVersion(): Promise<any> {
     try {
-      const response = await axios.get(metaFileUrl);
+      const response = await axios.get(`${metaFileUrl}?nocache=${new Date().getTime()}`, {
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       console.log(response.data)
       newVersion = response.data.version;
       if (newVersion !== currentVersion) {
