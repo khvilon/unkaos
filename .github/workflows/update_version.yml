@@ -21,12 +21,17 @@ jobs:
 
     - name: Update meta.json version
       run: |
-        echo "Updating meta.json version..."
+        echo "Updating meta.json version and datetime..."
         
         # Read and update version
         VERSION=$(jq -r '.version' meta.json)
         NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$3++; print}')
-        jq ".version=\"$NEW_VERSION\"" meta.json > tmp.json && mv tmp.json meta.json
+
+        # Get current datetime
+        CURRENT_DT=$(date +"%Y-%m-%d %H:%M:%S")
+
+        # Update meta.json
+        jq ".version=\"$NEW_VERSION\" | .version_dt=\"$CURRENT_DT\"" meta.json > tmp.json && mv tmp.json meta.json
 
         # Copy and delete m.sql if it exists
         ORIGINAL_FILE="server/eos/migrations/m.sql"

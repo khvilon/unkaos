@@ -1,0 +1,10 @@
+FROM node:16.19.0-bullseye-slim
+
+COPY ./server /app
+WORKDIR /app/eos
+RUN yarn install
+RUN yarn build
+
+USER node
+
+CMD [ "npx", "ts-node", "index.ts" ]
