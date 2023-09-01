@@ -27,17 +27,19 @@ jobs:
         NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$3++; print}')
         jq ".version=\"$NEW_VERSION\"" meta.json > tmp.json && mv tmp.json meta.json
 
-        # Rename SQL migration files
-        cd server/eos/migrations
-        for file in m*.sql; do
-          NEW_FILE_NAME="${NEW_VERSION}_${file:1}"
-          mv "$file" "$NEW_FILE_NAME"
-        done
-        cd -
+        # Copy and delete m.sql if it exists
+        ORIGINAL_FILE="server/eos/migrations/m.sql"
+        NEW_FILE="server/eos/migrations/${NEW_VERSION}_m.sql"
+        if [ -f "$ORIGINAL_FILE" ]; then
+          echo "Copying $ORIGINAL_FILE to $NEW_FILE"
+          cp "$ORIGINAL_FILE" "$NEW_FILE"
+          echo "Deleting $ORIGINAL_FILE"
+          rm "$ORIGINAL_FILE"
+        fi
 
         # Commit and push
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add meta.json server/eos/migrations/*.sql
-        git commit -m "Automatically update meta.json version to $NEW_VERSION and rename SQL files"
+        git commit -m "Automatically update meta.json version to $NEW_VERSION and copy SQL files"
         git push origin dev  # Push to the dev branch
