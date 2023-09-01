@@ -35,7 +35,9 @@ jobs:
           echo "Copying $ORIGINAL_FILE to $NEW_FILE"
           cp "$ORIGINAL_FILE" "$NEW_FILE"
           echo "Deleting $ORIGINAL_FILE"
-          rm "$ORIGINAL_FILE"
+          rm -fv "$ORIGINAL_FILE" || echo "Failed to delete $ORIGINAL_FILE"
+        else
+          echo "$ORIGINAL_FILE does not exist"
         fi
 
         # Commit and push
