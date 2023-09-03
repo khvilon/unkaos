@@ -49,6 +49,13 @@ jobs:
         # Commit and push
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add meta.json server/eos/migrations/*.sql
-        git commit -m "Automatically update meta.json version to $NEW_VERSION and copy SQL files"
-        git push origin dev  # Push to the dev branch
+        git add meta.json
+        
+        # Conditionally add SQL files if they exist
+        SQL_FILES=$(ls server/eos/migrations/*.sql 2> /dev/null)
+        if [ "$SQL_FILES" ]; then
+          git add server/eos/migrations/*.sql
+        fi
+
+        git commit -m "Automatically update meta.json version to $NEW_VERSION and copy SQL files" || echo "No changes to commit"
+        git push origin dev || echo "Failed to push changes"
