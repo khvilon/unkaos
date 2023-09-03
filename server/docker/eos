@@ -3,6 +3,8 @@ FROM node:16.19.0-bullseye-slim
 COPY ./server /app
 WORKDIR /app/eos
 RUN yarn install
+RUN npm i js-yaml
+RUN npm i --save-dev @types/js-yaml
 RUN yarn build
 
 USER node
