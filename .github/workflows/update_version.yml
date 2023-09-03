@@ -21,43 +21,34 @@ jobs:
 
     - name: Update meta.json version
       run: |
-        set -e  # Exit immediately if a command exits with a non-zero status.
+        echo "Updating meta.json version and datetime..."
+        
+        # Read and update version
+        VERSION=$(jq -r '.version' meta.json)
+        NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$3++; print}')
 
-    echo "Updating meta.json version and datetime..."
+        # Get current datetime
+        CURRENT_DT=$(date +"%Y-%m-%d %H:%M:%S")
 
-    # Read and update version
-    VERSION=$(jq -r '.version' meta.json)
-    NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$3++; print}')
+        # Update meta.json
+        jq ".version=\"$NEW_VERSION\" | .version_dt=\"$CURRENT_DT\"" meta.json > tmp.json && mv tmp.json meta.json
 
-    # Get current datetime
-    CURRENT_DT=$(date +"%Y-%m-%d %H:%M:%S")
+        # Copy and delete m.sql if it exists
+        ORIGINAL_FILE="server/eos/migrations/m.sql"
+        NEW_FILE="server/eos/migrations/${NEW_VERSION}_m.sql"
+        if [ -f "$ORIGINAL_FILE" ]; then
+          echo "Copying $ORIGINAL_FILE to $NEW_FILE"
+          cp "$ORIGINAL_FILE" "$NEW_FILE"
+          echo "Deleting $ORIGINAL_FILE"
+          rm -fv "$ORIGINAL_FILE" || echo "Failed to delete $ORIGINAL_FILE"
+          git rm "$ORIGINAL_FILE"  # Remove the file from Git index
+        else
+          echo "$ORIGINAL_FILE does not exist"
+        fi
 
-    # Update meta.json
-    jq ".version=\"$NEW_VERSION\" | .version_dt=\"$CURRENT_DT\"" meta.json > tmp.json && mv tmp.json meta.json
-
-    # Copy and delete m.sql if it exists
-    ORIGINAL_FILE="server/eos/migrations/m.sql"
-    NEW_FILE="server/eos/migrations/${NEW_VERSION}_m.sql"
-    if [ -f "$ORIGINAL_FILE" ]; then
-      echo "Copying $ORIGINAL_FILE to $NEW_FILE"
-      cp "$ORIGINAL_FILE" "$NEW_FILE"
-      echo "Deleting $ORIGINAL_FILE"
-      rm -fv "$ORIGINAL_FILE"
-      git rm "$ORIGINAL_FILE"  # Remove the file from Git index
-    else
-      echo "$ORIGINAL_FILE does not exist"
-      exit 0  # Exit successfully if the file doesn't exist
-    fi
-
-    # Commit and push
-    git config --local user.email "action@github.com"
-    git config --local user.name "GitHub Action"
-    git add meta.json
-
-    SQL_FILES=$(ls server/eos/migrations/*.sql 2> /dev/null || true)
-    if [ "$SQL_FILES" ]; then
-      git add server/eos/migrations/*.sql
-    fi
-
-    git commit -m "Automatically update meta.json version to $NEW_VERSION and copy SQL files" || echo "No changes to commit"
-    git push origin dev  # Push to the dev branch
+        # Commit and push
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add meta.json server/eos/migrations/*.sql
+        git commit -m "Automatically update meta.json version to $NEW_VERSION and copy SQL files"
+        git push origin dev  # Push to the dev branch
