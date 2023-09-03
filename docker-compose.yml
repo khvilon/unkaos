@@ -60,6 +60,7 @@ services:
     restart: always
     volumes:
       - /var/app/unkaos/meta.json:/var/meta.json
+      - /var/app/unkaos/docker-compose.yml:/var/docker-compose.yml
     container_name: unkaos-eos
     ports:
       - '5011:5011'
