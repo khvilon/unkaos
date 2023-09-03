@@ -159,4 +159,4 @@ app.listen(port, () => console.log(`Server running on port ${port}`));
 setInterval(auto, config.checkInterval);
 console.log('Autoupdate conf:', config)
 
-console.log('test0')
+console.log('test1')
