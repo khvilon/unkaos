@@ -52,6 +52,12 @@ export default class Data {
       LEFT JOIN (SELECT uuid, name FROM ${sql(workspaceName + '.roles')}) R ON R.uuid = UR.roles_uuid
       WHERE U.active 
       AND U.deleted_at IS NULL
+      GROUP BY
+      U.uuid,
+      U.name,
+      U.login,
+      U.mail,
+      U.telegram,
     `)
   }
 
