@@ -57,7 +57,7 @@ export default class Data {
       U.name,
       U.login,
       U.mail,
-      U.telegram,
+      U.telegram
     `)
   }
 
