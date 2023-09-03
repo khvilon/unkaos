@@ -13,7 +13,7 @@ const config = {
   checkInterval: parseInt(process.env.CHECK_INTERVAL || '10000'),
   allowedUpdateFrom: process.env.ALLOWED_UPDATE_FROM || '00:00',
   allowedUpdateTo: process.env.ALLOWED_UPDATE_TO || '23:59',
-  autoUpdate: process.env.AUTO_UPDATE === 'true',
+  autoUpdate: process.env.AUTO_UPDATE || true,
 };
 
 // State
