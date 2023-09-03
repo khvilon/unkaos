@@ -59,7 +59,7 @@ services:
       dockerfile: server/docker/eos
     restart: always
     volumes:
-      - meta.json:/var/meta.json
+      - /var/app/unkaos/meta.json:/var/meta.json
     container_name: unkaos-eos
     ports:
       - '5011:5011'
