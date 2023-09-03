@@ -146,3 +146,4 @@ app.get('/update', async (_, res) => {
 // Initialization
 app.listen(port, () => console.log(`Server running on port ${port}`));
 setInterval(auto, config.checkInterval);
+console.log('Autoupdate conf:', config)
