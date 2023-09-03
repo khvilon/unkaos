@@ -89,12 +89,12 @@ async function performUpdate(newVersion: string): Promise<void> {
 }
 
   // Start all services
-  exec(`docker-compose up -d ${services.join(' ')}`);
+  exec(`docker-compose up -d --build ${services.join(' ')}`);
   
   currentVersion = newVersion;
 
   // Rebuild and restart the current service ('eos' in this case)
-  exec('nohup sh -c "docker-compose build eos && docker-compose up -d eos" &');
+  exec('nohup sh -c "docker-compose build eos && docker-compose up -d --build eos" &');
   
 }
 
@@ -130,6 +130,7 @@ async function checkLastVersion(): Promise<any> {
 
 async function auto(): Promise<void> {
     console.log('check auto', config.autoUpdate, isTimeAllowed())
+    console.log('testa1')
     if (!config.autoUpdate) return;
     if(!isTimeAllowed()) return;
 
