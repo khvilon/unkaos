@@ -10,7 +10,7 @@ import sql from './sql'
 const app = express();
 const port = 5011;
 const config = {
-  checkInterval: parseInt(process.env.CHECK_INTERVAL || '600000'),
+  checkInterval: parseInt(process.env.CHECK_INTERVAL || '10000'),
   allowedUpdateFrom: process.env.ALLOWED_UPDATE_FROM || '00:00',
   allowedUpdateTo: process.env.ALLOWED_UPDATE_TO || '23:59',
   autoUpdate: process.env.AUTO_UPDATE === 'true',
@@ -20,7 +20,7 @@ const config = {
 let currentVersion = readCurrentVersion();
 let newVersion: string;
 const metaFileUrl = 'https://raw.githubusercontent.com/khvilon/unkaos/dev/meta.json'
-const ymlPath = '../../docker-compose.yml'
+const ymlPath = '/var/docker-compose.yml'
 
 interface DockerCompose {
     services?: { [key: string]: any };
