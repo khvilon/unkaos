@@ -33,10 +33,19 @@ function readCurrentVersion(): string {
 }
 
 function isTimeAllowed(): boolean {
-  const now = new Date();
-  const currentTime = `${now.getHours()}:${now.getMinutes()}`;
-  return currentTime >= config.allowedUpdateFrom && currentTime <= config.allowedUpdateTo;
-}
+    const now = new Date();
+  
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  
+    const [fromHour, fromMinute] = config.allowedUpdateFrom.split(":").map(Number);
+    const fromTotalMinutes = fromHour * 60 + fromMinute;
+  
+    const [toHour, toMinute] = config.allowedUpdateTo.split(":").map(Number);
+    const toTotalMinutes = toHour * 60 + toMinute;
+  
+    return currentMinutes >= fromTotalMinutes && currentMinutes <= toTotalMinutes;
+  }
+  
 
 async function performUpdate(newVersion: string): Promise<void> {
   console.log('Performing update...');
