@@ -28,7 +28,7 @@ interface DockerCompose {
 
 // Utility Functions
 function readCurrentVersion(): string {
-  const meta = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../meta.json'), 'utf8'));
+  const meta = JSON.parse(fs.readFileSync(path.resolve(__dirname, '/var/meta.json'), 'utf8'));
   return meta.version;
 }
 
