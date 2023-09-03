@@ -21,7 +21,14 @@ export default class Security {
   private static async fetchUser(workspace: string, email: string, pass: string) : Promise<any> {
     return sql`
     SELECT 
-    U.*,
+    U.uuid,
+    U.name,
+    U.login,
+    U.mail,
+    U.active,
+    U.avatar,
+    U.created_at,
+    U.updated_at,
     json_agg(R) as roles
     FROM ${sql(workspace + '.users')} U
     LEFT JOIN ${sql(workspace + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
@@ -31,7 +38,14 @@ export default class Security {
     AND deleted_at IS NULL 
     AND active
     GROUP BY
-    U.*
+    U.uuid,
+    U.name,
+    U.login,
+    U.mail,
+    U.active,
+    U.avatar,
+    U.created_at,
+    U.updated_at
     `;
 
     
