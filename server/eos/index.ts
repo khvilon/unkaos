@@ -10,7 +10,7 @@ import sql from './sql'
 const app = express();
 const port = 5011;
 const config = {
-  checkInterval: parseInt(process.env.CHECK_INTERVAL || '10000'),
+  checkInterval: parseInt(process.env.CHECK_INTERVAL || '5000'),
   allowedUpdateFrom: process.env.ALLOWED_UPDATE_FROM || '00:00',
   allowedUpdateTo: process.env.ALLOWED_UPDATE_TO || '23:59',
   autoUpdate: process.env.AUTO_UPDATE || true,
@@ -120,10 +120,12 @@ async function checkLastVersion(): Promise<any> {
   }
 
 async function auto(): Promise<void> {
+    console.log('check auto', config.autoUpdate, isTimeAllowed())
     if (!config.autoUpdate) return;
     if(!isTimeAllowed()) return;
 
     let result = await checkLastVersion();
+    console.log('check auto result', result)
     if (result.new) {
         performUpdate(result.version);
     }
