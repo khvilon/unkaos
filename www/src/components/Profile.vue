@@ -58,6 +58,9 @@ export default {
     this.update_user()
 
     cache.set_profile_listener(this.update_user)
+
+    const admin_uuid = 
+    this.$store.state.common.is_admin = 
   },
   updated() {
     //console.log('uuuuu')
