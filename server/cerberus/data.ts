@@ -45,8 +45,11 @@ export default class Data {
           U.name,
           U.login,
           U.mail,
-          U.telegram
+          U.telegram,
+          json_agg(R) as roles
       FROM ${sql(workspaceName + '.users')} U
+      LEFT JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
+      LEFT JOIN (SELECT uuid, name FROM ${sql(workspaceName + '.roles')}) R ON R.uuid = UR.roles_uuid
       WHERE U.active 
       AND U.deleted_at IS NULL
     `)
