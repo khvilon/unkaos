@@ -130,7 +130,7 @@ async function checkLastVersion(): Promise<any> {
 
 async function auto(): Promise<void> {
     console.log('check auto', config.autoUpdate, isTimeAllowed())
-    console.log('testa2')
+    console.log('testa3')
     if (!config.autoUpdate) return;
     if(!isTimeAllowed()) return;
 
