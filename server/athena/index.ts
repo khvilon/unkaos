@@ -103,3 +103,5 @@ app.get('/gpt', async (req, res) => {
 app.listen(restConf.port, () => {
   console.log(`Listening on port ${restConf.port}`);
 });
+
+console.log('update test 1')
