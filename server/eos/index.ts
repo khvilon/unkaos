@@ -59,10 +59,10 @@ async function performUpdate(newVersion: string): Promise<void> {
   const services = Object.keys(doc.services || {}).filter(service => service !== 'eos');
 
   // Stop services
-  exec(`docker-compose stop ${services.join(' ')}`);
+  exec(`docker -H unix:///var/run/docker.sock compose stop ${services.join(' ')}`);
 
   // Pull the latest code and restart services
-  exec('git pull');
+  exec('docker -H unix:///var/run/docker.sock compose pull');
 
   // Run SQL migrations
   const migrationFiles = fs.readdirSync('./migrations').filter(file => {
@@ -89,12 +89,12 @@ async function performUpdate(newVersion: string): Promise<void> {
 }
 
   // Start all services
-  exec(`docker-compose up -d --build ${services.join(' ')}`);
+  exec(`docker -H unix:///var/run/docker.sock compose up -d --build ${services.join(' ')}`);
   
   currentVersion = newVersion;
 
   // Rebuild and restart the current service ('eos' in this case)
-  exec('nohup sh -c "docker-compose build eos && docker-compose up -d --build eos" &');
+  exec('nohup sh -c "docker -H unix:///var/run/docker.sock compose build eos && docker -H unix:///var/run/docker.sock compose up -d --build eos" &');
   
 }
 
