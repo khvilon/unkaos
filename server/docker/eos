@@ -6,6 +6,8 @@ RUN yarn install
 RUN npm i js-yaml
 RUN npm i --save-dev @types/js-yaml
 RUN yarn build
+RUN apt-get update && \
+    apt-get install -y docker.io
 
 USER node
 
