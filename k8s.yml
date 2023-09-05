@@ -1,0 +1,399 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unkaos-config
+data:
+  DB_HOST: "${DB_HOST}"
+  DB_PORT: "${DB_PORT}"
+  DB_USER: "${DB_USER}"
+  DB_PASSWORD: "${DB_PASSWORD}"
+  DB_DATABASE: "${DB_DATABASE}"
+  HERMES_URL: "${HERMES_URL}"
+  ZEUS_URL: "${ZEUS_URL}"
+  CERBERUS_URL: "${CERBERUS_URL}"
+  ATHENA_URL: "${ATHENA_URL}"
+  DOMAIN: "${DOMAIN}"
+  OPENAI_KEY: "${OPENAI_KEY}"
+  ATHENA_PORT: "${ATHENA_PORT}"
+  HERMES_PORT: "${HERMES_PORT}"
+  POSTGRES_VERSION: "${POSTGRES_VERSION}"
+  DISCORD_TOKEN: "${DISCORD_TOKEN}"
+  EMAIL_SERVICE: "${EMAIL_SERVICE}"
+  EMAIL_USER: "${EMAIL_USER}"
+  EMAIL_PASS: "${EMAIL_PASS}"
+  EMAIL_FROM: "${EMAIL_FROM}"
+  SLACK_TOKEN: "${SLACK_TOKEN}"
+  TELEGRAM_TOKEN: "${TELEGRAM_TOKEN}"
+  WHATSAPP_CODE: "${WHATSAPP_CODE}"
+  WHATSAPP_PHONE: "${WHATSAPP_PHONE}"
+
+# OSSA Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ossa
+    spec:
+      containers:
+      - name: ossa
+        image: ossa-image
+        ports:
+        - containerPort: 3004
+        envFrom:
+        - configMapRef:
+            name: unkaos-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ossa-service
+spec:
+  selector:
+    app: ossa
+  ports:
+    - protocol: TCP
+      port: 3004
+      targetPort: 3004
+
+# Cerberus Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cerberus
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cerberus
+    spec:
+      containers:
+      - name: cerberus
+        image: cerberus-image
+        ports:
+        - containerPort: 3005
+        envFrom:
+        - configMapRef:
+            name: unkaos-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cerberus-service
+spec:
+  selector:
+    app: cerberus
+  ports:
+    - protocol: TCP
+      port: 3005
+      targetPort: 3005
+
+# Zeus Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zeus
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: zeus
+    spec:
+      containers:
+      - name: zeus
+        image: zeus-image
+        ports:
+        - containerPort: 3006
+        envFrom:
+        - configMapRef:
+            name: unkaos-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zeus-service
+spec:
+  selector:
+    app: zeus
+  ports:
+    - protocol: TCP
+      port: 3006
+      targetPort: 3006
+
+# Eos Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eos
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: eos
+    spec:
+      containers:
+      - name: eos
+        image: eos-image
+        ports:
+        - containerPort: 5011
+        envFrom:
+        - configMapRef:
+            name: unkaos-config
+        volumeMounts:
+        - name: eos-volume
+          mountPath: /var/app/unkaos
+      volumes:
+      - name: eos-volume
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eos-service
+spec:
+  selector:
+    app: eos
+  ports:
+    - protocol: TCP
+      port: 5011
+      targetPort: 5011
+
+# Gateway Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+      - name: gateway
+        image: gateway-image
+        ports:
+        - containerPort: 3001
+        envFrom:
+        - configMapRef:
+            name: unkaos-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-service
+spec:
+  selector:
+    app: gateway
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
+
+# Hermes Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hermes
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: hermes
+    spec:
+      containers:
+      - name: hermes
+        image: hermes-image
+        ports:
+        - containerPort: 5009
+        envFrom:
+        - configMapRef:
+            name: unkaos-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hermes-service
+spec:
+  selector:
+    app: hermes
+  ports:
+    - protocol: TCP
+      port: 5009
+      targetPort: 5009
+
+# Athena Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: athena
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: athena
+    spec:
+      containers:
+      - name: athena
+        image: athena-image
+        ports:
+        - containerPort: 5010
+        envFrom:
+        - configMapRef:
+            name: unkaos-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: athena-service
+spec:
+  selector:
+    app: athena
+  ports:
+    - protocol: TCP
+      port: 5010
+      targetPort: 5010
+
+# Nginx Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx-image
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        - containerPort: 3002
+        - containerPort: 3003
+        envFrom:
+        - configMapRef:
+            name: unkaos-config
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: /etc/nginx
+        - name: nginx-ssl
+          mountPath: /etc/nginx/ssl
+        - name: nginx-confd
+          mountPath: /etc/nginx/conf.d
+        - name: nginx-templates
+          mountPath: /etc/nginx/templates
+        - name: nginx-www
+          mountPath: /var/www
+      volumes:
+      - name: nginx-conf
+        configMap:
+          name: nginx-conf
+      - name: nginx-ssl
+        secret:
+          secretName: nginx-ssl
+      - name: nginx-confd
+        configMap:
+          name: nginx-confd
+      - name: nginx-templates
+        configMap:
+          name: nginx-templates
+      - name: nginx-www
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+    - protocol: TCP
+      port: 443
+      targetPort: 443
+    - protocol: TCP
+      port: 3002
+      targetPort: 3002
+    - protocol: TCP
+      port: 3003
+      targetPort: 3003
+
+# Postgres Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:${POSTGRES_VERSION}
+        ports:
+        - containerPort: 5432
+        envFrom:
+        - configMapRef:
+            name: unkaos-config
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+# Persistent Volume Claim for Postgres
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
