@@ -40,7 +40,9 @@ fi
 
 echo "New version $NEW_VERSION available."
 
+docker-compose down
 git pull
+docker-compose up -d
 
 # Main Script
 echo "Autoupdate conf: $AUTO_UPDATE, $ALLOWED_UPDATE_FROM-$ALLOWED_UPDATE_TO, $CHECK_INTERVAL"
