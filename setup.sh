@@ -18,7 +18,7 @@ cd /var/app/unkaos
 # Path to the .env file
 ENV_FILE=".env"
 TEMP_FILE=".env.tmp"
-ENV_TO_CHANGE="env_to_change"  # Specify the file containing variables to change
+ENV_TO_CHANGE=".env_to_change"  # Specify the file containing variables to change
 
 # Create a temporary file to store the new values
 touch $TEMP_FILE
