@@ -114,7 +114,7 @@ if [[ $use_certbot != "no" ]]; then
 
     cp -rfL /etc/letsencrypt/live/$DOMAIN/* /var/app/unkaos/nginx/ssl
 
-    # Create a Cron Job for auto-renewal of certificates
+    # Create a Cron Job for auto renewal of certificates
     (crontab -l ; echo "0 */12 * * * /usr/bin/certbot renew --quiet --post-hook \"docker-compose -f /var/app/unkaos/docker-compose.yml restart nginx\"") | crontab -
 fi
 
