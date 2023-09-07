@@ -27,22 +27,21 @@ touch $TEMP_FILE
 while IFS= read -r line
 do
     # Check if the line contains a variable name and comment
-    if [[ $line =~ ^[^#]*# ]]; then
-        # Extract the variable name from the comment
-        var_name=$(echo "$line" | grep -oP '^\w+(?=#)')
-        
-        # Extract the comment to provide context
-        comment=$(echo "$line" | grep -oP '(?<=# ).*')
-        
+    if [[ $line =~ ^#.*=.* ]]; then
+        # Extract the variable name and comment
+        var_and_comment=($line)
+        var_name="${var_and_comment[0]#*#}"
+        comment="${var_and_comment[@]:1}"
+
         # Get the current value from .env
         current_value=$(grep -oP "(?<=^$var_name=).*" $ENV_FILE)
-        
+
         # Check if it's the DB_PASSWORD variable
         if [[ "$var_name" == "DB_PASSWORD" ]]; then
             # Prompt the user to change the value or generate a random password
             echo "Current value for $var_name ($comment) is: $current_value"
             read -p "Enter a new value or press ENTER to generate a random password: " new_value < /dev/tty
-            
+
             if [[ -z $new_value ]]; then
                 new_value=$(generate_password)
                 echo "Generated random password: $new_value"
