@@ -30,16 +30,18 @@ do
         key=$(echo $line | cut -d'=' -f1)
         value=$(echo $line | cut -d'=' -f2)
 
-        # Prompt the user to change the value if it's preceded by a comment line beginning with #>>
-        if grep -q "^#>>$key=" $ENV_FILE; then
+        # Check if there is a preceding comment line beginning with #>>
+        comment_line=$(grep -E "^#>>$key=" $ENV_FILE)
+        if [ -n "$comment_line" ]; then
+            # Prompt the user to change the value
             echo "Current value for $key is: $value"
             read -p "Enter a new value or press ENTER to keep the current value: " new_value < /dev/tty
 
             # If the user entered a new value, use it; otherwise, use the original value
-            if [[ -z $new_value ]]; then
-                echo "$key=$value" >> $TEMP_FILE
-            else
+            if [[ -n $new_value ]]; then
                 echo "$key=$new_value" >> $TEMP_FILE
+            else
+                echo "$key=$value" >> $TEMP_FILE
             fi
         else
             # If not preceded by #>>, keep the original line
