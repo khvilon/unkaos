@@ -1,82 +1,33 @@
-#!/bin/bash
+#Domain
+DOMAIN=unkaos.ru
 
-# Function to generate a random 8-letter password
-generate_password() {
-    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1
-}
+#Password for superuser unkaos to connect your postgresql DB
+DB_PASSWORD=unkaossuperpass
 
-# 1. Clone the repo
-echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
-sudo apt update
-mkdir /var/app
-cd /var/app
-sudo apt install git -y
-git clone -b dev https://github.com/khvilon/unkaos.git
-cd /var/app/unkaos
+#Service  for email notifications
+EMAIL_SERVICE=change_me
+#Login for email notifications
+EMAIL_USER=change_me
+#Password for email notifications
+EMAIL_PASS=change_me
+#Field "From" for email notifications
+EMAIL_FROM=change_me
 
-# 2. Set your env variables
-# Path to the .env file
-ENV_FILE=".env"
+#Password for superuser unkaos to get your postgresql DB
+DISCORD_TOKEN=change_me
 
-# Read the env_to_change file to get variable names and comments
-while IFS= read -r line
-do
-    # Check if the line contains a variable name
-    variable_name=$(echo "$line" | awk -F '=' '{print $1}')
-    if [[ ! -z $variable_name ]]; then
-        # Find the comment line above the variable name in env_to_change
-        comment=$(grep -B 1 "^$variable_name=" env_to_change | grep -v "^--$" | tail -n 1)
-        if [[ ! -z $comment ]]; then
-            # Prompt the user to change the value or skip
-            echo "Comment for $variable_name: $comment"
-            current_value=$(grep "^$variable_name=" $ENV_FILE | awk -F '=' '{print $2}')
-            echo "Current value for $variable_name is: $current_value"
-            read -p "Enter a new value or press ENTER to keep the current value: " new_value < /dev/tty
+#If you want to use Telegram for notification, add the bot tocken
+TELEGRAM_TOKEN=change_me
 
-            # If the user entered a new value, use it; otherwise, use the original value
-            if [[ ! -z $new_value ]]; then
-                sed -i "s/^$variable_name=.*/$variable_name=$new_value/" $ENV_FILE
-            fi
-        fi
-    fi
-done < env_to_change
+#If you want to use Slack for notification, add the bot tocken
+SLACK_TOKEN=YOUR_SLACK_TOKEN
 
-echo "Updated .env file saved."
+#If you want to use Whatsapp for notification, add the code
+WHATSAPP_CODE=change_me
+#If you want to use Whatsapp for notification, add the phone
+WHATSAPP_PHONE=YOUR_PHONE_NUMBER
 
-# 3. Make a copy of the server/db/public.sql with the changed schema
-read -p "Enter your first workspace name: " schema_name < /dev/tty
-cp server/db/_public.sql server/db/__$schema_name.sql
-sed -i "s/\b_public\b/$schema_name/g" server/db/__$schema_name.sql
-sed -i "s/\btest\b/$schema_name/g" server/db/_workspace.sql
-random_password=$(generate_password)
-sed -i "s/mypass/$random_password/g" server/db/_workspace.sql
+#OpenAI key to use AI in issue requests and bulk change
+OPENAI_KEY=change_me
 
-# 4. Setting up SSL with Certbot if user has no certificate
-read -p "Do you want to use Certbot for SSL setup? (yes by default, press ENTER) or type 'no' to skip: " use_certbot < /dev/tty
-use_certbot=${use_certbot:-yes}  # Set default value
-if [[ $use_certbot != "no" ]]; then
-    # Install Certbot
-    sudo apt install certbot -y
 
-    echo "try install cert 0"
-
-    # Generate certificates
-    source $ENV_FILE
-    sudo certbot certonly --standalone -d $DOMAIN --register-unsafely-without-email --agree-tos --no-eff-email
-
-    echo "try install cert 1"
-
-    cp -rfL /etc/letsencrypt/live/$DOMAIN/* /var/app/unkaos/nginx/ssl
-
-    # Create a Cron Job for auto-renewal of certificates
-    (crontab -l ; echo "0 */12 * * * /usr/bin/certbot renew --quiet --post-hook \"docker-compose -f /var/app/unkaos/docker-compose.yml restart nginx\"") | crontab -
-fi
-
-# 5. Run docker containers
-apt install docker-compose -y
-docker-compose up -d
-
-#apt install postgresql-client-common
-sudo apt-get install postgresql-client
-
-echo "Setup complete!"
