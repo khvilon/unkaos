@@ -30,7 +30,7 @@ do
     if [[ $line == *=* ]]; then
         echo ">>>>>111"
 
-        if [[ $prev_line == *#>>* ]]; then
+        if [[ $prev_line == "#>>"* ]]; then
 
             key=$(echo $line | cut -d'=' -f1)
             value=$(echo $line | cut -d'=' -f2)
@@ -51,7 +51,7 @@ do
             fi
         fi
     fi
-    prev_line = $line
+    prev_line = "$line"
 done < $ENV_FILE
 
 # Replace the original .env file with the updated values
