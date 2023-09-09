@@ -51,7 +51,7 @@ do
             fi
         fi
     fi
-    prev_line = "$line"
+    prev_line="$line"
 done < $ENV_FILE
 
 # Replace the original .env file with the updated values
