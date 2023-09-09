@@ -22,6 +22,8 @@ TEMP_FILE=".env.tmp"
 # Create a temporary file to store the new values
 touch $TEMP_FILE
 
+prev_line=""
+
 # Read the .env file line by line
 while IFS= read -r line
 do
