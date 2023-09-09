@@ -25,8 +25,10 @@ touch $TEMP_FILE
 # Read the .env file line by line
 while IFS= read -r line
 do
+    echo ">>>>>000"
     # Check if the line contains a key-value pair
     if [[ $line == *=* ]]; then
+        echo ">>>>>111"
         key=$(echo $line | cut -d'=' -f1)
         value=$(echo $line | cut -d'=' -f2)
 
