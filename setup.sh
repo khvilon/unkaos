@@ -27,20 +27,16 @@ prev_line=""
 # Read the .env file line by line
 while IFS= read -r line
 do
-    echo ">>>>>000"
     # Check if the line contains a key-value pair
     if [[ $line == *=* ]]; then
-        echo ">>>>>111"
 
         if [[ $prev_line == "#>>"* ]]; then
 
             key=$(echo $line | cut -d'=' -f1)
             value=$(echo $line | cut -d'=' -f2)
-
-            echo ">>>>>222"
       
             # Prompt the user to change the value
-            comment=$(echo "$prev_line" | cut -d'>' -f2)
+            comment=$(echo $prev_line | cut -d'>>' -f2)
             echo "Description: $comment"
             echo "Current value for $key is: $value"
             read -p "Enter a new value or press ENTER to keep the current value: " new_value < /dev/tty
