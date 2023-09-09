@@ -35,6 +35,7 @@ do
         # Check if there is a preceding comment line beginning with #>> and the variable is not empty
         comment_line=$(grep -E "^#>>$key=" $ENV_FILE)
         echo $comment_line
+        echo ">>>>>222"
         if [ -n "$comment_line" ]; then
             # Prompt the user to change the value
             comment=$(echo "$comment_line" | cut -d'>' -f2)
