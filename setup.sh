@@ -30,7 +30,7 @@ do
     if [[ $line == *=* ]]; then
         echo ">>>>>111"
 
-        if [[ $prev_line == *>>* ]]; then
+        if [[ $prev_line == *#>>* ]]; then
 
             key=$(echo $line | cut -d'=' -f1)
             value=$(echo $line | cut -d'=' -f2)
