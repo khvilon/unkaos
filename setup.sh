@@ -29,16 +29,16 @@ do
     # Check if the line contains a key-value pair
     if [[ $line == *=* ]]; then
         echo ">>>>>111"
-        key=$(echo $line | cut -d'=' -f1)
-        value=$(echo $line | cut -d'=' -f2)
 
-        # Check if there is a preceding comment line beginning with #>> and the variable is not empty
-        comment_line=$(grep -E "^#>>$key=" $ENV_FILE)
-        echo $comment_line
-        echo ">>>>>222"
-        if [ -n "$comment_line" ]; then
+        if [[ $prev_line == *>>* ]]; then
+
+            key=$(echo $line | cut -d'=' -f1)
+            value=$(echo $line | cut -d'=' -f2)
+
+            echo ">>>>>222"
+      
             # Prompt the user to change the value
-            comment=$(echo "$comment_line" | cut -d'>' -f2)
+            comment=$(echo "$prev_line" | cut -d'>' -f2)
             echo "Description: $comment"
             echo "Current value for $key is: $value"
             read -p "Enter a new value or press ENTER to keep the current value: " new_value < /dev/tty
@@ -49,14 +49,9 @@ do
             else
                 echo "$key=$value" >> $TEMP_FILE
             fi
-        else
-            # If not preceded by #>>, keep the original line
-            echo "$line" >> $TEMP_FILE
         fi
-    else
-        # If the line doesn't contain a key-value pair, just copy it to the temporary file
-        echo "$line" >> $TEMP_FILE
     fi
+    prev_line = $line
 done < $ENV_FILE
 
 # Replace the original .env file with the updated values
