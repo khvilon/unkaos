@@ -30,10 +30,12 @@ do
         key=$(echo $line | cut -d'=' -f1)
         value=$(echo $line | cut -d'=' -f2)
 
-        # Check if there is a preceding comment line beginning with #>>
+        # Check if there is a preceding comment line beginning with #>> and the variable is not empty
         comment_line=$(grep -E "^#>>$key=" $ENV_FILE)
         if [ -n "$comment_line" ]; then
             # Prompt the user to change the value
+            comment=$(echo "$comment_line" | cut -d'>' -f2)
+            echo "Description: $comment"
             echo "Current value for $key is: $value"
             read -p "Enter a new value or press ENTER to keep the current value: " new_value < /dev/tty
 
