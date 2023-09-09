@@ -36,7 +36,7 @@ do
             value=$(echo $line | cut -d'=' -f2)
       
             # Prompt the user to change the value
-            comment=$(echo $prev_line | cut -d'>>' -f2)
+            comment="${prev_line#*#>>}"
             echo "Description: $comment"
             echo "Current value for $key is: $value"
             read -p "Enter a new value or press ENTER to keep the current value: " new_value < /dev/tty
