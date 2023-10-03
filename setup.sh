@@ -24,6 +24,9 @@ touch $TEMP_FILE
 
 prev_line=""
 
+superuser_password=$(generate_password)
+sed -i "s/unkaossuperpass/$superuser_password/g" $ENV_FILE
+
 # Read the .env file line by line
 while IFS= read -r line
 do
