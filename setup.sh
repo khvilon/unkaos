@@ -61,7 +61,36 @@ mv $TEMP_FILE $ENV_FILE
 echo "Updated .env file saved."
 
 # 3. Make a copy of the server/db/public.sql with the changed schema
-read -p "Enter your first workspace name: " schema_name < /dev/tty
+
+# Function to validate the workspace name
+validate_workspace_name() {
+    local name=$1
+    if [[ -z $name ]]; then
+        echo "Workspace name cannot be empty."
+        return 1
+    elif [[ $name =~ [^a-zA-Z0-9_] ]]; then
+        echo "Workspace name can only contain letters, numbers, and underscores."
+        return 1
+    elif [[ ${#name} -ge 64 ]]; then
+        echo "Workspace name should be shorter than 64 characters."
+        return 1
+    elif [[ ! $name =~ ^[a-zA-Z_] ]]; then
+        echo "Workspace name should start with a letter or an underscore."
+        return 1
+    fi
+    return 0
+}
+
+while true; do
+    read -p "Enter your first workspace name: " schema_name < /dev/tty
+    validate_workspace_name "$schema_name"
+    if [[ $? -eq 0 ]]; then
+        break
+    else
+        echo "Wrong workspace name format."
+    fi
+done
+
 cp server/db/_public.sql server/db/__$schema_name.sql
 sed -i "s/\b_public\b/$schema_name/g" server/db/__$schema_name.sql
 sed -i "s/\btest\b/$schema_name/g" server/db/_workspace.sql
