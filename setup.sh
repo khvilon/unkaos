@@ -94,11 +94,20 @@ while true; do
     fi
 done
 
-cp server/db/_public.sql server/db/__$schema_name.sql
-sed -i "s/\b_public\b/$schema_name/g" server/db/__$schema_name.sql
+cp server/db/_public.sql server/db/_$schema_name.sql
+sed -i "s/\bpublic\b/$schema_name/g" server/db/_$schema_name.sql
 sed -i "s/\btest\b/$schema_name/g" server/db/_workspace.sql
 random_password=$(generate_password)
 sed -i "s/mypass/$random_password/g" server/db/_workspace.sql
+
+#migrations
+for file in server/db/*_m.sql; do
+    new_file="${file/_m/_$schema_name}"
+
+    cp "$file" "$new_file"
+
+    sed -i "s/\bpublic\b/$schema_name/g" "$new_file"
+done
 
 # 4. Setting up SSL with Certbot if the user has no certificate
 read -p "Do you want to use Certbot for SSL setup? (yes by default, press ENTER) or type 'no' to skip: " use_certbot < /dev/tty
