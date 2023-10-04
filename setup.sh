@@ -102,7 +102,7 @@ sed -i "s/mypass/$random_password/g" server/db/_workspace.sql
 
 #migrations
 for file in server/db/*_m.sql; do
-    new_file="${file/_m/_$schema_name}"
+    new_file="${file/_m/_m_$schema_name}"
 
     cp "$file" "$new_file"
 
