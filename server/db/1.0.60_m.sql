@@ -1,1 +1,3 @@
-CREATE TABLE public.test;
+CREATE TABLE public.test (
+	id serial PRIMARY KEY
+);
