@@ -76,7 +76,7 @@ echo "New version $NEW_VERSION available."
 docker-compose down
 git pull
 
-#Perform DB migration if needed for all warkplaces-----------------------------------------------------
+#Perform DB migration if needed for all workplaces-----------------------------------------------------
 
 # Get a list of workspaces names
 WORKSPACES=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h localhost -p "$DB_PORT" -d "DB_DATABASE" -w -c "SELECT name FROM admin.workspaces" | tail -n +3)
