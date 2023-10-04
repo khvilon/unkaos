@@ -50,6 +50,9 @@ do
             else
                 echo "$key=$value" >> $TEMP_FILE
             fi
+        else
+            # If the line is not following the #>> comment pattern, preserve it in the temporary file
+            echo "$line" >> $TEMP_FILE
         fi
     fi
     prev_line="$line"
