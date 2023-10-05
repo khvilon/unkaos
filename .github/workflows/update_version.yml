@@ -42,7 +42,7 @@ jobs:
 
         # Copy and delete m.sql if it exists
         ORIGINAL_FILE="server/db/m.sql"
-        NEW_FILE="server/db/${PADDED_NEW_VERSION}_m.sql"
+        NEW_FILE="server/db/z${PADDED_NEW_VERSION}_m.sql"
         if [ -f "$ORIGINAL_FILE" ]; then
           echo "Copying $ORIGINAL_FILE to $NEW_FILE"
           cp "$ORIGINAL_FILE" "$NEW_FILE"
