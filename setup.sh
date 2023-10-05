@@ -94,11 +94,11 @@ while true; do
     fi
 done
 
-cp server/db/_public.sql server/db/_$schema_name.sql
-sed -i "s/\bpublic\b/$schema_name/g" server/db/_$schema_name.sql
-sed -i "s/\btest\b/$schema_name/g" server/db/_workspace.sql
+cp server/db/-public.sql server/db/-$schema_name.sql
+sed -i "s/\bpublic\b/$schema_name/g" server/db/-$schema_name.sql
+sed -i "s/\btest\b/$schema_name/g" server/db/-workspace.sql
 random_password=$(generate_password)
-sed -i "s/mypass/$random_password/g" server/db/_workspace.sql
+sed -i "s/mypass/$random_password/g" server/db/-workspace.sql
 
 #migrations
 for file in server/db/*_m.sql; do

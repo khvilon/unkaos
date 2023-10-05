@@ -27,6 +27,13 @@ jobs:
         VERSION=$(jq -r '.version' meta.json)
         NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$3++; print}')
 
+        # Extract and pad version parts
+        IFS='.' read -ra parts <<< "$NEW_VERSION"
+        major=$(printf "%02d" "${parts[0]}")
+        minor=$(printf "%03d" "${parts[1]}")
+        patch=$(printf "%05d" "${parts[2]}")
+        PADDED_NEW_VERSION="${major}.${minor}.${patch}"
+
         # Get current datetime
         CURRENT_DT=$(date +"%Y-%m-%d %H:%M:%S")
 
@@ -35,7 +42,7 @@ jobs:
 
         # Copy and delete m.sql if it exists
         ORIGINAL_FILE="server/db/m.sql"
-        NEW_FILE="server/db/${NEW_VERSION}_m.sql"
+        NEW_FILE="server/db/${PADDED_NEW_VERSION}_m.sql"
         if [ -f "$ORIGINAL_FILE" ]; then
           echo "Copying $ORIGINAL_FILE to $NEW_FILE"
           cp "$ORIGINAL_FILE" "$NEW_FILE"
