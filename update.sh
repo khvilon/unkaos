@@ -78,7 +78,7 @@ echo "New version $NEW_VERSION available."
 docker-compose down
 git stash
 git pull
-git stash pop
+git stash pop -q
 #Perform DB migration if needed for all workplaces-----------------------------------------------------
 
 # Get a list of workspaces names
