@@ -110,6 +110,9 @@ for file in $migration_files; do
     # Execute for each workspace with 'public' replaced by workspace name
     for workspace in $WORKSPACES; do
       echo "Executing migration for workspace $workspace"
+
+      # Replace 'public' in the SQL content with the workspace name to get modified_sql
+      modified_sql=$(cat "$file" | sed "s/\bpublic\b/$workspace/g")
       
       # Execute the modified SQL for the workspace
       echo "$modified_sql" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h localhost -p "$DB_PORT" -d "$DB_DATABASE"
