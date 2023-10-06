@@ -1,0 +1,2 @@
+ALTER TABLE public.test 
+ADD COLUMN t6 VARCHAR;
