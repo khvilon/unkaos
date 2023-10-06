@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /var/app/unkaos
+
 #load env variables
 if [ -f .env ]; then
   source .env
@@ -74,8 +76,9 @@ fi
 echo "New version $NEW_VERSION available."
 
 docker-compose down
+git stash
 git pull
-
+git stash pop
 #Perform DB migration if needed for all workplaces-----------------------------------------------------
 
 # Get a list of workspaces names
@@ -114,7 +117,6 @@ for file in $migration_files; do
   fi
 done
 #</>Perform DB migration if needed for all warkplaces--------------------------------------------------
-
 
 docker-compose up -d
 #</>perform update=================================================================================================================
