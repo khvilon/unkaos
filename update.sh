@@ -82,7 +82,7 @@ git stash pop -q
 #Perform DB migration if needed for all workplaces-----------------------------------------------------
 
 # Get a list of workspaces names
-WORKSPACES=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h localhost -p "$DB_PORT" -d "DB_DATABASE" -w -c "SELECT name FROM admin.workspaces" | tail -n +3)
+WORKSPACES=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "DB_DATABASE" -w -c "SELECT name FROM admin.workspaces" | tail -n +3)
 
 # Get a list of migration files matching the pattern
 migration_files=$(find "$MIGRATIONS_DIR" -type f -name '[0-9]*_m.sql' | sort -V)
