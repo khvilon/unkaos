@@ -105,7 +105,7 @@ for file in $migration_files; do
     
     # Execute the content of $file
     echo "Executing migration file: $file"
-    cat "$file" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h localhost -p "$DB_PORT" -d "DB_DATABASE"
+    cat "$file" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "DB_DATABASE"
     
     # Execute for each workspace with 'public' replaced by workspace name
     for workspace in $WORKSPACES; do
@@ -115,7 +115,7 @@ for file in $migration_files; do
       modified_sql=$(cat "$file" | sed "s/\bpublic\b/$workspace/g")
       
       # Execute the modified SQL for the workspace
-      echo "$modified_sql" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h localhost -p "$DB_PORT" -d "$DB_DATABASE"
+      echo "$modified_sql" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE"
     done
   fi
 done
