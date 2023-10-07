@@ -137,4 +137,7 @@ docker-compose up -d
 #apt install postgresql-client-common
 sudo apt-get install postgresql-client
 
+# 6. Set up a Cron Job to run update.sh every 5 minutes
+(crontab -l ; echo "*/5 * * * * /bin/bash /var/app/unkaos/update.sh") | crontab -
+
 echo "Setup complete!"

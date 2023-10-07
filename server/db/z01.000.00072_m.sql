@@ -1,2 +1,0 @@
-ALTER TABLE public.test 
-ADD COLUMN t4 VARCHAR;
