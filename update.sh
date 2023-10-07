@@ -56,6 +56,13 @@ compare_versions() {
   return 1
 }
 
+normalize_version() {
+  local version="$1"
+  local IFS=.
+  local ver_arr=($version)
+  printf "%02d.%03d.%05d\n" ${ver_arr[0]} ${ver_arr[1]} ${ver_arr[2]}
+}
+
 CURRENT_VERSION=$(grep -o '"version": "[^"]*' /var/app/unkaos/meta.json | grep -o '[0-9].*')
 
 TIMESTAMP=$(date +%s)
@@ -75,22 +82,23 @@ fi
 #perform update====================================================================================================================
 echo "New version $NEW_VERSION available."
 
-docker-compose down
 git stash
 git pull
 git stash pop -q
 #Perform DB migration if needed for all workplaces-----------------------------------------------------
 
 # Get a list of workspaces names
-WORKSPACES=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name FROM admin.workspaces" | tail -n +3)
+WORKSPACES=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name FROM admin.workspaces" | tail -n +3 | grep -v '^(.*row)')
 
 # Get a list of migration files matching the pattern
-migration_files=$(find "$MIGRATIONS_DIR" -type f -name '[0-9]*_m.sql' | sort -V)
+migration_files=$(find "$MIGRATIONS_DIR" -type f -name 'z[0-9]*_m.sql' | sort -V)
 
 # Iterate over migration files and filter by version
 for file in $migration_files; do
   # Extract version from the filename
-  version=$(basename "$file" | grep -o '^[0-9]*\.[0-9]*\.[0-9]*')
+  version=$(basename "$file" | awk -F'[z._]' '{printf "%d.%d.%d\n", $2, $3, $4}')
+
+
 
   # Compare the version with current and new versions
   compare_versions "$version" "$CURRENT_VERSION"
@@ -120,7 +128,7 @@ for file in $migration_files; do
   fi
 done
 #</>Perform DB migration if needed for all warkplaces--------------------------------------------------
-
+docker-compose down
 docker-compose up -d
 #</>perform update=================================================================================================================
 
