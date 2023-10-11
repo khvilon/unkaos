@@ -21,16 +21,28 @@ jobs:
 
     - name: Update meta.json version
       run: |
-        echo "Updating meta.json version..."
+        echo "Updating meta.json version and datetime..."
         
         # Read and update version
         VERSION=$(jq -r '.version' meta.json)
         NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$3++; print}')
-        jq ".version=\"$NEW_VERSION\"" meta.json > tmp.json && mv tmp.json meta.json
+
+        # Extract and pad version parts
+        IFS='.' read -ra parts <<< "$NEW_VERSION"
+        major=$(printf "%02d" "${parts[0]}")
+        minor=$(printf "%03d" "${parts[1]}")
+        patch=$(printf "%05d" "${parts[2]}")
+        PADDED_NEW_VERSION="${major}.${minor}.${patch}"
+
+        # Get current datetime
+        CURRENT_DT=$(date +"%Y-%m-%d %H:%M:%S")
+
+        # Update meta.json
+        jq ".version=\"$NEW_VERSION\" | .version_dt=\"$CURRENT_DT\"" meta.json > tmp.json && mv tmp.json meta.json
 
         # Copy and delete m.sql if it exists
-        ORIGINAL_FILE="server/eos/migrations/m.sql"
-        NEW_FILE="server/eos/migrations/${NEW_VERSION}_m.sql"
+        ORIGINAL_FILE="server/db/m.sql"
+        NEW_FILE="server/db/z${PADDED_NEW_VERSION}_m.sql"
         if [ -f "$ORIGINAL_FILE" ]; then
           echo "Copying $ORIGINAL_FILE to $NEW_FILE"
           cp "$ORIGINAL_FILE" "$NEW_FILE"
@@ -44,6 +56,6 @@ jobs:
         # Commit and push
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add meta.json server/eos/migrations/*.sql
+        git add meta.json server/db/*_m.sql
         git commit -m "Automatically update meta.json version to $NEW_VERSION and copy SQL files"
         git push origin dev  # Push to the dev branch

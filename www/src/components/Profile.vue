@@ -58,6 +58,16 @@ export default {
     this.update_user()
 
     cache.set_profile_listener(this.update_user)
+
+    const admin_role_uuid = '556972a6-0370-4f00-aca2-73a477e48999'
+    this.$store.state.common.is_admin = false
+    for(let i in this.user.roles){
+      if(this.user.roles[i].uuid == admin_role_uuid){
+        this.$store.state.common.is_admin = true
+        break
+      }
+    }
+    console.log('isadmin>>>>>>>>>>', this.$store.state.common.is_admin)
   },
   updated() {
     //console.log('uuuuu')

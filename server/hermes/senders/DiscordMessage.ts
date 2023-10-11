@@ -43,8 +43,15 @@ class DiscordMessage {
             message.reply(username + ', ' + ans);
         });
 
-        this.client.login(discordConf.token);
-        console.log('discord bot up');
+        try{
+          this.client.login(discordConf.token);
+          console.log('discord bot up');
+        }
+        catch(err)
+        {
+          console.log('discord bot failed login', err);
+        }
+        
     }
 
     async send(userId: string, title: string, body: string) {
