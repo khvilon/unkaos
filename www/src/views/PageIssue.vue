@@ -694,12 +694,7 @@ let methods = {
     if (this.id == "") return;
     if(this.freeze_save) return;
 
-    if(!(await this.check_issue_changed())) return
-    
-
-    await this.$store.dispatch("save_issue");
-
-    this.saved();
+    this.save();
   },
   type_updated: async function (new_type_uuid) {
     console.log("type_updated", new_type_uuid);
