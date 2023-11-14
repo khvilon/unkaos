@@ -20,6 +20,18 @@ CREATE TABLE admin.workspaces (
 ALTER TABLE ONLY admin.workspaces
     ADD CONSTRAINT workspaces_pkey PRIMARY KEY (name);
 
+CREATE TABLE IF NOT EXISTS admin.workspace_requests
+(
+    uuid uuid NOT NULL,
+    workspace text COLLATE pg_catalog."default" NOT NULL,
+    email text COLLATE pg_catalog."default" NOT NULL,
+    status smallint NOT NULL DEFAULT 0,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    updated_at timestamp without time zone NOT NULL DEFAULT now(),
+    deleted_at timestamp without time zone,
+    CONSTRAINT workspace_requests_pkey PRIMARY KEY (uuid)
+)
+
 ----------------------------------------------------------
 
 
