@@ -1,7 +1,7 @@
 let base_url = window.location.protocol + '//' + window.location.hostname + ':3002/'
 let wsUrl = 'wss://' + window.location.hostname + ':3003/'
 
-if(window.location.hostname == 'unkaos.obos.local'){
+if(window.location.hostname == 'unkaos.oboz.local'){
   base_url = "https://unkaos.oboz.tech:3002/";
   wsUrl = "wss://unkaos.oboz.tech:3003/";
 }

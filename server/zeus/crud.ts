@@ -466,6 +466,22 @@ crud.load = async function () {
   `
 };
 
+
+crud.querys["workspace_requests"] = {};
+crud.querys["workspace_requests"]["read"] = 
+  `SELECT 
+  workspace,
+  email,
+  status,
+  created_at,
+  updated_at
+  FROM admin.workspace_requests
+  WHERE deleted_at IS NULL AND uuid = $@1
+  LIMIT 1`;
+  crud.querys["workspace_requests"]["create"] = 
+  `INSERT INTO admin.workspace_requests`;
+  crud.querys["workspace_requests"]["upsert"] = crud.querys["workspace_requests"]["create"];
+
 crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is_revert:any) {
   //console.log('------------push_query0', '#' + query0 + '#', '##' + query1+ '##')
 
