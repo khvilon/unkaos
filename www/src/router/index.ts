@@ -20,6 +20,8 @@ import PageRoles from "../views/PageRoles.vue";
 import PageSprints from "../views/PageSprints.vue";
 import PageFavourites from "../views/PageFavourites.vue";
 import PageAutomations from "../views/PageAutomations.vue";
+import PageRegister from "../views/PageRegister.vue";
+
 
 import store from "../stores";
 import rest from "../rest";
@@ -70,6 +72,7 @@ let routes = [
     name: "Дашборд ",
   },
   { path: "/dashboard/", component: PageDashboard, name: "Новый дашборд" },
+  { path: "/sinein/", component: PageRegister, name: "Регистрация" },
   /*	{
   path: "/:catchAll(.*)",
   name: "NotFound",
