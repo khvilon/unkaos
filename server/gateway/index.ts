@@ -40,6 +40,9 @@ async function init() {
       req.headers.request_function = func;
       //console.log(req.headers)
 
+      let user_uuid = ''
+
+      if(func != 'create_workspace_requests'){
       let cerberus_ans;
       try {
         cerberus_ans = await axios({
@@ -74,13 +77,16 @@ async function init() {
         return;
       }
       req.headers.user_uuid = cerberus_ans.data.uuid;
+      user_uuid = cerberus_ans.data.uuid;
+    }
+
       const zeus_ans = await axios({
         data: req.body,
         method: method,
         url: conf.zeusUrl + req.url,
         headers: {
           subdomain: req.headers.subdomain,
-          user_uuid: cerberus_ans.data.uuid,
+          user_uuid: user_uuid
         },
       });
       res.status(zeus_ans.status);
