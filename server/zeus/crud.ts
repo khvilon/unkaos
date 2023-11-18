@@ -464,11 +464,10 @@ crud.load = async function () {
     ON T1.AUTHOR_UUID = U.UUID
     WHERE T1.DELETED_AT IS NULL $@1
   `
-};
 
-/*
-crud.querys["workspace_requests"] = {};
-crud.querys["workspace_requests"]["read"] = 
+
+  crud.querys["workspace_requests"] = {};
+  crud.querys["workspace_requests"]["read"] = 
   `SELECT 
   workspace,
   email,
@@ -480,7 +479,11 @@ crud.querys["workspace_requests"]["read"] =
   LIMIT 1`;
   crud.querys["workspace_requests"]["create"] = 
   `INSERT INTO admin.workspace_requests`;
-  crud.querys["workspace_requests"]["upsert"] = crud.querys["workspace_requests"]["create"];*/
+  crud.querys["workspace_requests"]["upsert"] = crud.querys["workspace_requests"]["create"]
+
+};
+
+
 
 crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is_revert:any) {
   //console.log('------------push_query0', '#' + query0 + '#', '##' + query1+ '##')

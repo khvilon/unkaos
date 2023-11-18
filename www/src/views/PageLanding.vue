@@ -42,7 +42,7 @@ export default landing_page;
       <br>{{ t("Николй Хвилон") }}
       </span>
 
-    <img class="landing-corner-bg-img" src="http://unkaos.local:3000/login_microchip.png"/>
+    <img class="landing-corner-bg-img" src="/login_microchip.png"/>
 
     <lang-select class="landing-lang-select"></lang-select>
 
