@@ -72,7 +72,7 @@ let routes = [
     name: "Дашборд ",
   },
   { path: "/dashboard/", component: PageDashboard, name: "Новый дашборд" },
-  { path: "/sinein/", component: PageRegister, name: "Регистрация" },
+  { path: "/register/", component: PageRegister, name: "Регистрация" },
   /*	{
   path: "/:catchAll(.*)",
   name: "NotFound",
@@ -81,7 +81,7 @@ let routes = [
 ]
 
 for(let i in routes){
-  if(routes[i].path == '/') continue
+  if(routes[i].path == '/' || routes[i].path == '/register/') continue
   routes[i].path = '/:workspace/' + routes[i].path
 }
 
@@ -101,15 +101,14 @@ router.beforeEach((to, from, next) => {
   if (to.matched != undefined && to.matched[0] != undefined) {
     if (to.matched[0].path == "/issue/:id")
       document.title = to.name + to.params.id;
-    //else if(to.matched[0].path == '/board/:uuid') document.title = to.name + to.params.uuid
+
   }
-  //if(to.path.indexOf('unkaos.oboz.tech')  > -1 && to.path.indexOf('/oboz') < 0){
-  //  next(to.path.replace('unkaos.oboz.tech/', 'unkaos.oboz.tech/oboz/'));
+
   
   if(window.location.host.indexOf('unkaos.oboz.tech')  > -1 && to.path.indexOf('/oboz') < 0 && to.path != '/'){
     next('/oboz' + to.path);
   }
-  else if(!to.params.workspace && to.path != '/'){
+  else if(!to.params.workspace && to.path != '/' && to.path != '/register/' && to.path != '/register' ){
     next('/');
   }
   else next();

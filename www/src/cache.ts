@@ -21,6 +21,7 @@ export default class cache {
 
   static defaultSettings: Array<Setting> = [
     new Setting('theme',                    'dark',   false),
+    new Setting('lang',                     'ru',   false),
     new Setting('issues_query',             '',       false),
     new Setting('lock_main_menu',           'false',  true),
     new Setting('actions_sort_order',       'true',   true),
