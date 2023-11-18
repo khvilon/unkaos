@@ -62,7 +62,7 @@ export default {
 
 <template ref="issues">
   <div class="register-container">
-    <img class="register-corner-bg-img" src="http://unkaos.local:3000/login_microchip.png"/>
+    <img class="register-corner-bg-img" src="/login_microchip.png"/>
     <MainTop :name="t('создание рабочего пространства')"></MainTop>
 
   <div class="register-panel panel" @keyup.enter="register()" >

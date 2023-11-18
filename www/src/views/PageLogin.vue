@@ -99,7 +99,7 @@ export default login_page;
       >{{t('Неправильный логин или пароль')}}</span
     >
   </div>
-  <img class="login-corner-bg-img" src="http://unkaos.local:3000/login_microchip.png"/>
+  <img class="login-corner-bg-img" src="/login_microchip.png"/>
   </div>
 </template>
 
