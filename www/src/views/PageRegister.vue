@@ -27,13 +27,13 @@ export default {
 
       if (this.workspace === '' || this.mail === '') return;
 
-	  /*
+	  
       let my_uuid = tools.uuidv4();
-      let ans = await rest.run_method('create_register_workspace', {
+      let ans = await rest.run_method('create_register_workspaces', {
         workspace: this.workspace,
         mail: this.mail,
         uuid: my_uuid
-      });*/
+      });
 
 	  this.register_send = true;
     },
