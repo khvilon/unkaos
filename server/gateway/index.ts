@@ -34,6 +34,8 @@ async function init() {
     const method = zeus_listeners.data[i].method;
     const func = zeus_listeners.data[i].func;
 
+    console.log('func', func)
+
     app[method]("/" + func, async (req: any, res: any) => {
       //console.log(req)
 
