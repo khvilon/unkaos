@@ -468,8 +468,7 @@ crud.load = async function () {
 
   crud.querys["workspace_requests"] = {};
   crud.querys["workspace_requests"]["read"] = 
-  `SELECT 
-  workspace,
+  `SELECT workspace,
   email,
   status,
   created_at,
