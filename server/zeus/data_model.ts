@@ -36,7 +36,7 @@ data_model.querys =
     WHERE
         (table_schema = 'public' AND table_name NOT LIKE '%_to%')
         OR
-        (table_schema = 'admin' AND table_name = '')
+        (table_schema = 'admin' AND table_name = 'workspace_requests')
     ORDER BY
         table_name;
     `
