@@ -473,7 +473,8 @@ crud.load = async function () {
   email,
   status,
   created_at,
-  updated_at
+  updated_at,
+  deleted_at
   FROM admin.workspace_requests
   WHERE deleted_at IS NULL AND uuid = $@1
   LIMIT 1`;
@@ -996,7 +997,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
  
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
-  // console.log('paraaaaaaaaaaaaaaaaaaaaaams', params)
+  console.log('paraaaaaaaaaaaaaaaaaaaaaams', query, pg_params)
 
   if (method != "read") {
     let [read_query, read_params] = crud.make_query.read(table_name, {
