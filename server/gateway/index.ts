@@ -42,7 +42,7 @@ async function init() {
 
       let user_uuid = ''
 
-      if(func != 'create_workspace_requests'){
+      if(func != 'upsert_workspace_requests'){
       let cerberus_ans;
       try {
         cerberus_ans = await axios({
