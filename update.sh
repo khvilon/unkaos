@@ -129,7 +129,7 @@ for file in $migration_files; do
 done
 #</>Perform DB migration if needed for all warkplaces--------------------------------------------------
 docker-compose down
-docker-compose up -d
+docker-compose up -d --build
 #</>perform update=================================================================================================================
 
 # Main Script
