@@ -29,7 +29,7 @@ export default {
 
 	  
       let my_uuid = tools.uuidv4();
-      let ans = await rest.run_method('create_register_workspaces', {
+      let ans = await rest.run_method('upsert_workspace_requests', {
         workspace: this.workspace,
         mail: this.mail,
         uuid: my_uuid
