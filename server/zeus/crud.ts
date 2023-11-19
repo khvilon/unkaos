@@ -476,7 +476,7 @@ crud.load = async function () {
   updated_at,
   deleted_at
   FROM admin.workspace_requests
-  WHERE deleted_at IS NULL AND uuid = $@1
+  WHERE deleted_at IS NULL $@1
   LIMIT 1`;
   crud.querys["workspace_requests"]["create"] = `INSERT INTO admin.workspace_requests($@1) VALUES ($@2)`;
   crud.querys["workspace_requests"]["update"] = `UPDATE workspace_requests SET $@2 WHERE uuid = $@1`;
