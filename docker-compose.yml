@@ -52,6 +52,23 @@ services:
       - DB_DATABASE=${DB_DATABASE}
     depends_on:
       - postgres
+  
+  eileithyia:
+    build:
+      context: .
+      dockerfile: server/docker/eileithyia
+    restart: always
+    container_name: unkaos-eileithyia
+    ports:
+      - '5001:5001'
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+    depends_on:
+      - postgres
 
   gateway:
     build:
