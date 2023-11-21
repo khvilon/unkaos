@@ -35,7 +35,7 @@ let checkWorkspaceExists = async function(workspace: String){
     let ans = await sql`SELECT EXISTS (
         SELECT 1 
         FROM information_schema.schemata 
-        WHERE schema_name = ${String}
+        WHERE schema_name = ${workspace}
     );
     `
 
@@ -90,6 +90,8 @@ const init = async function() {
             res.send({ status: -1 });
             return;
         }
+
+        console.log("ans", ans)
 
         let exists = await checkWorkspaceExists(ans[0].workspace)
 
