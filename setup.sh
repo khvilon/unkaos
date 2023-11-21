@@ -38,7 +38,7 @@ case $OS_ID in
         ;;
     centos)
         PKG_MANAGER="yum"
-        PKG_UPDATE="$PKG_MANAGER update"
+        PKG_UPDATE="$PKG_MANAGER update -y"
         PKG_INSTALL="$PKG_MANAGER install -y"
         CERT_INSTALL="sudo yum install epel-release -y; sudo yum install certbot -y"
         DOCKER_INSTALL="sudo yum install -y yum-utils; sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo; sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y"
