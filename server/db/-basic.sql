@@ -51,7 +51,7 @@ INSERT INTO admin.config(uuid, service, name, value) VALUES ('d91958eb-b3b9-465f
 INSERT INTO admin.config(uuid, service, name, value) VALUES ('a8224636-7603-48dd-a2c4-1e38eaf9599c', 'openai', 'key', '');
 
 CREATE PUBLICATION ossa_publication WITH (publish = 'insert, update, delete');
-CREATE PUBLICATION test_publication WITH (publish = 'insert, update, delete');
+CREATE PUBLICATION hermes_publication WITH (publish = 'insert, update, delete');
 CREATE PUBLICATION cerberus_publication WITH (publish = 'insert, update, delete');
 
 ----------------------------------------------------------
