@@ -31,7 +31,7 @@ OS_ID="${OS_ID//\"/}" # Remove quotes from the string
 case $OS_ID in
     ubuntu|debian|raspbian)
         PKG_MANAGER="apt"
-        PKG_UPDATE="$PKG_MANAGER update"
+        PKG_UPDATE="$PKG_MANAGER update -y"
         PKG_INSTALL="$PKG_MANAGER install -y"
         CERT_INSTALL="$PKG_INSTALL certbot"
         DOCKER_INSTALL="$PKG_INSTALL docker.io docker-compose"
@@ -40,15 +40,14 @@ case $OS_ID in
         PKG_MANAGER="yum"
         PKG_UPDATE="$PKG_MANAGER update -y"
         PKG_INSTALL="$PKG_MANAGER install -y"
-        CERT_INSTALL="sudo yum install epel-release -y; sudo yum install certbot -y"
-        DOCKER_INSTALL="sudo yum install -y yum-utils; sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo; sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y"
+        CERT_INSTALL="$PKG_INSTALL epel-release && $PKG_MANAGER install certbot -y"
+        DOCKER_INSTALL="$PKG_MANAGER install -y yum-utils && $PKG_MANAGER-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo && $PKG_MANAGER install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin"
         ;;
     *)
         echo "Unsupported OS: $OS_ID"
         exit 1
         ;;
 esac
-
 
 # 1. Clone the repo
 echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
