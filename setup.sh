@@ -25,11 +25,10 @@ validate_workspace_name() {
 }
 
 # Detect OS and set package manager commands
-OS=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
-PKG_UPDATE=""
-PKG_INSTALL=""
+OS_ID=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
+OS_ID="${OS_ID//\"/}" # Remove quotes from the string
 
-case $OS in
+case $OS_ID in
     ubuntu|debian|raspbian)
         PKG_MANAGER="apt"
         PKG_UPDATE="$PKG_MANAGER update"
@@ -45,10 +44,11 @@ case $OS in
         DOCKER_INSTALL="sudo yum install -y yum-utils; sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo; sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y"
         ;;
     *)
-        echo "Unsupported OS: $OS"
+        echo "Unsupported OS: $OS_ID"
         exit 1
         ;;
 esac
+
 
 # 1. Clone the repo
 echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
