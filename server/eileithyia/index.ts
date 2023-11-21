@@ -84,7 +84,7 @@ const init = async function() {
     app.get('/read_workspace_requests', async (req:any, res:any) => {
         let uuid = req.query.uuid
 
-        let ans = readWorkspaceRequest(uuid)
+        let ans: any = readWorkspaceRequest(uuid)
 
         if(!ans) {
             res.send({ status: -1 });
