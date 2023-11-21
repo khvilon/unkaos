@@ -50,7 +50,7 @@ export default {
     async register_workspace(uuid){
       let ans = await rest.register_workspace(uuid);
 
-      console.log(ans)
+      if(ans.status == 2) window.location.href = '/' + ans.workspace + "/login";
     }
   },
   components: {
