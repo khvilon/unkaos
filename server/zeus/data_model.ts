@@ -34,9 +34,7 @@ data_model.querys =
     FROM
         information_schema.columns
     WHERE
-        (table_schema = 'public' AND table_name NOT LIKE '%_to%')
-        OR
-        (table_schema = 'admin' AND table_name = 'workspace_requests')
+        table_schema = 'public' AND table_name NOT LIKE '%_to%'
     ORDER BY
         table_name;
     `

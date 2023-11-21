@@ -466,21 +466,6 @@ crud.load = async function () {
   `
 
 
-  crud.querys["workspace_requests"] = {};
-  crud.querys["workspace_requests"]["read"] = 
-  `SELECT 
-  workspace,
-  email,
-  status,
-  created_at,
-  updated_at,
-  deleted_at
-  FROM admin.workspace_requests T1
-  WHERE deleted_at IS NULL $@1
-  LIMIT 1`;
-  crud.querys["workspace_requests"]["create"] = `INSERT INTO admin.workspace_requests($@1) VALUES ($@2)`;
-  crud.querys["workspace_requests"]["update"] = `UPDATE workspace_requests SET $@2 WHERE uuid = $@1`;
-  crud.querys["workspace_requests"]["upsert"] = crud.querys["workspace_requests"]["create"]
 
 };
 
