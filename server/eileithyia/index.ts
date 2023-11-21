@@ -52,16 +52,22 @@ const init = async function() {
         let ans
 
         let exists = await checkWorkspaceExists(workspace)
-        let status = 0
 
         if(!exists){
             let uuid = tools.uuidv4()
             ans = await sql`INSERT INTO admin.workspace_requests(uuid, workspace, email) VALUES (${uuid}, ${workspace}, ${email})`
-            if(!ans) status = -1
+            if(!ans){
+                res.send({ status: -1 });
+                return
+            } 
         }
-        else {status = -2}
-       
-        res.send({ status: status });
+        else {
+            res.send({ status: -2 });
+            return
+        } 
+
+        res.send({ status: 0 });
+        return
 
         const hermes_answer = await axios({
             method: "post",
@@ -77,8 +83,25 @@ const init = async function() {
 
     app.get('/read_workspace_requests', async (req:any, res:any) => {
         let uuid = req.query.uuid
-        let ans = await readWorkspaceRequest(uuid)
-        res.send(ans)
+
+        let ans = readWorkspaceRequest(uuid)
+
+        if(!ans) {
+            res.send({ status: -1 });
+            return;
+        }
+
+        let exists = await checkWorkspaceExists(ans[0].workspace)
+
+        if(exists){
+            res.send({ status: -2 });
+            return;
+        }
+
+        //todo create workspace
+        sql`UPDATE admin.workspace_request SET status = 2 WHERE uuid = ${uuid}`
+        
+        res.send({ status: 2 });
     })
 
     app.listen(port, async () => {

@@ -80,7 +80,7 @@ class dict {
   ]);
 
   set_lang(lang: string) {
-    console.log('}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}', lang)
+    //console.log('}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}', lang)
     if (dict._langs.includes(lang)) {
       dict.current_lang = lang;
     } else {
@@ -89,10 +89,10 @@ class dict {
   }
 
   get(value: string): string {
-    console.log('}}}}}}}}}}}this.current_lang', dict.current_lang, dict._langs)
+    //console.log('}}}}}}}}}}}this.current_lang', dict.current_lang, dict._langs)
     const val = dict._dict_langs.get(value);
     if (val !== undefined && dict._langs.includes(dict.current_lang)) {
-      console.log('}}}}}}}}}}}this.current_lang1111111111111', dict.current_lang, val[dict.current_lang])
+      //console.log('}}}}}}}}}}}this.current_lang1111111111111', dict.current_lang, val[dict.current_lang])
       return val[dict.current_lang];
     } else {
       return value;
