@@ -41,15 +41,22 @@ export default class rest {
   }
 
 
-  static async register_workspace(workspace: String, email: String): Promise<any> {
-        let options: RequestInit = {
-          method: 'POST',
-          headers: rest.headers,
-          body: JSON.stringify({workspace: workspace, email: email})
-        }
-        return fetch(conf.register_url + 'upsert_workspace_requests', options);
+  static async register_workspace_request(workspace: String, email: String): Promise<any> {
+    let options: RequestInit = {
+      method: 'POST',
+      headers: rest.headers,
+      body: JSON.stringify({workspace: workspace, email: email})
+    }
+    return fetch(conf.register_url + 'upsert_workspace_requests', options);
   }
-  
+
+  static async register_workspace(uuid: String): Promise<any> {
+    let options: RequestInit = {
+      method: 'GET',
+      headers: rest.headers
+    }
+    return fetch(conf.register_url + 'read_workspace_requests?uuid=' + uuid, options);
+  }
 
   static async run_gpt(input: string): Promise<any> {
     let user = cache.getObject("profile");

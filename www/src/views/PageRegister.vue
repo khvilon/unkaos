@@ -16,6 +16,12 @@ export default {
       register_err: false
     };
   },
+  props: {
+    uuid: {
+      type: String,
+      default: "",
+    },
+  },
   methods: {
 	t: dict.get,
     update_workspace(val) {
@@ -24,13 +30,15 @@ export default {
     },
     update_mail(val) {
       this.mail = val;
+
+      console.log("this.uuid", this.uuid)
     },
-    async register() {
+    async register_workspace_request() {
       this.try_done = true;
       
       if (this.workspace === '' || this.mail === '') return;
 
-      let ans = await rest.register_workspace(this.workspace, this.mail);
+      let ans = await rest.register_workspace_request(this.workspace, this.mail);
 
       console.log('register', ans)
 
@@ -38,13 +46,20 @@ export default {
       else if(ans.status == -2) {this.register_err = false; this.workspace_exists = true}
       else {this.register_err = true; this.workspace_exists = false}
 
-	    
     },
+    async register_workspace(uuid){
+      let ans = await rest.register_workspace(uuid);
+
+      console.log(ans)
+    }
   },
   components: {
     StringInput,
     KButton,
   },
+  mounted(){
+      if(this.uuid) this.register_workspace(this.uuid)
+    },
   computed: {
     mail_is_valid() {
       if (this.mail === undefined || this.mail === '') return false;
@@ -84,7 +99,7 @@ export default {
       :disabled="register_send"
     />
 
-    <KButton  :disabled="register_send" :name="t('Создать')" @click="register" />
+    <KButton  :disabled="register_send" :name="t('Создать')" @click="register_workspace_request" />
     <span v-show="workspace_exists" class="register-err-label"
       >{{t('Рабочее пространство с таким названием уже существует')}}</span
     >
