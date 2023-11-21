@@ -7,6 +7,8 @@ import tools from "../tools";
 
 import axios from "axios";
 
+import fs from 'fs/promises';
+
 const app:any = express();
 const port = 5001;
 
@@ -44,6 +46,15 @@ let checkWorkspaceExists = async function(workspace: String){
     return ans[0].exists
 }
 
+let createWorkspace = async function(workspace: string){
+    const sqlFilePath = '../../-public.sql';
+    let sqlFileContent = await fs.readFile(sqlFilePath, 'utf-8');
+
+    let sqlFileContentStr = sqlFileContent.replaceAll('public', workspace);
+
+    await sql.unsafe(sqlFileContentStr);
+}
+
 const init = async function() {
  
     app.post('/upsert_workspace_requests', async (req:any, res:any) => {   
@@ -67,7 +78,6 @@ const init = async function() {
         } 
 
         res.send({ status: 0 });
-        return
 
         const hermes_answer = await axios({
             method: "post",
@@ -100,8 +110,8 @@ const init = async function() {
             return;
         }
 
-        //todo create workspace
-        sql`UPDATE admin.workspace_request SET status = 2 WHERE uuid = ${uuid}`
+        await createWorkspace(ans.workspace)
+        await sql`UPDATE admin.workspace_request SET status = 2 WHERE uuid = ${uuid}`
         
         res.send({ status: 2 });
     })
