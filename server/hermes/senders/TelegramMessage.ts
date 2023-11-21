@@ -6,7 +6,7 @@ let telegramConf: any;
 
 //var id = 228803942
 class TelegramMessage {
-  private bot;
+  private bot: any;
 
   constructor(userData: UserData) {
     this.init(userData);

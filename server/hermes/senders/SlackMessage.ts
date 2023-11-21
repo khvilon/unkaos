@@ -4,15 +4,6 @@ import {sql} from "../Sql";
 
 let slackConf: any;
 
-try {
-  const { slackConfig } = require('../conf');
-  slackConf = slackConfig;
-} catch (error) {
-  slackConf = {
-    token: process.env.SLACK_TOKEN
-  };
-}
-
 class SlackMessage {
   private webClient : WebClient;
 

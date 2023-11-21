@@ -4,7 +4,7 @@ import {sql} from "../Sql";
 let emailConf: any;
 
 class MailSender {
-  private transport;
+  private transport: any;
 
   constructor() {
     this.init()

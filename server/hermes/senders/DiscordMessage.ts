@@ -5,7 +5,7 @@ import {sql} from "../Sql";
 let discordConf: any;
 
 class DiscordMessage {
-    private client;
+    private client: any;
 
     constructor(userData: UserData) {
       this.init(userData);
