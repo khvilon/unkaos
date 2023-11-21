@@ -72,12 +72,14 @@ const init = async function() {
     app.post('/upsert_workspace_requests', async (req:any, res:any) => {   
         let workspace = req.body.workspace
         let email = req.body.email
+        let uuid = tools.uuidv4()
+        
         let ans
 
         let exists = await checkWorkspaceExists(workspace)
 
         if(!exists){
-            let uuid = tools.uuidv4()
+            
             ans = await sql`INSERT INTO admin.workspace_requests(uuid, workspace, email) VALUES (${uuid}, ${workspace}, ${email})`
             if(!ans){
                 res.send({ status: -1 });
@@ -98,7 +100,8 @@ const init = async function() {
             transport: "email",
             recipient: email,
             title: "Unkaos - " + workspace,
-            body: "Для подтверждения почты пройдите по ссылке: "
+            body: `Для подтверждения почты пройдите по ссылке: 
+            https://${process.env.DOMAIN}/register/'${uuid}`
             }
         })
     })
