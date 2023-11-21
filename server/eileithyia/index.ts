@@ -93,7 +93,7 @@ const init = async function() {
 
         console.log("ans", ans)
 
-        let exists = await checkWorkspaceExists(ans[0].workspace)
+        let exists = await checkWorkspaceExists(ans.workspace)
 
         if(exists){
             res.send({ status: -2 });
