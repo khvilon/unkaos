@@ -6,7 +6,7 @@ import express from "express";
 import tools from "../tools";
 
 const app:any = express();
-const port = 3006;
+const port = 5001;
 
 app.use(cors());
 app.use(express.json({limit: '1mb'}));
