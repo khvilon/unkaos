@@ -125,7 +125,7 @@ const init = async function() {
         await createWorkspace(ans.workspace)
         await sql`UPDATE admin.workspace_requests SET status = 2 WHERE uuid = ${uuid}`
         
-        res.send({ status: 2 });
+        res.send({ status: 2, workspace: ans.workspace });
     })
 
     app.listen(port, async () => {
