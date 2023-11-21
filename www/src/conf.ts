@@ -3,9 +3,9 @@ let base_url = window.location.protocol + '//' + window.location.hostname + ':30
 let wsUrl = 'wss://' + window.location.hostname + ':3003/'
 
 if(window.location.hostname == 'unkaos.local'){
-  register_url = "https://unkaos.ru:6001/";
-  base_url = "https://unkaos.ru:3002/";
-  wsUrl = "wss://unkaos.ru:3003/";
+  register_url = "https://unkaos.online:6001/";
+  base_url = "https://unkaos.online:3002/";
+  wsUrl = "wss://unkaos.online:3003/";
 }
 
 export default class conf {

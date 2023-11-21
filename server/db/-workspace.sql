@@ -130,9 +130,9 @@ INSERT INTO test.roles (uuid, name, is_custom) VALUES ('556972a6-0370-4f00-aca2-
 ALTER PUBLICATION cerberus_publication ADD TABLE ONLY test.user_sessions;
 ALTER PUBLICATION cerberus_publication ADD TABLE ONLY test.users;
 
-ALTER PUBLICATION test_publication ADD TABLE ONLY test.logs_done;
-ALTER PUBLICATION test_publication ADD TABLE ONLY test.msg_out;
-ALTER PUBLICATION test_publication ADD TABLE ONLY test.users;
+ALTER PUBLICATION hermes_publication ADD TABLE ONLY test.wathcers;
+ALTER PUBLICATION hermes_publication ADD TABLE ONLY test.msg_out;
+ALTER PUBLICATION hermes_publication ADD TABLE ONLY test.users;
 
 ALTER PUBLICATION ossa_publication ADD TABLE ONLY test.attachments;
 ALTER PUBLICATION ossa_publication ADD TABLE ONLY test.field_values;
