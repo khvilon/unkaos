@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS admin.workspace_requests
     updated_at timestamp without time zone NOT NULL DEFAULT now(),
     deleted_at timestamp without time zone,
     CONSTRAINT workspace_requests_pkey PRIMARY KEY (uuid)
-)
+);
+
 CREATE TABLE IF NOT EXISTS admin.config
 (
 	uuid uuid,

@@ -72,7 +72,7 @@ let routes = [
     name: "Дашборд ",
   },
   { path: "/dashboard/", component: PageDashboard, name: "Новый дашборд" },
-  { path: "/register/", component: PageRegister, name: "Регистрация" },
+  { path: "/register/:uuid", component: PageRegister, name: "Регистрация" },
   /*	{
   path: "/:catchAll(.*)",
   name: "NotFound",
