@@ -60,11 +60,11 @@ cd /var/app/unkaos
 
 # 2. Set your env variables
 # Path to the .env file
-ENV_FILE=".env"
-TEMP_FILE=".env.tmp"
+ENV_FILE=".env_data"
+NEW_ENV=".env"
 
 # Create a temporary file to store the new values
-touch $TEMP_FILE
+touch $NEW_ENV
 
 prev_line=""
 
@@ -88,20 +88,17 @@ do
 
             # If the user entered a new value, use it; otherwise, use the original value
             if [[ -n $new_value ]]; then
-                echo "$key=$new_value" >> $TEMP_FILE
+                echo "$key=$new_value" >> $NEW_ENV
             else
-                echo "$key=$value" >> $TEMP_FILE
+                echo "$key=$value" >> $NEW_ENV
             fi
         else
             # If the line is not following the #>> comment pattern, preserve it in the temporary file
-            echo "$line" >> $TEMP_FILE
+            echo "$line" >> $NEW_ENV
         fi
     fi
     prev_line="$line"
 done < $ENV_FILE
-
-# Replace the original .env file with the updated values
-mv $TEMP_FILE $ENV_FILE
 
 echo "Updated .env file saved."
 
