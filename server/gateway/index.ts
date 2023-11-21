@@ -44,8 +44,6 @@ async function init() {
 
       let user_uuid = ''
 
-      let subdomain = req.headers.subdomain
-      if(func != 'upsert_workspace_requests'){
       let cerberus_ans;
       try {
         cerberus_ans = await axios({
@@ -81,15 +79,14 @@ async function init() {
       }
       req.headers.user_uuid = cerberus_ans.data.uuid;
       user_uuid = cerberus_ans.data.uuid;
-    }
-    else subdomain = 'admin'
+    
 
       const zeus_ans = await axios({
         data: req.body,
         method: method,
         url: conf.zeusUrl + req.url,
         headers: {
-          subdomain: subdomain,
+          subdomain: req.headers.subdomain,
           user_uuid: user_uuid
         },
       });
