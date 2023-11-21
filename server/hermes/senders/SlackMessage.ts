@@ -1,5 +1,6 @@
 import {UsersListResponse, WebClient} from '@slack/web-api';
 import {Member} from "@slack/web-api/dist/response/UsersListResponse";
+import {sql} from "../Sql";
 
 let slackConf: any;
 
@@ -16,6 +17,12 @@ class SlackMessage {
   private webClient : WebClient;
 
   constructor() {
+    this.init()
+  }
+
+  async init(){
+    const ans = await sql`SELECT value FROM admin.config WHERE service = 'slack' AND name = 'token'`;
+    slackConf = { token: ans[0].value };
     this.webClient = new WebClient(slackConf.token);
   }
 

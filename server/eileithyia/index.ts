@@ -5,6 +5,8 @@ import cors from 'cors';
 import express from "express";
 import tools from "../tools";
 
+import axios from "axios";
+
 const app:any = express();
 const port = 5001;
 
@@ -36,6 +38,8 @@ let checkWorkspaceExists = async function(workspace: String){
         WHERE schema_name = ${String}
     );
     `
+
+    console.log("check", ans)
     if(!ans) return true
     return ans[0].exists
 }
@@ -58,6 +62,17 @@ const init = async function() {
         else {status = -2}
        
         res.send({ status: status });
+
+        const hermes_answer = await axios({
+            method: "post",
+            url: "http://127.0.0.1:5009/send",
+            data: {
+            transport: "email",
+            recipient: email,
+            title: "Unkaos - " + workspace,
+            body: "Для подтверждения почты пройдите по ссылке: "
+            }
+        })
     })
 
     app.get('/read_workspace_requests', async (req:any, res:any) => {
