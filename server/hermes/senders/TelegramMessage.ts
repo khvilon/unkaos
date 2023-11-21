@@ -19,7 +19,7 @@ class TelegramMessage {
     this.bot = new TelegramBot(telegramConf.token, { polling: true });
     let me = this
 
-    this.bot.onText(/.*?/, async (msg, match) => {
+    this.bot.onText(/.*?/, async (msg: any, match: any) => {
       if(!msg.from) return
       if(!msg.from.username) return
 
