@@ -73,6 +73,8 @@ class dict {
     ["Название рабочего пространства", { en: "workspace name" }],
     ["Заявка создана, ожидается подтверждение почты", { en: "request created, waiting for mail verification" }],
     ["Не удалось создать заявку на регистрацию", { en: "Error creating new workspace request" }],
+    ["Рабочее пространство уже существует", { en: "Workspace already exists" }],
+    
     
     
   ]);
