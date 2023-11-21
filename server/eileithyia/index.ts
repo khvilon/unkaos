@@ -47,7 +47,7 @@ let checkWorkspaceExists = async function(workspace: String){
 }
 
 let createWorkspace = async function(workspace: string){
-    const sqlFilePath = '../../-public.sql';
+    const sqlFilePath = '../db/-public.sql';
     let sqlFileContent = await fs.readFile(sqlFilePath, 'utf-8');
 
     let sqlFileContentStr = sqlFileContent.replaceAll('public', workspace);
