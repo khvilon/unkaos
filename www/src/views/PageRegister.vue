@@ -11,12 +11,15 @@ export default {
       workspace: '',
       mail: '',
       try_done: false,
-	    register_send: false
+	    register_send: false,
+      workspace_exists: false,
+      register_err: false
     };
   },
   methods: {
 	t: dict.get,
     update_workspace(val) {
+      this.workspace_exists = false;
       this.workspace = val;
     },
     update_mail(val) {
@@ -24,18 +27,18 @@ export default {
     },
     async register() {
       this.try_done = true;
-
+      
       if (this.workspace === '' || this.mail === '') return;
 
-	  
-      let my_uuid = tools.uuidv4();
-      let ans = await rest.run_method('upsert_workspace_requests', {
-        workspace: this.workspace,
-        email: this.mail,
-        uuid: my_uuid
-      });
+      let ans = await rest.register_workspace(this.workspace, this.mail);
 
-	  this.register_send = true;
+      console.log('register', ans)
+
+      if(ans.status == 0) {this.register_send = true; this.register_err = false; this: workspace_exists = false}
+      else if(ans.status == -2) {this.register_err = false; this.workspace_exists = true}
+      else {this.register_err = true; this.workspace_exists = false}
+
+	    
     },
   },
   components: {
@@ -54,7 +57,7 @@ export default {
 		}
 
 		var re = /^[a-zA-Z][a-zA-Z0-9_]{2,29}$/;
-		return re.test(this.workspace);
+		return re.test(this.workspace) && !this.workspace_exists;
 	},
   },
 };
@@ -82,7 +85,10 @@ export default {
     />
 
     <KButton  :disabled="register_send" :name="t('Создать')" @click="register" />
-    <span v-show="wrong" class="wrong-pass-label"
+    <span v-show="workspace_exists" class="register-err-label"
+      >{{t('Рабочее пространство с таким названием уже существует')}}</span
+    >
+    <span v-show="register_err" class="register-err-label"
       >{{t('Не удалось создать заявку на регистрацию')}}</span
     >
     <span class="workspace-register-ok" v-if="register_send">
@@ -122,7 +128,7 @@ export default {
   margin-top: 10px;
 }
 
-.wrong-pass-label {
+.register-err-label {
   color: rgb(124, 0, 0);
   height: 20px;
   width: 100%;

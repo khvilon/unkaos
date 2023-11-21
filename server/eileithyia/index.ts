@@ -13,33 +13,56 @@ app.use(express.json({limit: '1mb'}));
 app.use(express.raw({limit: '1mb'}));
 app.use(express.urlencoded({limit: '1mb', extended: true}));
 
-const init = async function() {
- 
-    app.post('/upsert_workspace_requests', async (req:any, res:any) => {   
-        let workspace = req.body.workspace
-        let email = req.body.email
-        let uuid = tools.uuidv4()
-
-        let ans = await sql`INSERT INTO admin.workspace_requests(uuid, workspace, email) VALUES (${uuid}, ${workspace}, ${email})`
-        
-        res.send(ans)
-    })
-
-    app.get('/read_workspace_requests', async (req:any, res:any) => {
-        let uuid = req.query.uuid
-
-        let ans = await sql`SELECT 
+let readWorkspaceRequest = async function(uuid: String){
+    let ans = await sql`SELECT 
         workspace,
         email,
         status,
         created_at,
         updated_at,
         deleted_at
-        FROM admin.workspace_requests T1
+        FROM admin.workspace_requests 
         WHERE deleted_at IS NULL AND uuid = ${uuid}
         LIMIT 1`
-        
 
+    if(!ans) return null
+    return ans[0]
+}
+
+let checkWorkspaceExists = async function(workspace: String){
+    let ans = await sql`SELECT EXISTS (
+        SELECT 1 
+        FROM information_schema.schemata 
+        WHERE schema_name = ${String}
+    );
+    `
+    if(!ans) return true
+    return ans[0].exists
+}
+
+const init = async function() {
+ 
+    app.post('/upsert_workspace_requests', async (req:any, res:any) => {   
+        let workspace = req.body.workspace
+        let email = req.body.email
+        let ans
+
+        let exists = await checkWorkspaceExists(workspace)
+        let status = 0
+
+        if(!exists){
+            let uuid = tools.uuidv4()
+            ans = await sql`INSERT INTO admin.workspace_requests(uuid, workspace, email) VALUES (${uuid}, ${workspace}, ${email})`
+            if(!ans) status = -1
+        }
+        else {status = -2}
+       
+        res.send({ status: status });
+    })
+
+    app.get('/read_workspace_requests', async (req:any, res:any) => {
+        let uuid = req.query.uuid
+        let ans = await readWorkspaceRequest(uuid)
         res.send(ans)
     })
 

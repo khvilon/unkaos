@@ -41,6 +41,14 @@ export default class rest {
   }
 
 
+  static async register_workspace(workspace: String, email: String): Promise<any> {
+        let options: RequestInit = {
+          method: 'POST',
+          headers: rest.headers,
+          body: JSON.stringify({workspace: workspace, email: email})
+        }
+        return fetch(conf.register_url + 'upsert_workspace_requests', options);
+  }
   
 
   static async run_gpt(input: string): Promise<any> {
