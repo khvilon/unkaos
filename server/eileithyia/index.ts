@@ -104,6 +104,8 @@ const init = async function() {
             https://${process.env.DOMAIN}/register/'${uuid}`
             }
         })
+
+        console.log("hermes_answer", hermes_answer)
     })
 
     app.get('/read_workspace_requests', async (req:any, res:any) => {
