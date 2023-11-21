@@ -85,6 +85,7 @@ export default {
 
   <div class="register-panel panel" @keyup.enter="register()" >
     <StringInput
+      v-if="uuid == undefined || uuid == ''"
       :label="t('Название рабочего пространства')"
       @update_parent_from_input="update_workspace"
       :value="workspace"
@@ -92,6 +93,7 @@ export default {
       :disabled="register_send"
     />
     <StringInput
+    v-if="uuid == undefined || uuid == ''"
     :label="t('Электронная почта')"
       @update_parent_from_input="update_mail"
       :value="mail"
@@ -99,7 +101,7 @@ export default {
       :disabled="register_send"
     />
 
-    <KButton  :disabled="register_send" :name="t('Создать')" @click="register_workspace_request" />
+    <KButton  v-if="uuid == undefined || uuid == ''" :disabled="register_send" :name="t('Создать')" @click="register_workspace_request" />
     <span v-show="workspace_exists" class="register-err-label"
       >{{t('Рабочее пространство с таким названием уже существует')}}</span
     >
@@ -107,8 +109,11 @@ export default {
       >{{t('Не удалось создать заявку на регистрацию')}}</span
     >
     <span class="workspace-register-ok" v-if="register_send">
-		{{t('Заявка создана, ожидается подтверждение почты')}}
-	</span>
+		  {{t('Заявка создана, ожидается подтверждение почты')}}
+	  </span>
+    <span class="workspace-register-ok" v-if="uuid">
+		  {{t('Рабочее пространство создается...')}}
+	  </span>
   </div>
   
   
