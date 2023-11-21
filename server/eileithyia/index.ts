@@ -89,7 +89,7 @@ const init = async function() {
         else {
             res.send({ status: -2 });
             return
-        } 
+        }
 
         res.send({ status: 0 });
 
@@ -105,7 +105,8 @@ const init = async function() {
             }
         })
 
-        console.log("hermes_answer", hermes_answer)
+        if(hermes_answer && hermes_answer.status == 200) res.send({ status: 2 });
+        else res.send({ status: -3 });
     })
 
     app.get('/read_workspace_requests', async (req:any, res:any) => {

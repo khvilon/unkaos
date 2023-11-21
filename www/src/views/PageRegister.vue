@@ -37,10 +37,9 @@ export default {
       this.try_done = true;
       
       if (this.workspace === '' || this.mail === '') return;
+      if(!mail_is_valid || !workspace_is_valid) return;
 
       let ans = await rest.register_workspace_request(this.workspace, this.mail);
-
-      console.log('register', ans)
 
       if(ans.status == 0) {this.register_send = true; this.register_err = false; this.workspace_exists = false}
       else if(ans.status == -2) {this.register_err = false; this.workspace_exists = true}
@@ -101,7 +100,7 @@ export default {
       :disabled="register_send"
     />
 
-    <KButton  v-if="uuid == undefined || uuid == ''" :disabled="register_send" :name="t('Создать')" @click="register_workspace_request" />
+    <KButton  v-if="(uuid == undefined || uuid == '') && !register_send" :name="t('Создать')" @click="register_workspace_request" />
     <span v-show="workspace_exists" class="register-err-label"
       >{{t('Рабочее пространство с таким названием уже существует')}}</span
     >
