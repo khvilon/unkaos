@@ -93,7 +93,7 @@ const init = async function() {
 
         const hermes_answer = await axios({
             method: "post",
-            url: "http://127.0.0.1:5009/send",
+            url: "http://hermes:5009/send",
             data: {
             transport: "email",
             recipient: email,
