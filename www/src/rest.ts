@@ -47,7 +47,8 @@ export default class rest {
       headers: rest.headers,
       body: JSON.stringify({workspace: workspace, email: email})
     }
-    return fetch(conf.register_url + 'upsert_workspace_requests', options);
+    let resp = await fetch(conf.register_url + 'upsert_workspace_requests', options);
+    return await resp.json();
   }
 
   static async register_workspace(uuid: String): Promise<any> {
@@ -55,7 +56,8 @@ export default class rest {
       method: 'GET',
       headers: rest.headers
     }
-    return fetch(conf.register_url + 'read_workspace_requests?uuid=' + uuid, options);
+    let resp = await fetch(conf.register_url + 'read_workspace_requests?uuid=' + uuid, options);
+    return await resp.json();
   }
 
   static async run_gpt(input: string): Promise<any> {
