@@ -149,7 +149,19 @@ fi
 eval $DOCKER_INSTALL
 sudo systemctl start docker
 sudo systemctl enable docker
-docker-compose up -d
+
+case $OS_ID in
+    ubuntu|debian|raspbian)
+        docker-compose up -d
+        ;;
+    centos)
+        docker compose up -d
+        ;;
+    *)
+        echo "Unsupported OS: $OS_ID"
+        ;;
+esac
+
 
 # 6. Set up a Cron Job to run update.sh every 5 minutes
 (crontab -l ; echo "*/5 * * * * /bin/bash /var/app/unkaos/update.sh") | crontab -
