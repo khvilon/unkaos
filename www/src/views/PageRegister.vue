@@ -34,7 +34,7 @@ export default {
 
       console.log('register', ans)
 
-      if(ans.status == 0) {this.register_send = true; this.register_err = false; this: workspace_exists = false}
+      if(ans.status == 0) {this.register_send = true; this.register_err = false; this.workspace_exists = false}
       else if(ans.status == -2) {this.register_err = false; this.workspace_exists = true}
       else {this.register_err = true; this.workspace_exists = false}
 
