@@ -101,7 +101,7 @@ const init = async function() {
             recipient: email,
             title: "Unkaos - " + workspace,
             body: `Для подтверждения почты пройдите по ссылке: 
-            https://${process.env.DOMAIN}/register/'${uuid}`
+            https://${process.env.DOMAIN}/register/${uuid}`
             }
         })
 
