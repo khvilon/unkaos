@@ -17,7 +17,7 @@ const init = async function() {
  
     app.post('/upsert_workspace_requests', async (req:any, res:any) => {   
         let workspace = req.body.workspace
-        let email =  = req.body.email
+        let email = req.body.email
         let uuid = tools.uuidv4()
 
         let ans = await sql`INSERT INTO admin.workspace_requests(uuid, workspace, email) VALUES (${uuid}, ${workspace}, ${email})`
