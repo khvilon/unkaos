@@ -46,13 +46,25 @@ let checkWorkspaceExists = async function(workspace: String){
     return ans[0].exists
 }
 
-let createWorkspace = async function(workspace: string){
-    const sqlFilePath = '../db/-public.sql';
-    let sqlFileContent = await fs.readFile(sqlFilePath, 'utf-8');
-
-    let sqlFileContentStr = sqlFileContent.replaceAll('public', workspace);
-
+const sqlPath = '../db/';
+let execModifSqlFile = async function(file: string, name: string, workspace: string){
+    let sqlFileContent = await fs.readFile(sqlPath + file, 'utf-8');
+    let sqlFileContentStr = sqlFileContent.replaceAll(name, workspace);
     await sql.unsafe(sqlFileContentStr);
+}
+
+let createWorkspace = async function(workspace: string){
+    
+    await execModifSqlFile('-public.sql', 'public', workspace)
+    await execModifSqlFile('-workspace.sql', 'test', workspace)
+    
+    let files = await fs.readdir(sqlPath)
+
+    files = files.filter(file=>file.endsWith('_m.sql')).sort()
+
+    for(let i = 0; i < files.length; i++){
+        await execModifSqlFile(files[i], 'public', workspace)
+    }
 }
 
 const init = async function() {
