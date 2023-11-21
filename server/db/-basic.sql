@@ -31,6 +31,23 @@ CREATE TABLE IF NOT EXISTS admin.workspace_requests
     deleted_at timestamp without time zone,
     CONSTRAINT workspace_requests_pkey PRIMARY KEY (uuid)
 )
+CREATE TABLE IF NOT EXISTS admin.config
+(
+	uuid uuid,
+    service text COLLATE pg_catalog."default",
+    name text COLLATE pg_catalog."default" NOT NULL,
+    value text COLLATE pg_catalog."default",
+    CONSTRAINT config_pkey PRIMARY KEY (uuid)
+);
+
+INSERT INTO admin.config(uuid, service, name, value) VALUES ('074a8ea8-95f4-49e6-9a60-4c84a7380100', 'email', 'service', '');
+INSERT INTO admin.config(uuid, service, name, value) VALUES ('eee93825-be47-4c6c-a69a-028b6b26243c', 'email', 'user', '');
+INSERT INTO admin.config(uuid, service, name, value) VALUES ('14d4d184-7f58-4064-9461-795aa13210de', 'email', 'pass', '');
+INSERT INTO admin.config(uuid, service, name, value) VALUES ('84d6511e-c78e-436b-9051-5cec4379ac19', 'email', 'from', 'Unkaos');
+INSERT INTO admin.config(uuid, service, name, value) VALUES ('d4606eb0-62ac-474e-ab26-b840c145e1fa', 'discord', 'token', '');
+INSERT INTO admin.config(uuid, service, name, value) VALUES ('dc06c54f-319f-478d-99fa-9066ffd584ca', 'telegram', 'token', '');
+INSERT INTO admin.config(uuid, service, name, value) VALUES ('d91958eb-b3b9-465f-a680-62a830b8a358', 'slack', 'token', '');
+INSERT INTO admin.config(uuid, service, name, value) VALUES ('a8224636-7603-48dd-a2c4-1e38eaf9599c', 'openai', 'key', '');
 
 ----------------------------------------------------------
 
