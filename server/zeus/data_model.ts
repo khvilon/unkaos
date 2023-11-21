@@ -113,52 +113,6 @@ data_model.load = async function()
 {
     await data_model.load_columns()
     await data_model.load_relations()
-    
-    /*data_model.model.workspace_requests.columns = {
-        uuid: {
-            table_name: 'workspace_requests',
-            column_name: 'uuid',
-            data_type: 'uuid',
-            column_default: null,
-            is_nullable: 'NO'
-        },
-        workspace: {
-            table_name: 'workspace_requests',
-            column_name: 'workspace',
-            data_type: 'text',
-            column_default: null,
-            is_nullable: 'NO'
-        },
-        email: {
-            table_name: 'workspace_requests',
-            column_name: 'email',
-            data_type: 'text',
-            column_default: null,
-            is_nullable: 'NO'
-        },
-        created_at: {
-            table_name: 'workspace_requests',
-            column_name: 'created_at',
-            data_type: 'timestamp without time zone',
-            column_default: 'now()',
-            is_nullable: 'NO'
-        },
-        updated_at: {
-            table_name: 'workspace_requests',
-            column_name: 'updated_at',
-            data_type: 'timestamp without time zone',
-            column_default: 'now()',
-            is_nullable: 'NO'
-        },
-        deleted_at: {
-            table_name: 'workspace_requests',
-            column_name: 'created_at',
-            data_type: 'timestamp without time zone',
-            column_default: null,
-            is_nullable: 'YES'
-        }        
-    }
-    console.log(data_model.model.boards.fks)*/
 }
 
 export default data_model
