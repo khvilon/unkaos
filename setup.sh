@@ -134,7 +134,7 @@ if [[ $use_certbot != "no" ]]; then
     eval $CERT_INSTALL
     echo "try install cert 0"
     # Generate certificates
-    source $ENV_FILE
+    source $NEW_ENV
     sudo certbot certonly --standalone -d $DOMAIN --register-unsafely-without-email --agree-tos --no-eff-email
     echo "try install cert 1"
     cp -rfL /etc/letsencrypt/live/$DOMAIN/* /var/app/unkaos/nginx/ssl
