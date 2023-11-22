@@ -50,6 +50,8 @@ export default {
       let ans = await rest.register_workspace(uuid);
 
       if(ans.status == 2) window.location.href = '/' + ans.workspace + "/login";
+      else if(ans.status == -2) this.workspace_exists = true
+      else this.register_err = true
     }
   },
   components: {
@@ -82,7 +84,7 @@ export default {
     <img class="register-corner-bg-img" src="/login_microchip.png"/>
     <MainTop :name="t('создание рабочего пространства')"></MainTop>
 
-  <div class="register-panel panel" @keyup.enter="register()" >
+  <div class="register-panel panel" :class="{ 'panel-register-process': uuid != undefined && uuid != '' }" @keyup.enter="register()" >
     <StringInput
       v-if="uuid == undefined || uuid == ''"
       :label="t('Название рабочего пространства')"
@@ -110,8 +112,8 @@ export default {
     <span class="workspace-register-ok" v-if="register_send">
 		  {{t('Заявка зарегистрирована, для завершения создания пространства подтвердите вашу почту, перейдя по ссылке в письме.')}}
 	  </span>
-    <span class="workspace-register-ok" v-if="uuid">
-		  {{t('Рабочее пространство создается...')}}
+    <span class="workspace-register-process" v-if="uuid && !workspace_exists && !register_err">
+		  {{t('Рабочее пространство создается')}}...<br><br>{{t('Вы будуете перенаправлены на страницу входа через несколько секунд')}}
 	  </span>
   </div>
   
@@ -161,7 +163,7 @@ export default {
 }
 
 .register-err-label {
-  color: rgb(124, 0, 0);
+  color: rgb(230, 45, 45);
   height: 20px;
   width: 100%;
   display: block;
@@ -188,9 +190,16 @@ export default {
 	border-color: var(--err-color);
 }
 
-.workspace-register-ok{
-
+.workspace-register-process{
+  text-align: center;
 }
+
+.panel-register-process{
+  justify-content: center;
+}
+
+
+
 
 
 </style>

@@ -116,6 +116,13 @@ export default login_page;
   top: 50vh;
   transform: translate(-50%, -50%);
   background-color: var(--table-row-color);
+
+  z-index: 2;
+
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 3px 4px rgba(168, 186, 197, 0.1) inset;
+  background: var(--table-row-color) !important;
+  border-radius: 2px !important;
+  border-style: none !important;
 }
 
 .mobile-view .login-panel {
