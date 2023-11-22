@@ -5,9 +5,27 @@ import dict from "../dict.ts";
 var landing_page = {};
 
 landing_page.methods = {
-  t: dict.get
+  t: dict.get,
+  init: async function(){
+    let masterV = await fetch(masterVUrl);
+    this.masterV = await masterV.json()
+    let devV = await fetch(devVUrl);
+    this.devV = await devV.json()
+  }
 };
 
+const masterVUrl = 'https://raw.githubusercontent.com/khvilon/unkaos/master/meta.json'
+const devVUrl = 'https://raw.githubusercontent.com/khvilon/unkaos/dev/meta.json'
+let masterV = {version:'', version_dt:''}
+let devV = {version:'', version_dt:''}
+
+landing_page.data = function () {
+  return { masterV,  devV};
+};
+
+landing_page.mounted = function(){
+      this.init()
+}
 
 export default landing_page;
 </script>
@@ -18,14 +36,13 @@ export default landing_page;
     <div class="landing-down-panel">
 
       <div class="panel landing-small-panel landing-small-panel-main">
-      <span class="landing-span">{{ 
-        t("Unkaos - трекер задач с открытым исходным кодом.")}}
-        <br><br>{{t("Идеологически вдохновлен классическими продуктами, такими как Jira, Youtrack и другими.")}}
+      <span class="landing-span">
+        {{t("Unkaos идеологически вдохновлен классическими продуктами, такими как Jira, Youtrack и другими.")}}
         <br><br>{{t("Функциональность включает канбан доски, учет времени, гибкую настройку статусной модели и полей, оповещение на почту и в меседжеры, ИИ интерпретатор команд и продолжает развиваться.")}}
       </span>
       </div>
 
-      <div class="panel landing-small-panel landing-small-panel2">
+      <div class="panel landing-small-panel landing-small-panel-links">
       <span class="landing-span">{{ 
         t("Работа с системой") 
       }}</span><span class="landing-span">
@@ -38,18 +55,19 @@ export default landing_page;
 
       </div>
 
-      <div class="panel landing-small-panel landing-small-panel3">
-      <span class="landing-span">{{ 
-        t("Для регистрации нового рабочего пространства пройдите на ") 
-      }}
-      <a href="/register">{{t("страницу регистрации")}}</a>.
-      {{t(" Для входа воспользуйтесь ссылкой, полученной на почту или обратитесь к администратору вашего рабочего пространства. Регистрировать новых пользователей в существующих рабочих пространствах могут только администраторы данных пространств.") }}
+      <div class="panel landing-small-panel landing-small-panel-v">
+      <span class="landing-span">{{ t("Версии") }}</span>
+      <span class="landing-span">
+      {{t("Стабильная")}} <strong>{{ masterV ? masterV.version : '' }}</strong> ({{ masterV ? masterV.version_dt.split(' ')[0] : '' }})
+      <br></span>
+      <span class="landing-span">
+      {{t("Последняя") }} <strong>{{ devV ? devV.version : ''}} </strong> ({{ devV ? devV.version_dt.split(' ')[0] : '' }})
       </span>
       </div>
 
-      <div class="panel landing-small-panel landing-small-panel4">
+      <div class="panel landing-small-panel landing-small-panel-author">
           <span class="landing-span landing-span-last">{{ 
-          t("Связаться с автором можно")}}<br> {{t("по почте ") }}
+          t("Связаться с автором")}}<br> {{t("по почте ") }}
           <a href="mailto:n@khvilon.ru">n@khvilon.ru</a> <br>{{ t("в телеграм ") 
         }}<a href="https://t.me/Khvilon">{{t("@Khvilon")}}</a>
         <br>{{ t("Николй Хвилон") }}
@@ -60,7 +78,7 @@ export default landing_page;
 
     
 
-    <img class="landing-corner-bg-img" src="/b3.png"/>
+    <img class="landing-corner-bg-img" src="/b3-1.png"/>
 
     <lang-select class="landing-lang-select"></lang-select>
 
@@ -78,6 +96,7 @@ export default landing_page;
 	display:flex;
 	flex-direction: column;
 	padding: 30px;
+  background-color: rgb(30, 30, 37) !important;
 }
 
 .landing-down-panel{
@@ -117,7 +136,8 @@ export default landing_page;
   position: absolute;
   right: 0;
   top: 0;
-  width: 100vw;
+  width: 100%;
+
 }
 
 .landing-small-panel{
@@ -136,37 +156,42 @@ export default landing_page;
   justify-content: center;
 
   padding: 20px;
-  height: 200px;
-  width: 350px;
+
   
 }
 
 .landing-small-panel-main{
   left: 50vw;
   top: 50vh; 
-  height: 340px;
+  height: 280px;
   transform: translate(-50%, -50%);
+  width: 350px;
 }
 
-.landing-small-panel2{
-  left: 30px; 
-  top: 30px; 
-  width: 360px;
-  height: 175px;
-}
-
-.landing-small-panel3{
+.landing-small-panel-links{
   right: 30px; 
   top: 30px; 
-  
+  width: 360px;
+  height: 190px;
 }
 
-.landing-small-panel4{
+.landing-small-panel-v{
+  left: 30px; 
+  top: 30px;
+  width: 300px;
+  height: 140px;
+}
+
+.landing-small-panel-v span{
+  margin: 5px;
+}
+
+.landing-small-panel-author{
   left: 30px;
   bottom: 30px;
   transform: none;
   height: 120px;
-  width: 250px;
+  width: 300px;
 }
 
 .landing-list {

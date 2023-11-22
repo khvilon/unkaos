@@ -193,7 +193,7 @@ export default {
   width: 100%;
   height: 100%;
   position: fixed;
-  background-color: var(--panel-bg-color);
+  background-color:  rgb(30, 30, 37) !important;
   padding: 30px;
 }
 
