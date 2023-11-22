@@ -213,6 +213,7 @@ export default {
       :close-on-select="close_on_select"
       :createOption="create_option"
       @option:selected="value_selected"
+      :appendToBody="appendToBody"
     >
       
       <template v-if="taggable"
