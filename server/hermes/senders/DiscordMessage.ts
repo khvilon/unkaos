@@ -1,21 +1,20 @@
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
 import UserData from '../UsersData';
+import {sql} from "../Sql";
 
 let discordConf: any;
 
-try {
-  const { discordConfig } = require('../conf');
-  discordConf = discordConfig;
-} catch (error) {
-    discordConf = {
-    token: process.env.DISCORD_TOKEN
-  };
-}
-
 class DiscordMessage {
-    private client;
+    private client: any;
 
     constructor(userData: UserData) {
+      this.init(userData);
+    }
+
+    async init(userData: UserData) {    
+      const ans = await sql`SELECT value FROM admin.config WHERE service = 'discord' AND name = 'token'`;
+      discordConf = { token: ans[0].value };
+       
       this.client = new Client({intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,

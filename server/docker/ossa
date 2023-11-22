@@ -1,4 +1,4 @@
-FROM node:16.19.0-bullseye-slim
+FROM node:18-bullseye-slim
 
 COPY ./server /app
 WORKDIR /app/ossa

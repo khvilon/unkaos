@@ -1,27 +1,34 @@
 import nodemailer from 'nodemailer';
+import {sql} from "../Sql";
 
 let emailConf: any;
 
-try {
-  const { emailConfig } = require('../conf');
-  emailConf = emailConfig;
-} catch (error) {
-  emailConf = {
-    transport: {
-      service: process.env.EMAIL_SERVICE,
-      auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-      }
-    },
-    from: process.env.EMAIL_FROM
-  };
-}
-
 class MailSender {
-  private transport;
+  private transport: any;
 
   constructor() {
+    this.init()
+  }
+
+  async init(){
+    let ans = await sql`SELECT name, value FROM admin.config WHERE service = 'email'`
+            
+    let ans_dict = ans.reduce((obj: any, item: any) => {
+      obj[item.name] = item.value;
+      return obj;
+    }, {});
+
+    emailConf = {
+      transport: {
+        service: ans_dict.service,
+        auth: {
+            user: ans_dict.user,
+            pass: ans_dict.pass,
+        }
+      },
+      from: ans_dict.from,
+    };
+
     this.transport = nodemailer.createTransport(emailConf.transport);
   }
 

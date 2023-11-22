@@ -56,6 +56,9 @@ import RelativeBox from "./components/RelativeBox.vue";
 import GptPanel from "./components/GptPanel.vue";
 import KAvatar from "@/components/KAvatar.vue";
 
+import MainTop from "@/components/MainTop.vue";
+import LangSelect from "@/components/LangSelect.vue";
+
 const app = createApp(App);
 
 app.use(router);
@@ -108,6 +111,10 @@ app.component("IWatcher", IWatcher)
 app.component("RelativeBox", RelativeBox)
 app.component("GptPanel", GptPanel)
 app.component("KAvatar", KAvatar)
+app.component("MainTop", MainTop)
+app.component("LangSelect", LangSelect)
+
+
 
 const clickOutside = {
     beforeMount: (el, binding) => {

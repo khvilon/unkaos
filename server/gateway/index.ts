@@ -34,11 +34,15 @@ async function init() {
     const method = zeus_listeners.data[i].method;
     const func = zeus_listeners.data[i].func;
 
+    console.log('func', func)
+
     app[method]("/" + func, async (req: any, res: any) => {
       //console.log(req)
 
       req.headers.request_function = func;
       //console.log(req.headers)
+
+      let user_uuid = ''
 
       let cerberus_ans;
       try {
@@ -74,13 +78,16 @@ async function init() {
         return;
       }
       req.headers.user_uuid = cerberus_ans.data.uuid;
+      user_uuid = cerberus_ans.data.uuid;
+    
+
       const zeus_ans = await axios({
         data: req.body,
         method: method,
         url: conf.zeusUrl + req.url,
         headers: {
           subdomain: req.headers.subdomain,
-          user_uuid: cerberus_ans.data.uuid,
+          user_uuid: user_uuid
         },
       });
       res.status(zeus_ans.status);

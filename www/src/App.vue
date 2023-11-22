@@ -14,14 +14,14 @@ import { useYandexMetrika } from 'yandex-metrika-vue3'
 
 let uri = window.location.href;
 
-let lang = tools.get_uri_param(uri, "lang");
-dict.set_lang(lang);
+
+
 
 export default {
 
 
   created() {
-   
+  
     /*
       let uri = window.location.href
      
@@ -33,6 +33,7 @@ export default {
   },
   updated() {
     // this.check_is_in_workspace()
+    
   },
 
   mounted() {
@@ -40,6 +41,8 @@ export default {
     cache.loadDefaultsIfNecessary()
     let htmlElement = document.documentElement;
     htmlElement.setAttribute("theme", cache.getString('theme'));
+    dict.set_lang(cache.getString('lang'));
+    
 
     this.$store.state["common"]["is_mobile"] = this.is_mobile() || this.in_iframe();
     this.$store.state["common"]["in_iframe"] = this.in_iframe();

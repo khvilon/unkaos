@@ -2,13 +2,12 @@ const page_helper = {};
 
 import tools from "./tools.ts";
 import dict from "./dict.ts";
+import cache from "./cache.ts";
 import store_helper from "./store_helper.ts";
 import store from "./stores/index";
 import rest from "./rest";
 
-const lang = tools.get_uri_param(window.location.href, "lang");
-
-dict.set_lang(lang);
+dict.set_lang(cache.getString('lang'));
 
 const beforeCreate = function () {
   //console.log('before create 5555555555555555', store.state['common'])

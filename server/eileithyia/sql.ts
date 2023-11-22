@@ -1,5 +1,5 @@
 const postgres = require('postgres') 
-import tools from "../tools";
+
 let dbConf: any;
 
 try {
@@ -15,10 +15,6 @@ try {
   };
 }
 
-console.log('dbConf', dbConf)
-let cerberusDbConf = tools.obj_clone(dbConf)
-cerberusDbConf.publications = 'cerberus_publication'
-
-const sql = postgres(cerberusDbConf)
+const sql = postgres(dbConf)
 
 export default sql

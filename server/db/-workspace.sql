@@ -38,42 +38,42 @@ $$;
 
 
 
-CREATE INDEX field_values_rows_uuid_idx ON test.field_values_rows USING btree (uuid);
-CREATE INDEX idx_attachments_issue_uuid ON test.attachments USING btree (issue_uuid);
-CREATE INDEX idx_field_values_field_uuid ON test.field_values USING btree (field_uuid);
-CREATE INDEX idx_field_values_issue_uuid ON test.field_values USING btree (issue_uuid);
-CREATE INDEX idx_field_values_uuid ON test.field_values USING btree (uuid);
-CREATE INDEX idx_field_values_value ON test.field_values USING hash (value);
-CREATE INDEX idx_issue_actions_author_uuid ON test.issue_actions USING btree (author_uuid);
-CREATE INDEX idx_issue_actions_issue_uuid ON test.issue_actions USING btree (issue_uuid);
-CREATE INDEX idx_issue_actions_type_uuid ON test.issue_actions USING btree (type_uuid);
-CREATE INDEX idx_issue_actions_uuid ON test.issue_actions USING btree (uuid);
-CREATE INDEX idx_issue_tags_name ON test.issue_tags USING btree (name);
-CREATE INDEX idx_issue_tags_selected_deleted_at ON test.issue_tags_selected USING btree (deleted_at);
-CREATE INDEX idx_issue_tags_selected_issue_uuid ON test.issue_tags_selected USING btree (issue_uuid);
-CREATE INDEX idx_issue_tags_selected_tag_uuid ON test.issue_tags_selected USING btree (issue_tags_uuid);
-CREATE INDEX idx_issue_tags_uuid ON test.issue_tags USING btree (uuid);
-CREATE INDEX idx_issues_created_at ON test.issues USING btree (created_at);
-CREATE INDEX idx_issues_not_deleted ON test.issues USING btree (((deleted_at IS NULL)));
-CREATE INDEX idx_issues_num ON test.issues USING btree (num);
-CREATE INDEX idx_issues_project_uuid ON test.issues USING btree (project_uuid);
-CREATE INDEX idx_issues_sprint_uuid ON test.issues USING btree (sprint_uuid);
-CREATE INDEX idx_issues_status_uuid ON test.issues USING btree (status_uuid);
-CREATE INDEX idx_issues_type_uuid ON test.issues USING btree (type_uuid);
-CREATE INDEX idx_issues_updated ON test.issues USING btree (updated_at);
-CREATE INDEX idx_issues_uuid ON test.issues USING btree (uuid);
-CREATE INDEX idx_relations_issue0_uuid ON test.relations USING btree (issue0_uuid);
-CREATE INDEX idx_relations_issue1_uuid ON test.relations USING btree (issue1_uuid);
-CREATE INDEX idx_relations_type_uuid ON test.relations USING btree (type_uuid);
-CREATE INDEX idx_relations_uuid ON test.relations USING btree (uuid);
-CREATE INDEX idx_users_uuid ON test.users USING btree (uuid);
-CREATE INDEX idx_issue_tags_selected_issue_uuid ON public.issue_tags_selected USING btree (issue_uuid);
-CREATE INDEX idx_issue_tags_selected_tag_uuid ON public.issue_tags_selected USING btree (issue_tags_uuid);
+CREATE INDEX ON test.field_values_rows USING btree (uuid);
+CREATE INDEX ON test.attachments USING btree (issue_uuid);
+CREATE INDEX ON test.field_values USING btree (field_uuid);
+CREATE INDEX ON test.field_values USING btree (issue_uuid);
+CREATE INDEX ON test.field_values USING btree (uuid);
+CREATE INDEX ON test.field_values USING hash (value);
+CREATE INDEX ON test.issue_actions USING btree (author_uuid);
+CREATE INDEX ON test.issue_actions USING btree (issue_uuid);
+CREATE INDEX ON test.issue_actions USING btree (type_uuid);
+CREATE INDEX ON test.issue_actions USING btree (uuid);
+CREATE INDEX ON test.issue_tags USING btree (name);
+CREATE INDEX ON test.issue_tags_selected USING btree (deleted_at);
+CREATE INDEX ON test.issue_tags_selected USING btree (issue_uuid);
+CREATE INDEX ON test.issue_tags_selected USING btree (issue_tags_uuid);
+CREATE INDEX ON test.issue_tags USING btree (uuid);
+CREATE INDEX ON test.issues USING btree (created_at);
+CREATE INDEX ON test.issues USING btree (((deleted_at IS NULL)));
+CREATE INDEX ON test.issues USING btree (num);
+CREATE INDEX ON test.issues USING btree (project_uuid);
+CREATE INDEX ON test.issues USING btree (sprint_uuid);
+CREATE INDEX ON test.issues USING btree (status_uuid);
+CREATE INDEX ON test.issues USING btree (type_uuid);
+CREATE INDEX ON test.issues USING btree (updated_at);
+CREATE INDEX ON test.issues USING btree (uuid);
+CREATE INDEX ON test.relations USING btree (issue0_uuid);
+CREATE INDEX ON test.relations USING btree (issue1_uuid);
+CREATE INDEX ON test.relations USING btree (type_uuid);
+CREATE INDEX ON test.relations USING btree (uuid);
+CREATE INDEX ON test.users USING btree (uuid);
+CREATE INDEX ON public.issue_tags_selected USING btree (issue_uuid);
+CREATE INDEX ON public.issue_tags_selected USING btree (issue_tags_uuid);
 
-CREATE TRIGGER delete_col_field_values_rows AFTER UPDATE ON test.fields FOR EACH ROW WHEN (((old.deleted_at IS NULL) AND (new.deleted_at IS NOT NULL))) EXECUTE FUNCTION test.delete_col_field_values_rows();
-CREATE TRIGGER insert_into_field_values_rows AFTER INSERT ON test.issues FOR EACH ROW EXECUTE FUNCTION test.insert_into_field_values_rows();
-CREATE TRIGGER inserted AFTER INSERT ON test.fields FOR EACH ROW EXECUTE FUNCTION test.add_col_field_values_rows();
-CREATE TRIGGER update_field_values_rows AFTER INSERT OR UPDATE ON test.field_values FOR EACH ROW EXECUTE FUNCTION test.update_field_values_rows();
+CREATE TRIGGER test_delete_col_field_values_rows AFTER UPDATE ON test.fields FOR EACH ROW WHEN (((old.deleted_at IS NULL) AND (new.deleted_at IS NOT NULL))) EXECUTE FUNCTION test.delete_col_field_values_rows();
+CREATE TRIGGER test_insert_into_field_values_rows AFTER INSERT ON test.issues FOR EACH ROW EXECUTE FUNCTION test.insert_into_field_values_rows();
+CREATE TRIGGER test_inserted AFTER INSERT ON test.fields FOR EACH ROW EXECUTE FUNCTION test.add_col_field_values_rows();
+CREATE TRIGGER test_update_field_values_rows AFTER INSERT OR UPDATE ON test.field_values FOR EACH ROW EXECUTE FUNCTION test.update_field_values_rows();
 
 
 INSERT INTO test.favourites_types (uuid, name) VALUES ('ac367512-c614-4f2a-b7d3-816018f71ad8', 'Сохраненный запрос');
@@ -126,18 +126,14 @@ INSERT INTO test.roles (uuid, name, is_custom) VALUES ('556972a6-0370-4f00-aca2-
 
 --INSERT INTO test.users_to_roles (users_uuid, roles_uuid) VALUES ('dbe1a000-40de-428c-bc0a-4fd590a466a5', '556972a6-0370-4f00-aca2-73a477e48999');
 
-CREATE PUBLICATION cerberus_publication WITH (publish = 'insert, update, delete');
+
 ALTER PUBLICATION cerberus_publication ADD TABLE ONLY test.user_sessions;
 ALTER PUBLICATION cerberus_publication ADD TABLE ONLY test.users;
 
+ALTER PUBLICATION hermes_publication ADD TABLE ONLY test.watchers;
+ALTER PUBLICATION hermes_publication ADD TABLE ONLY test.msg_out;
+ALTER PUBLICATION hermes_publication ADD TABLE ONLY test.users;
 
-CREATE PUBLICATION test_publication WITH (publish = 'insert, update, delete');
-ALTER PUBLICATION test_publication ADD TABLE ONLY test.logs_done;
-ALTER PUBLICATION test_publication ADD TABLE ONLY test.msg_out;
-ALTER PUBLICATION test_publication ADD TABLE ONLY test.users;
-
-
-CREATE PUBLICATION ossa_publication WITH (publish = 'insert, update, delete');
 ALTER PUBLICATION ossa_publication ADD TABLE ONLY test.attachments;
 ALTER PUBLICATION ossa_publication ADD TABLE ONLY test.field_values;
 ALTER PUBLICATION ossa_publication ADD TABLE ONLY test.fields;
@@ -163,5 +159,3 @@ create user test with encrypted password 'mypass';
 GRANT INSERT, SELECT, UPDATE, DELETE ON ALL TABLES IN SCHEMA test TO test;
 GRANT USAGE ON SCHEMA test to test;
 ALTER ROLE test SET search_path = test;
-
-
