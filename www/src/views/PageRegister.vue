@@ -81,7 +81,7 @@ export default {
 
 <template ref="issues">
   <div class="register-container">
-    <img class="register-corner-bg-img" src="/login_microchip.png"/>
+    <img class="register-corner-bg-img" src="/b3.png"/>
     <MainTop :name="t('создание рабочего пространства')"></MainTop>
 
   <div class="register-panel panel" :class="{ 'panel-register-process': uuid != undefined && uuid != '' }" @keyup.enter="register()" >
@@ -137,10 +137,11 @@ export default {
   display: flex;
   flex-direction: column;
 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 3px 4px rgba(168, 186, 197, 0.1) inset;
-  background: var(--table-row-color) !important;
-  border-radius: 2px !important;
-  border-style: none !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8), 0 3px 4px rgba(168, 186, 197, 0.1) inset;
+  background: rgba(0, 0, 0, 0.6) !important;
+  border-radius: 4px !important;
+  border-style: outset !important;
+  border-color: rgba(71, 81, 89, 0.5) !important;
 }
 
 .mobile-view .register-panel {
@@ -160,6 +161,17 @@ export default {
   width: 100%;
   margin-top: 10px;
   height: $input-height;
+  background: rgba(30, 30, 33, 0.5);
+  border-color: rgba(168, 186, 197, 0.8);
+}
+
+.register-panel .btn Input:hover{
+  background: rgba(38, 38, 48, 0.5);
+}
+
+.register-panel .btn Input:active{
+  border-style: inset !important;
+  border-color: rgba(88, 106, 117, 0.5);
 }
 
 .register-err-label {
@@ -173,9 +185,8 @@ export default {
 .register-corner-bg-img{
   position: absolute;
   right: 0;
-  bottom: 0;
-  width: 50vw;
-  height: 50vw;
+  top: 0;
+  width: 100vw;
 }
 
 .register-container{
