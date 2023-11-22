@@ -20,11 +20,25 @@ app.use(express.urlencoded({limit: '1mb', extended: true}));
 
 app.use(cors({origin: '*'}));
 
+let generatePassword = function(): string {
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const length = 8;
+    let password = '';
+
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * charset.length);
+        password += charset[randomIndex];
+    }
+
+    return password;
+}
+
 let readWorkspaceRequest = async function(uuid: String){
     let ans = await sql`SELECT 
         workspace,
         email,
         status,
+        pass,
         created_at,
         updated_at,
         deleted_at
@@ -50,23 +64,23 @@ let checkWorkspaceExists = async function(workspace: String){
 }
 
 const sqlPath = '../db/';
-let execModifSqlFile = async function(file: string, name: string, workspace: string){
+let execModifSqlFile = async function(file: string, name: string, workspace: string, email: string, pass: string){
     let sqlFileContent = await fs.readFile(sqlPath + file, 'utf-8');
-    let sqlFileContentStr = sqlFileContent.replaceAll(name, workspace);
+    let sqlFileContentStr = sqlFileContent.replaceAll(name, workspace).replaceAll('root@unkaos.org', email).replaceAll('rootpass', pass);
     await sql.unsafe(sqlFileContentStr);
 }
 
-let createWorkspace = async function(workspace: string){
+let createWorkspace = async function(workspace: string, email: string, pass: string){
     
-    await execModifSqlFile('-public.sql', 'public', workspace)
-    await execModifSqlFile('-workspace.sql', 'test', workspace)
+    await execModifSqlFile('-public.sql', 'public', workspace, email, pass)
+    await execModifSqlFile('-workspace.sql', 'test', workspace, email, pass)
     
     let files = await fs.readdir(sqlPath)
 
     files = files.filter(file=>file.endsWith('_m.sql')).sort()
 
     for(let i = 0; i < files.length; i++){
-        await execModifSqlFile(files[i], 'public', workspace)
+        await execModifSqlFile(files[i], 'public', workspace, email, pass)
     }
 }
 
@@ -81,9 +95,12 @@ const init = async function() {
 
         let exists = await checkWorkspaceExists(workspace)
 
+        let pass = generatePassword()
+
         if(!exists){
             
-            ans = await sql`INSERT INTO admin.workspace_requests(uuid, workspace, email) VALUES (${uuid}, ${workspace}, ${email})`
+            ans = await sql`INSERT INTO admin.workspace_requests(uuid, workspace, email, pass) 
+            VALUES (${uuid}, ${workspace}, ${email}, ${pass})`
             if(!ans){
                 res.send({ status: -1 });
                 return
@@ -96,6 +113,8 @@ const init = async function() {
 
         res.send({ status: 0 });
 
+
+
         const hermes_answer = await axios({
             method: "post",
             url: "http://hermes:5009/send",
@@ -104,7 +123,8 @@ const init = async function() {
             recipient: email,
             title: "Unkaos - " + workspace,
             body: `Для подтверждения почты пройдите по ссылке: 
-            https://${process.env.DOMAIN}/register/${uuid}`
+            https://${process.env.DOMAIN}/register/${uuid}
+            Ваш пароль для входа ${pass}`
             }
         })
 
@@ -131,7 +151,7 @@ const init = async function() {
             return;
         }
 
-        await createWorkspace(ans.workspace)
+        await createWorkspace(ans.workspace, ans.email, ans.pass)
         await sql`UPDATE admin.workspace_requests SET status = 2 WHERE uuid = ${uuid}`
         
         res.send({ status: 2, workspace: ans.workspace });
