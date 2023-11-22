@@ -99,7 +99,7 @@ export default login_page;
       >{{t('Неправильный логин или пароль')}}</span
     >
   </div>
-  <img class="login-corner-bg-img" src="/login_microchip.png"/>
+  <img class="login-corner-bg-img" src="/b3.png"/>
   </div>
 </template>
 
@@ -117,12 +117,16 @@ export default login_page;
   transform: translate(-50%, -50%);
   background-color: var(--table-row-color);
 
+  display: flex;
+  flex-direction: column;
+
   z-index: 2;
 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 3px 4px rgba(168, 186, 197, 0.1) inset;
-  background: var(--table-row-color) !important;
-  border-radius: 2px !important;
-  border-style: none !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8), 0 3px 4px rgba(168, 186, 197, 0.1) inset;
+  background: rgba(0, 0, 0, 0.6) !important;
+  border-radius: 4px !important;
+  border-style: outset !important;
+  border-color: rgba(71, 81, 89, 0.5) !important;
 }
 
 .mobile-view .login-panel {
@@ -135,6 +139,18 @@ export default login_page;
 
 .login-panel .btn Input {
   width: 100%;
+  height: $input-height;
+  background: rgba(30, 30, 33, 0.5);
+  border-color: rgba(168, 186, 197, 0.8);
+}
+
+.login-panel .btn Input:hover{
+  background: rgba(38, 38, 48, 0.5);
+}
+
+.login-panel .btn Input:active{
+  border-style: inset !important;
+  border-color: rgba(88, 106, 117, 0.5);
 }
 
 .wrong-pass-label {
@@ -148,16 +164,15 @@ export default login_page;
 .login-corner-bg-img{
   position: absolute;
   right: 0;
-  bottom: 0;
-  width: 50vw;
-  height: 50vw;
+  top: 0;
+  width: 100vw;
 }
 
 .login-container{
   width: 100%;
   height: 100%;
   position: fixed;
-  background-color: var(--panel-bg-color);
+  background-color: rgb(30, 30, 37);;
   padding: 30px;
 }
 
