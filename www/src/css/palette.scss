@@ -63,6 +63,8 @@
 
     --link-hover-color: green;
     --icon-hover-bg-color: rgba(37, 64, 81, 0.6);
+
+    --err-color: rgb(166, 13, 13);
 }
 [theme="light"]
 {
@@ -128,6 +130,8 @@
 
     --link-hover-color: green;
     --icon-hover-bg-color: rgba(183, 228, 255, 0.7);
+
+    --err-color: rgb(166, 13, 13);
 }
 [theme="dark"]
 {
@@ -147,7 +151,7 @@
     --input-bg-color-disabled : rgb(35, 35, 38);
     --input-hover-bg-color: rgb(34, 32, 54);
 
-    --disabled-bg-color: rgb(20 24 31);
+    --disabled-bg-color: rgb(28, 32, 35);
 
     --workflow-marker-color: rgb(230, 230, 230);
     --workflow-g-hover-color: rgb(200, 200, 255);
@@ -194,6 +198,8 @@
 
     --link-hover-color: green;
     --icon-hover-bg-color: rgba(37, 64, 81, 0.6);
+
+    --err-color: rgb(166, 13, 13);
 }
 [theme="pink"]
 {
@@ -258,4 +264,6 @@
 
     --link-hover-color: green;
     --icon-hover-bg-color: rgba(245, 150, 205, 1);
+
+    --err-color: rgb(166, 13, 13);
 }

@@ -5,8 +5,6 @@ import Watchers from './Watchers';
 import Support from './support_temp';
 import MailPoller from "./MailPoller";
 
-const my_uuid = '9965cb94-17dc-46c4-ac1e-823857289e98'
-
 async function init() {
     const sender = new Sender()
     await sender.init()

@@ -11,6 +11,7 @@ dbLoger.writeLogDone = function(workspace:string, reqUuid:string, userUuid:strin
    //console.log('lll',reqUuid,userUuid,tableName,method,targetUuid,JSON.stringify(params))
    
 
+   if(!userUuid) return
    let query = `INSERT INTO logs_done (uuid, user_uuid, table_name, method, target_uuid, parameters) VALUES ($1,$2,$3,$4,$5,$6)`
    sql.query(workspace, query, [reqUuid,userUuid,tableName,method,targetUuid,JSON.stringify(params)])
 

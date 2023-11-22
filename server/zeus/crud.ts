@@ -464,23 +464,12 @@ crud.load = async function () {
     ON T1.AUTHOR_UUID = U.UUID
     WHERE T1.DELETED_AT IS NULL $@1
   `
+
+
+
 };
 
 
-crud.querys["workspace_requests"] = {};
-crud.querys["workspace_requests"]["read"] = 
-  `SELECT 
-  workspace,
-  email,
-  status,
-  created_at,
-  updated_at
-  FROM admin.workspace_requests
-  WHERE deleted_at IS NULL AND uuid = $@1
-  LIMIT 1`;
-  crud.querys["workspace_requests"]["create"] = 
-  `INSERT INTO admin.workspace_requests`;
-  crud.querys["workspace_requests"]["upsert"] = crud.querys["workspace_requests"]["create"];
 
 crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is_revert:any) {
   //console.log('------------push_query0', '#' + query0 + '#', '##' + query1+ '##')
@@ -993,7 +982,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
  
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
-  // console.log('paraaaaaaaaaaaaaaaaaaaaaams', params)
+  console.log('paraaaaaaaaaaaaaaaaaaaaaams', query, pg_params)
 
   if (method != "read") {
     let [read_query, read_params] = crud.make_query.read(table_name, {

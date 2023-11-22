@@ -113,8 +113,6 @@ data_model.load = async function()
 {
     await data_model.load_columns()
     await data_model.load_relations()
-    
-    console.log(data_model.model.boards.fks)
 }
 
 export default data_model

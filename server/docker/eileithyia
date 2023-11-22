@@ -1,8 +1,9 @@
-FROM node:18-bullseye-slim
+FROM node:16.19.0-bullseye-slim
 
 COPY ./server /app
-WORKDIR /app/athena
+WORKDIR /app/eileithyia
 RUN yarn install
+RUN yarn build
 
 USER node
 

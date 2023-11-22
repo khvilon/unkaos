@@ -1,26 +1,25 @@
 import TelegramBot from 'node-telegram-bot-api';
 import UserData from '../UsersData';
+import {sql} from "../Sql";
 
 let telegramConf: any;
 
-try {
-  const { telegramConfig } = require('../conf');
-  telegramConf = telegramConfig;
-} catch (error) {
-  telegramConf = {
-    token: process.env.TELEGRAM_TOKEN
-  };
-}
-
 //var id = 228803942
 class TelegramMessage {
-  private bot;
+  private bot: any;
 
   constructor(userData: UserData) {
+    this.init(userData);
+  }
+
+  async init(userData: UserData) {
+    const ans = await sql`SELECT value FROM admin.config WHERE service = 'telegram' AND name = 'token'`;
+    telegramConf = { token: ans[0].value };
+
     this.bot = new TelegramBot(telegramConf.token, { polling: true });
     let me = this
 
-    this.bot.onText(/.*?/, async (msg, match) => {
+    this.bot.onText(/.*?/, async (msg: any, match: any) => {
       if(!msg.from) return
       if(!msg.from.username) return
 
