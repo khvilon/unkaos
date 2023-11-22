@@ -172,7 +172,7 @@ export default login_page;
   width: 100%;
   height: 100%;
   position: fixed;
-  background-color: rgb(30, 30, 37);;
+  background-color: rgb(30, 30, 37);
   padding: 30px;
 }
 
