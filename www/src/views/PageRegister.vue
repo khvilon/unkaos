@@ -37,7 +37,7 @@ export default {
       this.try_done = true;
       
       if (this.workspace === '' || this.mail === '') return;
-      if(!mail_is_valid || !workspace_is_valid) return;
+      if(!this.mail_is_valid || !this.workspace_is_valid) return;
 
       let ans = await rest.register_workspace_request(this.workspace, this.mail);
 
@@ -102,13 +102,13 @@ export default {
 
     <KButton  v-if="(uuid == undefined || uuid == '') && !register_send" :name="t('Создать')" @click="register_workspace_request" />
     <span v-show="workspace_exists" class="register-err-label"
-      >{{t('Рабочее пространство с таким названием уже существует')}}</span
+      >{{t('Пространство с таким названием существует')}}</span
     >
     <span v-show="register_err" class="register-err-label"
       >{{t('Не удалось создать заявку на регистрацию')}}</span
     >
     <span class="workspace-register-ok" v-if="register_send">
-		  {{t('Заявка создана, ожидается подтверждение почты')}}
+		  {{t('Заявка зарегистрирована, для завершения создания пространства подтвердите вашу почту, перейдя по ссылке в письме.')}}
 	  </span>
     <span class="workspace-register-ok" v-if="uuid">
 		  {{t('Рабочее пространство создается...')}}
@@ -132,19 +132,32 @@ export default {
   top: 50vh;
   transform: translate(-50%, -50%);
   background-color: var(--table-row-color);
+  display: flex;
+  flex-direction: column;
+
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 3px 4px rgba(168, 186, 197, 0.1) inset;
+  background: var(--table-row-color) !important;
+  border-radius: 2px !important;
+  border-style: none !important;
 }
 
 .mobile-view .register-panel {
   width: 250px;
 }
 
+
+
 .register-panel > *:not(:last-child) {
   margin-bottom: 10px;
+}
+.register-panel .btn {
+  margin-bottom: 0;
 }
 
 .register-panel .btn Input {
   width: 100%;
   margin-top: 10px;
+  height: $input-height;
 }
 
 .register-err-label {
