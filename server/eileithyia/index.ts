@@ -72,7 +72,7 @@ let execModifSqlFile = async function(file: string, name: string, workspace: str
 
 let createWorkspace = async function(workspace: string, email: string, pass: string){
     
-    await execModifSqlFile('-public.sql', 'public', workspace, email, pass)
+    await execModifSqlFile('../db/-public.sql', 'public', workspace, email, pass)
     await execModifSqlFile('-workspace.sql', 'test', workspace, email, pass)
     
     let files = await fs.readdir(sqlPath)
@@ -112,8 +112,6 @@ const init = async function() {
         }
 
         res.send({ status: 0 });
-
-
 
         const hermes_answer = await axios({
             method: "post",
