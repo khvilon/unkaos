@@ -116,12 +116,20 @@ const init = async function() {
             method: "post",
             url: "http://hermes:5009/send",
             data: {
-            transport: "email",
-            recipient: email,
-            title: "Unkaos - " + workspace,
-            body: `Для подтверждения почты пройдите по ссылке: 
-            https://${process.env.DOMAIN}/register/${uuid}
-            Ваш пароль для входа ${pass}`
+                transport: "email",
+                recipient: email,
+                title: "Подтверждение регистрации в Unkaos - " + workspace,
+                body: `
+                    <html>
+                    <body>
+                        <p>Здравствуйте,</p>
+                        <p>Благодарим вас за регистрацию в Unkaos. Для завершения регистрации, пожалуйста, подтвердите свой адрес электронной почты.</p>
+                        <p><a href='https://${process.env.DOMAIN}/register/${uuid}'>Нажмите здесь, чтобы активировать вашу учетную запись</a></p>
+                        <p>Ваш временный пароль для входа: <strong>${pass}</strong></p>
+                        <p>После входа в систему рекомендуем вам изменить этот временный пароль.</p>
+                        <p>С уважением,<br/>Команда Unkaos</p>
+                    </body>
+                    </html>`
             }
         })
 
