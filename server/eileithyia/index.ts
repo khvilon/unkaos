@@ -80,7 +80,7 @@ let createWorkspace = async function(workspace: string, email: string, pass: str
     files = files.filter(file=>file.endsWith('_m.sql')).sort()
 
     for(let i = 0; i < files.length; i++){
-        await execModifSqlFile(files[i], 'public', workspace, email, pass)
+        await execModifSqlFile(sqlPath + files[i], 'public', workspace, email, pass)
     }
 }
 
@@ -111,7 +111,6 @@ const init = async function() {
             return
         }
 
-        res.send({ status: 0 });
 
         const hermes_answer = await axios({
             method: "post",
@@ -126,7 +125,7 @@ const init = async function() {
             }
         })
 
-        if(hermes_answer && hermes_answer.status == 200) res.send({ status: 2 });
+        if(hermes_answer && hermes_answer.status == 200) res.send({ status: 0 });
         else res.send({ status: -3 });
     })
 
