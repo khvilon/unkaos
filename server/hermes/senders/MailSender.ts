@@ -33,13 +33,17 @@ class MailSender {
   }
 
   async send(address: string, title: string, body: string) {
+    // Определяем, содержит ли тело сообщения HTML-теги
+    const isHtml = /<\/?[a-z][\s\S]*>/i.test(body);
+  
     const message = {
       from: emailConf.from,
       to: address,
       subject: title,
-      text: body
+      text: isHtml ? "Для просмотра сообщения используйте почтовый клиент, поддерживающий HTML." : body,
+      html: isHtml ? body : null
     };
-
+  
     try {
       await this.transport.sendMail(message);
       console.log(`Email sent to ${address}`);
