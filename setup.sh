@@ -115,7 +115,7 @@ done
 
 cp server/db/-public.sql server/db/0$schema_name.sql
 sed -i "s/\bpublic\b/$schema_name/g" server/db/0$schema_name.sql
-cp server/db/-workspace.sql server/eileithia/-workspace.sql
+cp server/db/-workspace.sql server/eileithyia/-workspace.sql
 sed -i "s/\btest\b/$schema_name/g" server/db/-workspace.sql
 random_password=$(generate_password)
 sed -i "s/mypass/$random_password/g" server/db/-workspace.sql
