@@ -34,7 +34,8 @@ login_page.methods = {
     if (previousUrl) {
       const previousHost = (new URL(previousUrl)).host;
       if (previousHost === currentHost) {
-        this.$router.go(-1);
+        if(previousUrl.indexOf('/register') > 0) this.$router.push('/' + this.$store.state['common'].workspace + "/users");
+        else this.$router.go(-1);
       }
       else this.$router.push('/' + this.$store.state['common'].workspace + "/issues");
     }
