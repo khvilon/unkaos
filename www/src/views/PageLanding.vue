@@ -38,24 +38,24 @@ export default landing_page;
       <div class="panel landing-small-panel landing-small-panel-main">
       <span class="landing-span">
         {{t("Unkaos идеологически вдохновлен классическими продуктами, такими как Jira, Youtrack и другими.")}}
+      
         <br><br>{{t("Функциональность включает канбан доски, учет времени, гибкую настройку статусной модели и полей, оповещение на почту и в меседжеры, ИИ интерпретатор команд и продолжает развиваться.")}}
+      
       </span>
-      </div>
-
-      <div class="panel landing-small-panel landing-small-panel-links">
+      <br>
       <span class="landing-span">{{ 
-        t("Работа с системой") 
-      }}</span><span class="landing-span">
-      <ul class="landing-list">
-        <li><a href="/register">{{t("Регистрация рабочего пространства в облаке")}}</a></li>
-        <li><a href="https://github.com/khvilon/unkaos">{{t("Репозиторий - установка одной командой")}}</a></li>
-        <li><a href="https://github.com/khvilon/unkaos/blob/master/README.md">{{t("Документация")}}</a></li>
-        <li><a href="https://github.com/khvilon/unkaos/blob/master/LICENSE">{{t("Лицензия")}}</a></li>
-      </ul></span>
+        t("Начало работы") 
+      }}:</span><span class="landing-span">
+      <div class="landing-list">
+        <a href="/register"><i class='bx bx-cloud-upload'></i> {{t("Регистрация рабочего пространства в облаке")}}</a>
+        <a href="https://github.com/khvilon/unkaos"><i class='bx bx-server'></i> {{t("Репозиторий - установка одной командой")}}</a>
+        <a href="https://github.com/khvilon/unkaos/blob/master/README.md"><i class='bx bxs-book'></i> {{t("Документация")}}</a>
+        <a href="https://github.com/khvilon/unkaos/blob/master/LICENSE"><i class="bx bxs-certification"></i> {{t("Лицензия")}}</a>
+      </div></span>
 
       </div>
 
-      <div class="panel landing-small-panel landing-small-panel-v">
+      <div class="landing-small-panel landing-small-panel-v">
       <span class="landing-span">{{ t("Версии") }}</span>
       <span class="landing-span">
       {{t("Стабильная")}} <strong>{{ masterV ? masterV.version : '' }}</strong> ({{ masterV ? masterV.version_dt.split(' ')[0] : '' }})
@@ -65,13 +65,18 @@ export default landing_page;
       </span>
       </div>
 
-      <div class="panel landing-small-panel landing-small-panel-author">
-          <span class="landing-span landing-span-last">{{ 
-          t("Связаться с автором")}}<br> {{t("по почте ") }}
-          <a href="mailto:n@khvilon.ru">n@khvilon.ru</a> <br>{{ t("в телеграм ") 
-        }}<a href="https://t.me/Khvilon">{{t("@Khvilon")}}</a>
-        <br>{{ t("Николй Хвилон") }}
-      </span>
+      <div class="landing-small-panel landing-small-panel-author">
+          
+        <span class="landing-span landing-span-last">
+            <a href="https://t.me/Khvilon"><i class='bx bxl-telegram' ></i>{{t("@Khvilon")}}</a>
+          </span>
+          <span class="landing-span landing-span-last">
+            <a href="mailto:n@khvilon.ru"><i class='bx bx-envelope' ></i>n@khvilon.ru</a> 
+          </span>
+          
+          <span class="landing-span landing-span-last">
+          {{ t("Николай Хвилон") }}
+        </span>
       </div>
       
     </div>
@@ -109,25 +114,24 @@ export default landing_page;
 	}
 
 .landing-span {
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 100;
 }
 
 .landing-span *{
-  font-size: 15px;
+  font-size: 14px;
   text-decoration: auto;
 }
 
 .landing-span-last {
   text-align: end;
-  text-align: center;
-  height: auto;
+  margin-bottom: 6px;
 }
 
 .landing-lang-select{
   position: absolute;
   right: 30px;
-  bottom: 30px;
+  top: 30px;
   width: 200px;
 }
 
@@ -144,11 +148,7 @@ export default landing_page;
   background-color: var(--table-row-color);
 
   z-index: 2;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8), 0 3px 4px rgba(168, 186, 197, 0.1) inset;
-  background: rgba(21, 24, 26, 0.8) !important;
-  border-radius: 4px !important;
-  border-style: outset !important;
-  border-color: rgba(71, 81, 89, 0.5) !important;
+  
   position: fixed;
 
   display: flex;
@@ -159,27 +159,33 @@ export default landing_page;
 
   
 }
+.landing-panel span{
+  opacity: 0.9;
+}
 
 .landing-small-panel-main{
   left: 50vw;
   top: 50vh; 
-  height: 280px;
+  height: 320px;
   transform: translate(-50%, -50%);
-  width: 350px;
+  width: 380px;
+
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(168, 186, 197, 0.1) inset;
+  background: rgba(21, 24, 26, 0.8) !important;
+  border-radius: 4px !important;
+  border-style: outset !important;
+  border-color: rgba(71, 81, 89, 0.5) !important;
 }
 
-.landing-small-panel-links{
-  right: 30px; 
-  top: 30px; 
-  width: 360px;
-  height: 190px;
-}
 
 .landing-small-panel-v{
   left: 30px; 
-  top: 30px;
-  width: 300px;
-  height: 140px;
+  bottom: 30px;
+  width: auto;
+  height: auto;
+  background: transparent !important;
+  border: none !important;
+  padding: 0;
 }
 
 .landing-small-panel-v span{
@@ -187,26 +193,41 @@ export default landing_page;
 }
 
 .landing-small-panel-author{
-  left: 30px;
+  right: 30px;
   bottom: 30px;
-  transform: none;
-  height: 120px;
-  width: 300px;
+  height: auto;
+  width: auto;
+  background: transparent !important;
+  border: none !important;
+  padding: 0;
 }
 
-.landing-list {
-  list-style-type: disc; /* Стиль маркера: диск, круг, квадрат и т.д. */
-  padding-left: 20px; /* Отступ слева, чтобы отделить маркеры от текста */
-}
-
-.landing-list li {
-  margin-bottom: 10px; /* Отступ между элементами списка */
-}
-
-/* Стили для ссылок, если нужно */
-.landing-list li a {
-  text-decoration: none; /* Убрать подчеркивание */
+.landing-small-panel-author i {
   color: rgb(108, 146, 211);
 }
+
+
+
+.landing-list {
+  padding-left: 10px;
+  padding-top: 10px; 
+  display: flex;
+  flex-direction: column;
+}
+
+
+.landing-list a {
+  text-decoration: none; 
+  color: rgb(108, 146, 211);
+  margin-bottom: 6px;
+  font-weight: 300;
+}
+
+.landing-list i{
+  width: 22px;
+  height: 22px;
+  color: rgb(108, 146, 211);
+}
+
 
 </style>

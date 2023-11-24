@@ -71,7 +71,7 @@ export default {
 </script>
 
 <template>
-  <div class="color">
+  <div class="color input">
     <div class="label">{{ label }}</div>
     <input
       class="color-input"

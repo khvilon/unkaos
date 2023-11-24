@@ -13,13 +13,19 @@ $table-card-width: calc(100% - $table-panel-width);
   display: flex;
   width: $table-panel-width;
   height: calc(100vh - $top-menu-height);
+  
+  background: transparent;
 }
 
+
+
 .table_card {
-  height: calc(100vh - $top-menu-height);
+  height: calc(100vh - $top-menu-height - 20px);
   padding: 10px 20px 10px 20px;
   width: $table-card-width;
   display: inline-block;
+  margin-right: 20px;
+  margin-bottom: 20px;
 }
 
 .table_card > *:not(:last-child) {

@@ -30,7 +30,7 @@ export default {
 </script>
 
 <template>
-  <div class="search">
+  <div class="search input">
     <input
       class="search-input"
       type="text"

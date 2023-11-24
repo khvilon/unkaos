@@ -68,9 +68,9 @@ export default {
   color: var(--text-color);
   background-color: var(--button-color);
   border-width: 1px;
-  border-color: var(--text-color);
+  border-color: var(--border-color);
   border-style: solid;
-  font-size: 15px;
+  font-size: 14px;
   border-radius: var(--border-radius);
   border-style: outset;
   cursor: pointer;

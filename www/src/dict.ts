@@ -57,7 +57,7 @@ class dict {
     ["Unkaos идеологически вдохновлен классическими продуктами, такими как Jira, Youtrack и другими.", { en: "Unkaos is inspired by classic systems like Jira, Youtrack and others." }],
     ["Функциональность включает канбан доски, учет времени, гибкую настройку статусной модели и полей, оповещение на почту и в меседжеры, ИИ интерпретатор команд и продолжает развиваться.", 
     { en: "The functionality includes Kanban boards, time tracking, flexible configuration of status models and fields, notifications via email and messengers, an AI command interpreter, and continues to evolve." }],
-    ["Работа с системой", { en: "Get started" }],
+    ["Начало работы", { en: "Get started" }],
     ["Регистрация рабочего пространства в облаке", { en: "Create workspace in cloud" }],
     ["Репозиторий - установка одной командой", { en: "Repository - single command install" }],
     ["Документация", { en: "Documents" }],

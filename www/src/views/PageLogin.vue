@@ -109,9 +109,10 @@ export default login_page;
 @import "../css/palette.scss";
 
 .login-panel {
-  padding: 20px;
-  height: 200px;
-  width: 350px;
+  padding: 24px;
+  padding-top: 16px;
+  height: 212px;
+  width: 342px;
   position: fixed;
   left: calc(50vw);
   top: 50vh;
@@ -123,7 +124,7 @@ export default login_page;
 
   z-index: 2;
 
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8), 0 3px 4px rgba(168, 186, 197, 0.1) inset;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(168, 186, 197, 0.1) inset;
   background: rgba(0, 0, 0, 0.6) !important;
   border-radius: 4px !important;
   border-style: outset !important;
@@ -135,11 +136,12 @@ export default login_page;
 }
 
 .login-panel > *:not(:last-child) {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .login-panel .btn Input {
   width: 100%;
+  margin-top: 10px;
   height: $input-height;
   background: rgba(30, 30, 33, 0.5);
   border-color: rgba(168, 186, 197, 0.8);

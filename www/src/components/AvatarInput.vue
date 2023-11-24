@@ -54,7 +54,7 @@ export default {
 </script>
 
 <template>
-  <label class="avatar">
+  <label class="avatar input">
     <div class="label">{{ label }}</div>
     <input type="file" accept="image/*" v-on:change="preview_files" />
     <img class="avatar-input" :src="get_src(value)" />

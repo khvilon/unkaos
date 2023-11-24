@@ -87,6 +87,7 @@ export default {
   <div class="register-panel panel" :class="{ 'panel-register-process': uuid != undefined && uuid != '' }" @keyup.enter="register()" >
     <StringInput
       v-if="uuid == undefined || uuid == ''"
+      :keyup_enter="register_workspace_request"
       :label="t('Название рабочего пространства')"
       @update_parent_from_input="update_workspace"
       :value="workspace"
@@ -95,6 +96,7 @@ export default {
     />
     <StringInput
     v-if="uuid == undefined || uuid == ''"
+    :keyup_enter="register_workspace_request"
     :label="t('Электронная почта')"
       @update_parent_from_input="update_mail"
       :value="mail"
@@ -126,9 +128,10 @@ export default {
 @import "../css/palette.scss";
 
 .register-panel {
-  padding: 20px;
-  height: 200px;
-  width: 350px;
+  padding: 24px;
+  padding-top: 16px;
+  height: 212px;
+  width: 342px;
   position: fixed;
   left: calc(50vw);
   top: 50vh;
@@ -137,12 +140,13 @@ export default {
   display: flex;
   flex-direction: column;
 
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8), 0 3px 4px rgba(168, 186, 197, 0.1) inset;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(168, 186, 197, 0.1) inset;
   background: rgba(0, 0, 0, 0.6) !important;
   border-radius: 4px !important;
   border-style: outset !important;
   border-color: rgba(71, 81, 89, 0.5) !important;
 }
+
 
 .mobile-view .register-panel {
   width: 250px;
@@ -151,7 +155,7 @@ export default {
 
 
 .register-panel > *:not(:last-child) {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .register-panel .btn {
   margin-bottom: 0;

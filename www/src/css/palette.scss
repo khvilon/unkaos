@@ -8,7 +8,7 @@
 
     --text-color: rgb(190, 190, 190);
 
-    --border-color: rgb(128, 128, 128);
+    --border-color: rgba(128, 128, 128, 0);
     --table-row-color: rgb(40, 45, 50);
     --table-row-color-selected: rgb(50, 60, 70);
     --table-row-border-color: black;
@@ -136,18 +136,18 @@
 [theme="dark"]
 {
 
-    --body-bg-color: rgb(71, 81, 89);
+    --body-bg-color: #17212B;
 
-    --panel-bg-color: rgb(30, 34, 37);
+    --panel-bg-color: #242F3D;
 
-    --text-color: rgb(168, 186, 197);
+    --text-color: rgba(198, 200, 210);
 
-    --border-color: rgba(71, 81, 89);
-    --table-row-color: rgb(40, 45, 50);
-    --table-row-color-selected: rgb(50, 60, 70);
+    --border-color: rgba(71, 81, 89, 0.6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
     --table-row-border-color: black;
 
-    --input-bg-color: rgb(20 24 31);
+    --input-bg-color: rgb(30 34 46);
     --input-bg-color-disabled : rgb(35, 35, 38);
     --input-hover-bg-color: rgb(34, 32, 54);
 
@@ -162,7 +162,7 @@
     --link-color: rgb(108, 146, 211);
     --issue-card-descr-color: rgb(128, 146, 157);
 
-    --button-color: rgb(55, 60, 63);
+    --button-color: #4a5867;
 
     --on-button-icon-color: rgb(198, 216, 227);
     --off-button-icon-color: rgb(108, 108, 108);
@@ -179,9 +179,9 @@
     --loading-bar-color: rgba(20, 24, 30, 0.5);
 
 
-    --panel-border-radius: 0px;
+    --panel-border-radius: 4px;
     --border-radius: 3px;
-    --border-style: solid;
+    --border-style: inset;
     --border-width: 1px;
     --issue-search-btn-top-border-width: 1px;
 
