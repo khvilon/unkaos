@@ -78,7 +78,7 @@ export default {
 </script>
 
 <template>
-  <div class="numeric">
+  <div class="numeric input">
     <div class="label">{{ label }}</div>
     <input
       type="number"

@@ -129,7 +129,7 @@ export default {
 </script>
 
 <template>
-  <div class="user-input">
+  <div class="user-input input">
     <div class="label">{{ label }}</div>
 
     <v-select

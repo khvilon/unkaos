@@ -137,7 +137,7 @@ export default {
 </script>
 
 <template>
-  <div class="text">
+  <div class="text input">
     <div class="label">{{ label }}</div>
     <textarea
       ref="text_input_shadow"

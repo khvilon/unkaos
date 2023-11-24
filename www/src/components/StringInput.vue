@@ -28,6 +28,10 @@ export default {
     placeholder: {
       type: String,
       default: ""
+    },
+    keyup_enter: {
+      type: Function,
+      default: ()=>{}
     }
   },
 
@@ -36,6 +40,9 @@ export default {
   methods: {
     blur:function() {
       this.$emit("updated", this.value);
+    },
+    doBlur() {
+      this.$refs.inputField.blur();
     },
   },
 
@@ -80,11 +87,13 @@ export default {
 </script>
 
 <template>
-  <div class="string">
+  <div class="string input">
     <div class="label">{{ label }}</div>
     <input
+      ref="inputField"
       class="string-input"
       v-model="value"
+      @keyup.enter="keyup_enter(); doBlur()"
       :type="type"
       :disabled="disabled"
       :placeholder="placeholder"

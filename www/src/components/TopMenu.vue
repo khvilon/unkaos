@@ -83,6 +83,8 @@ export default {
 
   padding-top: 13px;
   padding-left: 0px;
+
+  background: none;
 }
 
 

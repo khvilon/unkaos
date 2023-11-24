@@ -173,11 +173,13 @@ export default {
 
 //$font-family:'Poppins', sans-serif;
 body {
-  background-color: var(--body-bg-color);
+ // background-color: var(--body-bg-color);
   transition: all 0.5s ease;
   overflow: hidden;
   padding: 0px;
   margin: 0px;
+
+   
 }
 
 html {
@@ -195,6 +197,7 @@ html {
   box-sizing: border-box;
   transition: all 0.2s ease;
   opacity: 1;
+  font-weight: 100;
 
   // font-family: 'Poppins', sans-serif;
 }
@@ -438,6 +441,10 @@ $loading-bar-width: 200vw;
   background: rgba(0,0,0,0);
 }
 
+.table_card{
+
+}
+
 .table_card_footer_btn {
   width: 45%;
 
@@ -496,6 +503,11 @@ $loading-bar-width: 200vw;
 
 .issue-top-button:hover {
   background: var(--icon-hover-bg-color);
+}
+
+.input .label{
+  margin-bottom: 4px;
+  opacity: 0.8;
 }
 
 </style>

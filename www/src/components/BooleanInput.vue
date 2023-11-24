@@ -39,7 +39,7 @@ export default {
 </script>
 
 <template>
-  <label class="boolean">
+  <label class="boolean input">
     <div class="label">{{ label }}</div>
     <input type="checkbox" v-model="value" :disabled="disabled" style="display: none"/>
     <span class="boolean-input" v-bind:class="{ disabled: disabled }"> </span>

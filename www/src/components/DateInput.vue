@@ -88,7 +88,7 @@ export default {
 </script>
 
 <template>
-  <div class="date">
+  <div class="date input">
     <div class="label">{{ label }}</div>
     <input
       class="date-input"
