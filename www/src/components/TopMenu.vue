@@ -81,13 +81,11 @@ export default {
     border-bottom-width: 1px;*/
   height: $top-menu-height;
 
-  padding-top: 13px;
+  padding-top: 18px;
   padding-left: 0px;
 
   background: none;
 }
-
-
 
 .topbar .btn .btn_input {
   width: 100px;
