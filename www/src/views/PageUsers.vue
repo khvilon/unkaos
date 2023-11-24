@@ -80,6 +80,8 @@ const data = {
   ],
 };
 
+
+
 const mod = await page_helper.create_module(data);
 
 mod.methods.is_this_user = function () {
@@ -101,9 +103,7 @@ mod.methods.update_password = function () {
 };
 
 mod.methods.change_password = function () {
-  if (this.selected_users == undefined || this.selected_users.uuid == undefined)
-    return;
-  rest.run_method("update_password_rand", { user: this.selected_users });
+  if (this.user_selected) rest.run_method("update_password_rand", { user: this.selected_users });
 };
 
 mod.methods.change_pass_var = function (val) {
@@ -112,10 +112,20 @@ mod.methods.change_pass_var = function (val) {
 };
 
 mod.methods.saved = function (users) {
-  if(!this.is_this_user()) return
-
-  cache.setObject("profile", users[0]);
+  if(this.is_this_user2) cache.setObject("profile", users[0]);
 };
+
+
+mod.computed.user_selected=function(){
+  return this.selected_users != undefined && this.selected_users.uuid && this.selected_users.created_at
+};
+
+mod.computed.is_this_user2=function(){
+  if(!this.user_selected) return false
+  let user = cache.getObject("profile");
+  return this.selected_users.uuid == user.uuid;
+};
+
 
 export default mod;
 </script>
@@ -141,9 +151,9 @@ export default mod;
         </Transition>
       </div>
       <div class="table_card panel">
-        <component
+        <component 
           v-bind:is="input.type + 'Input'"
-          v-for="(input, index) in inputs"
+          v-for="(input, index) in user_selected ? inputs : inputs.filter((f)=>f.id != 'created_at')"
           :label="input.label"
           :key="index"
           :id="input.id"
@@ -151,7 +161,7 @@ export default mod;
           :parent_name="'users'"
           :disabled="input.disabled"
         ></component>
-        <div class="change-pass-div" v-if="is_this_user()">
+        <div class="change-pass-div" v-if="is_this_user2">
           <StringInput
             label="Пароль"
             @update_parent_from_input="change_pass_var"
@@ -159,7 +169,7 @@ export default mod;
           </StringInput>
           <KButton :name="'Изменить'" @click="update_password" />
         </div>
-        <KButton
+        <KButton v-if="user_selected"
           class="change-password"
           :name="'Сбросить пароль'"
           @click="change_password()"
@@ -171,7 +181,7 @@ export default mod;
             :func="'save_users'"
             @button_ans="saved"
           />
-          <KButton
+          <KButton  v-if="user_selected"
             class="table_card_footer_btn"
             :name="'Удалить'"
             :func="'delete_users'"
