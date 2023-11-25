@@ -1577,19 +1577,6 @@ $cards_field_left: 20px;
 	margin-bottom: 10px;
 }
 
-.table_card_footer {
-	margin-top: 20px;
-	display: flex;
-	justify-content: space-between;
-}
-
-.table_card_footer_btn {
-	width: 45%;
-
-	input {
-		width: 100%;
-	}
-}
 
 
 .status-board-collumn {

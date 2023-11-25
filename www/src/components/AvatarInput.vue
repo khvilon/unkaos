@@ -35,10 +35,6 @@ export default {
         id: this.id,
         val: val,
       });
-
-      // console.log(event.path[1].children[2].src=val)
-
-      //this.changed_value = 'aaa'
     },
   },
   watch: {
@@ -72,6 +68,7 @@ export default {
 
 .avatar {
   display: block;
+  width: $input-height;
 }
 
 .avatar-input {
@@ -85,10 +82,12 @@ export default {
   border-color: var(--border-color);
   border-width: var(--border-width);
   border-style: var(--border-style);
+  cursor: pointer;
 }
 
 [type="file"] {
   visibility: hidden;
   width: 0px;
+  display: none;
 }
 </style>

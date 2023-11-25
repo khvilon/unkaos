@@ -113,6 +113,7 @@ export default {
 
 .numeric-input:disabled {
   background: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 
 input[type="number"] {

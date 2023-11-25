@@ -84,11 +84,6 @@ const data = {
 
 const mod = await page_helper.create_module(data);
 
-mod.methods.is_this_user = function () {
-  let user = cache.getObject("profile");
-  return this.selected_users.uuid == user.uuid;
-};
-
 mod.methods.update_password = function () {
   if (
     this.selected_users == undefined ||
@@ -113,6 +108,7 @@ mod.methods.change_pass_var = function (val) {
 
 mod.methods.saved = function (users) {
   if(this.is_this_user2) cache.setObject("profile", users[0]);
+  this.update_password()
 };
 
 
@@ -151,41 +147,43 @@ export default mod;
         </Transition>
       </div>
       <div class="table_card panel">
-        <component 
-          v-bind:is="input.type + 'Input'"
-          v-for="(input, index) in user_selected ? inputs : inputs.filter((f)=>f.id != 'created_at')"
-          :label="input.label"
-          :key="index"
-          :id="input.id"
-          :value="selected_users[input.id]"
-          :parent_name="'users'"
-          :disabled="input.disabled"
-        ></component>
-        <div class="change-pass-div" v-if="is_this_user2">
-          <StringInput
-            label="Пароль"
-            @update_parent_from_input="change_pass_var"
-          >
-          </StringInput>
-          <KButton :name="'Изменить'" @click="update_password" />
+        <div class="table_card_fields">
+          <component 
+            v-bind:is="input.type + 'Input'"
+            v-for="(input, index) in user_selected ? inputs : inputs.filter((f)=>f.id != 'created_at')"
+            :label="input.label"
+            :key="index"
+            :id="input.id"
+            :value="selected_users[input.id]"
+            :parent_name="'users'"
+            :disabled="input.disabled"
+          ></component>
+          <StringInput v-if="is_this_user2"
+              label="Пароль"
+              @update_parent_from_input="change_pass_var"
+            >
+            </StringInput>
+          
         </div>
-        <KButton v-if="user_selected"
-          class="change-password"
-          :name="'Сбросить пароль'"
-          @click="change_password()"
-        />
-        <div class="table_card_footer">
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Сохранить'"
-            :func="'save_users'"
-            @button_ans="saved"
+        <div class="table_card_buttons">
+          <KButton v-if="user_selected"
+            class="change-password"
+            :name="'Сбросить пароль'"
+            @click="change_password()"
           />
-          <KButton  v-if="user_selected"
-            class="table_card_footer_btn"
-            :name="'Удалить'"
-            :func="'delete_users'"
-          />
+          <div class="table_card_footer">
+            <KButton
+              class="table_card_footer_btn"
+              :name="'Сохранить'"
+              :func="'save_users'"
+              @button_ans="saved"
+            />
+            <KButton  v-if="user_selected"
+              class="table_card_footer_btn"
+              :name="'Удалить'"
+              :func="'delete_users'"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -197,20 +195,6 @@ export default mod;
   $table-panel-width: 75%
 );
 
-.change-pass-div {
-  display: flex;
-  flex-direction: row;
-}
-
-.change-pass-div .btn {
-  padding-top: 32px;
-  padding-right: 20px;
-  //width: 100px;
-}
-
-.change-password {
-  width: 100%;
-}
 
 
 

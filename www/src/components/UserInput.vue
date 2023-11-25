@@ -223,6 +223,7 @@ export default {
 .vs--disabled .vs__search,
 .vs--disabled .vs__selected {
   background-color: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 
 .vs--disabled .vs__clear,

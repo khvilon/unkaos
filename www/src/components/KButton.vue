@@ -79,6 +79,7 @@ export default {
 .btn .disabled-btn {
   cursor: not-allowed;
   background-color: var(--input-bg-color-disabled);
+  color: var(--disabled-text-color);
 }
 
 .btn i {

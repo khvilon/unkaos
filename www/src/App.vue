@@ -182,6 +182,11 @@ body {
   background-color: var(--body-bg-color);
 }
 
+
+.table_card_buttons .btn .btn_input {
+  width: 100% !important;
+}
+
 html {
   font-size: $font-size;
 }
@@ -439,18 +444,6 @@ $loading-bar-width: 200vw;
 
 ::-webkit-scrollbar-corner {
   background: rgba(0,0,0,0);
-}
-
-.table_card{
-
-}
-
-.table_card_footer_btn {
-  width: 45%;
-
-  input {
-    width: 100% !important;
-  }
 }
 
 .change-password .btn_input {

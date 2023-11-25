@@ -57,6 +57,7 @@ export default {
 
 .boolean {
   display: block;
+  width: $input-height;
 }
 
 .boolean-input {
@@ -70,6 +71,8 @@ export default {
   border-color: var(--border-color);
   border-width: var(--border-width);
   border-style: var(--border-style);
+  position: relative;
+  cursor: pointer;
 }
 
 [type="checkbox"] {
@@ -82,11 +85,18 @@ export default {
 }
 
 .boolean-input:after {
+  // Стили для псевдоэлемента, отображающего галочку
   content: "\2714";
-  display: none;
+  position: absolute; // Позиционирование галочки независимо от других элементов
+  top: 50%; // Центрирование по вертикали
+  left: 50%; // Центрирование по горизонтали
+  transform: translate(-50%, -50%); // Точное центрирование галочки
+  display: none; // Изначально скрыта
+  font-size: 18px; // Размер галочки
 }
 
 .boolean .disabled {
   background: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 </style>
