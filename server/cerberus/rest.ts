@@ -28,16 +28,16 @@ export default class Rest {
     app.use(express.raw({limit: '150mb'}));
     app.use(express.urlencoded({limit: '150mb', extended: true}));
     app.get('/get_token', async (req : any, res : any) => {
-      await this.handleRequest(req, res)
+      this.handleRequest(req, res)
     })
     app.get('/check_session', async (req : any, res : any) => {
-      await this.handleRequest(req, res)
+      this.handleRequest(req, res)
     })
     app.post('/upsert_password', async (req : any, res : any) => {
-      await this.handleRequest(req, res)
+      this.handleRequest(req, res)
     })
     app.post('/upsert_password_rand', async (req : any, res : any) => {
-      await this.handleRequest(req, res)
+      this.handleRequest(req, res)
     })
     app.listen(port, async () => {
       console.log(`Cerberus running on port ${port}`)
