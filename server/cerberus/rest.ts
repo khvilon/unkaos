@@ -85,8 +85,8 @@ export default class Rest {
         res.send({ message: 'Нельзя изменять пароль других пользователей' });
         return
       }
-      let ans = await Security.setUserPassword(workspace, params.user, params.password)
-      res.send(ans)
+      await Security.setUserPassword(workspace, params.user, params.password)
+      res.send({})
     } 
     else if (request == 'upsert_password_rand') {
       this.upsertPasswordRand(workspace, user, req, res);
