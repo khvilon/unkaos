@@ -199,6 +199,7 @@ export default {
 
 .text-input:disabled {
   background: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 
 .text-input::-webkit-scrollbar {

@@ -124,5 +124,6 @@ export default {
 
 .date-input:disabled {
   background: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 </style>

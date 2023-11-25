@@ -45,47 +45,56 @@ export default class Rest {
   }
 
   private async handleRequest(req : any, res : any) {
+
     const workspace: string = req.headers.subdomain
+
     if (workspace == undefined || workspace == '') {
       res.status(400);
       res.send({ message: 'Необходим заголовок subdomain в качестве workspace' });
       return
     }
+
     const request = req.url.split('/')[1]
+
     if (request == 'get_token') {
       await this.handleGetToken(req, workspace, res);
       return
-    } else {
-      const token = req.headers.token
-      if (!token) {
-        res.status(401);
-        res.send({ message: 'Требуется токен авторизации' });
-        return
-      }
-      const user = await this.data.checkSession(workspace, token)
-      if (!user) {
-        res.status(401);
-        res.send({ message: 'Пользовательский токен не валиден' });
-        return
-      }
-      if (request == 'check_session') {
+    } 
+    
+    const token = req.headers.token
+    if (!token) {
+      res.status(401);
+      res.send({ message: 'Требуется токен авторизации' });
+      return
+    }
+
+    const user = await this.data.checkSession(workspace, token)
+    if (!user) {
+      res.status(401);
+      res.send({ message: 'Пользовательский токен не валиден' });
+      return
+    }
+
+    if (request == 'check_session') {
         res.send(user)
-      } else if (request == 'upsert_password') {
-        const params = req.body
-        if (user.uuid != params.user.uuid) {
-          res.status(403);
-          res.send({ message: 'Нельзя изменять пароль других пользователей' });
-          return
-        }
-        await Security.setUserPassword(workspace, params.user, params.password)
-      } else if (request == 'upsert_password_rand') {
-        await this.upsertPasswordRand(workspace, user, req, res);
-        return
-      } else {
-        res.status(501)
-        res.send("Несуществующий метод")
+    } 
+    else if (request == 'upsert_password') {
+      const params = req.body
+      if (user.uuid != params.user.uuid) {
+        res.status(403);
+        res.send({ message: 'Нельзя изменять пароль других пользователей' });
         return
       }
+      let ans = await Security.setUserPassword(workspace, params.user, params.password)
+      res.send(ans)
+    } 
+    else if (request == 'upsert_password_rand') {
+      let ans = await this.upsertPasswordRand(workspace, user, req, res);
+      res.send(ans)
+    } 
+    else {
+      res.status(501)
+      res.send("Несуществующий метод")
     }
   }
 

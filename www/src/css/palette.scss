@@ -18,6 +18,7 @@
     --input-hover-bg-color: rgb(34, 32, 54);
 
     --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
 
     --workflow-marker-color: rgb(230, 230, 230);
     --workflow-g-hover-color: rgb(200, 200, 255);
@@ -86,6 +87,7 @@
     --input-hover-bg-color: #f7f9fa;
 
     --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
 
     --workflow-marker-color: rgb(80, 80, 100);
     --workflow-g-hover-color: rgb(100, 120, 190);
@@ -151,7 +153,8 @@
     --input-bg-color-disabled : rgb(35, 35, 38);
     --input-hover-bg-color: rgb(34, 32, 54);
 
-    --disabled-bg-color: rgb(28, 32, 35);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
 
     --workflow-marker-color: rgb(230, 230, 230);
     --workflow-g-hover-color: rgb(200, 200, 255);
@@ -198,72 +201,6 @@
 
     --link-hover-color: green;
     --icon-hover-bg-color: rgba(37, 64, 81, 0.6);
-
-    --err-color: rgb(166, 13, 13);
-}
-[theme="pink"]
-{
-    --body-bg-color: rgb(250, 189, 238);
-
-    --panel-bg-color: rgb(244, 171, 213);
-
-    --text-color: rgb(252, 49, 171);
-
-    --border-color: rgb(219, 3, 129);
-    --table-row-color: rgb(243, 189, 225);
-    --table-row-color-selected: rgb(233, 160, 201);
-    --table-row-border-color: rgb(234, 134, 212);
-
-    --input-bg-color: rgb(243, 189, 225);
-    --input-bg-color-disabled : rgb(199, 180, 197);
-    --input-hover-bg-color: rgb(249, 175, 240);
-
-    --disabled-bg-color: rgb(248, 200, 232);
-
-    --workflow-marker-color: rgb(255, 0, 144);
-    --workflow-g-hover-color: rgb(246, 138, 201);
-    --workflow-g-selected-color:rgb(144, 56, 107);
-    --workflow-g-fill-color: rgb(250, 189, 238);
-    --workflow-g-hover-fill-color: rgb(246, 138, 201);
-
-    --link-color: rgb(246, 138, 201);
-    --issue-card-descr-color: rgb(255, 0, 144);
-
-    --button-color: rgb(245, 150, 205);
-
-    --on-button-icon-color: rgb(255, 0, 183);
-    --off-button-icon-color: rgb(211, 120, 120);
-
-  
-    --issues-search-idx-0-color: rgb(50, 210, 50);
-    --issues-search-idx-1-color: rgb(237, 237, 42);
-    --issues-search-idx-2-color: rgb(114, 114, 248);
-    --issues-search-idx-3-color: orange;
-    --issues-search-idx-4-color: rgb(107, 98, 66);
-    --issues-search-bad-color: red;
-
-    --loading-bg-color: rgba(234, 161, 203, 0.3);
-    --loading-bar-color: rgba(235, 140, 195, 0.6);
-
-    --panel-border-radius: 0px;
-    --border-radius: 20px;
-    --border-style:solid;
-    --border-width: 0px;
-    --issue-search-btn-top-border-width: 0px;
-
-    --code-block-bg-color: #000000;
-    --code-scroll-thumb-bg-color: #6b3b65;
-    --code-scroll-track-bg-color: #1a2024;
-    --code-scroll-thumb-hover-color: #8d3d83;
-    --code-fragment-text-color: #802398;
-    --code-fragment-border-color: #c692d3;
-    --code-bg-color: #b78bc2;
-
-    --scroll-color: rgb(245, 150, 205);
-    --scroll-shadow-color: rgb(205,110,165);
-
-    --link-hover-color: green;
-    --icon-hover-bg-color: rgba(245, 150, 205, 1);
 
     --err-color: rgb(166, 13, 13);
 }
