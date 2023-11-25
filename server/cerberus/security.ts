@@ -78,7 +78,7 @@ export default class Security {
   }
 
   static async setUserPassword(workspace: string, user: any, newPassword: string) {
-    await sql`
+    return await sql`
       UPDATE ${sql(workspace + '.users') } 
       SET password = MD5(${ newPassword }),
           updated_at = NOW()
