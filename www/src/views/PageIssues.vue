@@ -369,5 +369,6 @@ export default mod;
 
 #issues_down_panel {
   display: flex;
+  background: transparent;
 }
 </style>
