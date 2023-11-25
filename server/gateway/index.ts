@@ -115,40 +115,33 @@ async function init() {
     }
   });
 
-  app.post("/upsert_password_rand", async (req: any, res: any) => {
-    console.log('upsert_password_rand', req.body)
+
+  let upsert_password = async function(req: any, res: any, rand: boolean = true){
+    const request = req.url.split('/')[1]
+    console.log(request, req.body)
+
     try {
       const cerberus_ans = await axios({
         method: "post",
-        url: conf.cerberusUrl + "/upsert_password_rand",
+        url: conf.cerberusUrl + "/" + request,
         headers: req.headers,
         data: req.body
       })
       res.status(cerberus_ans.status);
       res.send(cerberus_ans.data);
     } catch (error : any) {
-      console.log('/upsert_password_rand error: '+JSON.stringify(error))
+      console.log(request + ' error: '+JSON.stringify(error))
       res.status(error?.response?.status ?? 500)
       res.send( {message: error?.response?.data?.message ?? 'Internal Server Error' })
     }
+  }
+
+  app.post("/upsert_password_rand", async (req: any, res: any) => {
+    upsert_password(req, res)
   });
 
   app.post("/upsert_password", async (req: any, res: any) => {
-    console.log('upsert_password', req.body)
-    try {
-      const cerberus_ans = await axios({
-        method: "post",
-        url: conf.cerberusUrl + "/upsert_password",
-        headers: req.headers,
-        data: req.body
-      })
-      res.status(cerberus_ans.status);
-      res.send(cerberus_ans.data);
-    } catch (error : any) {
-      console.log('/upsert_password error: '+JSON.stringify(error))
-      res.status(error?.response?.status ?? 500)
-      res.send( {message: error?.response?.data?.message ?? 'Internal Server Error' })
-    }
+    upsert_password(req, res, false)
   });
 
   app.get("/gpt", async (req: any, res: any) => {

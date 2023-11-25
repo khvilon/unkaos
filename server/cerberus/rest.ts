@@ -89,8 +89,7 @@ export default class Rest {
       res.send(ans)
     } 
     else if (request == 'upsert_password_rand') {
-      let ans = await this.upsertPasswordRand(workspace, user, req, res);
-      res.send(ans)
+      this.upsertPasswordRand(workspace, user, req, res);
     } 
     else {
       res.status(501)
