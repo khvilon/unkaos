@@ -150,7 +150,7 @@ export default mod;
         <div class="table_card_fields">
           <component 
             v-bind:is="input.type + 'Input'"
-            v-for="(input, index) in user_selected ? inputs : inputs.filter((f)=>f.id != 'created_at')"
+            v-for="(input, index) in user_selected ? inputs : inputs.filter((f)=>f.id != 'created_at' && f.id != 'active' )"
             :label="input.label"
             :key="index"
             :id="input.id"
