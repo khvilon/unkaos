@@ -196,7 +196,7 @@ export default {
 </script>
 
 <template>
-  <div class="select-input">
+  <div class="select-input input">
     <div class="label">{{ label }}</div>
 
     <v-select

@@ -159,3 +159,5 @@ create user test with encrypted password 'mypass';
 GRANT INSERT, SELECT, UPDATE, DELETE ON ALL TABLES IN SCHEMA test TO test;
 GRANT USAGE ON SCHEMA test to test;
 ALTER ROLE test SET search_path = test;
+ALTER TABLE test.field_values_rows OWNER TO test;
+GRANT CREATE ON SCHEMA test TO test;

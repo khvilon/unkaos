@@ -79,27 +79,31 @@ export default mod;
         />
       </div>
       <div class="table_card panel">
-        <component
-          v-bind:is="input.type + 'Input'"
-          v-for="(input, index) in inputs"
-          :label="input.label"
-          :key="index"
-          :id="input.id"
-          :value="selected_issue_statuses[input.id]"
-          :parent_name="'issue_statuses'"
-          :disabled="input.disabled"
-        ></component>
-        <div class="table_card_footer">
-          <KButton
+        <div class="table_card_fields">
+          <component
+            v-bind:is="input.type + 'Input'"
+            v-for="(input, index) in inputs"
+            :label="input.label"
+            :key="index"
+            :id="input.id"
+            :value="selected_issue_statuses[input.id]"
+            :parent_name="'issue_statuses'"
+            :disabled="input.disabled"
+          ></component>
+        </div>
+        <div class="table_card_buttons">
+          <div class="table_card_footer">
+            <KButton
+                class="table_card_footer_btn"
+              :name="'Сохранить'"
+              :func="'save_issue_statuses'"
+            />
+            <KButton
               class="table_card_footer_btn"
-            :name="'Сохранить'"
-            :func="'save_issue_statuses'"
-          />
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Удалить'"
-            :func="'delete_issue_statuses'"
-          />
+              :name="'Удалить'"
+              :func="'delete_issue_statuses'"
+            />
+          </div>
         </div>
       </div>
     </div>

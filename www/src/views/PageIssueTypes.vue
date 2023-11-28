@@ -67,30 +67,34 @@ export default mod;
         />
       </div>
       <div class="table_card panel">
-        <component
-          v-bind:is="input.type + 'Input'"
-          v-for="(input, index) in inputs"
-          :label="input.label"
-          :key="index"
-          :id="input.id"
-          :value="get_json_val(selected_issue_types, input.id)"
-          :parent_name="'issue_types'"
-          :disabled="input.disabled"
-          :clearable="input.clearable"
-          :values="input.values"
-          :parameters="input"
-        ></component>
-        <div class="table_card_footer">
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Сохранить'"
-            :func="'save_issue_types'"
-          />
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Удалить'"
-            :func="'delete_issue_types'"
-          />
+        <div class="table_card_fields">
+          <component
+            v-bind:is="input.type + 'Input'"
+            v-for="(input, index) in inputs"
+            :label="input.label"
+            :key="index"
+            :id="input.id"
+            :value="get_json_val(selected_issue_types, input.id)"
+            :parent_name="'issue_types'"
+            :disabled="input.disabled"
+            :clearable="input.clearable"
+            :values="input.values"
+            :parameters="input"
+          ></component>
+        </div>
+        <div class="table_card_buttons">
+          <div class="table_card_footer">
+            <KButton
+              class="table_card_footer_btn"
+              :name="'Сохранить'"
+              :func="'save_issue_types'"
+            />
+            <KButton
+              class="table_card_footer_btn"
+              :name="'Удалить'"
+              :func="'delete_issue_types'"
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import tools from "../tools.ts";
 //"'/issue/'+get_json_val(row, collumn.id)"
 
 export default {
+  emits: ["row_selected"],
   methods: {
     sort(collumn) {
       for (let i in this.collumns) {
@@ -34,6 +35,7 @@ export default {
     select_row(row) {
       let uuid = row.uuid; //event.path[1].getAttribute('uuid');
       this.$store.commit("select_" + this.name, uuid);
+      this.$emit("row_selected", uuid);
       //console.log("sel", this.name)
     },
     get_row_by_uuid(uuid) {

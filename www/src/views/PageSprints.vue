@@ -83,33 +83,37 @@ export default mod;
           </Transition>
         </div>
         <div class="table_card panel">
-          <component
-            v-bind:is="input.type + 'Input'"
-            v-for="(input, index) in inputs"
-            :label="input.label"
-            :key="index"
-            :id="input.id"
-            :value="get_json_val(selected_sprints, input.id)"
-            :parent_name="'sprints'"
-            :disabled="
-              input.disabled ||
-              (input.id == 'type_uuid' &&
-                !get_json_val(selected_sprints, 'is_custom'))
-            "
-            :parameters="input"
-            :values="input.values"
-          ></component>
-          <div class="table_card_footer">
-            <KButton
-              class="table_card_footer_btn"
-              :name="'Сохранить'"
-              :func="'save_sprints'"
-            />
-            <KButton
-              class="table_card_footer_btn"
-              :name="'Удалить'"
-              :func="'delete_sprints'"
-            />
+          <div class="table_card_fields">
+            <component
+              v-bind:is="input.type + 'Input'"
+              v-for="(input, index) in inputs"
+              :label="input.label"
+              :key="index"
+              :id="input.id"
+              :value="get_json_val(selected_sprints, input.id)"
+              :parent_name="'sprints'"
+              :disabled="
+                input.disabled ||
+                (input.id == 'type_uuid' &&
+                  !get_json_val(selected_sprints, 'is_custom'))
+              "
+              :parameters="input"
+              :values="input.values"
+            ></component>
+          </div>
+          <div class="table_card_buttons">
+            <div class="table_card_footer">
+              <KButton
+                class="table_card_footer_btn"
+                :name="'Сохранить'"
+                :func="'save_sprints'"
+              />
+              <KButton
+                class="table_card_footer_btn"
+                :name="'Удалить'"
+                :func="'delete_sprints'"
+              />
+            </div>
           </div>
         </div>
       </div>

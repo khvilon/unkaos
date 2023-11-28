@@ -63,7 +63,7 @@ let routes = [
   { path: "/configs", component: PageConfigs, name: "Настройки" },
   { path: "/issue/:id", component: PageIssue, props: true, name: "Задача " },
   { path: "/board/:uuid", component: PageBoard, props: true, name: "Доска " },
-  { path: "/issue/", component: PageIssue, name: "Новая задача" },
+  { path: "/issue/", component: PageIssue, props: true, name: "Новая задача" },
   { path: "/board/", component: PageBoard, name: "Новая доска" },
   {
     path: "/dashboard/:uuid",
@@ -117,7 +117,7 @@ router.beforeEach((to, from, next) => {
     next('/oboz' + to.path);
   }
   else if(!to.params.workspace && to.path != '/' &&  !isRegister){
-    next('/');
+    //next('/');
   }
   else next();
 });
