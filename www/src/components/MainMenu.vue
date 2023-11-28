@@ -93,14 +93,14 @@ let items = [
           icon: "bx-category-alt",
           level: 2,
           admin_only: true,
-        },
+        },/*
         {
           link: "/configs/automations",
           name: "Автоматизации",
           icon: "bx-bot",
           level: 2,
           admin_only: true,
-        },
+        },*/
       ]
 
     for(let i in items){
@@ -275,7 +275,7 @@ $logo-icon-size: 32px;
 
   transition-property: all !important;
   transition-duration: $main-menu-open-time !important;
-  z-index: 3;
+  z-index: 10;
 
   margin: 1px;
 }

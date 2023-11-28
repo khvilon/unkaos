@@ -66,7 +66,7 @@ export default {
   border-radius: var(--border-radius);
   transition: all 0.5s ease;
   background: var(--input-bg-color);
-  display: inline-block;
+  display: block;
   text-align: center;
   border-color: var(--border-color);
   border-width: var(--border-width);

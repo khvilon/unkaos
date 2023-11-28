@@ -86,18 +86,18 @@ export default {
         el.setAttribute("d", tr.d);
       }
     },
-    select_node($event) {
-      let el = event.path[1];
+    select_node(event) {
+      let el = event.currentTarget
       this.selected = { node: this.get_node_by_uuid(el.getAttribute("uuid")) };
+      console.log("select node", this.selected)
     },
-    select_edge($event) {
-      let el = event.path[0];
+    select_edge(event) {
+      let el = event.currentTarget
       this.selected = { edge: this.wdata.transitions[el.getAttribute("idx")] };
     },
-    node_mousedown($event) {
+    node_mousedown(event, uuid) {
       this.dragging_all = false;
 
-      let uuid = event.path[1].getAttribute("uuid");
       let node = this.get_node_by_uuid(uuid);
 
       if (this.$refs["is_edge_creation_active"].value) {
@@ -114,14 +114,13 @@ export default {
         this.$refs.dragline.classList.remove("hidden");
       }
 
-      this.dragged_node.el = event.path[1];
+      this.dragged_node.el = event.currentTarget
       this.dragged_node.issue_statuses = node.issue_statuses;
     },
-    node_mouseup($event) {
+    node_mouseup(event, uuid) {
       if (!this.$refs["is_edge_creation_active"].value) return;
       if (this.dragged_node.issue_statuses == undefined) return;
 
-      let uuid = event.path[1].getAttribute("uuid");
       let node = this.get_node_by_uuid(uuid);
 
       if (
@@ -134,22 +133,22 @@ export default {
         node.issue_statuses[0].uuid
       );
     },
-    svg_mousedown($event) {
+    svg_mousedown(event) {
       this.dragging_all = true;
       console.log("svg_mousedown");
     },
-    svg_mouseup($event) {
+    svg_mouseup(event) {
       this.dragging_all = false;
       this.$refs.dragline.classList.add("hidden");
       this.dragged_node.issue_statuses = undefined;
       console.log("svg_mouseup");
     },
-    svg_mouseleave($event) {
+    svg_mouseleave(event) {
       this.$refs.dragline.classList.add("hidden");
       this.dragged_node.issue_statuses = undefined;
       console.log("svg_mouseleave");
     },
-    mouse_move($event) {
+    mouse_move(event) {
       if (event.type == "touchmove") return;
       if (this.dragged_node.issue_statuses == undefined) {
         if (!this.dragging_all) return;
@@ -461,10 +460,10 @@ export default {
               :ref="node.issue_statuses[0].uuid"
               :transform="'translate(' + node.x + ',' + node.y + ')'"
               @click="select_node($event)"
-              @mousedown="node_mousedown($event)"
-              @touchstart="node_mousedown($event)"
-              @mouseup="node_mouseup($event)"
-              @touchend="node_mouseup($event)"
+              @mousedown="node_mousedown($event, node.issue_statuses[0].uuid)"
+              @touchstart="node_mousedown($event, node.issue_statuses[0].uuid)"
+              @mouseup="node_mouseup($event, node.issue_statuses[0].uuid)"
+              @touchend="node_mouseup($event, node.issue_statuses[0].uuid)"
               v-bind:class="{
                 selected:
                   selected.node != undefined &&
@@ -499,15 +498,10 @@ export default {
         <div class="statuses-search-and-add">
           <KButton
             id="add-status-to-graph"
-            name="&cularr;"
+            name="Использовать статус"
             @click="create_node()"
           >
           </KButton>
-          <StringInput
-            :label="''"
-            :id="'selected-issue-statuses'"
-            :value="selected_issue_statuses.name"
-          ></StringInput>
         </div>
         <KTable
           class="table-statuses"
@@ -529,17 +523,26 @@ export default {
   display: flex;
     flex-direction: column;
     height: 100%;
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
 .workflows-command-panel {
   display: flex;
   flex-direction: row;
-  height: 60px;
+  height: 74px;
+  align-items: flex-end;
+  padding-bottom: 12px;
 }
 
 .workflows-command-panel > *:not(:last-child) {
   margin-right: 20px;
 }
+
+.workflows-command-panel .label{
+  text-wrap: nowrap;
+}
+
 
 .workflows-command-panel .string,
 .workflows-command-panel .boolean {
@@ -562,11 +565,15 @@ export default {
   display: flex;
   width: 100%;
   height: 100%;
+  position: relative;
+  padding-bottom: 8px;
+  flex-grow: 1;
+    overflow-y: auto;
 }
 
 .svg-workflow,
 .statuses-container {
-  height: calc(100% - 40px);
+  height: 100%;
 
 }
 
@@ -580,7 +587,7 @@ export default {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  transition: all 0.5s ease;
+  transition: all 0.2s ease;
   border-color: var(--border-color);
   border-width: 2px;
   border-style: inset;
@@ -593,13 +600,17 @@ export default {
 .statuses-container {
   width: 200px;
   margin-left: 10px;
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  
 }
 
 .statuses-container .ktable {
   margin-left: 0;
   padding: 2px;
   width: 100%;
+  margin-top: 10px;
+  height: 100%;
 }
 
 .statuses-search-and-add {
@@ -612,37 +623,52 @@ export default {
   padding: 0px;
 }
 
-#add-status-to-graph, #graph_zoom_in, #graph_zoom_out {
+#graph_zoom_in, #graph_zoom_out {
   width: 28px;
   height: 28px;
   margin-bottom: 10px;
   margin-right: 5px;
 }
 
-#graph_zoom_in, #graph_zoom_out {
-position: absolute;
-    right: 200px;
-    top: 115px;
+#add-status-to-graph{
+
 }
 
-#graph_zoom_in {
-    top: 115px;
-}
-
-#graph_zoom_out {
-    top: 150px;
-}
-
-#add-status-to-graph input, #graph_zoom_in input, #graph_zoom_out input {
+#graph_zoom_in input, #graph_zoom_out input {
   width: 28px;
   height: 28px;
   font-size: 18px;
 }
+
+#add-status-to-graph input{
+  
+}
+
+
+#graph_zoom_in, #graph_zoom_out {
+position: absolute;
+    right: 210px;
+    
+}
+
+#graph_zoom_in {
+  top: 6px;
+}
+
+#graph_zoom_out {
+    top: calc($input-height + 6px);
+}
+
+
+
 .statuses-search-and-add .string input {
   height: 28px;
 }
 .statuses-search-and-add .label {
   height: 0px;
+}
+g.conceptG{
+  transition: all 0.05s ease;
 }
 
 .conceptG text {
@@ -659,6 +685,11 @@ g.conceptG circle {
   stroke: var(--workflow-marker-color);
   stroke-width: 2px;
   color: var(--workflow-marker-color);
+  cursor: grab;
+}
+
+g.conceptG:active circle {
+  cursor: grabbing;
 }
 
 g.conceptG text tspan {
@@ -687,8 +718,9 @@ path.link {
   fill: none;
   stroke: var(--workflow-marker-color);
   stroke-width: 3px;
-  cursor: default;
+  cursor: pointer;
   marker-end: url(#end-arrow);
+  transition: all 0.05s ease;
 }
 
 path.dragline {
@@ -720,6 +752,10 @@ path.link.selected {
 
 .graph{
   scale: v-bind('scale');
+}
+
+.workflows-editor .btn{
+  height: $input-height;
 }
 
 </style>
