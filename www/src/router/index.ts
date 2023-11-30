@@ -28,6 +28,7 @@ import rest from "../rest";
 import ws from "../ws";
 
 let routes = [
+  
   { path: "/", component: PageLanding, name: "Unkaos" },
   { path: "/login", component: PageLogin, name: "Вход" },
   { path: "/dashboards", component: PageDashboards, name: "Дашборды" },
@@ -71,9 +72,9 @@ let routes = [
     props: true,
     name: "Дашборд ",
   },
-  
-  { path: "/register/:uuid", component: PageRegister, props: true, name: "Задача " },
-  { path: "/register/", component: PageRegister, name: "Новая задача" },
+  { path: "/register/", component: PageRegister, name: "Регистрация рабочего пространства" },
+  { path: "/register/:uuid", component: PageRegister, props: true, name: "Подтверждение регистрации " },
+
   { path: "/dashboard/", component: PageDashboard, name: "Новый дашборд" },
   
   

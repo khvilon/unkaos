@@ -40,16 +40,19 @@ const data = {
       label: "ФИО",
       id: "name",
       type: "String",
+      required: true
     },
     {
       label: "Логин",
       id: "login",
       type: "String",
+      required: true
     },
     {
       label: "Адрес почты",
       id: "mail",
       type: "String",
+      required: true
     },
     {
       label: "Телеграм",
@@ -98,7 +101,7 @@ mod.methods.update_password = function () {
 };
 
 mod.methods.change_password = function () {
-  if (this.user_selected) rest.run_method("update_password_rand", { user: this.selected_users });
+  if (this.is_selected) rest.run_method("update_password_rand", { user: this.selected_users });
 };
 
 mod.methods.change_pass_var = function (val) {
@@ -107,17 +110,13 @@ mod.methods.change_pass_var = function (val) {
 };
 
 mod.methods.saved = function (users) {
+  this.try_done = !users
   if(this.is_this_user2) cache.setObject("profile", users[0]);
   this.update_password()
 };
 
-
-mod.computed.user_selected=function(){
-  return this.selected_users != undefined && this.selected_users.uuid && this.selected_users.created_at
-};
-
 mod.computed.is_this_user2=function(){
-  if(!this.user_selected) return false
+  if(!this.is_selected) return false
   let user = cache.getObject("profile");
   return this.selected_users.uuid == user.uuid;
 };
@@ -150,13 +149,14 @@ export default mod;
         <div class="table_card_fields">
           <component 
             v-bind:is="input.type + 'Input'"
-            v-for="(input, index) in user_selected ? inputs : inputs.filter((f)=>f.id != 'created_at' && f.id != 'active' )"
+            v-for="(input, index) in is_selected ? inputs : inputs.filter((f)=>f.id != 'created_at' && f.id != 'active' )"
             :label="input.label"
             :key="index"
             :id="input.id"
             :value="selected_users[input.id]"
             :parent_name="'users'"
             :disabled="input.disabled"
+            :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
           ></component>
           <StringInput v-if="is_this_user2"
               label="Пароль"
@@ -166,7 +166,7 @@ export default mod;
           
         </div>
         <div class="table_card_buttons">
-          <KButton v-if="user_selected"
+          <KButton v-if="is_selected"
             class="change-password"
             :name="'Сбросить пароль'"
             @click="change_password()"
@@ -177,8 +177,9 @@ export default mod;
               :name="'Сохранить'"
               :func="'save_users'"
               @button_ans="saved"
+              :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid)"
             />
-            <KButton  v-if="user_selected"
+            <KButton  v-if="users_selected"
               class="table_card_footer_btn"
               :name="'Удалить'"
               :func="'delete_users'"

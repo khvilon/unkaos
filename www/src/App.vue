@@ -503,4 +503,15 @@ $loading-bar-width: 200vw;
   opacity: 0.8;
 }
 
+.error-field input{
+	border-color: var(--err-color);
+}
+
+.error-field .vs__dropdown-toggle{
+	border-color: var(--err-color) !important;
+}
+.error-field .v-select input{
+	border-color: transparent;
+}
+
 </style>

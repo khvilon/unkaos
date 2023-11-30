@@ -1598,6 +1598,7 @@ $code-width: 160px;
   height: $top-menu-height;
   display: flex;
   padding-left: 15px;
+  background: transparent;
 }
 
 .iframe-view #issue_top_panel{
@@ -1640,7 +1641,9 @@ $code-width: 160px;
 
 #issue_table_panel,
 #issue_card {
-  height: calc(100vh - $top-menu-height);
+  height: auto;
+  margin-right: 20px;
+  margin-bottom: 20px;
 }
 
 .issue-code {
@@ -1649,12 +1652,13 @@ $code-width: 160px;
 
 #issue_main_panel {
   padding: 10px 30px 10px 35px;
-  border-right: 5px solid var(--panel-bg-color);
+  border-right: 5px solid transparent;
   display: flex;
   flex-direction: column;
   width: $issue-workspace-width;
   overflow-y: auto;
   overflow-anchor: none;
+  background: transparent;
   //scrollbar-color: red;
 }
 

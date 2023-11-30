@@ -20,6 +20,7 @@ const data = {
       label: "Название",
       id: "name",
       type: "String",
+      required: true
     },
     {
       label: "Воркфлоу",
@@ -27,6 +28,7 @@ const data = {
       dictionary: "workflows",
       type: "Select",
       clearable: false,
+      required: true
     },
     {
       label: "Поля",
@@ -80,6 +82,7 @@ export default mod;
             :clearable="input.clearable"
             :values="input.values"
             :parameters="input"
+            :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
           ></component>
         </div>
         <div class="table_card_buttons">
@@ -88,8 +91,10 @@ export default mod;
               class="table_card_footer_btn"
               :name="'Сохранить'"
               :func="'save_issue_types'"
+              @button_ans="function(ans){try_done = !ans}"
+              :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid)"
             />
-            <KButton
+            <KButton v-if="issue_types_selected"
               class="table_card_footer_btn"
               :name="'Удалить'"
               :func="'delete_issue_types'"

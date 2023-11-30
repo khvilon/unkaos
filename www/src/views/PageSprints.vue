@@ -31,16 +31,19 @@ const data = {
       label: "Название",
       id: "name",
       type: "String",
+      required: true
     },
     {
       label: "Дата начала",
       id: "start_date",
       type: "Date",
+      required: true
     },
     {
       label: "Дата окончания",
       id: "end_date",
       type: "Date",
+      required: true
     },
     {
       label: "Заархивирован",
@@ -99,6 +102,8 @@ export default mod;
               "
               :parameters="input"
               :values="input.values"
+              :class="{'error-field': try_done && input.required && (!is_input_valid(input) || (input.id == 'end_date' &&
+              get_json_val(selected_sprints, 'start_date') >= get_json_val(selected_sprints, 'end_date') ))}"
             ></component>
           </div>
           <div class="table_card_buttons">
@@ -107,8 +112,10 @@ export default mod;
                 class="table_card_footer_btn"
                 :name="'Сохранить'"
                 :func="'save_sprints'"
+                @button_ans="function(ans){try_done = !ans}"
+                :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid) || get_json_val(selected_sprints, 'start_date') >= get_json_val(selected_sprints, 'end_date')"
               />
-              <KButton
+              <KButton v-if="sprints_selected"
                 class="table_card_footer_btn"
                 :name="'Удалить'"
                 :func="'delete_sprints'"
