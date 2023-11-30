@@ -223,6 +223,7 @@ CREATE TABLE public.issue_actions (
     author_uuid uuid NOT NULL,
     value text,
     type_uuid uuid DEFAULT 'f53d8ecc-c26e-4909-a070-5c33e6f7a196'::uuid NOT NULL,
+    archived_at timestamp without time zone,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone

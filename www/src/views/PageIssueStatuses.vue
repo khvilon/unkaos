@@ -37,6 +37,7 @@ const data = {
       label: "Название",
       id: "name",
       type: "String",
+      required: true
     },
     {
       label: "Начальный",
@@ -89,6 +90,7 @@ export default mod;
             :value="selected_issue_statuses[input.id]"
             :parent_name="'issue_statuses'"
             :disabled="input.disabled"
+            :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
           ></component>
         </div>
         <div class="table_card_buttons">
@@ -97,8 +99,10 @@ export default mod;
                 class="table_card_footer_btn"
               :name="'Сохранить'"
               :func="'save_issue_statuses'"
+              @button_ans="function(ans){try_done = !ans}"
+              :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid)"
             />
-            <KButton
+            <KButton v-if="issue_statuses_selected"
               class="table_card_footer_btn"
               :name="'Удалить'"
               :func="'delete_issue_statuses'"

@@ -30,6 +30,7 @@ const data = {
       label: "Название",
       id: "name",
       type: "String",
+      required: true
     },
     {
       label: "Тип",
@@ -38,6 +39,7 @@ const data = {
       type: "Select",
       clearable: false,
       disabled: false,
+      required: true
     },
     {
       label: "Пользовательское",
@@ -99,6 +101,7 @@ export default mod;
               "
               :parameters="input"
               :values="input.values"
+              :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
             ></component>
             <NumericInput
               v-if="
@@ -143,12 +146,14 @@ export default mod;
           </div>
           <div class="table_card_buttons">
             <div class="table_card_footer">
-              <KButton
+              <KButton 
                 class="table_card_footer_btn"
                 :name="'Сохранить'"
                 :func="'save_fields'"
+                @button_ans="function(ans){try_done = !ans}"
+                :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid)"
               />
-              <KButton
+              <KButton v-if="fields_selected"
                 class="table_card_footer_btn"
                 :name="'Удалить'"
                 :func="'delete_fields'"

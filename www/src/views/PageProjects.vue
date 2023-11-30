@@ -108,7 +108,7 @@ export default mod;
               :name="'Сохранить'"
               :func="'save_projects'"
             />
-            <KButton
+            <KButton v-if="projects_selected"
               class="table_card_footer_btn"
               :name="'Удалить'"
               :func="'delete_projects'"

@@ -57,6 +57,12 @@ const register_computed = async function (computed, name) {
     return this.$store.state[name]["selected_" + name];
   };
 
+  computed[name + "_selected"]  = function () {
+    if (this.$store.state[name] == undefined) return [];
+    console.log("is_selected", this["selected_" + name])
+    return this.$store.state[name]["selected_" + name] != undefined && this.$store.state[name]["selected_" + name].uuid && this["selected_" + name].created_at
+  };
+
   return computed;
 };
 
@@ -66,6 +72,7 @@ page_helper.create_module = async function (data, methods) {
 
   data.visible = false;
   data.loaded = false;
+  data.try_done = false;
 
   data.url_params = tools.get_uri_params(window.location.href);
 
@@ -73,7 +80,7 @@ page_helper.create_module = async function (data, methods) {
 
   data.buttons.push({
     name: "Создать",
-    func: "unselect_" + data.name,
+    func: "unselect_" + data.name
   });
 
   data.search_collumns = [];
@@ -295,6 +302,16 @@ page_helper.create_module = async function (data, methods) {
       //console.log('selilili', this[this.name][0].uuid)
       this.$store.commit("select_" + this.name, this[this.name][0].uuid);
     }
+  };
+
+  methods.is_input_valid = function (input) {
+    if(!this.$store.state[this.name] || !this.$store.state[this.name]["selected_" + this.name]) return false
+
+    let val = this.$store.state[this.name]["selected_" + this.name][input.id]
+    let is_valid = val != undefined && val != null && val != ''
+
+    console.log("is_input_valid", input.id, val, is_valid)
+    return is_valid
   };
 
   return {

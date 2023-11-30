@@ -179,9 +179,7 @@ export default login_page;
   padding: 30px;
 }
 
-.error-field input{
-	border-color: var(--err-color);
-}
+
 
 
 </style>
