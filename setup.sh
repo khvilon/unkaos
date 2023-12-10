@@ -148,6 +148,11 @@ sudo systemctl enable docker
 
 # Get cpu count for scaling nodes
 CPU_CORES=$(nproc)
+if [ "$CPU_CORES" -gt 1 ]; then
+    CPU_CORES=$((CPU_CORES - 1))
+else
+    CPU_CORES=1
+fi
 
 case $OS_ID in
     ubuntu|debian|raspbian)
