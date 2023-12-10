@@ -1539,6 +1539,7 @@ $cards_field_left: 20px;
 #boards_table_panel,
 #boards_card {
 	height: calc(100vh - $top-menu-height);
+	
 }
 
 #boards_table_panel {
@@ -1563,6 +1564,7 @@ $cards_field_left: 20px;
 	flex-direction: column;
 	height: calc(100vh - $top-menu-height);
 	overflow: scroll;
+	background: transparent;
 }
 
 #board_down_panel::-webkit-scrollbar {
@@ -1595,14 +1597,13 @@ $cards_field_left: 20px;
 }
 
 .issue-board-cards-container {
-	background: var(--disabled-bg-color);
+	background: var(--group-bg-color);
 	border-radius: var(--border-radius);
 	border-color: var(--disabled-bg-color);
-	border-width: 5px;
-	border-style: solid;
+	border-style: none;
 	overflow: scroll;
 	height: 100%;
-
+	margin: 5px;
 	display: flex;
 	flex-direction: column;
 	overflow: visible;
@@ -1833,8 +1834,6 @@ $cards_field_left: 20px;
 	display: flex;
 	overflow: hidden;
 	margin-left: $cards_field_left;
-	overflow: visible;
-	padding-bottom: 30px;
 }
 
 .swimlane-body-closed * {

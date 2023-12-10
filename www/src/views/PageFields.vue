@@ -15,11 +15,6 @@ const data = {
       id: "type.0.name",
     },
     {
-      name: "Пользовательское",
-      id: "is_custom",
-      type: "boolean",
-    },
-    {
       name: "Зарегистрирован",
       id: "created_at",
       type: "date",
@@ -40,12 +35,6 @@ const data = {
       clearable: false,
       disabled: false,
       required: true
-    },
-    {
-      label: "Пользовательское",
-      id: "is_custom",
-      type: "Boolean",
-      disabled: true,
     },
     {
       label: "Зарегистрировано",
@@ -79,7 +68,7 @@ export default mod;
             <KTable
               v-if="!loading"
               :collumns="collumns"
-              :table-data="fields"
+              :table-data="fields.filter((f)=>f.is_custom)"
               :name="'fields'"
             />
           </Transition>
