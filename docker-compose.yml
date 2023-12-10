@@ -6,7 +6,6 @@ services:
       context: .
       dockerfile: server/docker/ossa
     restart: always
-    container_name: unkaos-ossa
     ports:
      - '3004:3004'
     environment:
@@ -23,7 +22,6 @@ services:
       context: .
       dockerfile: server/docker/cerberus
     restart: always
-    container_name: unkaos-cerberus
     ports:
       - '3005:3005'
     environment:
@@ -41,7 +39,6 @@ services:
       context: .
       dockerfile: server/docker/zeus
     restart: always
-    container_name: unkaos-zeus
     ports:
       - '3006:3006'
     environment:
@@ -58,7 +55,6 @@ services:
       context: .
       dockerfile: server/docker/eileithyia
     restart: always
-    container_name: unkaos-eileithyia
     ports:
       - '5001:5001'
     environment:
@@ -76,7 +72,6 @@ services:
       context: .
       dockerfile: server/docker/gateway
     restart: always
-    container_name: unkaos-gateway
     ports:
       - '3001:3001'
     environment:
@@ -94,7 +89,6 @@ services:
       context: .
       dockerfile: server/docker/hermes
     restart: always
-    container_name: unkaos-hermes
     ports:
       - '5009:5009'
     environment:
@@ -122,7 +116,6 @@ services:
       context: .
       dockerfile: server/docker/athena
     restart: always
-    container_name: unkaos-athena
     ports:
       - '5010:5010'
     environment:
