@@ -478,10 +478,10 @@ let methods = {
     });
     this.watch = ans.length > 0;
 
-    await this.load_actions()
-    await this.load_attachments()
-    await this.load_tags()
-    await this.load_time_entries()
+    this.load_actions()
+    this.load_attachments()
+    this.load_tags()
+    this.load_time_entries()
 
     console.log('time_entries', this.time_entries)
     

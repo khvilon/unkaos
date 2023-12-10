@@ -103,6 +103,7 @@ $card-width: 400px;
 #boards_table_panel,
 #boards_card {
   height: calc(100vh - $top-menu-height);
+  background: transparent;
 }
 
 #boards_table_panel {
