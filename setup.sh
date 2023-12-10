@@ -113,7 +113,7 @@ echo "Updated .env file saved."
 #    fi
 #done
 
-schema_name = "server"
+schema_name="server"
 
 cp server/db/-public.sql server/db/0$schema_name.sql
 sed -i "s/\bpublic\b/$schema_name/g" server/db/0$schema_name.sql
