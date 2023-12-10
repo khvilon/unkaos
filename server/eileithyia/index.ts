@@ -73,7 +73,7 @@ let execModifSqlFile = async function(file: string, name: string, workspace: str
 let createWorkspace = async function(workspace: string, email: string, pass: string){
     
     await execModifSqlFile('../db/-public.sql', 'public', workspace, email, pass)
-    await execModifSqlFile('-workspace.sql', 'test', workspace, email, pass)
+    await execModifSqlFile('../db/-workspace.sql', 'server', workspace, email, pass)
     
     let files = await fs.readdir(sqlPath)
 

@@ -1563,8 +1563,10 @@ $cards_field_left: 20px;
 	display: flex;
 	flex-direction: column;
 	height: calc(100vh - $top-menu-height);
-	overflow: scroll;
 	background: transparent;
+
+	overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 #board_down_panel::-webkit-scrollbar {
