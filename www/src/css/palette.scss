@@ -2,9 +2,10 @@
 
 [theme="dark_3d"]
 {
-    --body-bg-color: rgb(71, 81, 89);
+    --body-bg-color: rgb(51, 61, 69);
 
     --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, 0.5);
 
     --text-color: rgb(190, 190, 190);
 
@@ -13,7 +14,7 @@
     --table-row-color-selected: rgb(50, 60, 70);
     --table-row-border-color: black;
 
-    --input-bg-color: rgb(29, 27, 49);
+    --input-bg-color: rgb(19, 17, 39);
     --input-bg-color-disabled : rgb(30, 35, 38);
     --input-hover-bg-color: rgb(34, 32, 54);
 
@@ -73,6 +74,7 @@
     --body-bg-color: rgb(231,237,255);
 
     --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, 0.5);
 
 
     --text-color: #114066;
@@ -143,7 +145,7 @@
     --panel-bg-color: #242F3D;
     --group-bg-color: rgba(30, 40, 50, 0.5);
 
-    --text-color: rgba(198, 200, 210);
+    --text-color: rgba(228, 230, 240);
 
     --border-color: rgba(71, 81, 89, 0.6);
     --table-row-color: #242F3D;

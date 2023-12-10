@@ -103,22 +103,20 @@ done < $ENV_FILE
 echo "Updated .env file saved."
 
 # 3. Make a copy of the server/db/public.sql with the changed schema
-while true; do
-    read -p "Enter your first workspace name: " schema_name < /dev/tty
-    validate_workspace_name "$schema_name"
-    if [[ $? -eq 0 ]]; then
-        break
-    else
-        echo "Wrong workspace name format."
-    fi
-done
+#while true; do
+#    read -p "Enter your first workspace name: " schema_name < /dev/tty
+#    validate_workspace_name "$schema_name"
+#    if [[ $? -eq 0 ]]; then
+#        break
+#    else
+#        echo "Wrong workspace name format."
+#    fi
+#done
+
+schema_name = "server"
 
 cp server/db/-public.sql server/db/0$schema_name.sql
 sed -i "s/\bpublic\b/$schema_name/g" server/db/0$schema_name.sql
-cp server/db/-workspace.sql server/eileithyia/-workspace.sql
-sed -i "s/\btest\b/$schema_name/g" server/db/-workspace.sql
-random_password=$(generate_password)
-sed -i "s/mypass/$random_password/g" server/db/-workspace.sql
 
 # migrations
 for file in server/db/*_m.sql; do
@@ -148,12 +146,25 @@ eval $DOCKER_INSTALL
 sudo systemctl start docker
 sudo systemctl enable docker
 
+# Get cpu count for scaling nodes
+CPU_CORES=$(nproc)
+
 case $OS_ID in
     ubuntu|debian|raspbian)
-        docker-compose up -d
+        docker-compose up -d \
+        --scale ossa=$CPU_CORES \
+        --scale cerberus=$CPU_CORES \
+        --scale zeus=$CPU_CORES \
+        --scale gateway=$CPU_CORES \
+        --scale hermes=$CPU_CORES
         ;;
     centos)
-        docker compose up -d
+        docker compose up -d \
+        --scale ossa=$CPU_CORES \
+        --scale cerberus=$CPU_CORES \
+        --scale zeus=$CPU_CORES \
+        --scale gateway=$CPU_CORES \
+        --scale hermes=$CPU_CORES
         ;;
     *)
         echo "Unsupported OS: $OS_ID"
