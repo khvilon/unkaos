@@ -72,12 +72,15 @@ rm temp_meta.json
 compare_versions "$CURRENT_VERSION" "$NEW_VERSION"
 version_compare_current_result=$?
 
+echo "Your current version: $CURRENT_VERSION"
+echo "Last version available: $NEW_VERSION"
+
 if [[ $version_compare_current_result -gt 0 ]]; then
   echo "Your version is up to date."
   exit 0
 fi
 
-echo "New version $NEW_VERSION available."
+echo "New version available! Updating..."
 
 # Enable maintenance mode in Nginx
 docker-compose exec nginx sh -c 'echo "maintenance_mode=on" > /etc/nginx/conf.d/maintenance_mode.conf'
