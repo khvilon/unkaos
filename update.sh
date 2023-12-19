@@ -79,6 +79,10 @@ fi
 
 echo "New version $NEW_VERSION available."
 
+# Enable maintenance mode in Nginx
+docker-compose exec nginx sh -c 'echo "maintenance_mode=on" > /etc/nginx/conf.d/maintenance_mode.conf'
+docker-compose exec nginx nginx -s reload
+
 # Switch to the correct branch before pulling updates
 git stash
 if [ "$BRANCH" == "dev" ]; then
@@ -89,10 +93,38 @@ fi
 git pull
 git stash pop -q
 
-# DB migration logic...
+# DB migration logic
+WORKSPACES=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name FROM admin.workspaces" | tail -n +3 | grep -v '^(.*row)')
+
+migration_files=$(find "$MIGRATIONS_DIR" -type f -name 'z[0-9]*_m.sql' | sort -V)
+
+for file in $migration_files; do
+  version=$(basename "$file" | awk -F'[z._]' '{printf "%d.%d.%d\n", $2, $3, $4}')
+
+  compare_versions "$version" "$CURRENT_VERSION"
+  version_compare_result=$?
+
+  compare_versions "$version" "$NEW_VERSION"
+  version_compare_new_result=$?
+
+  if [ $version_compare_result -eq 2 ] && [ $version_compare_new_result -lt 2 ]; then
+    echo "Found migration file: $file"
+    
+    cat "$file" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
+    
+    for workspace in $WORKSPACES; do
+      modified_sql=$(cat "$file" | sed "s/\bpublic\b/$workspace/g")
+      echo "$modified_sql" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
+    done
+  fi
+done
 
 docker-compose down
 docker-compose up -d --build
+
+# Disable maintenance mode in Nginx
+docker-compose exec nginx sh -c 'rm /etc/nginx/conf.d/maintenance_mode.conf'
+docker-compose exec nginx nginx -s reload
 
 # Main Script Output
 echo "Autoupdate conf: $AUTO_UPDATE, $ALLOWED_UPDATE_FROM-$ALLOWED_UPDATE_TO, $CHECK_INTERVAL"
