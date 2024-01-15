@@ -117,6 +117,7 @@ $card-width: 400px;
 #dashboards_table_panel {
   display: flex;
   width: calc(100%);
+  background: transparent;
 }
 
 #save_dashboards_btn,
