@@ -5,6 +5,10 @@ export default {
       type: String,
       default: "Tab",
     },
+    visible: {
+      type: Boolean,
+      default: true,
+    },
   },
   data() {
     return {

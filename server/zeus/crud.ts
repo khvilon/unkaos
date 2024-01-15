@@ -465,8 +465,17 @@ crud.load = async function () {
     WHERE T1.DELETED_AT IS NULL $@1
   `
 
-
-
+  crud.querys["server_config"] = {};
+  crud.querys["server_config"]["read"] = `
+  SELECT 
+    T1.uuid, 
+    T1.service, 
+    T1.name, 
+    T1.value
+	FROM admin.config;
+  `
+  crud.querys["server_config"]["create"] = ``;
+  crud.querys["server_config"]["update"] = `UPDATE admin.config $@2 WHERE TRUE $@1`;
 };
 
 
@@ -807,6 +816,10 @@ crud.make_query = {
 
     let upd = crud.make_query.update;
     // console.log(upd)
+
+    if(query_create == '' && upd){
+      return crud.push_query(upd, params, '', []);
+    }
 
     let [query_update, params_update] = upd(table_name, params);
 
