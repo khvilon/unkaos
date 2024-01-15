@@ -83,8 +83,8 @@ fi
 echo "New version available! Updating..."
 
 # Enable maintenance mode in Nginx
-docker-compose exec nginx sh -c 'echo "maintenance_mode=on" > /etc/nginx/conf.d/maintenance_mode.conf'
-docker-compose exec nginx nginx -s reload
+#docker-compose exec nginx sh -c 'echo "maintenance_mode=on" > /etc/nginx/conf.d/maintenance_mode.conf'
+#docker-compose exec nginx nginx -s reload
 
 # Switch to the correct branch before pulling updates
 git stash
@@ -126,8 +126,8 @@ docker-compose down
 docker-compose up -d --build
 
 # Disable maintenance mode in Nginx
-docker-compose exec nginx sh -c 'rm /etc/nginx/conf.d/maintenance_mode.conf'
-docker-compose exec nginx nginx -s reload
+#docker-compose exec nginx sh -c 'rm /etc/nginx/conf.d/maintenance_mode.conf'
+#docker-compose exec nginx nginx -s reload
 
 # Main Script Output
 echo "Autoupdate conf: $AUTO_UPDATE, $ALLOWED_UPDATE_FROM-$ALLOWED_UPDATE_TO, $CHECK_INTERVAL"
