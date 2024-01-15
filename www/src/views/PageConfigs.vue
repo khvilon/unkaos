@@ -1,5 +1,28 @@
 <script>
 import page_helper from "../page_helper.ts";
+import rest from "../rest.ts";
+
+const methods = {}
+
+const data = {
+  name: "server_config",
+  label: "Настройки сервера",
+  collumns: [
+   
+  ],
+  inputs: [
+   
+  ],
+  buttons_route: [
+   
+  ],
+};
+
+const mod = await page_helper.create_module(data, methods);
+
+let ans = await rest.run_method("read_server_config", {
+     
+    });
 </script>
 
 <template ref="config" v-if="config">
@@ -7,40 +30,77 @@ import page_helper from "../page_helper.ts";
     <TopMenu :label="'Настройки'" />
     <div id="config_down_panel" class="panel">
       <KTabPanel>
-        <KTab title="Основное">
-        
 
+        <KTab title="Основное" :visible="$store.state['common'].workspace != 'server'">
+          <div class="config-group">
+            <div class="config-label">Использовать {{$store.state['common'].workspace}}</div>
+            <boolean-input
+              label="Спринты"
+            />  
+            <boolean-input
+              label="Учет времени"
+            />  
+          </div>
         </KTab>
-        <KTab title="Оповещения">
-          <string-input
-            label="Почта - сервис"
-          />  
-          <string-input
-            label="Почта - пользователь"
-          />
-          <string-input
-            label="Почта - пароль"
-          />  
-          <string-input
-            label='Почта - поле "ОТ"'
-          />  
-          <string-input
-            label='Discord - токен бота'
-          />
-          <string-input
-            label='Telegram - токен бота'
-          />  
-        </KTab>
-        <KTab title="Автообновление">
+
+        <KTab title="Оповещения" :visible="$store.state['common'].workspace == 'server'">
+          <div class="config-group">
+            <div class="config-label">Почта</div>
+            <string-input
+              label="Сервис"
+            />  
+            <string-input
+              label="Пользователь"
+            />
+            <string-input
+              label="Пароль"
+            />  
+            <string-input
+              label='Поле "ОТ"'
+            />  
+          </div>
+          <div class="config-group">
+            <div class="config-label">Discord</div>
+            <string-input
+              label='Токен бота'
+            />
+          </div>
+          <div class="config-group">
+            <div class="config-label">Telegram</div>
+            <string-input
+              label='Токен бота'
+            /> 
+          </div>
           
+           
         </KTab>
-        <KTab title="ИИ">
-          <string-input
-            label="Ключ openai API"
-          />  
-          <numeric-input
-            label="Допустимое количество запросов на рабочее пространство в день"
-          />  
+        <KTab title="Автообновление" :visible="$store.state['common'].workspace == 'server'">
+          <div class="config-group">
+            <boolean-input
+              label="Разрешить автообновление"
+            />  
+          </div>
+          <div class="config-group">
+            <div class="config-label">Разрешенный интервал автобновления</div>
+            <numeric-input
+              label="С, час"
+            />  
+            <numeric-input
+              label="По, час"
+            />  
+          </div>
+        </KTab>
+        <KTab title="ИИ" :visible="$store.state['common'].workspace == 'server'">
+          <div class="config-group">
+            <div class="config-label">Openai chatGPT 4</div>
+            <string-input
+              label="Ключ API"
+            />  
+            <numeric-input
+              label="Допустимое количество запросов на рабочее пространство в день"
+            />  
+          </div>
+          
         </KTab>
       </KTabPanel>
     </div>
@@ -98,5 +158,23 @@ $card-width: 400px;
 #config_down_panel span {
   font-size: 15px;
   padding: 20px;
+}
+
+.config-group{
+  margin-bottom: 26px;
+}
+
+.config-group .input{
+  margin-bottom: 8px;
+}
+
+.config-group .config-label{
+  margin-bottom: 8px;
+  font-weight: 400;
+  font-size: 16px;
+}
+
+.config-group .label{
+  text-wrap: nowrap;
 }
 </style>

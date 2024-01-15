@@ -27,7 +27,7 @@ export default {
     <slot></slot>
     <ul class="tabs__header">
       <li
-        v-for="(tab, index) in tabs"
+        v-for="(tab, index) in tabs.filter((t)=>t.props.visible)"
         :key="tab.props.title"
         @click="select_tab($event, index)"
         :class="{ tab__selected: selected == tab.props.title }"
