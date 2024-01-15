@@ -2,27 +2,7 @@
 import page_helper from "../page_helper.ts";
 import rest from "../rest.ts";
 
-const methods = {}
 
-const data = {
-  name: "server_config",
-  label: "Настройки сервера",
-  collumns: [
-   
-  ],
-  inputs: [
-   
-  ],
-  buttons_route: [
-   
-  ],
-};
-
-const mod = await page_helper.create_module(data, methods);
-
-let ans = await rest.run_method("read_server_config", {
-     
-    });
 </script>
 
 <template ref="config" v-if="config">
