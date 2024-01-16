@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Detect OS and set package manager commands
+OS_ID=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
+OS_ID="${OS_ID//\"/}" # Remove quotes from the string
+
 cd /var/app/unkaos
 
 # Load environment variables
@@ -83,8 +87,8 @@ fi
 echo "New version available! Updating..."
 
 # Enable maintenance mode in Nginx
-#docker-compose exec nginx sh -c 'echo "maintenance_mode=on" > /etc/nginx/conf.d/maintenance_mode.conf'
-#docker-compose exec nginx nginx -s reload
+docker-compose exec nginx sh -c 'echo "set $maintenance_mode 'on';" > /etc/nginx/conf.d/maintenance_mode.conf'
+docker-compose exec nginx nginx -s reload
 
 # Switch to the correct branch before pulling updates
 git stash
@@ -122,12 +126,43 @@ for file in $migration_files; do
   fi
 done
 
-docker-compose down
-docker-compose up -d --build
+CPU_CORES=$(nproc)
+if [ "$CPU_CORES" -gt 1 ]; then
+    CPU_CORES=$((CPU_CORES - 1))
+else
+    CPU_CORES=1
+fi
+
+CPU_CORES=1
+
+docker-compose down ossa cerberus zeus gateway hermes eileithia athena postgres
+docker-compose up -d  eileithia athena postgres
+
+case $OS_ID in
+    ubuntu|debian|raspbian)
+        docker-compose up -d \
+        --scale ossa=$CPU_CORES \
+        --scale cerberus=$CPU_CORES \
+        --scale zeus=$CPU_CORES \
+        --scale gateway=$CPU_CORES \
+        --scale hermes=$CPU_CORES
+        ;;
+    centos)
+        docker compose up -d \
+        --scale ossa=$CPU_CORES \
+        --scale cerberus=$CPU_CORES \
+        --scale zeus=$CPU_CORES \
+        --scale gateway=$CPU_CORES \
+        --scale hermes=$CPU_CORES
+        ;;
+    *)
+        echo "Unsupported OS: $OS_ID"
+        ;;
+esac
 
 # Disable maintenance mode in Nginx
-#docker-compose exec nginx sh -c 'rm /etc/nginx/conf.d/maintenance_mode.conf'
-#docker-compose exec nginx nginx -s reload
+docker-compose exec nginx sh -c 'rm /etc/nginx/conf.d/maintenance_mode.conf'
+docker-compose exec nginx nginx -s reload
 
 # Main Script Output
 echo "Autoupdate conf: $AUTO_UPDATE, $ALLOWED_UPDATE_FROM-$ALLOWED_UPDATE_TO, $CHECK_INTERVAL"
