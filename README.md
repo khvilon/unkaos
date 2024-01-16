@@ -13,5 +13,5 @@ Based on stable and modern instruments like Vue.js 3, nodejs, TypeScript, Postgr
 The functionality is designed in a way to give flexible customization. No need to break your processes, just configure once your fields, workflows, agile boards and dashboards and then profite. Unkaos is a universal task tracker, but mostly focused on developers teams.
 
 # Install
-wget -O - https://raw.githubusercontent.com/khvilon/unkaos/dev/setup.sh | bash
+wget -O - https://raw.githubusercontent.com/khvilon/unkaos/master/setup.sh | bash
 

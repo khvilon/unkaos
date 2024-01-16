@@ -140,7 +140,7 @@ docker-compose up -d  eileithyia athena postgres
 
 case $OS_ID in
     ubuntu|debian|raspbian)
-        docker-compose up -d \
+        docker-compose up --build -d \
         --scale ossa=$CPU_CORES \
         --scale cerberus=$CPU_CORES \
         --scale zeus=$CPU_CORES \
@@ -148,7 +148,7 @@ case $OS_ID in
         --scale hermes=$CPU_CORES
         ;;
     centos)
-        docker compose up -d \
+        docker compose up -d --build \
         --scale ossa=$CPU_CORES \
         --scale cerberus=$CPU_CORES \
         --scale zeus=$CPU_CORES \

@@ -465,7 +465,6 @@ crud.load = async function () {
     WHERE T1.DELETED_AT IS NULL $@1
   `
 
-  
 };
 
 
