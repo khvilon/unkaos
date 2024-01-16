@@ -87,7 +87,7 @@ fi
 echo "New version available! Updating..."
 
 # Enable maintenance mode in Nginx
-docker-compose exec nginx sh -c 'echo "set $maintenance_mode 'on';" > /etc/nginx/conf.d/maintenance_mode.conf'
+docker-compose exec nginx sh -c 'echo "on" > /etc/nginx/conf.d/maintenance.flag'
 docker-compose exec nginx nginx -s reload
 
 # Switch to the correct branch before pulling updates
