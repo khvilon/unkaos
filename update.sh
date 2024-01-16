@@ -87,7 +87,7 @@ fi
 echo "New version available! Updating..."
 
 # Enable maintenance mode in Nginx
-docker-compose exec nginx sh -c 'echo "on" > /etc/nginx/conf.d/maintenance.flag'
+docker-compose exec nginx sh -c 'touch /etc/nginx/conf.d/maintenance.flag'  
 docker-compose exec nginx nginx -s reload
 
 # Switch to the correct branch before pulling updates
@@ -161,7 +161,7 @@ case $OS_ID in
 esac
 
 # Disable maintenance mode in Nginx
-docker-compose exec nginx sh -c 'rm /etc/nginx/conf.d/maintenance_mode.conf'
+docker-compose exec nginx sh -c 'rm /etc/nginx/conf.d/maintenance.flag'
 docker-compose exec nginx nginx -s reload
 
 # Main Script Output
