@@ -20,7 +20,7 @@ case $OS_ID in
 esac
 
 cd /var/app/unkaos
-source /vcheck.sh
+source /bash/vcheck.sh
 
 # Load environment variables
 if [ -f .env ]; then
