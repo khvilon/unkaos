@@ -1,10 +1,6988 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Обновление платформы</title>
-</head>
-<body>
-    <h1>Сайт временно недоступен</h1>
-    <p>В настоящее время проводится обновление. Пожалуйста, зайдите позже.</p>
-</body>
-</html>
+
+<html lang="en" theme="dark"><head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unkaos - обновление</title>
+    <script type="module" crossorigin="" src="/assets/index.0230df64.js"></script>
+    <link rel="stylesheet" href="/assets/index.976d3577.css">
+  <style>
+    @charset "UTF-8";@import"https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css";[theme=dark_3d][data-v-d527e174] {
+    --body-bg-color: rgb(51, 61, 69);
+    --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, .5);
+    --text-color: rgb(190, 190, 190);
+    --border-color: rgba(128, 128, 128, 0);
+    --table-row-color: rgb(40, 45, 50);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+    --input-bg-color: rgb(19, 17, 39);
+    --input-bg-color-disabled: rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #333;
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(32, 36, 40, .3);
+    --loading-bar-color: rgba(20, 22, 24, .5);
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=light][data-v-d527e174] {
+    --body-bg-color: rgb(231,237,255);
+    --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, .5);
+    --text-color: #114066;
+    --border-color: rgb(108, 146, 211);
+    --table-row-color: #f7f9fa;
+    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-border-color: rgb(51, 51, 51);
+    --input-bg-color: rgb(231,237,255);
+    --input-bg-color-disabled: rgb(240, 240, 240);
+    --input-hover-bg-color: #f7f9fa;
+    --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
+    --workflow-marker-color: rgb(80, 80, 100);
+    --workflow-g-hover-color: rgb(100, 120, 190);
+    --workflow-g-selected-color: rgb(80, 90, 230);
+    --workflow-g-fill-color: rgb(235, 246, 255);
+    --workflow-g-hover-fill-color: rgb(215, 226, 255);
+    --link-color: rgb(38, 66, 205);
+    --issue-card-descr-color: rgb(28, 46, 57);
+    --button-color: rgb(235, 246, 255);
+    --on-button-icon-color: rgb(80, 90, 255);
+    --off-button-icon-color: rgb(140, 140, 140);
+    --issues-search-idx-0-color: green;
+    --issues-search-idx-1-color: rgb(192, 179, 2);
+    --issues-search-idx-2-color: blue;
+    --issues-search-idx-3-color: rgb(221, 145, 2);
+    --issues-search-idx-4-color: rgb(107, 98, 66);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(250, 250, 255, .3);
+    --loading-bar-color: rgba(201,217,245, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: solid;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #F6F6F6;
+    --code-scroll-thumb-bg-color: #ababab;
+    --code-scroll-track-bg-color: #d7e1e9;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E11E5A;
+    --code-fragment-border-color: #DADADA;
+    --code-bg-color: #F6F6F6;
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, .7);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark][data-v-d527e174] {
+    --body-bg-color: rgb(23, 33, 43);
+    --panel-bg-color: #242F3D;
+    --group-bg-color: rgba(30, 40, 50, .5);
+    --text-color: rgba(228, 230, 240);
+    --border-color: rgba(71, 81, 89, .6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
+    --table-row-border-color: black;
+    --input-bg-color: rgb(30 34 46);
+    --input-bg-color-disabled: rgb(35, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(108, 146, 211);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #4a5867;
+    --on-button-icon-color: rgb(198, 216, 227);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(30, 170, 30);
+    --issues-search-idx-1-color: rgb(207, 207, 22);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(187, 174, 130);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(30, 34, 37, .3);
+    --loading-bar-color: rgba(20, 24, 30, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: inset;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+.table_down_panel[data-v-d527e174] {
+    display: flex
+}
+
+.table_panel[data-v-d527e174] {
+    display: flex;
+    width: 75%;
+    height: calc(100vh - 68px);
+    background: transparent
+}
+
+.table_card[data-v-d527e174] {
+    height: calc(100vh - 88px);
+    padding: 10px 20px 20px;
+    width: 25%;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1
+}
+
+.table_card>*[data-v-d527e174]:not(:last-child) {
+    margin-bottom: 20px
+}
+
+.table_card_footer[data-v-d527e174] {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px
+}
+
+.table_card_footer_btn[data-v-d527e174] {
+    width: 100%;
+    display: flex
+}
+
+.table_card_fields[data-v-d527e174] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto
+}
+
+.table_card_fields[data-v-d527e174]::-webkit-scrollbar {
+    display: none
+}
+
+.table_card_fields .input[data-v-d527e174] {
+    margin-bottom: 15px
+}
+
+.table_card_buttons[data-v-d527e174] {
+    display: flex;
+    flex-direction: column
+}
+
+.table_card_buttons .btn[data-v-d527e174] {
+    height: 30px
+}
+
+.table_card_buttons>*[data-v-d527e174]:not(:last-child) {
+    margin-bottom: 15px
+}
+
+[theme=dark_3d][data-v-1f502e82] {
+    --body-bg-color: rgb(51, 61, 69);
+    --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, .5);
+    --text-color: rgb(190, 190, 190);
+    --border-color: rgba(128, 128, 128, 0);
+    --table-row-color: rgb(40, 45, 50);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+    --input-bg-color: rgb(19, 17, 39);
+    --input-bg-color-disabled: rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #333;
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(32, 36, 40, .3);
+    --loading-bar-color: rgba(20, 22, 24, .5);
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=light][data-v-1f502e82] {
+    --body-bg-color: rgb(231,237,255);
+    --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, .5);
+    --text-color: #114066;
+    --border-color: rgb(108, 146, 211);
+    --table-row-color: #f7f9fa;
+    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-border-color: rgb(51, 51, 51);
+    --input-bg-color: rgb(231,237,255);
+    --input-bg-color-disabled: rgb(240, 240, 240);
+    --input-hover-bg-color: #f7f9fa;
+    --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
+    --workflow-marker-color: rgb(80, 80, 100);
+    --workflow-g-hover-color: rgb(100, 120, 190);
+    --workflow-g-selected-color: rgb(80, 90, 230);
+    --workflow-g-fill-color: rgb(235, 246, 255);
+    --workflow-g-hover-fill-color: rgb(215, 226, 255);
+    --link-color: rgb(38, 66, 205);
+    --issue-card-descr-color: rgb(28, 46, 57);
+    --button-color: rgb(235, 246, 255);
+    --on-button-icon-color: rgb(80, 90, 255);
+    --off-button-icon-color: rgb(140, 140, 140);
+    --issues-search-idx-0-color: green;
+    --issues-search-idx-1-color: rgb(192, 179, 2);
+    --issues-search-idx-2-color: blue;
+    --issues-search-idx-3-color: rgb(221, 145, 2);
+    --issues-search-idx-4-color: rgb(107, 98, 66);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(250, 250, 255, .3);
+    --loading-bar-color: rgba(201,217,245, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: solid;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #F6F6F6;
+    --code-scroll-thumb-bg-color: #ababab;
+    --code-scroll-track-bg-color: #d7e1e9;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E11E5A;
+    --code-fragment-border-color: #DADADA;
+    --code-bg-color: #F6F6F6;
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, .7);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark][data-v-1f502e82] {
+    --body-bg-color: rgb(23, 33, 43);
+    --panel-bg-color: #242F3D;
+    --group-bg-color: rgba(30, 40, 50, .5);
+    --text-color: rgba(228, 230, 240);
+    --border-color: rgba(71, 81, 89, .6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
+    --table-row-border-color: black;
+    --input-bg-color: rgb(30 34 46);
+    --input-bg-color-disabled: rgb(35, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(108, 146, 211);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #4a5867;
+    --on-button-icon-color: rgb(198, 216, 227);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(30, 170, 30);
+    --issues-search-idx-1-color: rgb(207, 207, 22);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(187, 174, 130);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(30, 34, 37, .3);
+    --loading-bar-color: rgba(20, 24, 30, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: inset;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+.table_down_panel[data-v-1f502e82] {
+    display: flex
+}
+
+.table_panel[data-v-1f502e82] {
+    display: flex;
+    width: 75%;
+    height: calc(100vh - 68px);
+    background: transparent
+}
+
+.table_card[data-v-1f502e82] {
+    height: calc(100vh - 88px);
+    padding: 10px 20px 20px;
+    width: 25%;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1
+}
+
+.table_card>*[data-v-1f502e82]:not(:last-child) {
+    margin-bottom: 20px
+}
+
+.table_card_footer[data-v-1f502e82] {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px
+}
+
+.table_card_footer_btn[data-v-1f502e82] {
+    width: 100%;
+    display: flex
+}
+
+.table_card_fields[data-v-1f502e82] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto
+}
+
+.table_card_fields[data-v-1f502e82]::-webkit-scrollbar {
+    display: none
+}
+
+.table_card_fields .input[data-v-1f502e82] {
+    margin-bottom: 15px
+}
+
+.table_card_buttons[data-v-1f502e82] {
+    display: flex;
+    flex-direction: column
+}
+
+.table_card_buttons .btn[data-v-1f502e82] {
+    height: 30px
+}
+
+.table_card_buttons>*[data-v-1f502e82]:not(:last-child) {
+    margin-bottom: 15px
+}
+
+[theme=dark_3d][data-v-3d915b3b] {
+    --body-bg-color: rgb(51, 61, 69);
+    --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, .5);
+    --text-color: rgb(190, 190, 190);
+    --border-color: rgba(128, 128, 128, 0);
+    --table-row-color: rgb(40, 45, 50);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+    --input-bg-color: rgb(19, 17, 39);
+    --input-bg-color-disabled: rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #333;
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(32, 36, 40, .3);
+    --loading-bar-color: rgba(20, 22, 24, .5);
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=light][data-v-3d915b3b] {
+    --body-bg-color: rgb(231,237,255);
+    --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, .5);
+    --text-color: #114066;
+    --border-color: rgb(108, 146, 211);
+    --table-row-color: #f7f9fa;
+    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-border-color: rgb(51, 51, 51);
+    --input-bg-color: rgb(231,237,255);
+    --input-bg-color-disabled: rgb(240, 240, 240);
+    --input-hover-bg-color: #f7f9fa;
+    --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
+    --workflow-marker-color: rgb(80, 80, 100);
+    --workflow-g-hover-color: rgb(100, 120, 190);
+    --workflow-g-selected-color: rgb(80, 90, 230);
+    --workflow-g-fill-color: rgb(235, 246, 255);
+    --workflow-g-hover-fill-color: rgb(215, 226, 255);
+    --link-color: rgb(38, 66, 205);
+    --issue-card-descr-color: rgb(28, 46, 57);
+    --button-color: rgb(235, 246, 255);
+    --on-button-icon-color: rgb(80, 90, 255);
+    --off-button-icon-color: rgb(140, 140, 140);
+    --issues-search-idx-0-color: green;
+    --issues-search-idx-1-color: rgb(192, 179, 2);
+    --issues-search-idx-2-color: blue;
+    --issues-search-idx-3-color: rgb(221, 145, 2);
+    --issues-search-idx-4-color: rgb(107, 98, 66);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(250, 250, 255, .3);
+    --loading-bar-color: rgba(201,217,245, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: solid;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #F6F6F6;
+    --code-scroll-thumb-bg-color: #ababab;
+    --code-scroll-track-bg-color: #d7e1e9;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E11E5A;
+    --code-fragment-border-color: #DADADA;
+    --code-bg-color: #F6F6F6;
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, .7);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark][data-v-3d915b3b] {
+    --body-bg-color: rgb(23, 33, 43);
+    --panel-bg-color: #242F3D;
+    --group-bg-color: rgba(30, 40, 50, .5);
+    --text-color: rgba(228, 230, 240);
+    --border-color: rgba(71, 81, 89, .6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
+    --table-row-border-color: black;
+    --input-bg-color: rgb(30 34 46);
+    --input-bg-color-disabled: rgb(35, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(108, 146, 211);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #4a5867;
+    --on-button-icon-color: rgb(198, 216, 227);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(30, 170, 30);
+    --issues-search-idx-1-color: rgb(207, 207, 22);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(187, 174, 130);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(30, 34, 37, .3);
+    --loading-bar-color: rgba(20, 24, 30, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: inset;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+.table_down_panel[data-v-3d915b3b] {
+    display: flex
+}
+
+.table_panel[data-v-3d915b3b] {
+    display: flex;
+    width: 70%;
+    height: calc(100vh - 68px);
+    background: transparent
+}
+
+.table_card[data-v-3d915b3b] {
+    height: calc(100vh - 88px);
+    padding: 10px 20px 20px;
+    width: 30%;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1
+}
+
+.table_card>*[data-v-3d915b3b]:not(:last-child) {
+    margin-bottom: 20px
+}
+
+.table_card_footer[data-v-3d915b3b] {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px
+}
+
+.table_card_footer_btn[data-v-3d915b3b] {
+    width: 100%;
+    display: flex
+}
+
+.table_card_fields[data-v-3d915b3b] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto
+}
+
+.table_card_fields[data-v-3d915b3b]::-webkit-scrollbar {
+    display: none
+}
+
+.table_card_fields .input[data-v-3d915b3b] {
+    margin-bottom: 15px
+}
+
+.table_card_buttons[data-v-3d915b3b] {
+    display: flex;
+    flex-direction: column
+}
+
+.table_card_buttons .btn[data-v-3d915b3b] {
+    height: 30px
+}
+
+.table_card_buttons>*[data-v-3d915b3b]:not(:last-child) {
+    margin-bottom: 15px
+}
+
+[theme=dark_3d][data-v-05db1693] {
+    --body-bg-color: rgb(51, 61, 69);
+    --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, .5);
+    --text-color: rgb(190, 190, 190);
+    --border-color: rgba(128, 128, 128, 0);
+    --table-row-color: rgb(40, 45, 50);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+    --input-bg-color: rgb(19, 17, 39);
+    --input-bg-color-disabled: rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #333;
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(32, 36, 40, .3);
+    --loading-bar-color: rgba(20, 22, 24, .5);
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=light][data-v-05db1693] {
+    --body-bg-color: rgb(231,237,255);
+    --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, .5);
+    --text-color: #114066;
+    --border-color: rgb(108, 146, 211);
+    --table-row-color: #f7f9fa;
+    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-border-color: rgb(51, 51, 51);
+    --input-bg-color: rgb(231,237,255);
+    --input-bg-color-disabled: rgb(240, 240, 240);
+    --input-hover-bg-color: #f7f9fa;
+    --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
+    --workflow-marker-color: rgb(80, 80, 100);
+    --workflow-g-hover-color: rgb(100, 120, 190);
+    --workflow-g-selected-color: rgb(80, 90, 230);
+    --workflow-g-fill-color: rgb(235, 246, 255);
+    --workflow-g-hover-fill-color: rgb(215, 226, 255);
+    --link-color: rgb(38, 66, 205);
+    --issue-card-descr-color: rgb(28, 46, 57);
+    --button-color: rgb(235, 246, 255);
+    --on-button-icon-color: rgb(80, 90, 255);
+    --off-button-icon-color: rgb(140, 140, 140);
+    --issues-search-idx-0-color: green;
+    --issues-search-idx-1-color: rgb(192, 179, 2);
+    --issues-search-idx-2-color: blue;
+    --issues-search-idx-3-color: rgb(221, 145, 2);
+    --issues-search-idx-4-color: rgb(107, 98, 66);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(250, 250, 255, .3);
+    --loading-bar-color: rgba(201,217,245, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: solid;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #F6F6F6;
+    --code-scroll-thumb-bg-color: #ababab;
+    --code-scroll-track-bg-color: #d7e1e9;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E11E5A;
+    --code-fragment-border-color: #DADADA;
+    --code-bg-color: #F6F6F6;
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, .7);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark][data-v-05db1693] {
+    --body-bg-color: rgb(23, 33, 43);
+    --panel-bg-color: #242F3D;
+    --group-bg-color: rgba(30, 40, 50, .5);
+    --text-color: rgba(228, 230, 240);
+    --border-color: rgba(71, 81, 89, .6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
+    --table-row-border-color: black;
+    --input-bg-color: rgb(30 34 46);
+    --input-bg-color-disabled: rgb(35, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(108, 146, 211);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #4a5867;
+    --on-button-icon-color: rgb(198, 216, 227);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(30, 170, 30);
+    --issues-search-idx-1-color: rgb(207, 207, 22);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(187, 174, 130);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(30, 34, 37, .3);
+    --loading-bar-color: rgba(20, 24, 30, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: inset;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+.table_down_panel[data-v-05db1693] {
+    display: flex
+}
+
+.table_panel[data-v-05db1693] {
+    display: flex;
+    width: 15%;
+    height: calc(100vh - 68px);
+    background: transparent
+}
+
+.table_card[data-v-05db1693] {
+    height: calc(100vh - 88px);
+    padding: 10px 20px 20px;
+    width: 85%;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1
+}
+
+.table_card>*[data-v-05db1693]:not(:last-child) {
+    margin-bottom: 20px
+}
+
+.table_card_footer[data-v-05db1693] {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px
+}
+
+.table_card_footer_btn[data-v-05db1693] {
+    width: 100%;
+    display: flex
+}
+
+.table_card_fields[data-v-05db1693] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto
+}
+
+.table_card_fields[data-v-05db1693]::-webkit-scrollbar {
+    display: none
+}
+
+.table_card_fields .input[data-v-05db1693] {
+    margin-bottom: 15px
+}
+
+.table_card_buttons[data-v-05db1693] {
+    display: flex;
+    flex-direction: column
+}
+
+.table_card_buttons .btn[data-v-05db1693] {
+    height: 30px
+}
+
+.table_card_buttons>*[data-v-05db1693]:not(:last-child) {
+    margin-bottom: 15px
+}
+
+.workflow-table-card[data-v-05db1693] {
+    padding: 0;
+    background: transparent
+}
+
+.workflow-table-card .tab-panel[data-v-05db1693] {
+    height: 100%
+}
+
+.workflow-table-card .tab[data-v-05db1693] {
+    height: 100%;
+    display: flex;
+    flex-direction: column
+}
+
+.table_down_panel[data-v-76ce109e] {
+    display: flex
+}
+
+.table_panel[data-v-76ce109e] {
+    display: flex;
+    width: 20%;
+    height: calc(100vh - 68px);
+    background: transparent
+}
+
+.table_card[data-v-76ce109e] {
+    height: calc(100vh - 88px);
+    padding: 10px 20px 20px;
+    width: 80%;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1
+}
+
+.table_card>*[data-v-76ce109e]:not(:last-child) {
+    margin-bottom: 20px
+}
+
+.table_card_footer[data-v-76ce109e] {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px
+}
+
+.table_card_footer_btn[data-v-76ce109e] {
+    width: 100%;
+    display: flex
+}
+
+.table_card_fields[data-v-76ce109e] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto
+}
+
+.table_card_fields[data-v-76ce109e]::-webkit-scrollbar {
+    display: none
+}
+
+.table_card_fields .input[data-v-76ce109e] {
+    margin-bottom: 15px
+}
+
+.table_card_buttons[data-v-76ce109e] {
+    display: flex;
+    flex-direction: column
+}
+
+.table_card_buttons .btn[data-v-76ce109e] {
+    height: 30px
+}
+
+.table_card_buttons>*[data-v-76ce109e]:not(:last-child) {
+    margin-bottom: 15px
+}
+
+[theme=dark_3d][data-v-76ce109e] {
+    --body-bg-color: rgb(51, 61, 69);
+    --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, .5);
+    --text-color: rgb(190, 190, 190);
+    --border-color: rgba(128, 128, 128, 0);
+    --table-row-color: rgb(40, 45, 50);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+    --input-bg-color: rgb(19, 17, 39);
+    --input-bg-color-disabled: rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #333;
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(32, 36, 40, .3);
+    --loading-bar-color: rgba(20, 22, 24, .5);
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=light][data-v-76ce109e] {
+    --body-bg-color: rgb(231,237,255);
+    --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, .5);
+    --text-color: #114066;
+    --border-color: rgb(108, 146, 211);
+    --table-row-color: #f7f9fa;
+    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-border-color: rgb(51, 51, 51);
+    --input-bg-color: rgb(231,237,255);
+    --input-bg-color-disabled: rgb(240, 240, 240);
+    --input-hover-bg-color: #f7f9fa;
+    --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
+    --workflow-marker-color: rgb(80, 80, 100);
+    --workflow-g-hover-color: rgb(100, 120, 190);
+    --workflow-g-selected-color: rgb(80, 90, 230);
+    --workflow-g-fill-color: rgb(235, 246, 255);
+    --workflow-g-hover-fill-color: rgb(215, 226, 255);
+    --link-color: rgb(38, 66, 205);
+    --issue-card-descr-color: rgb(28, 46, 57);
+    --button-color: rgb(235, 246, 255);
+    --on-button-icon-color: rgb(80, 90, 255);
+    --off-button-icon-color: rgb(140, 140, 140);
+    --issues-search-idx-0-color: green;
+    --issues-search-idx-1-color: rgb(192, 179, 2);
+    --issues-search-idx-2-color: blue;
+    --issues-search-idx-3-color: rgb(221, 145, 2);
+    --issues-search-idx-4-color: rgb(107, 98, 66);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(250, 250, 255, .3);
+    --loading-bar-color: rgba(201,217,245, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: solid;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #F6F6F6;
+    --code-scroll-thumb-bg-color: #ababab;
+    --code-scroll-track-bg-color: #d7e1e9;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E11E5A;
+    --code-fragment-border-color: #DADADA;
+    --code-bg-color: #F6F6F6;
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, .7);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark][data-v-76ce109e] {
+    --body-bg-color: rgb(23, 33, 43);
+    --panel-bg-color: #242F3D;
+    --group-bg-color: rgba(30, 40, 50, .5);
+    --text-color: rgba(228, 230, 240);
+    --border-color: rgba(71, 81, 89, .6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
+    --table-row-border-color: black;
+    --input-bg-color: rgb(30 34 46);
+    --input-bg-color-disabled: rgb(35, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(108, 146, 211);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #4a5867;
+    --on-button-icon-color: rgb(198, 216, 227);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(30, 170, 30);
+    --issues-search-idx-1-color: rgb(207, 207, 22);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(187, 174, 130);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(30, 34, 37, .3);
+    --loading-bar-color: rgba(20, 24, 30, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: inset;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark_3d][data-v-0ae52e56] {
+    --body-bg-color: rgb(51, 61, 69);
+    --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, .5);
+    --text-color: rgb(190, 190, 190);
+    --border-color: rgba(128, 128, 128, 0);
+    --table-row-color: rgb(40, 45, 50);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+    --input-bg-color: rgb(19, 17, 39);
+    --input-bg-color-disabled: rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #333;
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(32, 36, 40, .3);
+    --loading-bar-color: rgba(20, 22, 24, .5);
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=light][data-v-0ae52e56] {
+    --body-bg-color: rgb(231,237,255);
+    --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, .5);
+    --text-color: #114066;
+    --border-color: rgb(108, 146, 211);
+    --table-row-color: #f7f9fa;
+    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-border-color: rgb(51, 51, 51);
+    --input-bg-color: rgb(231,237,255);
+    --input-bg-color-disabled: rgb(240, 240, 240);
+    --input-hover-bg-color: #f7f9fa;
+    --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
+    --workflow-marker-color: rgb(80, 80, 100);
+    --workflow-g-hover-color: rgb(100, 120, 190);
+    --workflow-g-selected-color: rgb(80, 90, 230);
+    --workflow-g-fill-color: rgb(235, 246, 255);
+    --workflow-g-hover-fill-color: rgb(215, 226, 255);
+    --link-color: rgb(38, 66, 205);
+    --issue-card-descr-color: rgb(28, 46, 57);
+    --button-color: rgb(235, 246, 255);
+    --on-button-icon-color: rgb(80, 90, 255);
+    --off-button-icon-color: rgb(140, 140, 140);
+    --issues-search-idx-0-color: green;
+    --issues-search-idx-1-color: rgb(192, 179, 2);
+    --issues-search-idx-2-color: blue;
+    --issues-search-idx-3-color: rgb(221, 145, 2);
+    --issues-search-idx-4-color: rgb(107, 98, 66);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(250, 250, 255, .3);
+    --loading-bar-color: rgba(201,217,245, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: solid;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #F6F6F6;
+    --code-scroll-thumb-bg-color: #ababab;
+    --code-scroll-track-bg-color: #d7e1e9;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E11E5A;
+    --code-fragment-border-color: #DADADA;
+    --code-bg-color: #F6F6F6;
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, .7);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark][data-v-0ae52e56] {
+    --body-bg-color: rgb(23, 33, 43);
+    --panel-bg-color: #242F3D;
+    --group-bg-color: rgba(30, 40, 50, .5);
+    --text-color: rgba(228, 230, 240);
+    --border-color: rgba(71, 81, 89, .6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
+    --table-row-border-color: black;
+    --input-bg-color: rgb(30 34 46);
+    --input-bg-color-disabled: rgb(35, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(108, 146, 211);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #4a5867;
+    --on-button-icon-color: rgb(198, 216, 227);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(30, 170, 30);
+    --issues-search-idx-1-color: rgb(207, 207, 22);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(187, 174, 130);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(30, 34, 37, .3);
+    --loading-bar-color: rgba(20, 24, 30, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: inset;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+.table_down_panel[data-v-0ae52e56] {
+    display: flex
+}
+
+.table_panel[data-v-0ae52e56] {
+    display: flex;
+    width: 75%;
+    height: calc(100vh - 68px);
+    background: transparent
+}
+
+.table_card[data-v-0ae52e56] {
+    height: calc(100vh - 88px);
+    padding: 10px 20px 20px;
+    width: 25%;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1
+}
+
+.table_card>*[data-v-0ae52e56]:not(:last-child) {
+    margin-bottom: 20px
+}
+
+.table_card_footer[data-v-0ae52e56] {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px
+}
+
+.table_card_footer_btn[data-v-0ae52e56] {
+    width: 100%;
+    display: flex
+}
+
+.table_card_fields[data-v-0ae52e56] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto
+}
+
+.table_card_fields[data-v-0ae52e56]::-webkit-scrollbar {
+    display: none
+}
+
+.table_card_fields .input[data-v-0ae52e56] {
+    margin-bottom: 15px
+}
+
+.table_card_buttons[data-v-0ae52e56] {
+    display: flex;
+    flex-direction: column
+}
+
+.table_card_buttons .btn[data-v-0ae52e56] {
+    height: 30px
+}
+
+.table_card_buttons>*[data-v-0ae52e56]:not(:last-child) {
+    margin-bottom: 15px
+}
+
+#issues_table_panel,#issues_card {
+    height: calc(100vh - 68px)
+}
+
+#issues_table_panel {
+    display: flex;
+    width: 100%
+}
+
+#save_issues_btn,#delete_issues_btn {
+    padding: 0 20px 15px;
+    width: 50%
+}
+
+#save_issues_btn input,#delete_issues_btn input {
+    width: 100%
+}
+
+#issues_down_panel {
+    display: flex;
+    background: transparent
+}
+
+#issue_top_panel {
+    height: 68px;
+    display: flex;
+    padding-left: 15px;
+    background: transparent
+}
+
+.iframe-view #issue_top_panel {
+    border: none
+}
+
+.issue-top-buttons {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px
+}
+
+.issue-top-buttons>*:not(:last-child) {
+    margin-right: 15px
+}
+
+.issue-clone-button {
+    font-size: 35px;
+    text-decoration: none;
+    color: var(--on-button-icon-color)
+}
+
+.make-child-btn {
+    display: flex!important;
+    font-size: 27px!important;
+    border-radius: 50%!important;
+    border-style: solid;
+    padding-top: 4px;
+    padding-left: 4px;
+    width: 32px!important;
+    height: 32px!important
+}
+
+.issue-transitions {
+    padding-top: 10px;
+    flex-direction: column;
+    margin-bottom: 0!important
+}
+
+#issue_table_panel,#issue_card {
+    height: auto;
+    margin-right: 20px;
+    margin-bottom: 20px
+}
+
+.issue-code {
+    width: 160px
+}
+
+#issue_main_panel {
+    padding: 10px 30px 10px 35px;
+    border-right: 5px solid transparent;
+    display: flex;
+    flex-direction: column;
+    width: 78%;
+    overflow-y: auto;
+    overflow-anchor: none;
+    background: transparent
+}
+
+#issue_main_panel * {
+    user-select: text
+}
+
+#issue_main_panel .text {
+    margin-bottom: 10px
+}
+
+.mobile-view #issue_main_panel {
+    width: 100vw!important
+}
+
+#issue_footer_buttons {
+    margin: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    width: 100%
+}
+
+#save_issue_btn {
+    width: 160px
+}
+
+#save_issue_btn input {
+    width: 100%;
+    height: 30px
+}
+
+#issue_card {
+    width: 22%;
+    margin-left: 0;
+    display: flex;
+    flex-direction: column
+}
+
+.mobile-view #issue_card {
+    position: absolute;
+    width: 100vw;
+    left: 0
+}
+
+.hidden-card {
+    left: 100vw!important
+}
+
+#issue_down_panel {
+    display: flex;
+    height: calc(100vh - 68px);
+    width: calc(100vw - 60px);
+    position: absolute
+}
+
+.mobile-view #issue_down_panel {
+    height: calc(100vh - 60px);
+    width: 100vw
+}
+
+.issue-line {
+    display: flex;
+    justify-content: space-between
+}
+
+#issue_description_textarea {
+    padding: 4px 10px 6px;
+    min-height: 60px;
+    transition: none
+}
+
+.status-btn,.status-btn .btn_input {
+    height: 30px!important;
+    width: 100%!important;
+    margin-bottom: 10px
+}
+
+.issue-name-input {
+    width: 70%
+}
+
+.issue-name-input-full {
+    width: 100%
+}
+
+#send_comment_btn .disabled-btn {
+    background-color: var(--panel-bg-color)
+}
+
+#send_comment_btn .btn_input {
+    height: 25px;
+    width: 100%;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-width: 1px;
+    border-left-color: var(--border-color);
+    border-top-color: var(--border-color)
+}
+
+.comment_input {
+    margin-bottom: -4px!important
+}
+
+.comment_input textarea {
+    border-bottom-left-radius: 0!important;
+    border-bottom-right-radius: 0!important
+}
+
+.outlined input {
+    outline: 1px solid
+}
+
+.issue-status-input .vs__dropdown-toggle {
+    border-width: 1px!important
+}
+
+.issue-project-input {
+    width: 27%;
+    margin-left: 10px
+}
+
+#issue_card_scroller {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 25px;
+    height: calc(100vh - 68px);
+    overflow-y: scroll
+}
+
+#issue_card_scroller>*:not(:last-child) {
+    margin-bottom: 15px
+}
+
+#issue_card_scroller::-webkit-scrollbar {
+    display: none
+}
+
+.bx-paperclip {
+    font-size: 19.6px
+}
+
+#issue-attachments {
+    margin-top: 20px;
+    width: 100%
+}
+
+.image-attachments {
+    margin-left: 20px;
+    margin-right: 20px
+}
+
+.image-attachment-div {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px
+}
+
+.issue-title-span {
+    margin: 10px 0;
+    font-size: 22px;
+    width: 100%;
+    user-select: text
+}
+
+.edit-mode-btn-container {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between
+}
+
+.edit-mode-btn-container .btn {
+    width: 50%
+}
+
+.edit-mode-btn-container input {
+    height: 25px!important;
+    width: 100%!important
+}
+
+.save-issue-edit-mode-btn {
+    padding-right: 30px
+}
+
+.cancel-issue-edit-mode-btn {
+    padding-left: 30px
+}
+
+.bx-purchase-tag {
+    font-size: 18px;
+    padding: 6px 0
+}
+
+.issue-tags-container,.issue-author-container {
+    display: inherit
+}
+
+.issue-tags-container .tag-input {
+    font-size: 13px;
+    padding-left: 5px
+}
+
+.issue-author-container * {
+    background: none!important;
+    border: none!important
+}
+
+.issue-author-container svg {
+    display: none
+}
+
+.issue-author-container .vs__actions,.issue-author-container .vs__search {
+    display: none
+}
+
+.issue-author-container .string-input {
+    width: 130px!important
+}
+
+.issue-spent-time-input * {
+    cursor: pointer!important
+}
+
+.issue-spent-time-input:hover input {
+    color: green!important
+}
+
+.issue_full_size_image {
+    width: 100%;
+    height: 100%;
+    background-color: #0000004d;
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out
+}
+
+.issue_full_size_image img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%
+}
+
+.btn .btn_input {
+    user-select: none!important;
+    width: 200px;
+    height: 100%;
+    color: var(--text-color);
+    background-color: var(--button-color);
+    border-width: 1px;
+    border-color: var(--border-color);
+    border-style: solid;
+    font-size: 14px;
+    border-radius: var(--border-radius);
+    border-style: outset;
+    cursor: pointer
+}
+
+.btn .disabled-btn {
+    cursor: not-allowed;
+    background-color: var(--input-bg-color-disabled);
+    color: var(--disabled-text-color)
+}
+
+.btn i {
+    text-align: center;
+    line-height: 30px;
+    font-size: 18px!important
+}
+
+.string .string-input {
+    width: 100%;
+    height: 30px;
+    color: var(--text-color);
+    padding: 0 10px
+}
+
+.string-input {
+    font-size: 14px;
+    font-weight: 400;
+    border-radius: var(--border-radius);
+    transition: all .5s ease;
+    background: var(--input-bg-color);
+    width: 100%
+}
+
+.string-input:disabled {
+    background: var(--disabled-bg-color);
+    color: var(--disabled-text-color)
+}
+
+.login-panel {
+    padding: 16px 24px 24px;
+    height: 212px;
+    width: 342px;
+    position: fixed;
+    left: 50vw;
+    top: 50vh;
+    transform: translate(-50%,-50%);
+    background-color: var(--table-row-color);
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+    box-shadow: 0 4px 15px #0006,0 1px 2px #a8bac51a inset;
+    background: rgba(0,0,0,.6)!important;
+    border-radius: 4px!important;
+    border-style: outset!important;
+    border-color: #47515980!important
+}
+
+.mobile-view .login-panel {
+    width: 250px
+}
+
+.login-panel>*:not(:last-child) {
+    margin-bottom: 12px
+}
+
+.login-panel .btn Input {
+    width: 100%;
+    margin-top: 10px;
+    height: 30px;
+    background: rgba(30,30,33,.5);
+    border-color: #a8bac5cc
+}
+
+.login-panel .btn Input:hover {
+    background: rgba(38,38,48,.5)
+}
+
+.login-panel .btn Input:active {
+    border-style: inset!important;
+    border-color: #586a7580
+}
+
+.wrong-pass-label {
+    color: #7c0000;
+    height: 20px;
+    width: 100%;
+    display: block;
+    text-align: center
+}
+
+.login-corner-bg-img {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100vw
+}
+
+.login-container {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    background-color: #1e1e25;
+    padding: 30px
+}
+
+.landing-panel {
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 30px;
+    background-color: #1e1e25!important
+}
+
+.landing-down-panel {
+    display: flex;
+    z-index: 1;
+    flex-direction: column;
+    width: 55vw;
+    height: 100%;
+    padding-left: 5vw
+}
+
+.landing-span {
+    font-size: 14px;
+    font-weight: 100
+}
+
+.landing-span * {
+    font-size: 14px;
+    text-decoration: auto
+}
+
+.landing-span-last {
+    text-align: end;
+    margin-bottom: 6px
+}
+
+.landing-lang-select {
+    position: absolute;
+    right: 30px;
+    top: 30px;
+    width: 200px
+}
+
+.landing-corner-bg-img {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100%
+}
+
+.landing-small-panel {
+    background-color: var(--table-row-color);
+    z-index: 2;
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px
+}
+
+.landing-panel span {
+    opacity: .9
+}
+
+.landing-small-panel-main {
+    left: 50vw;
+    top: 50vh;
+    height: 320px;
+    transform: translate(-50%,-50%);
+    width: 380px;
+    box-shadow: 0 4px 15px #0006,0 1px 2px #a8bac51a inset;
+    background: rgba(21,24,26,.8)!important;
+    border-radius: 4px!important;
+    border-style: outset!important;
+    border-color: #47515980!important
+}
+
+.landing-small-panel-v {
+    left: 30px;
+    bottom: 30px;
+    width: auto;
+    height: auto;
+    background: transparent!important;
+    border: none!important;
+    padding: 0
+}
+
+.landing-small-panel-v span {
+    margin: 5px
+}
+
+.landing-small-panel-author {
+    right: 30px;
+    bottom: 30px;
+    height: auto;
+    width: auto;
+    background: transparent!important;
+    border: none!important;
+    padding: 0
+}
+
+.landing-small-panel-author i {
+    color: #6c92d3
+}
+
+.landing-list {
+    padding-left: 10px;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column
+}
+
+.landing-list a {
+    text-decoration: none;
+    color: #6c92d3;
+    margin-bottom: 6px;
+    font-weight: 300
+}
+
+.landing-list i {
+    width: 22px;
+    height: 22px;
+    color: #6c92d3
+}
+
+#config_table_panel,#config_card {
+    margin: 1px;
+    height: calc(100vh - 68px)
+}
+
+#config_table_panel {
+    display: flex;
+    margin-left: 2px;
+    width: calc(100vw - 403px)
+}
+
+#config_card {
+    width: 400px;
+    margin-left: 0;
+    display: table
+}
+
+#save_config_btn,#delete_config_btn {
+    padding: 0 20px 15px;
+    width: 50%
+}
+
+#save_config_btn input,#delete_config_btn input {
+    width: 100%
+}
+
+#config_down_panel {
+    display: flex;
+    height: calc(100vh - 68px);
+    background: transparent;
+    padding: 20px
+}
+
+#config_down_panel .tab-panel {
+    width: 100%;
+    height: 100%
+}
+
+#config_down_panel span {
+    font-size: 15px;
+    padding: 20px
+}
+
+.config-group {
+    margin-bottom: 26px
+}
+
+.config-group .input {
+    margin-bottom: 8px
+}
+
+.config-group .config-label {
+    margin-bottom: 8px;
+    font-weight: 400;
+    font-size: 16px
+}
+
+.config-group .label {
+    text-wrap: nowrap
+}
+
+#dashboards_table_panel {
+    display: flex;
+    width: 100%;
+    background: transparent
+}
+
+#dashboards_down_panel {
+    display: flex
+}
+
+.gadget-config-fields {
+    width: 100%;
+    height: 100%
+}
+
+.gadget_issues_table_panel {
+    height: auto;
+    width: 100%;
+    border: none!important
+}
+
+.gadget_issues_table_panel .ktable {
+    margin: 0;
+    padding: 10px
+}
+
+.time-report-head {
+    margin: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: baseline
+}
+
+.time-report-head img {
+    height: 18px;
+    width: 18px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 10px;
+    position: relative;
+    top: 5px
+}
+
+.gadget-config {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px
+}
+
+.gadget-config .gadget-config-field {
+    padding-bottom: 20px
+}
+
+.gadget-config-fields {
+    width: 100%;
+    height: calc(100% - 30px);
+    overflow: auto
+}
+
+.gadget-config-fields .string {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0
+}
+
+.gadget-edit-mode-btn-container {
+    width: 100%;
+    height: 30px;
+    display: flex
+}
+
+.gadget-edit-mode-btn-container .btn {
+    width: 50%
+}
+
+.gadget-edit-mode-btn-container .btn .btn_input {
+    height: 100%;
+    width: 100%
+}
+
+.gadget-config .issue-search-input {
+    width: 100%
+}
+
+.save-gadget-config-btn {
+    padding-right: 10px
+}
+
+.cancel-gadget-config-btn {
+    padding-left: 10px
+}
+
+#dashboards_table_panel,#dashboards_card {
+    height: calc(100vh - 68px)
+}
+
+#dashboards_table_panel {
+    display: flex;
+    width: 100%
+}
+
+#save_dashboards_btn,#delete_dashboards_btn {
+    padding: 0 20px 15px;
+    width: 50%
+}
+
+#save_dashboards_btn input,#delete_dashboards_btn input {
+    width: 100%
+}
+
+#dashboard_down_panel {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 68px);
+    background: var(--input-bg-color);
+    overflow: scroll
+}
+
+#dashboard_down_panel::-webkit-scrollbar {
+    display: none
+}
+
+.dashboard-name-input {
+    padding: 0 20px 10px 0
+}
+
+.gadgets {
+    padding: 10px;
+    width: 100%;
+    height: calc(var(--831bce3e) * 1px);
+    min-height: calc(var(--831bce3e) * 1px);
+    position: relative
+}
+
+.gadget {
+    border-style: none;
+    border-width: var(--border-width);
+    border-color: var(--border-color);
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    padding: 5px
+}
+
+.shadow-gadget-container {
+    position: absolute;
+    padding: 5px
+}
+
+.shadow-gadget {
+    background-color: var(--on-button-icon-color);
+    opacity: .3;
+    width: 100%;
+    height: 100%;
+    border-color: var(--border-color);
+    border-radius: var(--border-radius);
+    border-style: none
+}
+
+.gadget-head {
+    height: 30px;
+    background-color: var(--table-row-color);
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-style: var(--border-style);
+    border-color: var(--border-color);
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-width: var(--border-width);
+    border-left-width: var(--border-width);
+    border-right-width: var(--border-width);
+    border-bottom-width: 0px
+}
+
+.gadget-head span {
+    padding-left: 10px;
+    width: 100%
+}
+
+.gadget-body {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    overflow: scroll;
+    background-color: var(--panel-bg-color);
+    border-style: var(--border-style);
+    border-color: var(--border-color);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+    border-top-width: var(--border-width);
+    border-left-width: var(--border-width);
+    border-right-width: var(--border-width);
+    border-bottom-width: var(--border-width)
+}
+
+.gadget-body::-webkit-scrollbar {
+    display: none
+}
+
+.gadget:active {
+    width: 0;
+    height: 0
+}
+
+.gadget-borders {
+    position: absolute;
+    margin-top: calc(-1 * var(--55dad7f4) / 2 * 1px);
+    margin-left: calc(-1 * var(--55dad7f4) / 2 * 1px);
+    width: 0px;
+    height: 0px
+}
+
+.gadget-border {
+    background: rgba(0,128,0,0)
+}
+
+.gadget-left,.gadget-right {
+    width: calc(var(--55dad7f4) * 1px);
+    cursor: ew-resize
+}
+
+.gadget-top,.gadget-bottom {
+    height: calc(var(--55dad7f4) * 1px);
+    cursor: ns-resize
+}
+
+.void-gadgets-bottom {
+    position: absolute;
+    width: 1px
+}
+
+.void-gadgets-bottom div {
+    position: relative;
+    width: 1px
+}
+
+.gadget-btn {
+    height: 22px;
+    width: 22px;
+    font-size: 15px;
+    border-radius: var(--border-radius);
+    margin-left: 10px;
+    color: var(--text-color);
+    background-color: var(--button-color);
+    border-width: 1px;
+    border-color: var(--border-color);
+    border-style: solid;
+    border-style: outset;
+    cursor: pointer;
+    padding-top: 3px;
+    margin-right: 1px;
+    text-align: center
+}
+
+.delete-dashboard-btn:hover {
+    color: red
+}
+
+.add-gadget-btn:hover {
+    color: green
+}
+
+.gadget-types-modal {
+    padding: 20px;
+    position: absolute;
+    width: 60%;
+    height: fit-content!important;
+    width: fit-content!important;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%)
+}
+
+.gadget-types-modal>*:not(:last-child) {
+    margin-bottom: 10px
+}
+
+.gadget-types-modal SelectInut {
+    width: 100%;
+    height: 30px
+}
+
+.gadget-types-modal .btn {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    margin-top: 10px;
+    margin-bottom: 10px
+}
+
+.gadget-types-modal .btn input {
+    width: 340px
+}
+
+.gadget-types-modal #create-relation-btn {
+    padding-right: 20px
+}
+
+.gadget-types-cells {
+    display: flex;
+    justify-content: center
+}
+
+.gadget-types-cell {
+    width: 100px;
+    height: 100px;
+    font-size: 20px;
+    border-radius: var(--border-radius);
+    color: var(--text-color);
+    background-color: var(--button-color);
+    border-width: 1px;
+    border-color: var(--border-color);
+    border-style: solid;
+    border-style: outset;
+    cursor: pointer;
+    text-align: center;
+    margin: 10px;
+    align-items: center;
+    display: flex
+}
+
+.gadget-types-cell-disabled {
+    cursor: not-allowed;
+    opacity: .5
+}
+
+.gadget-types-cell span {
+    width: 100%
+}
+
+.gadget-head .bx-trash:hover {
+    color: red
+}
+
+.resized-gadget {
+    opacity: .5
+}
+
+#boards_table_panel,#boards_card {
+    height: calc(100vh - 68px);
+    background: transparent
+}
+
+#boards_down_panel {
+    display: flex
+}
+
+#boards_table_panel,#boards_card {
+    height: calc(100vh - 68px)
+}
+
+#boards_table_panel {
+    display: flex;
+    width: 100%
+}
+
+#save_boards_btn,#delete_boards_btn {
+    padding: 0 20px 15px;
+    width: 50%
+}
+
+#save_boards_btn input,#delete_boards_btn input {
+    width: 100%
+}
+
+#board_down_panel {
+    padding-right: 7px;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 68px);
+    background: transparent;
+    overflow-y: scroll;
+    overflow-x: hidden
+}
+
+.board-config {
+    padding: 20px
+}
+
+.board-config>*:not(:last-child) {
+    margin-bottom: 10px
+}
+
+.status-board-collumn {
+    width: calc((100vw - 60px - 40px) / var(--717bbeda));
+    height: 150px;
+    margin: 2px;
+    height: 100%;
+    text-align: center
+}
+
+.status-board-collumn-dragging-to {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: var(--border-radius)
+}
+
+.issue-board-cards-container {
+    background: var(--group-bg-color);
+    border-radius: var(--border-radius);
+    border-color: var(--disabled-bg-color);
+    border-style: none;
+    overflow: scroll;
+    height: 100%;
+    margin: 5px;
+    display: flex;
+    flex-direction: column;
+    overflow: visible
+}
+
+.issue-board-cards-container::-webkit-scrollbar {
+    display: none
+}
+
+.issue-board-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    background: var(--panel-bg-color);
+    border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: groove;
+    text-align: left;
+    margin-bottom: 5px;
+    cursor: grab
+}
+
+.dragged-card {
+    border-style: dashed
+}
+
+.when-dragged-card {
+    cursor: grabbing!important
+}
+
+.issue-card-title {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 5px
+}
+
+.issue-card-title div {
+    display: flex;
+    width: 100%
+}
+
+.issue-card-title span {
+    width: 100%
+}
+
+.issue-card-title a {
+    color: var(--link-color);
+    margin: 0 4px 4px;
+    white-space: nowrap
+}
+
+.issue-card-title label {
+    cursor: text;
+    font-weight: 500
+}
+
+.issue-card-description {
+    height: auto;
+    max-height: 100px;
+    border-top-color: var(--table-row-color);
+    border-bottom-color: var(--table-row-color);
+    border-top-width: 2px;
+    border-top-style: solid;
+    border-bottom-width: 2px;
+    border-bottom-style: solid;
+    color: var(--issue-card-descr-color);
+    overflow: hidden;
+    font-size: 10px;
+    padding: 5px
+}
+
+.issue-card-top {
+    width: 100%;
+    height: 5px;
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+    opacity: .4;
+    background: gray
+}
+
+.issue-board-card-footer {
+    width: 100%;
+    padding: 5px
+}
+
+.board-name-input {
+    padding: 0 20px 10px 0
+}
+
+* {
+    user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none
+}
+
+.top-menu-icon-btn {
+    height: 35px;
+    font-size: 25px;
+    border-radius: var(--border-radius);
+    margin-left: 10px;
+    color: var(--text-color);
+    background-color: var(--button-color);
+    border-width: 1px;
+    border-color: var(--border-color);
+    border-style: solid;
+    border-style: outset;
+    cursor: pointer;
+    width: 35px;
+    text-align: center;
+    padding-top: 4px
+}
+
+.delete-board-btn {
+    font-size: 23px;
+    padding-top: 5px;
+    color: #d27065
+}
+
+.panel topbar span {
+    font-size: 20px;
+    font-weight: 400;
+    margin-top: 1px;
+    border-radius: 8px;
+    border-color: gray;
+    border-width: 2px;
+    margin-left: 20px;
+    margin-right: 10px
+}
+
+.board-query-info {
+    padding: 0 20px 10px 0;
+    width: 500px
+}
+
+.board-sprint-filter {
+    padding: 0 20px 10px 0;
+    display: flex
+}
+
+.board-sprint-filter-string {
+    width: 300px;
+    padding: 0
+}
+
+.board-sprint-filter-btn {
+    cursor: pointer;
+    width: 14px;
+    height: 30px;
+    border-radius: var(--border-radius);
+    margin: 0 0 0 2px!important;
+    padding-top: 0;
+    font-size: 20px;
+    font-weight: 400
+}
+
+.board-sprint-filter-btn:hover {
+    background: var(--table-row-color-selected)
+}
+
+.board-sprint-filter-string input {
+    margin: 0!important
+}
+
+.swimlane {
+    width: 100%;
+    display: flex;
+    flex-direction: column
+}
+
+.swimlane-head,.swimlane-total {
+    width: 100%;
+    display: flex;
+    border-radius: var(--border-radius);
+    background: var(--disabled-bg-color);
+    margin: 4px 4px 1px
+}
+
+.swimlane-total {
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px
+}
+
+.swimlane-head {
+    height: 30px;
+    margin-top: var(--border-width)
+}
+
+.swimlane-head span,.swimlane-total span,.swimlane-head a {
+    padding: 0 10px 10px;
+    margin: 5px;
+    font-size: 14px
+}
+
+.swimlane-total span {
+    font-size: 15px
+}
+
+.swimlane-body {
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+    margin-left: 20px
+}
+
+.swimlane-body-closed * {
+    height: 0!important;
+    overflow: hidden!important
+}
+
+.swimlane-body-closed {
+    height: 0;
+    padding: 0;
+    margin: 0
+}
+
+.swimlane-expander {
+    cursor: pointer
+}
+
+.swimlane-drag-dots i {
+    font-size: 22px;
+    margin: 6px
+}
+
+#issue_types_table_panel {
+    padding: 10px 0 0
+}
+
+.board-card-field {
+    display: flex;
+    padding-bottom: 2px
+}
+
+.board-card-field .numeric {
+    display: flex
+}
+
+.board-card-field-input .label {
+    height: 0px!important;
+    max-height: 0px!important;
+    min-height: 0px!important;
+    font-size: 11px!important
+}
+
+.board-card-field-input {
+    height: 15px!important;
+    width: 100%
+}
+
+.board-card-field-input img {
+    width: 11px!important;
+    height: 11px!important;
+    max-height: 11px!important;
+    min-height: 11px!important
+}
+
+.board-card-field-input svg {
+    display: none
+}
+
+.board-card-field-input span {
+    margin: 0!important
+}
+
+.board-card-field * {
+    font-size: 11px!important
+}
+
+.board-card-field-input input,.board-card-field-input textarea,.board-card-field-input .vs__dropdown-toggle,.board-card-field-input .vs__selected {
+    height: 15px!important;
+    max-height: 15px!important;
+    min-height: 15px!important;
+    font-size: 11px!important;
+    background: none!important;
+    border: none!important
+}
+
+.board-card-field-input textarea {
+    padding-top: 0!important;
+    padding-bottom: 0!important
+}
+
+.board-card-field-input .vs__dropdown-menu {
+    z-index: 200
+}
+
+.board-card-field-title {
+    white-space: nowrap
+}
+
+.new-issue-card-btn {
+    font-size: 18px;
+    font-weight: 700!important;
+    position: relative;
+    text-decoration: none;
+    border-radius: 50%;
+    border-style: solid;
+    border-width: 2px;
+    width: 18px;
+    height: 18px;
+    align-items: center;
+    display: flex!important;
+    padding-left: 2px;
+    align-self: center;
+    margin: 0;
+    align-content: end;
+    flex-wrap: wrap;
+    cursor: pointer;
+    color: var(--link-color)
+}
+
+.board-card-frame {
+    position: absolute;
+    top: 68px;
+    bottom: 0;
+    right: 0;
+    width: 450px;
+    background: var(--loading-bg-color);
+    border: none;
+    padding: 10px
+}
+
+.board-card-frame-closed {
+    width: 0px;
+    padding: 0
+}
+
+.board-card-frame div {
+    width: 100%;
+    height: 100%;
+    background: var(--panel-bg-color);
+    border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: groove
+}
+
+.board-card-frame iframe {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    position: relative;
+    background: var(--panel-bg-color);
+    border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: groove;
+    border: none
+}
+
+.board-card-frame i {
+    position: absolute;
+    right: 0;
+    z-index: 1;
+    font-size: 32px;
+    margin: 13px 23px 13px 13px;
+    cursor: pointer
+}
+
+.issue-board-card .bx-window-open,.swimlane-head .bx-window-open {
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0
+}
+
+.swimlane-head .bx-window-open {
+    padding-top: 5px
+}
+
+.issue-board-card:hover .bx-window-open,.swimlane-head:hover .bx-window-open {
+    opacity: 1
+}
+
+.selected-board-card .bx-window-open {
+    opacity: 0!important
+}
+
+.gost-issue-card {
+    border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: dashed;
+    margin-bottom: 5px;
+    height: 30px
+}
+
+.filters-row {
+    display: flex;
+    margin: 10px 15px 5px
+}
+
+.filters-row .bx {
+    font-size: 18px;
+    padding-top: 3px
+}
+
+.filters-row .bx-filter-alt {
+    padding-right: 8px
+}
+
+.filter .bx {
+    font-size: 13px;
+    padding: 3px 1px 1px;
+    opacity: 0;
+    cursor: pointer
+}
+
+.filter:hover .config-filter-btn {
+    opacity: 1
+}
+
+.filter .bx-cog {
+    margin-top: 1px
+}
+
+.config-filter-btn:hover {
+    color: green
+}
+
+.add-filter-btn:hover {
+    color: green;
+    cursor: pointer
+}
+
+.add-filter-btn {
+    margin-left: 5px
+}
+
+.filters-row .filter {
+    border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-width: 1px;
+    border-style: solid;
+    margin-left: 8px;
+    height: 25px;
+    padding: 1px 3px;
+    cursor: pointer;
+    display: flex
+}
+
+.filters-row .filter span {
+    padding: 0 5px
+}
+
+.filters-row .selected-filter {
+    background-color: var(--button-color);
+    box-shadow: var(--text-color) 0 0 1px
+}
+
+.filters-row .filter:hover {
+    box-shadow: var(--text-color) 0 0 3px
+}
+
+#notifications_table_panel[data-v-3584b80f],#notifications_card[data-v-3584b80f] {
+    margin: 1px;
+    height: calc(100vh - 68px)
+}
+
+#notifications_table_panel[data-v-3584b80f] {
+    display: flex;
+    margin-left: 2px;
+    width: calc(100vw - 403px)
+}
+
+#notifications_card[data-v-3584b80f] {
+    width: 400px;
+    margin-left: 0;
+    display: table
+}
+
+#save_notifications_btn[data-v-3584b80f],#delete_notifications_btn[data-v-3584b80f] {
+    padding: 0 20px 15px;
+    width: 50%
+}
+
+#save_notifications_btn input[data-v-3584b80f],#delete_notifications_btn input[data-v-3584b80f] {
+    width: 100%
+}
+
+#notifications_down_panel[data-v-3584b80f] {
+    display: flex
+}
+
+[theme=dark_3d][data-v-51efcaf3] {
+    --body-bg-color: rgb(51, 61, 69);
+    --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, .5);
+    --text-color: rgb(190, 190, 190);
+    --border-color: rgba(128, 128, 128, 0);
+    --table-row-color: rgb(40, 45, 50);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+    --input-bg-color: rgb(19, 17, 39);
+    --input-bg-color-disabled: rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #333;
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(32, 36, 40, .3);
+    --loading-bar-color: rgba(20, 22, 24, .5);
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=light][data-v-51efcaf3] {
+    --body-bg-color: rgb(231,237,255);
+    --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, .5);
+    --text-color: #114066;
+    --border-color: rgb(108, 146, 211);
+    --table-row-color: #f7f9fa;
+    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-border-color: rgb(51, 51, 51);
+    --input-bg-color: rgb(231,237,255);
+    --input-bg-color-disabled: rgb(240, 240, 240);
+    --input-hover-bg-color: #f7f9fa;
+    --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
+    --workflow-marker-color: rgb(80, 80, 100);
+    --workflow-g-hover-color: rgb(100, 120, 190);
+    --workflow-g-selected-color: rgb(80, 90, 230);
+    --workflow-g-fill-color: rgb(235, 246, 255);
+    --workflow-g-hover-fill-color: rgb(215, 226, 255);
+    --link-color: rgb(38, 66, 205);
+    --issue-card-descr-color: rgb(28, 46, 57);
+    --button-color: rgb(235, 246, 255);
+    --on-button-icon-color: rgb(80, 90, 255);
+    --off-button-icon-color: rgb(140, 140, 140);
+    --issues-search-idx-0-color: green;
+    --issues-search-idx-1-color: rgb(192, 179, 2);
+    --issues-search-idx-2-color: blue;
+    --issues-search-idx-3-color: rgb(221, 145, 2);
+    --issues-search-idx-4-color: rgb(107, 98, 66);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(250, 250, 255, .3);
+    --loading-bar-color: rgba(201,217,245, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: solid;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #F6F6F6;
+    --code-scroll-thumb-bg-color: #ababab;
+    --code-scroll-track-bg-color: #d7e1e9;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E11E5A;
+    --code-fragment-border-color: #DADADA;
+    --code-bg-color: #F6F6F6;
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, .7);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark][data-v-51efcaf3] {
+    --body-bg-color: rgb(23, 33, 43);
+    --panel-bg-color: #242F3D;
+    --group-bg-color: rgba(30, 40, 50, .5);
+    --text-color: rgba(228, 230, 240);
+    --border-color: rgba(71, 81, 89, .6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
+    --table-row-border-color: black;
+    --input-bg-color: rgb(30 34 46);
+    --input-bg-color-disabled: rgb(35, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(108, 146, 211);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #4a5867;
+    --on-button-icon-color: rgb(198, 216, 227);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(30, 170, 30);
+    --issues-search-idx-1-color: rgb(207, 207, 22);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(187, 174, 130);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(30, 34, 37, .3);
+    --loading-bar-color: rgba(20, 24, 30, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: inset;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+.table_down_panel[data-v-51efcaf3] {
+    display: flex
+}
+
+.table_panel[data-v-51efcaf3] {
+    display: flex;
+    width: 25%;
+    height: calc(100vh - 68px);
+    background: transparent
+}
+
+.table_card[data-v-51efcaf3] {
+    height: calc(100vh - 88px);
+    padding: 10px 20px 20px;
+    width: 75%;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1
+}
+
+.table_card>*[data-v-51efcaf3]:not(:last-child) {
+    margin-bottom: 20px
+}
+
+.table_card_footer[data-v-51efcaf3] {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px
+}
+
+.table_card_footer_btn[data-v-51efcaf3] {
+    width: 100%;
+    display: flex
+}
+
+.table_card_fields[data-v-51efcaf3] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto
+}
+
+.table_card_fields[data-v-51efcaf3]::-webkit-scrollbar {
+    display: none
+}
+
+.table_card_fields .input[data-v-51efcaf3] {
+    margin-bottom: 15px
+}
+
+.table_card_buttons[data-v-51efcaf3] {
+    display: flex;
+    flex-direction: column
+}
+
+.table_card_buttons .btn[data-v-51efcaf3] {
+    height: 30px
+}
+
+.table_card_buttons>*[data-v-51efcaf3]:not(:last-child) {
+    margin-bottom: 15px
+}
+
+[theme=dark_3d][data-v-61750ab6] {
+    --body-bg-color: rgb(51, 61, 69);
+    --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, .5);
+    --text-color: rgb(190, 190, 190);
+    --border-color: rgba(128, 128, 128, 0);
+    --table-row-color: rgb(40, 45, 50);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+    --input-bg-color: rgb(19, 17, 39);
+    --input-bg-color-disabled: rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #333;
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(32, 36, 40, .3);
+    --loading-bar-color: rgba(20, 22, 24, .5);
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=light][data-v-61750ab6] {
+    --body-bg-color: rgb(231,237,255);
+    --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, .5);
+    --text-color: #114066;
+    --border-color: rgb(108, 146, 211);
+    --table-row-color: #f7f9fa;
+    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-border-color: rgb(51, 51, 51);
+    --input-bg-color: rgb(231,237,255);
+    --input-bg-color-disabled: rgb(240, 240, 240);
+    --input-hover-bg-color: #f7f9fa;
+    --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
+    --workflow-marker-color: rgb(80, 80, 100);
+    --workflow-g-hover-color: rgb(100, 120, 190);
+    --workflow-g-selected-color: rgb(80, 90, 230);
+    --workflow-g-fill-color: rgb(235, 246, 255);
+    --workflow-g-hover-fill-color: rgb(215, 226, 255);
+    --link-color: rgb(38, 66, 205);
+    --issue-card-descr-color: rgb(28, 46, 57);
+    --button-color: rgb(235, 246, 255);
+    --on-button-icon-color: rgb(80, 90, 255);
+    --off-button-icon-color: rgb(140, 140, 140);
+    --issues-search-idx-0-color: green;
+    --issues-search-idx-1-color: rgb(192, 179, 2);
+    --issues-search-idx-2-color: blue;
+    --issues-search-idx-3-color: rgb(221, 145, 2);
+    --issues-search-idx-4-color: rgb(107, 98, 66);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(250, 250, 255, .3);
+    --loading-bar-color: rgba(201,217,245, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: solid;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #F6F6F6;
+    --code-scroll-thumb-bg-color: #ababab;
+    --code-scroll-track-bg-color: #d7e1e9;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E11E5A;
+    --code-fragment-border-color: #DADADA;
+    --code-bg-color: #F6F6F6;
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, .7);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark][data-v-61750ab6] {
+    --body-bg-color: rgb(23, 33, 43);
+    --panel-bg-color: #242F3D;
+    --group-bg-color: rgba(30, 40, 50, .5);
+    --text-color: rgba(228, 230, 240);
+    --border-color: rgba(71, 81, 89, .6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
+    --table-row-border-color: black;
+    --input-bg-color: rgb(30 34 46);
+    --input-bg-color-disabled: rgb(35, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(108, 146, 211);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #4a5867;
+    --on-button-icon-color: rgb(198, 216, 227);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(30, 170, 30);
+    --issues-search-idx-1-color: rgb(207, 207, 22);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(187, 174, 130);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(30, 34, 37, .3);
+    --loading-bar-color: rgba(20, 24, 30, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: inset;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+.table_down_panel[data-v-61750ab6] {
+    display: flex
+}
+
+.table_panel[data-v-61750ab6] {
+    display: flex;
+    width: 75%;
+    height: calc(100vh - 68px);
+    background: transparent
+}
+
+.table_card[data-v-61750ab6] {
+    height: calc(100vh - 88px);
+    padding: 10px 20px 20px;
+    width: 25%;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1
+}
+
+.table_card>*[data-v-61750ab6]:not(:last-child) {
+    margin-bottom: 20px
+}
+
+.table_card_footer[data-v-61750ab6] {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px
+}
+
+.table_card_footer_btn[data-v-61750ab6] {
+    width: 100%;
+    display: flex
+}
+
+.table_card_fields[data-v-61750ab6] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto
+}
+
+.table_card_fields[data-v-61750ab6]::-webkit-scrollbar {
+    display: none
+}
+
+.table_card_fields .input[data-v-61750ab6] {
+    margin-bottom: 15px
+}
+
+.table_card_buttons[data-v-61750ab6] {
+    display: flex;
+    flex-direction: column
+}
+
+.table_card_buttons .btn[data-v-61750ab6] {
+    height: 30px
+}
+
+.table_card_buttons>*[data-v-61750ab6]:not(:last-child) {
+    margin-bottom: 15px
+}
+
+.favourites-panel {
+    font-size: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 68px);
+    background: transparent!important
+}
+
+.favourites-container {
+    padding: 0 20px 20px
+}
+
+.favourites-container span {
+    padding-bottom: 10px;
+    padding-top: 10px;
+    font-size: 15px;
+    display: flex;
+    font-weight: 500
+}
+
+.favourites-container div {
+    margin-bottom: 10px
+}
+
+.favourites-container i {
+    width: 20px;
+    cursor: pointer
+}
+
+[theme=dark_3d][data-v-689f67c8] {
+    --body-bg-color: rgb(51, 61, 69);
+    --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, .5);
+    --text-color: rgb(190, 190, 190);
+    --border-color: rgba(128, 128, 128, 0);
+    --table-row-color: rgb(40, 45, 50);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+    --input-bg-color: rgb(19, 17, 39);
+    --input-bg-color-disabled: rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #333;
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(32, 36, 40, .3);
+    --loading-bar-color: rgba(20, 22, 24, .5);
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=light][data-v-689f67c8] {
+    --body-bg-color: rgb(231,237,255);
+    --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, .5);
+    --text-color: #114066;
+    --border-color: rgb(108, 146, 211);
+    --table-row-color: #f7f9fa;
+    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-border-color: rgb(51, 51, 51);
+    --input-bg-color: rgb(231,237,255);
+    --input-bg-color-disabled: rgb(240, 240, 240);
+    --input-hover-bg-color: #f7f9fa;
+    --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
+    --workflow-marker-color: rgb(80, 80, 100);
+    --workflow-g-hover-color: rgb(100, 120, 190);
+    --workflow-g-selected-color: rgb(80, 90, 230);
+    --workflow-g-fill-color: rgb(235, 246, 255);
+    --workflow-g-hover-fill-color: rgb(215, 226, 255);
+    --link-color: rgb(38, 66, 205);
+    --issue-card-descr-color: rgb(28, 46, 57);
+    --button-color: rgb(235, 246, 255);
+    --on-button-icon-color: rgb(80, 90, 255);
+    --off-button-icon-color: rgb(140, 140, 140);
+    --issues-search-idx-0-color: green;
+    --issues-search-idx-1-color: rgb(192, 179, 2);
+    --issues-search-idx-2-color: blue;
+    --issues-search-idx-3-color: rgb(221, 145, 2);
+    --issues-search-idx-4-color: rgb(107, 98, 66);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(250, 250, 255, .3);
+    --loading-bar-color: rgba(201,217,245, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: solid;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #F6F6F6;
+    --code-scroll-thumb-bg-color: #ababab;
+    --code-scroll-track-bg-color: #d7e1e9;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E11E5A;
+    --code-fragment-border-color: #DADADA;
+    --code-bg-color: #F6F6F6;
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, .7);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark][data-v-689f67c8] {
+    --body-bg-color: rgb(23, 33, 43);
+    --panel-bg-color: #242F3D;
+    --group-bg-color: rgba(30, 40, 50, .5);
+    --text-color: rgba(228, 230, 240);
+    --border-color: rgba(71, 81, 89, .6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
+    --table-row-border-color: black;
+    --input-bg-color: rgb(30 34 46);
+    --input-bg-color-disabled: rgb(35, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(108, 146, 211);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #4a5867;
+    --on-button-icon-color: rgb(198, 216, 227);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(30, 170, 30);
+    --issues-search-idx-1-color: rgb(207, 207, 22);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(187, 174, 130);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(30, 34, 37, .3);
+    --loading-bar-color: rgba(20, 24, 30, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: inset;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+.table_down_panel[data-v-689f67c8] {
+    display: flex
+}
+
+.table_panel[data-v-689f67c8] {
+    display: flex;
+    width: 25%;
+    height: calc(100vh - 68px);
+    background: transparent
+}
+
+.table_card[data-v-689f67c8] {
+    height: calc(100vh - 88px);
+    padding: 10px 20px 20px;
+    width: 75%;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1
+}
+
+.table_card>*[data-v-689f67c8]:not(:last-child) {
+    margin-bottom: 20px
+}
+
+.table_card_footer[data-v-689f67c8] {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px
+}
+
+.table_card_footer_btn[data-v-689f67c8] {
+    width: 100%;
+    display: flex
+}
+
+.table_card_fields[data-v-689f67c8] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto
+}
+
+.table_card_fields[data-v-689f67c8]::-webkit-scrollbar {
+    display: none
+}
+
+.table_card_fields .input[data-v-689f67c8] {
+    margin-bottom: 15px
+}
+
+.table_card_buttons[data-v-689f67c8] {
+    display: flex;
+    flex-direction: column
+}
+
+.table_card_buttons .btn[data-v-689f67c8] {
+    height: 30px
+}
+
+.table_card_buttons>*[data-v-689f67c8]:not(:last-child) {
+    margin-bottom: 15px
+}
+
+.register-panel {
+    padding: 16px 24px 24px;
+    height: 212px;
+    width: 342px;
+    position: fixed;
+    left: 50vw;
+    top: 50vh;
+    transform: translate(-50%,-50%);
+    background-color: var(--table-row-color);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px #0006,0 1px 2px #a8bac51a inset;
+    background: rgba(0,0,0,.6)!important;
+    border-radius: 4px!important;
+    border-style: outset!important;
+    border-color: #47515980!important
+}
+
+.mobile-view .register-panel {
+    width: 250px
+}
+
+.register-panel>*:not(:last-child) {
+    margin-bottom: 12px
+}
+
+.register-panel .btn {
+    margin-bottom: 0
+}
+
+.register-panel .btn Input {
+    width: 100%;
+    margin-top: 10px;
+    height: 30px;
+    background: rgba(30,30,33,.5);
+    border-color: #a8bac5cc
+}
+
+.register-panel .btn Input:hover {
+    background: rgba(38,38,48,.5)
+}
+
+.register-panel .btn Input:active {
+    border-style: inset!important;
+    border-color: #586a7580
+}
+
+.register-err-label {
+    color: #e62d2d;
+    height: 20px;
+    width: 100%;
+    display: block;
+    text-align: center
+}
+
+.register-corner-bg-img {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100vw
+}
+
+.register-container {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    background-color: #1e1e25!important;
+    padding: 30px
+}
+
+.error-field input {
+    border-color: var(--err-color)
+}
+
+.workspace-register-process {
+    text-align: center
+}
+
+.panel-register-process {
+    justify-content: center
+}
+
+.menu-logo {
+    width: 32px;
+    margin: 0 10px
+}
+
+.sidebar {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 60px;
+    z-index: 100;
+    min-height: 600px;
+    transition-property: all!important;
+    transition-duration: .2s!important;
+    z-index: 10;
+    margin: 1px
+}
+
+.mobile-sidebar {
+    height: 60px;
+    min-height: 60px;
+    width: 100vw
+}
+
+.sidebar.open {
+    width: 210px
+}
+
+.sidebar .logo-details {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    position: absolute;
+    left: 14px
+}
+
+.sidebar .logo-details i {
+    font-size: 32px;
+    padding-right: 5px;
+    padding-top: 8px;
+    cursor: pointer
+}
+
+.sidebar.open .logo-details i {
+    animation: rotateAnimation 3s linear infinite
+}
+
+.sidebar .logo-details .logo_name {
+    font-size: 35px;
+    font-weight: 400;
+    opacity: 0;
+    transition: all .2s ease
+}
+
+.sidebar.open .logo-details .logo_name {
+    opacity: 1
+}
+
+.sidebar .main-menu-list {
+    height: calc(100% - 75px);
+    position: absolute;
+    top: 75px;
+    left: 0;
+    width: 100%
+}
+
+.mobile-sidebar .main-menu-list {
+    display: flex;
+    top: 6px;
+    left: 40px
+}
+
+.main-menu-element {
+    width: 100%;
+    height: 45px;
+    left: 0;
+    top: 0
+}
+
+.mobile-sidebar .main-menu-element {
+    width: auto
+}
+
+.main-menu-element-bg {
+    position: relative;
+    width: calc(100% - 20px);
+    height: 45px;
+    opacity: 0;
+    left: 10px
+}
+
+.main-menu-link {
+    text-decoration: none;
+    pointer-events: none;
+    z-index: 2;
+    position: relative;
+    left: 0;
+    top: -32.5px;
+    display: flex
+}
+
+.main-menu-element a {
+    text-decoration: none
+}
+
+.main-menu-element i {
+    position: relative;
+    width: 40px;
+    font-size: 20px;
+    left: 20px
+}
+
+.main-menu-element span {
+    position: relative;
+    left: 0;
+    font-size: 16px;
+    padding-left: 10px;
+    opacity: 0;
+    transition-property: all;
+    transition-duration: .2s
+}
+
+.sidebar.open .main-menu-element span {
+    opacity: 1
+}
+
+.sidebar.open .main-menu-element-2 span {
+    left: 10px
+}
+
+.sidebar.open .main-menu-element-2 i,.sidebar.open .main-menu-element-2 span {
+    padding-left: 10px
+}
+
+.main-menu-element-bg-select,.main-menu-element-bg-hover {
+    width: 40px;
+    height: 45px;
+    position: absolute;
+    border-radius: 12px
+}
+
+.sidebar.open .main-menu-element-bg-select,.sidebar.open .main-menu-element-bg-hover {
+    width: 190px
+}
+
+.main-menu-element-bg-select {
+    background-color: var(--table-row-color-selected);
+    transition: all .2s ease
+}
+
+.main-menu-element-bg-hover {
+    background: var(--table-row-color);
+    transition: all .05s ease
+}
+
+@keyframes rotateAnimation {
+    0% {
+        transform: perspective(500px) rotate3d(1,1,0,0)
+    }
+
+    25% {
+        transform: perspective(500px) rotate3d(1,1,0,90deg)
+    }
+
+    50% {
+        transform: perspective(500px) rotate3d(1,-1,0,180deg)
+    }
+
+    75% {
+        transform: perspective(500px) rotate3d(-1,-1,0,90deg)
+    }
+
+    to {
+        transform: perspective(500px) rotate3d(-1,1,0,360deg)
+    }
+}
+
+.profile {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 10px 25px;
+    z-index: 1;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    color: #fff;
+    width: auto
+}
+
+.profile-username {
+    padding: 5px;
+    margin: 0 5px
+}
+
+.new-issue-btn {
+    display: flex!important;
+    align-content: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    width: 32px!important;
+    height: 32px!important;
+    font-size: 30px;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--on-button-icon-color)
+}
+
+.new-issue-btn g {
+    fill: var(--on-button-icon-color)
+}
+
+.new-issue-btn svg {
+    height: fit-content
+}
+
+.new-issue-btn {
+    padding: 4px
+}
+
+.profile img {
+    height: 30px;
+    width: 30px;
+    object-fit: cover;
+    border-radius: var(--border-radius);
+    float: right;
+    cursor: pointer;
+    border-style: outset;
+    border-width: 1px
+}
+
+.profile-top {
+    display: contents
+}
+
+.profile-top div {
+    float: right;
+    font-weight: 600;
+    font-size: 14px
+}
+
+#profile-menu {
+    position: absolute;
+    right: 0;
+    width: 250px;
+    top: 70px;
+    margin: 0;
+    padding: 20px;
+    background: var(--table-row-color);
+    display: flex;
+    flex-direction: column
+}
+
+#profile-menu>*:not(:last-child) {
+    margin-bottom: 10px
+}
+
+#profile-menu-exit {
+    width: 100%;
+    margin-bottom: 0!important
+}
+
+#profile-menu-exit div {
+    border-radius: var(--border-radius);
+    border-color: var(--border-color);
+    border-style: outset;
+    text-align: center;
+    cursor: pointer;
+    height: 30px;
+    padding: 5px;
+    border-width: var(--border-width);
+    display: flex;
+    align-items: center;
+    background-color: var(--button-color)
+}
+
+#profile-menu-exit i {
+    font-size: 20px
+}
+
+#alert-container {
+    position: absolute;
+    right: 0;
+    bottom: 100px;
+    width: 200px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: end
+}
+
+.alert {
+    position: fixed;
+    height: 20px;
+    width: 25px;
+    margin-right: -30px;
+    margin-top: 10px;
+    border-top-right-radius: 0!important;
+    border-bottom-right-radius: 0!important;
+    transition: all .2s!important
+}
+
+.alert_error {
+    width: 200px;
+    margin-right: -110%;
+    cursor: pointer
+}
+
+.alert_show {
+    margin-right: 0
+}
+
+.alert img {
+    width: 20px;
+    height: 20px
+}
+
+.alert_loading img {
+    animation: rotateAnimation 3s linear infinite
+}
+
+.alert span {
+    top: -6px;
+    left: 6px;
+    position: relative
+}
+
+@keyframes rotateAnimation {
+    0% {
+        transform: rotate3d(1,1,0,0)
+    }
+
+    25% {
+        transform: rotate3d(1,1,0,90deg)
+    }
+
+    50% {
+        transform: rotate3d(1,-1,0,180deg)
+    }
+
+    75% {
+        transform: rotate3d(-1,-1,0,90deg)
+    }
+
+    to {
+        transform: rotate3d(-1,1,0,360deg)
+    }
+}
+
+body {
+    transition: all .5s ease;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    background-color: var(--body-bg-color)
+}
+
+.table_card_buttons .btn .btn_input {
+    width: 100%!important
+}
+
+html {
+    font-size: 14px
+}
+
+* {
+    color: var(--text-color);
+    font-size: 14px;
+    font-family: Inter,system-ui,Roboto,sans-serif;
+    box-sizing: border-box;
+    transition: all .2s ease;
+    opacity: 1;
+    font-weight: 100
+}
+
+[draggable] {
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -khtml-user-drag: element;
+    -webkit-user-drag: element;
+    cursor: grab
+}
+
+[draggable]:active {
+    cursor: grabbing
+}
+
+.link {
+    white-space: nowrap
+}
+
+#router-view-container {
+    position: absolute;
+    background-color: var(--body-bg-color);
+    top: 0;
+    left: 60px;
+    width: calc(100vw - 60px);
+    height: 100vh
+}
+
+.mobile-view {
+    left: 0!important;
+    width: 100vw!important;
+    height: calc(100vh - 60px)!important;
+    top: 60px!important
+}
+
+.iframe-view {
+    height: 100vh!important;
+    top: 0!important
+}
+
+.no-menu-container {
+    left: 0!important
+}
+
+.panel {
+    background: var(--panel-bg-color);
+    border-radius: var(--panel-border-radius);
+    margin: 0;
+    border-style: ridge;
+    border-width: 1px;
+    border-color: var(--body-bg-color)
+}
+
+.hidden {
+    opacity: 0
+}
+
+input {
+    border-color: var(--border-color);
+    border-style: var(--border-style);
+    border-width: var(--border-width)
+}
+
+.panel_fade-enter-active,.panel_fade-leave-active {
+    transition: opacity 4.1s
+}
+
+.element_fade-enter-active,.element_fade-leave-active {
+    transition: opacity .1s
+}
+
+.loading_fade-enter-active {
+    transition: opacity 4s ease
+}
+
+.loading_fade-leave-active {
+    transition: opacity .5s
+}
+
+.element_fade-enter-from,.element_fade-leave-to,.panel_fade-enter-from,.panel_fade-leave-to,.loading_fade-enter-from,.loading_fade-leave-to {
+    opacity: 0
+}
+
+.ffade-enter-active,.ffade-leave-active {
+    transition: opacity .15s ease
+}
+
+.ffade-enter-from,.ffade-leave-to {
+    opacity: .9
+}
+
+.ffade-enter-to,.ffade-leave-from {
+    opacity: 1
+}
+
+.topbar {
+    z-index: 0
+}
+
+.loading-background {
+    position: absolute;
+    top: 2px!important;
+    left: 2px!important;
+    width: 100%!important;
+    height: 100vh!important;
+    background: var(--loading-bg-color);
+    overflow: hidden!important;
+    border-radius: var(--panel-border-radius);
+    z-index: 10!important
+}
+
+.loading-bar {
+    position: absolute!important;
+    width: 100%!important;
+    height: 100vh!important;
+    top: -100vh;
+    z-index: 11!important;
+    background: linear-gradient(rgba(200,200,200,0),var(--loading-bar-color),rgba(200,200,200,0))!important;
+    animation: background 1.5s infinite alternate ease-in-out!important
+}
+
+@keyframes background {
+    to {
+        top: 90vh
+    }
+}
+
+.ktable {
+    width: 100%;
+    margin-left: 20px;
+    margin-right: 20px
+}
+
+.slide-enter-active,.slide-leave-active {
+    transition: all .75s ease-out
+}
+
+.slide-enter-to {
+    position: absolute;
+    right: 0
+}
+
+.slide-enter-from {
+    position: absolute;
+    right: -100%
+}
+
+.slide-leave-to {
+    position: absolute;
+    left: -100%
+}
+
+.slide-leave-from {
+    position: absolute;
+    left: 0
+}
+
+.modal {
+    height: 100%
+}
+
+.btn-container {
+    display: flex;
+    padding: 10px 20px;
+    bottom: 0;
+    position: fixed;
+    width: -webkit-fill-available
+}
+
+.btn-container .btn {
+    width: 50%
+}
+
+.btn-container .btn input {
+    width: 100%
+}
+
+.resolved-issue {
+    text-decoration: line-through
+}
+
+::-webkit-scrollbar {
+    background-color: none;
+    width: 12px;
+    height: 12px;
+    opacity: 0
+}
+
+::-webkit-scrollbar-track {
+    background: none;
+    border-radius: 10px
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: var(--scroll-color);
+    -webkit-box-shadow: inset 0 0 5px var(--scroll-shadow-color)
+}
+
+::-webkit-scrollbar-corner {
+    background: rgba(0,0,0,0)
+}
+
+.change-password .btn_input {
+    width: 100%!important
+}
+
+.top-menu-icon-btn {
+    height: 30px;
+    width: 30px;
+    font-size: 20px;
+    border-radius: var(--border-radius);
+    margin-left: 10px;
+    color: var(--text-color);
+    background-color: var(--button-color);
+    border-width: 1px;
+    border-color: var(--border-color);
+    border-style: solid;
+    border-style: outset;
+    cursor: pointer;
+    text-align: center;
+    padding-top: 4px
+}
+
+.login-panel .btn_input {
+    margin-top: 10px;
+    width: 100%
+}
+
+.issue-top-button {
+    height: 38px;
+    width: 38px;
+    padding: 2px;
+    border-radius: var(--border-radius);
+    display: flex!important;
+    font-size: 35px;
+    color: var(--on-button-icon-color);
+    cursor: pointer;
+    text-decoration: none;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center
+}
+
+.issue-top-button-inactive {
+    color: var(--off-button-icon-color)!important
+}
+
+.issue-top-button:hover {
+    background: var(--icon-hover-bg-color)
+}
+
+.input .label {
+    margin-bottom: 4px;
+    opacity: .8
+}
+
+.error-field input {
+    border-color: var(--err-color)
+}
+
+.error-field .vs__dropdown-toggle {
+    border-color: var(--err-color)!important
+}
+
+.error-field .v-select input {
+    border-color: transparent
+}
+
+:root {
+    --vs-colors--lightest: rgba(60, 60, 60, .26);
+    --vs-colors--light: rgba(60, 60, 60, .5);
+    --vs-colors--dark: #333;
+    --vs-colors--darkest: rgba(0, 0, 0, .15);
+    --vs-search-input-color: inherit;
+    --vs-search-input-placeholder-color: inherit;
+    --vs-font-size: 1rem;
+    --vs-line-height: 1.4;
+    --vs-state-disabled-bg: rgb(248, 248, 248);
+    --vs-state-disabled-color: var(--vs-colors--light);
+    --vs-state-disabled-controls-color: var(--vs-colors--light);
+    --vs-state-disabled-cursor: not-allowed;
+    --vs-border-color: var(--vs-colors--lightest);
+    --vs-border-width: 1px;
+    --vs-border-style: solid;
+    --vs-border-radius: 4px;
+    --vs-actions-padding: 4px 6px 0 3px;
+    --vs-controls-color: var(--vs-colors--light);
+    --vs-controls-size: 1;
+    --vs-controls--deselect-text-shadow: 0 1px 0 #fff;
+    --vs-selected-bg: #f0f0f0;
+    --vs-selected-color: var(--vs-colors--dark);
+    --vs-selected-border-color: var(--vs-border-color);
+    --vs-selected-border-style: var(--vs-border-style);
+    --vs-selected-border-width: var(--vs-border-width);
+    --vs-dropdown-bg: #fff;
+    --vs-dropdown-color: inherit;
+    --vs-dropdown-z-index: 1000;
+    --vs-dropdown-min-width: 160px;
+    --vs-dropdown-max-height: 350px;
+    --vs-dropdown-box-shadow: 0px 3px 6px 0px var(--vs-colors--darkest);
+    --vs-dropdown-option-bg: #000;
+    --vs-dropdown-option-color: var(--vs-dropdown-color);
+    --vs-dropdown-option-padding: 3px 20px;
+    --vs-dropdown-option--active-bg: #5897fb;
+    --vs-dropdown-option--active-color: #fff;
+    --vs-dropdown-option--deselect-bg: #fb5858;
+    --vs-dropdown-option--deselect-color: #fff;
+    --vs-transition-timing-function: cubic-bezier(1, -.115, .975, .855);
+    --vs-transition-duration: .15s
+}
+
+.v-select {
+    position: relative;
+    font-family: inherit
+}
+
+.v-select,.v-select * {
+    box-sizing: border-box
+}
+
+:root {
+    --vs-transition-timing-function: cubic-bezier(1, .5, .8, 1);
+    --vs-transition-duration: .15s
+}
+
+@-webkit-keyframes vSelectSpinner {
+    0% {
+        transform: rotate(0)
+    }
+
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes vSelectSpinner {
+    0% {
+        transform: rotate(0)
+    }
+
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+.vs__fade-enter-active,.vs__fade-leave-active {
+    pointer-events: none;
+    transition: opacity var(--vs-transition-duration) var(--vs-transition-timing-function)
+}
+
+.vs__fade-enter,.vs__fade-leave-to {
+    opacity: 0
+}
+
+:root {
+    --vs-disabled-bg: var(--vs-state-disabled-bg);
+    --vs-disabled-color: var(--vs-state-disabled-color);
+    --vs-disabled-cursor: var(--vs-state-disabled-cursor)
+}
+
+.vs--disabled .vs__dropdown-toggle,.vs--disabled .vs__clear,.vs--disabled .vs__search,.vs--disabled .vs__selected,.vs--disabled .vs__open-indicator {
+    cursor: var(--vs-disabled-cursor);
+    background-color: var(--vs-disabled-bg)
+}
+
+.v-select[dir=rtl] .vs__actions {
+    padding: 0 3px 0 6px
+}
+
+.v-select[dir=rtl] .vs__clear {
+    margin-left: 6px;
+    margin-right: 0
+}
+
+.v-select[dir=rtl] .vs__deselect {
+    margin-left: 0;
+    margin-right: 2px
+}
+
+.v-select[dir=rtl] .vs__dropdown-menu {
+    text-align: right
+}
+
+.vs__dropdown-toggle {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    display: flex;
+    padding: 0 0 4px;
+    background: none;
+    border: var(--vs-border-width) var(--vs-border-style) var(--vs-border-color);
+    border-radius: var(--vs-border-radius);
+    white-space: normal
+}
+
+.vs__selected-options {
+    display: flex;
+    flex-basis: 100%;
+    flex-grow: 1;
+    flex-wrap: wrap;
+    padding: 0 2px;
+    position: relative
+}
+
+.vs__actions {
+    display: flex;
+    align-items: center;
+    padding: var(--vs-actions-padding)
+}
+
+.vs--searchable .vs__dropdown-toggle {
+    cursor: text
+}
+
+.vs--unsearchable .vs__dropdown-toggle {
+    cursor: pointer
+}
+
+.vs--open .vs__dropdown-toggle {
+    border-bottom-color: transparent;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0
+}
+
+.vs__open-indicator {
+    fill: var(--vs-controls-color);
+    transform: scale(var(--vs-controls-size));
+    transition: transform var(--vs-transition-duration) var(--vs-transition-timing-function);
+    transition-timing-function: var(--vs-transition-timing-function)
+}
+
+.vs--open .vs__open-indicator {
+    transform: rotate(180deg) scale(var(--vs-controls-size))
+}
+
+.vs--loading .vs__open-indicator {
+    opacity: 0
+}
+
+.vs__clear {
+    fill: var(--vs-controls-color);
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+    cursor: pointer;
+    margin-right: 8px
+}
+
+.vs__dropdown-menu {
+    display: block;
+    box-sizing: border-box;
+    position: absolute;
+    top: calc(100% - var(--vs-border-width));
+    left: 0;
+    z-index: var(--vs-dropdown-z-index);
+    padding: 5px 0;
+    margin: 0;
+    width: 100%;
+    max-height: var(--vs-dropdown-max-height);
+    min-width: var(--vs-dropdown-min-width);
+    overflow-y: auto;
+    box-shadow: var(--vs-dropdown-box-shadow);
+    border: var(--vs-border-width) var(--vs-border-style) var(--vs-border-color);
+    border-top-style: none;
+    border-radius: 0 0 var(--vs-border-radius) var(--vs-border-radius);
+    text-align: left;
+    list-style: none;
+    background: var(--vs-dropdown-bg);
+    color: var(--vs-dropdown-color)
+}
+
+.vs__no-options {
+    text-align: center
+}
+
+.vs__dropdown-option {
+    line-height: 1.42857143;
+    display: block;
+    padding: var(--vs-dropdown-option-padding);
+    clear: both;
+    color: var(--vs-dropdown-option-color);
+    white-space: nowrap;
+    cursor: pointer
+}
+
+.vs__dropdown-option--highlight {
+    background: var(--vs-dropdown-option--active-bg);
+    color: var(--vs-dropdown-option--active-color)
+}
+
+.vs__dropdown-option--deselect {
+    background: var(--vs-dropdown-option--deselect-bg);
+    color: var(--vs-dropdown-option--deselect-color)
+}
+
+.vs__dropdown-option--disabled {
+    background: var(--vs-state-disabled-bg);
+    color: var(--vs-state-disabled-color);
+    cursor: var(--vs-state-disabled-cursor)
+}
+
+.vs__selected {
+    display: flex;
+    align-items: center;
+    background-color: var(--vs-selected-bg);
+    border: var(--vs-selected-border-width) var(--vs-selected-border-style) var(--vs-selected-border-color);
+    border-radius: var(--vs-border-radius);
+    color: var(--vs-selected-color);
+    line-height: var(--vs-line-height);
+    margin: 4px 2px 0;
+    padding: 0 .25em;
+    z-index: 0
+}
+
+.vs__deselect {
+    display: inline-flex;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin-left: 4px;
+    padding: 0;
+    border: 0;
+    cursor: pointer;
+    background: none;
+    fill: var(--vs-controls-color);
+    text-shadow: var(--vs-controls--deselect-text-shadow)
+}
+
+.vs--single .vs__selected {
+    background-color: transparent;
+    border-color: transparent
+}
+
+.vs--single.vs--open .vs__selected,.vs--single.vs--loading .vs__selected {
+    position: absolute;
+    opacity: .4
+}
+
+.vs--single.vs--searching .vs__selected {
+    display: none
+}
+
+.vs__search::-webkit-search-cancel-button {
+    display: none
+}
+
+.vs__search::-webkit-search-decoration,.vs__search::-webkit-search-results-button,.vs__search::-webkit-search-results-decoration,.vs__search::-ms-clear {
+    display: none
+}
+
+.vs__search,.vs__search:focus {
+    color: var(--vs-search-input-color);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    line-height: var(--vs-line-height);
+    font-size: var(--vs-font-size);
+    border: 1px solid transparent;
+    border-left: none;
+    outline: none;
+    margin: 4px 0 0;
+    padding: 0 7px;
+    background: none;
+    box-shadow: none;
+    width: 0;
+    max-width: 100%;
+    flex-grow: 1;
+    z-index: 1
+}
+
+.vs__search::-moz-placeholder {
+    color: var(--vs-search-input-placeholder-color)
+}
+
+.vs__search::placeholder {
+    color: var(--vs-search-input-placeholder-color)
+}
+
+.vs--unsearchable .vs__search {
+    opacity: 1
+}
+
+.vs--unsearchable:not(.vs--disabled) .vs__search {
+    cursor: pointer
+}
+
+.vs--single.vs--searching:not(.vs--open):not(.vs--loading) .vs__search {
+    opacity: .2
+}
+
+.vs__spinner {
+    align-self: center;
+    opacity: 0;
+    font-size: 5px;
+    text-indent: -9999em;
+    overflow: hidden;
+    border-top: .9em solid rgba(100,100,100,.1);
+    border-right: .9em solid rgba(100,100,100,.1);
+    border-bottom: .9em solid rgba(100,100,100,.1);
+    border-left: .9em solid rgba(60,60,60,.45);
+    transform: translateZ(0) scale(var(--vs-controls--spinner-size, var(--vs-controls-size)));
+    -webkit-animation: vSelectSpinner 1.1s infinite linear;
+    animation: vSelectSpinner 1.1s infinite linear;
+    transition: opacity .1s
+}
+
+.vs__spinner,.vs__spinner:after {
+    border-radius: 50%;
+    width: 5em;
+    height: 5em;
+    transform: scale(var(--vs-controls--spinner-size, var(--vs-controls-size)))
+}
+
+.vs--loading .vs__spinner {
+    opacity: 1
+}
+
+.numeric .numeric-input {
+    width: 100%;
+    height: 30px;
+    color: var(--text-color);
+    padding: 0 10px
+}
+
+.numeric-input {
+    font-size: 14px;
+    font-weight: 400;
+    border-radius: var(--border-radius);
+    transition: all .5s ease;
+    background: var(--input-bg-color);
+    width: 100%
+}
+
+.numeric-input:disabled {
+    background: var(--disabled-bg-color);
+    color: var(--disabled-text-color)
+}
+
+input[type=number] {
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+    appearance: textfield
+}
+
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none
+}
+
+.text .text-input[data-v-261ca8d4] {
+    width: 100%;
+    height: 60px;
+    min-height: 60px;
+    color: var(--text-color);
+    padding: 4px 10px;
+    resize: none
+}
+
+.text-input[data-v-261ca8d4] {
+    width: 100%;
+    font-size: 14px;
+    font-weight: 400;
+    background: var(--input-bg-color);
+    border-color: var(--border-color);
+    border-style: var(--border-style);
+    border-width: var(--border-width);
+    border-radius: var(--border-radius);
+    overflow: clip
+}
+
+.text-input-shadow[data-v-261ca8d4] {
+    height: 0px!important;
+    max-height: 0px!important;
+    min-height: 0px!important;
+    border: none;
+    border-style: none!important;
+    padding: 0!important;
+    transition: none!important;
+    overflow: scroll!important;
+    scroll-behavior: auto!important;
+    display: inherit
+}
+
+.text-input[data-v-261ca8d4]:disabled {
+    background: var(--disabled-bg-color);
+    color: var(--disabled-text-color)
+}
+
+.text-input[data-v-261ca8d4]::-webkit-scrollbar {
+    display: none
+}
+
+.boolean .boolean-input[data-v-313f62fe] {
+    width: 30px;
+    height: 30px;
+    color: var(--text-color)
+}
+
+.boolean[data-v-313f62fe] {
+    display: block;
+    width: 30px
+}
+
+.boolean-input[data-v-313f62fe] {
+    font-size: 18px;
+    font-weight: 400;
+    border-radius: var(--border-radius);
+    transition: all .5s ease;
+    background: var(--input-bg-color);
+    display: block;
+    text-align: center;
+    border-color: var(--border-color);
+    border-width: var(--border-width);
+    border-style: var(--border-style);
+    position: relative;
+    cursor: pointer
+}
+
+[type=checkbox][data-v-313f62fe] {
+    visibility: hidden;
+    width: 0px
+}
+
+.boolean input:checked~.boolean-input[data-v-313f62fe]:after {
+    display: inline-block
+}
+
+.boolean-input[data-v-313f62fe]:after {
+    content: "\2714";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    display: none;
+    font-size: 18px
+}
+
+.boolean .disabled[data-v-313f62fe] {
+    background: var(--disabled-bg-color);
+    color: var(--disabled-text-color)
+}
+
+.avatar .avatar-input[data-v-22c0c6c8] {
+    width: 35px;
+    height: 35px;
+    color: var(--text-color)
+}
+
+.avatar[data-v-22c0c6c8] {
+    display: block;
+    width: 30px
+}
+
+.avatar-input[data-v-22c0c6c8] {
+    font-size: 20px;
+    font-weight: 400;
+    border-radius: var(--border-radius);
+    transition: all .5s ease;
+    background: var(--input-bg-color);
+    display: inline-block;
+    text-align: center;
+    border-color: var(--border-color);
+    border-width: var(--border-width);
+    border-style: var(--border-style);
+    cursor: pointer
+}
+
+[type=file][data-v-22c0c6c8] {
+    visibility: hidden;
+    width: 0px;
+    display: none
+}
+
+.date .date-input[data-v-8d83d2d6] {
+    width: 100%;
+    height: 30px;
+    color: var(--text-color);
+    padding: 0 10px
+}
+
+.date-input[data-v-8d83d2d6] {
+    font-size: 15px;
+    font-weight: 400;
+    border-radius: var(--border-radius);
+    transition: all .5s ease;
+    background: var(--input-bg-color);
+    width: 100%
+}
+
+.date-input[data-v-8d83d2d6]:disabled {
+    background: var(--disabled-bg-color);
+    color: var(--disabled-text-color)
+}
+
+.select-input .vs__search::placeholder,.select-input .vs__dropdown-toggle,.select-input .vs__dropdown-menu {
+    background: var(--input-bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+    border-style: var(--border-style);
+    border-width: var(--border-width);
+    border-radius: var(--border-radius)
+}
+
+.select-input .vs__dropdown-toggle {
+    min-height: 30px;
+    height: auto
+}
+
+.select-input .vs__clear,.select-input .vs__open-indicator {
+    fill: var(--text-color)
+}
+
+.select-input .vs__selected {
+    color: var(--text-color)
+}
+
+.select-input img {
+    height: 18px;
+    width: 18px;
+    object-fit: cover;
+    border-radius: var(--panel-bg-color);
+    margin-right: 10px;
+    position: relative;
+    top: 5px
+}
+
+.select-input .vs__selected img {
+    top: 0
+}
+
+.select-input .vs__dropdown-menu {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    overflow-y: scroll
+}
+
+.select-input .vs__dropdown-menu::-webkit-scrollbar {
+    display: none
+}
+
+.vs__selected {
+    background-color: var(--table-row-color-selected)
+}
+
+.select-input-selected {
+    font-weight: 700;
+    margin-right: 10px;
+    background-color: var(--table-row-color-selected);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center
+}
+
+.vs__deselect {
+    fill: var(--text-color)
+}
+
+[data-v-94a3d714]> > > {
+    --vs-dropdown-option--active-bg: var(--table-row-color-selected)
+}
+
+.user-input .vs__search::placeholder,.user-input .vs__dropdown-toggle,.user-input .vs__dropdown-menu {
+    background: var(--input-bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+    border-style: var(--border-style);
+    border-width: var(--border-width);
+    border-radius: var(--border-radius)
+}
+
+.user-input .vs__dropdown-toggle {
+    height: 30px
+}
+
+.user-input .vs__clear,.user-input .vs__open-indicator {
+    fill: var(--text-color)
+}
+
+.vs__active {
+    background-color: red
+}
+
+.user-input .vs__selected {
+    color: var(--text-color)
+}
+
+.user-input img {
+    height: 18px;
+    width: 18px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 10px;
+    position: relative;
+    top: 5px
+}
+
+.user-input .vs__selected img {
+    top: 0
+}
+
+.user-input .vs__dropdown-menu {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    overflow-y: scroll
+}
+
+.user-input .vs__dropdown-menu::-webkit-scrollbar {
+    display: none
+}
+
+.vs--disabled .vs__clear,.vs--disabled .vs__dropdown-toggle,.vs--disabled .vs__open-indicator,.vs--disabled .vs__search,.vs--disabled .vs__selected {
+    background-color: var(--disabled-bg-color);
+    color: var(--disabled-text-color)
+}
+
+.vs--disabled .vs__clear,.vs--disabled .vs__open-indicator {
+    fill: var(--disabled-bg-color)
+}
+
+table {
+    text-align: left;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    margin-top: -10px
+}
+
+td {
+    padding-right: 10px;
+    padding-left: 10px
+}
+
+.selected_row td {
+    background-color: var(--table-row-color-selected);
+    border-color: var(--table-row-color-selected)
+}
+
+td {
+    border: solid 2px #000;
+    border-style: solid none;
+    padding: 3px;
+    border-color: var(--table-row-color);
+    background-color: var(--table-row-color)
+}
+
+td:first-child {
+    border-left-style: solid;
+    border-top-left-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius)
+}
+
+td:last-child {
+    border-right-style: solid;
+    border-bottom-right-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius)
+}
+
+.ktable {
+    overflow-y: auto
+}
+
+.ktable::-webkit-scrollbar {
+    display: none
+}
+
+.ktable * {
+    user-select: text
+}
+
+.sort_arrow {
+    display: none
+}
+
+.sorted_asc,.sorted_desc {
+    display: inline
+}
+
+.user {
+    margin-top: -5px
+}
+
+.expander {
+    cursor: pointer
+}
+
+.hidden-row {
+    display: none
+}
+
+.user img {
+    height: 18px;
+    width: 18px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 10px;
+    position: relative;
+    top: 5px
+}
+
+.search .search-input {
+    width: 300px;
+    height: 30px;
+    padding: 0 20px 0 10px
+}
+
+.topbar {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    left: 0;
+    top: 0;
+    min-height: min-content;
+    width: calc(100vw - 60px);
+    z-index: 1;
+    height: 68px;
+    padding-top: 18px;
+    padding-left: 0;
+    background: none
+}
+
+.topbar .btn .btn_input {
+    width: 100px;
+    height: 30px
+}
+
+.topbar input,.topbar .vs__dropdown-toggle {
+    font-size: 15px;
+    font-weight: 400;
+    border-radius: var(--border-radius);
+    transition: all .5s ease;
+    margin-left: 10px;
+    height: 30px
+}
+
+.topbar .vs__selected {
+    margin: 0
+}
+
+.search-input {
+    background: var(--input-bg-color)
+}
+
+.topbar-label {
+    font-size: 20px;
+    font-weight: 400;
+    margin-top: 1px;
+    border-radius: 8px;
+    border-color: gray;
+    border-width: 2px;
+    margin-left: 20px;
+    margin-right: 10px
+}
+
+@media (max-width: 420px) {
+    .topbar li .tooltip {
+        display:none
+    }
+}
+
+.workflows-editor {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex-grow: 1;
+    overflow-y: auto
+}
+
+.workflows-command-panel {
+    display: flex;
+    flex-direction: row;
+    height: 74px;
+    align-items: flex-end;
+    padding-bottom: 12px
+}
+
+.workflows-command-panel>*:not(:last-child) {
+    margin-right: 20px
+}
+
+.workflows-command-panel .label {
+    text-wrap: nowrap
+}
+
+.workflows-command-panel .string,.workflows-command-panel .boolean {
+    padding-top: 0;
+    margin-top: -12px;
+    padding-left: 0
+}
+
+.workflows-command-panel .string-input,.workflows-command-panel .boolean-input {
+    height: 28px
+}
+
+.workflows-command-panel .btn {
+    margin-right: 20px
+}
+
+.svg-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    padding-bottom: 8px;
+    flex-grow: 1;
+    overflow-y: auto
+}
+
+.svg-workflow,.statuses-container {
+    height: 100%
+}
+
+.svg-workflow,.table-statuses {
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg-color);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    transition: all .2s ease;
+    border-color: var(--border-color);
+    border-width: 2px;
+    border-style: inset
+}
+
+.svg-workflow {
+    width: 100%
+}
+
+.statuses-container {
+    width: 200px;
+    margin-left: 10px;
+    display: flex;
+    flex-direction: column
+}
+
+.statuses-container .ktable {
+    margin-left: 0;
+    padding: 2px;
+    width: 100%;
+    margin-top: 10px;
+    height: 100%
+}
+
+.statuses-search-and-add {
+    display: flex;
+    flex-direction: row
+}
+
+.statuses-search-and-add .string,.statuses-search-and-add .string-input {
+    padding: 0
+}
+
+#graph_zoom_in,#graph_zoom_out {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 10px;
+    margin-right: 5px
+}
+
+#graph_zoom_in input,#graph_zoom_out input {
+    width: 28px;
+    height: 28px;
+    font-size: 18px
+}
+
+#graph_zoom_in,#graph_zoom_out {
+    position: absolute;
+    right: 210px
+}
+
+#graph_zoom_in {
+    top: 6px
+}
+
+#graph_zoom_out {
+    top: 36px
+}
+
+.statuses-search-and-add .string input {
+    height: 28px
+}
+
+.statuses-search-and-add .label {
+    height: 0px
+}
+
+g.conceptG {
+    transition: all .05s ease
+}
+
+.conceptG text {
+    pointer-events: none;
+    font-size: 12px
+}
+
+marker {
+    fill: var(--workflow-marker-color)
+}
+
+g.conceptG circle {
+    fill: var(--workflow-g-fill-color);
+    stroke: var(--workflow-marker-color);
+    stroke-width: 2px;
+    color: var(--workflow-marker-color);
+    cursor: grab
+}
+
+g.conceptG:active circle {
+    cursor: grabbing
+}
+
+g.conceptG text tspan {
+    fill: var(--workflow-marker-color)
+}
+
+g.conceptG:hover circle {
+    fill: var(--workflow-g-hover-fill-color);
+    stroke: var(--workflow-g-hover-color)
+}
+
+g.selected circle {
+    stroke-width: 4px;
+    stroke: var(--workflow-g-selected-color)
+}
+
+g.selected:hover circle {
+    stroke-width: 4px;
+    stroke: var(--workflow-g-selected-color)
+}
+
+#hover-end-arrow {
+    fill: var(--workflow-g-hover-color)
+}
+
+path.link {
+    fill: none;
+    stroke: var(--workflow-marker-color);
+    stroke-width: 3px;
+    cursor: pointer;
+    marker-end: url(#end-arrow);
+    transition: all .05s ease
+}
+
+path.dragline {
+    stroke-dasharray: 15,4;
+    stroke-width: 2px
+}
+
+path.link:hover {
+    stroke: var(--workflow-g-hover-color);
+    marker-end: url(#hover-end-arrow)
+}
+
+g.connect-node circle {
+    fill: red
+}
+
+path.link.hidden {
+    stroke-width: 0
+}
+
+path.link.selected {
+    stroke: var(--workflow-g-selected-color);
+    marker-end: url(#selected-end-arrow)
+}
+
+#selected-end-arrow {
+    fill: var(--workflow-g-selected-color)
+}
+
+.graph {
+    scale: var(--3fb3b7ea)
+}
+
+.workflows-editor .btn {
+    height: 30px
+}
+
+.tab-panel {
+    display: flex;
+    flex-direction: column-reverse;
+    position: relative;
+    height: calc(100% - 60px)
+}
+
+ul.tabs__header {
+    margin: 0;
+    display: flex;
+    list-style: none;
+    padding: 0;
+    height: 36px;
+    z-index: 1
+}
+
+ul.tabs__header>li {
+    user-select: none!important;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    margin: 10px 0 1px;
+    cursor: pointer;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    border-width: var(--border-width);
+    border-color: var(--border-color);
+    border-style: groove;
+    border-bottom: 0 solid transparent
+}
+
+ul.tabs__header>li.tab__selected {
+    background-color: var(--panel-bg-color);
+    margin: 0
+}
+
+.tab {
+    display: inline-block;
+    width: 100%;
+    margin-top: -1px;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    border-width: var(--border-width);
+    border-color: var(--border-color);
+    border-style: groove;
+    padding: 20px;
+    height: calc(100% - 40px)
+}
+
+.tab-panel .tab {
+    background-color: var(--panel-bg-color)
+}
+
+.tab-panel li {
+    background-color: var(--table-row-color)
+}
+
+.attachment .attachment-input {
+    width: 100%
+}
+
+.attachment {
+    display: block
+}
+
+.attachment-input {
+    padding: 6px;
+    min-height: 86px;
+    min-width: 125px;
+    font-size: 20px;
+    font-weight: 400;
+    transition: all .5s ease;
+    background-color: transparent;
+    text-align: center;
+    border-radius: var(--border-radius);
+    border-color: var(--table-row-color);
+    border-width: 2px;
+    border-style: solid;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap
+}
+
+.attachment-placeholder {
+    display: flex;
+    width: 125.8px;
+    height: 74px;
+    border-style: dashed;
+    border-width: var(--border-width);
+    border-color: var(--border-color);
+    border-radius: var(--border-radius);
+    justify-content: center;
+    align-items: center
+}
+
+.attachment-placeholder :hover {
+    color: green;
+    cursor: pointer
+}
+
+.attachment-input>*:not(:last-child) {
+    margin-right: 6px
+}
+
+.attachment-input:hover {
+    border-style: dashed
+}
+
+.attachment-file {
+    width: 125.8px;
+    height: 74px;
+    background-color: var(--table-row-color);
+    overflow: hidden;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    background-repeat: no-repeat;
+    background-position: center center;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    border-radius: var(--border-radius);
+    border-style: var(--border-style);
+    border-width: var(--border-width);
+    border-color: var(--border-color);
+    backface-visibility: hidden;
+    position: relative
+}
+
+.attachment-file span {
+    padding-top: 5px
+}
+
+.attachment-file div {
+    bottom: 5px;
+    position: absolute;
+    width: 100%
+}
+
+.attachment-image-file span,.attachment-image-file {
+    cursor: zoom-in
+}
+
+.attachment-image-file span,.attachment-image-file div {
+    opacity: 0
+}
+
+.attachment-image-file:hover span,.attachment-image-file:hover div {
+    opacity: 1
+}
+
+.attachment-file:hover {
+    background-image: none!important
+}
+
+.attachment-file span {
+    white-space: nowrap;
+    line-height: 15px
+}
+
+.attachment-file i {
+    padding-left: 10px;
+    padding-right: 10px;
+    cursor: pointer
+}
+
+.attachment-file .bx-trash:hover {
+    color: red
+}
+
+.attachment-file .bxs-download:hover {
+    color: green
+}
+
+.attachment .bx-paperclip {
+    font-size: 19.6px
+}
+
+[type=file] {
+    visibility: hidden;
+    width: 0px
+}
+
+.relations .relations-input {
+    width: 100%;
+    height: 60px
+}
+
+.relations {
+    display: block;
+    margin-top: 20px
+}
+
+.relations-input {
+    font-size: 20px;
+    font-weight: 400;
+    border-radius: var(--border-radius);
+    transition: all .5s ease;
+    background-color: transparent;
+    text-align: center;
+    border-color: var(--table-row-color);
+    border-width: 2px;
+    border-style: solid;
+    display: flex
+}
+
+.relation {
+    margin-top: 2px;
+    margin-left: 10px;
+    margin-bottom: 3px
+}
+
+.relation_resolved {
+    text-decoration: line-through;
+    opacity: .7
+}
+
+.relations * {
+    user-select: text
+}
+
+.add-relation-btn {
+    margin-top: 5px;
+    margin-left: 10px;
+    margin-bottom: 3px;
+    font-size: 19.6px;
+    cursor: pointer
+}
+
+.add-relation-btn:hover {
+    color: green
+}
+
+.relation span {
+    line-height: 15px
+}
+
+.relation i {
+    padding-left: 10px;
+    padding-right: 10px;
+    cursor: pointer
+}
+
+.relation .bx-unlink:hover {
+    color: red
+}
+
+.relation a:hover {
+    color: green
+}
+
+.relations .bx-link {
+    font-size: 19.6px
+}
+
+.time-entries .time-entries-input {
+    width: 100%;
+    height: 60px
+}
+
+.time-entries {
+    display: block;
+    margin-top: 20px
+}
+
+.time-entries .label {
+    display: flex;
+    align-items: center
+}
+
+.time-entries .bx-time {
+    font-size: 15px;
+    cursor: pointer;
+    opacity: .5
+}
+
+.time-entries .bx-time-expanded {
+    opacity: 1
+}
+
+.time-entries-input {
+    font-size: 20px;
+    font-weight: 400;
+    border-radius: var(--border-radius);
+    transition: all .5s ease;
+    background-color: transparent;
+    text-align: center;
+    border-color: var(--table-row-color);
+    border-width: 2px;
+    border-style: solid;
+    display: flex
+}
+
+.time-entry {
+    margin-top: 2px;
+    margin-left: 10px;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: end;
+    width: fit-content
+}
+
+.time-entry-resolved {
+    text-decoration: line-through;
+    opacity: .7
+}
+
+.time-entries * {
+    user-select: text
+}
+
+.add-time-entry-btn {
+    margin-top: 5px;
+    margin-left: 10px;
+    margin-bottom: 3px;
+    font-size: 19.6px;
+    cursor: pointer
+}
+
+.add-time-entry-btn:hover {
+    color: green
+}
+
+.time-entry span {
+    line-height: 15px;
+    padding-right: 5px
+}
+
+.time-entries .author-time-entries {
+    width: fit-content
+}
+
+.time-entry i {
+    padding-left: 10px;
+    padding-right: 10px;
+    cursor: pointer
+}
+
+.time-entry .bx-pencil {
+    font-size: 14px;
+    margin-top: 2px;
+    padding-left: 0;
+    opacity: 0
+}
+
+.time-entry .bx-pencil:hover {
+    color: green
+}
+
+.time-entries .author-time-entries:hover .bx-pencil {
+    opacity: 1
+}
+
+.time-entry .time-entry-duration {
+    font-weight: 600
+}
+
+.time-entries .bx-link {
+    font-size: 19.6px
+}
+
+.time-entries img {
+    height: 18px;
+    width: 18px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 10px;
+    position: relative;
+    top: 5px
+}
+
+.time-entries .time-entries-author-name {
+    font-size: 15px
+}
+
+.issue-search-div .text-input {
+    white-space: nowrap;
+    overflow: auto;
+    display: inline-block;
+    padding: 5px!important;
+    margin-right: 30px!important
+}
+
+.text .text-input {
+    width: 100%;
+    height: 30px;
+    min-height: 30px;
+    color: var(--text-color);
+    padding: 0 10px;
+    resize: none
+}
+
+.text-input {
+    font-size: 14px;
+    font-weight: 400;
+    transition: all .5s ease;
+    background: var(--input-bg-color);
+    width: 100%;
+    border-color: var(--border-color);
+    border-style: var(--border-style);
+    border-width: var(--border-width);
+    border-radius: var(--border-radius)
+}
+
+.suggestion-area {
+    font-size: 12px;
+    font-weight: 300;
+    transition: all .5s ease;
+    background: var(--disabled-bg-color);
+    border-color: var(--border-color);
+    border-style: groove;
+    border-width: var(--border-width);
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    height: 234px;
+    overflow: auto;
+    width: 300px;
+    position: fixed;
+    z-index: 10
+}
+
+.suggestion-area::-webkit-scrollbar {
+    display: none
+}
+
+.suggestion-area span {
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 300;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding: 4px 4px 4px 10px;
+    height: 28px;
+    min-height: 28px
+}
+
+.selected-suggestion {
+    background: var(--table-row-color-selected)
+}
+
+.text-input:disabled {
+    background: var(--disabled-bg-color);
+    color: var(--disabled-text-color)
+}
+
+.text-input::-webkit-scrollbar {
+    display: none
+}
+
+.issue-search-div {
+    display: flex
+}
+
+.issue-search-input textarea {
+    padding: 0!important
+}
+
+.issue-search-input {
+    padding: 0!important;
+    width: 50vw
+}
+
+.gpt-loader {
+    width: 50vw;
+    height: 30px;
+    background: var(--disabled-bg-color);
+    padding: 5px;
+    border-color: var(--border-color);
+    border-style: groove;
+    border-width: var(--border-width);
+    border-radius: var(--border-radius)
+}
+
+.issue-search-input-btn {
+    padding: 0
+}
+
+.issue-search-input-btn .btn_input,.issue-stop-search-input-btn .btn_input {
+    padding: 0;
+    border-top-left-radius: 0!important;
+    border-bottom-left-radius: 0!important;
+    margin-left: -30px;
+    width: 30px!important;
+    height: 30px;
+    border-top-width: var(--issue-search-btn-top-border-width)!important;
+    border-bottom-width: var(--border-width)!important;
+    border-left-color: var(--border-color)!important;
+    border-top-color: var(--border-color)!important
+}
+
+.new-relation-modal {
+    padding: 20px;
+    position: absolute;
+    width: 60%;
+    height: fit-content;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%)
+}
+
+.new-relation-modal>*:not(:last-child) {
+    margin-bottom: 10px
+}
+
+.new-relation-modal SelectInut {
+    width: 100%;
+    height: 30px
+}
+
+.new-relation-modal .btn-container {
+    margin-top: 20px;
+    margin-bottom: 0;
+    padding: 0;
+    display: flex;
+    position: relative
+}
+
+.new-relation-modal .btn {
+    width: 100%
+}
+
+.new-relation-modal #create-relation-btn {
+    padding-right: 20px
+}
+
+.modal-bg {
+    width: 100%;
+    height: 100%;
+    background-color: #0000004d;
+    position: absolute;
+    z-index: 10
+}
+
+.time-entry-modal {
+    padding: 20px;
+    position: absolute;
+    width: 60%;
+    height: fit-content;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%)
+}
+
+.time-entry-modal-row {
+    display: flex
+}
+
+.time-entry-modal-row .string {
+    width: 100%;
+    padding-left: 50px
+}
+
+.time-entry-modal>*:not(:last-child) {
+    margin-bottom: 10px
+}
+
+.time-entry-modal .btn-container {
+    margin-top: 20px;
+    margin-bottom: 0;
+    padding: 0;
+    display: flex;
+    position: relative
+}
+
+.time-entry-modal .btn {
+    width: 100%
+}
+
+.time-entry-modal #time-entry-ok-btn {
+    padding-right: 20px
+}
+
+.time-entry-modal .issue-search-input-btn {
+    display: none
+}
+
+.time-entry-modal .issue-search-div .text-input {
+    margin-right: 0!important
+}
+
+.time-entry-modal .save-alert {
+    width: 100%;
+    position: absolute;
+    text-align: center;
+    color: red;
+    top: 0;
+    left: 0
+}
+
+.time-entry-modal .delete-time-entry-btn {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 16px;
+    cursor: pointer
+}
+
+.time-entry-modal .delete-time-entry-btn:hover {
+    color: red
+}
+
+.modal-bg {
+    width: 100%;
+    height: 100%;
+    background-color: #0000004d;
+    position: absolute;
+    z-index: 10
+}
+
+.board-filter-modal {
+    padding: 20px;
+    position: absolute;
+    width: 60%;
+    height: fit-content;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%)
+}
+
+.board-filter-modal-row {
+    display: flex
+}
+
+.board-filter-modal-row .string {
+    width: 100%;
+    padding-left: 50px
+}
+
+.board-filter-modal>*:not(:last-child) {
+    margin-bottom: 10px
+}
+
+.board-filter-modal .btn-container {
+    margin-top: 20px;
+    margin-bottom: 0;
+    padding: 0;
+    display: flex;
+    position: relative
+}
+
+.board-filter-modal .btn {
+    width: 100%
+}
+
+.board-filter-modal #filter-ok-btn {
+    padding-right: 20px
+}
+
+.board-filter-modal .issue-search-input-btn {
+    display: none
+}
+
+.board-filter-modal .issue-search-div .text-input {
+    margin-right: 0!important
+}
+
+.board-filter-modal .save-alert {
+    width: 100%;
+    position: absolute;
+    text-align: center;
+    color: red;
+    top: 0;
+    left: 0
+}
+
+.board-filter-modal .delete-board-filter-btn {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 16px;
+    cursor: pointer
+}
+
+.board-filter-modal .delete-board-filter-btn:hover {
+    color: red
+}
+
+a {
+    color: var(--link-color)
+}
+
+.marked-container {
+    overflow-wrap: anywhere;
+    user-select: text!important;
+    border-width: 0;
+    width: 100%;
+    color: var(--text-color);
+    font-family: Inter,system-ui,Roboto,sans-serif
+}
+
+.marked-container p:first-child {
+    margin-top: 0
+}
+
+.marked-container p:last-child {
+    margin-bottom: 0
+}
+
+.marked-container::-webkit-scrollbar {
+    display: none
+}
+
+.marked-container a:hover {
+    color: var(--link-hover-color)
+}
+
+.marked-container img {
+    max-width: 100%;
+    box-sizing: border-box;
+    outline: var(--text-color) solid 1px;
+    cursor: zoom-in
+}
+
+.marked-container p img {
+    margin-top: 4px
+}
+
+.attachment-img {
+    max-width: -webkit-fill-available;
+    box-sizing: border-box;
+    outline: var(--text-color) solid 1px
+}
+
+.marked-container img:active {
+    max-width: 100%!important;
+    height: auto;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    z-index: 100;
+    border-left-width: 100px;
+    border-right-width: 100px;
+    border-top-width: 30px;
+    border-bottom-width: 30px;
+    border-style: solid;
+    border-color: var(--loading-bar-color);
+    cursor: zoom-out
+}
+
+.marked-container pre {
+    border-radius: 4px;
+    background-color: var(--code-block-bg-color);
+    border: 10px solid transparent;
+    max-height: 300px;
+    max-width: -webkit-fill-available;
+    overflow: auto;
+    padding: 10px
+}
+
+.marked-container pre code {
+    position: relative;
+    border: none;
+    font-family: Menlo,Bitstream Vera Sans Mono,Ubuntu Mono,Consolas,Courier New,Courier,monospace;
+    font-size: 95%;
+    color: inherit;
+    text-wrap: wrap
+}
+
+.marked-container code {
+    padding: 0 2px;
+    color: var(--code-fragment-text-color);
+    border-radius: 2.5px;
+    background-color: inherit;
+    font-family: Menlo,Bitstream Vera Sans Mono,Ubuntu Mono,Consolas,Courier New,Courier,monospace;
+    font-size: 95%!important;
+    border-color: var(--code-fragment-border-color);
+    border-width: 1px;
+    border-style: solid
+}
+
+.marked-container pre::-webkit-scrollbar {
+    width: 7px;
+    height: 7px
+}
+
+.marked-container pre::-webkit-scrollbar-track {
+    background-color: var(--code-scroll-track-bg-color);
+    border-radius: 10px
+}
+
+.marked-container pre::-webkit-scrollbar-thumb {
+    background-color: var(--code-scroll-thumb-bg-color);
+    border-radius: 10px;
+    border: 40px solid transparent;
+    margin: 10px
+}
+
+.marked-container pre::-webkit-scrollbar-thumb:hover {
+    background-color: var(--code-scroll-thumb-hover-color)
+}
+
+.marked-container pre::-webkit-scrollbar-corner {
+    background: var(--code-block-bg-color)
+}
+
+.marked-container ol,.marked-container ul,.marked-container dl {
+    padding-left: 20px
+}
+
+.marked-container blockquote {
+    margin: 0 0 0 5px;
+    padding: 4px 0 4px 16px;
+    box-shadow: inset 2px 0
+}
+
+.marked-container * {
+    user-select: text!important;
+    font-size: 14px
+}
+
+.comment[data-v-0d07935d] {
+    display: flex;
+    user-select: all;
+    padding: 6px
+}
+
+.comment-left-section[data-v-0d07935d] {
+    width: 40px
+}
+
+.comment-type-icon[data-v-0d07935d] {
+    width: 40px;
+    opacity: 40%;
+    display: flex;
+    justify-content: center
+}
+
+.issue-action-icon[data-v-0d07935d] {
+    font-size: 16px!important;
+    user-select: none
+}
+
+.comment-right-section[data-v-0d07935d] {
+    width: 100%;
+    margin-left: 8px
+}
+
+.comment-header-container[data-v-0d07935d] {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: -3px
+}
+
+.comment-header[data-v-0d07935d] {
+    height: 16px;
+    display: flex
+}
+
+.comment-header *[data-v-0d07935d] {
+    line-height: .7;
+    margin-right: 5px;
+    cursor: pointer
+}
+
+.comment-author[data-v-0d07935d] {
+    align-self: flex-start
+}
+
+.comment-date-time[data-v-0d07935d] {
+    line-height: 11px;
+    opacity: 60%;
+    font-size: 11px;
+    align-self: flex-start
+}
+
+.comment-actions[data-v-0d07935d] {
+    display: flex;
+    height: 16px
+}
+
+.comment-action-button[data-v-0d07935d] {
+    height: 16px;
+    width: 16px;
+    padding: 2px;
+    border-radius: 4px;
+    font-size: 12px
+}
+
+.comment-action-button[data-v-0d07935d]:hover {
+    background: var(--icon-hover-bg-color);
+    cursor: pointer
+}
+
+.selected[data-v-0d07935d] {
+    background-color: var(--input-bg-color)
+}
+
+.issue-actions[data-v-68a57112] {
+    margin-top: 20px
+}
+
+.issue-actions-header[data-v-68a57112] {
+    user-select: none;
+    margin-bottom: 10px
+}
+
+.issue-actions-buttons[data-v-68a57112] {
+    display: flex;
+    justify-content: flex-start
+}
+
+.issue-actions-button[data-v-68a57112] {
+    padding: 2px;
+    margin-right: 2px;
+    border-radius: 2px;
+    font-size: 16px;
+    height: 20px;
+    width: 20px
+}
+
+.issue-actions-button[data-v-68a57112]:hover {
+    cursor: pointer;
+    background: var(--icon-hover-bg-color)
+}
+
+.shadowed[data-v-68a57112] {
+    opacity: 40%
+}
+
+.tag-input {
+    width: fit-content
+}
+
+.tag-input .vs__dropdown-toggle {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 0
+}
+
+.tag-input .vs__selected {
+    margin: 0 0 0 5px;
+    padding-top: 0;
+    background: none;
+    cursor: pointer;
+    border: none
+}
+
+.tag-input .vs__search {
+    margin: 0
+}
+
+.tag-input .select-input-selected {
+    margin-right: 5px!important;
+    height: 23px;
+    margin-bottom: 5px
+}
+
+.tag-input .vs__selected-options {
+    display: flex;
+    align-items: center
+}
+
+.tag-input i {
+    margin-top: 4px;
+    font-size: 20px;
+    cursor: pointer
+}
+
+.tag-input .vs__search:hover,.tag-input .vs__search:focus,.tag-input .vs__search:active {
+    background-color: var(--input-bg-color);
+    min-width: 100px;
+    width: auto;
+    max-width: 500px;
+    border-color: var(--border-color)!important;
+    border-style: var(--border-style)!important;
+    border-width: var(--border-width)!important;
+    border-radius: var(--border-radius)!important
+}
+
+.color .color-input[data-v-4117a8cb] {
+    width: 100%;
+    height: 30px;
+    color: var(--text-color);
+    padding: 0 10px
+}
+
+.color-input[data-v-4117a8cb] {
+    font-size: 15px;
+    font-weight: 400;
+    border-radius: var(--border-radius);
+    transition: all .5s ease;
+    background: var(--input-bg-color);
+    margin: 5px;
+    width: 50px!important;
+    background: none;
+    border: none;
+    -webkit-appearance: none
+}
+
+.color-input[data-v-4117a8cb]:disabled {
+    background: var(--disabled-bg-color);
+    color: var(--disabled-text-color)
+}
+
+input[type=color][data-v-4117a8cb]::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border-color: var(--border-color);
+    border-style: inset;
+    border-width: calc(var(--border-width) + 0);
+    border-radius: 50%
+}
+
+input[type=color][data-v-4117a8cb]::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%
+}
+
+.modal-bg {
+    width: 100%;
+    height: 100%;
+    background-color: #0000004d;
+    position: absolute;
+    z-index: 10
+}
+
+.edit-tag-modal {
+    padding: 20px;
+    position: absolute;
+    width: 350px;
+    height: fit-content;
+    left: 68px;
+    top: 68px
+}
+
+.edit-tag-modal>*:not(:last-child) {
+    margin-bottom: 10px
+}
+
+.edit-tag-modal SelectInut {
+    width: 100%;
+    height: 30px
+}
+
+.edit-tag-modal .btn-container {
+    margin-top: 20px;
+    margin-bottom: 0;
+    padding: 0;
+    display: flex;
+    position: relative
+}
+
+.edit-tag-modal .btn {
+    width: 100%
+}
+
+.edit-tag-modal #create-tag-btn {
+    padding-right: 20px
+}
+
+.markdown-input[data-v-72e4e2f1] {
+    background: var(--input-bg-color);
+    border-color: var(--border-color);
+    border-style: var(--border-style);
+    border-width: var(--border-width);
+    border-radius: var(--border-radius)
+}
+
+.markdown-input-buttons[data-v-72e4e2f1] {
+    display: flex;
+    padding: 3px
+}
+
+.markdown-input-button[data-v-72e4e2f1] {
+    margin: 1px;
+    padding: 2px;
+    border-radius: 4px;
+    font-size: 18px
+}
+
+.markdown-input-button[data-v-72e4e2f1]:hover {
+    cursor: pointer;
+    background: var(--icon-hover-bg-color)
+}
+
+.markdown-input-button-separator[data-v-72e4e2f1] {
+    display: inline;
+    border-left: 2px solid var(--text-color);
+    margin: 2px 4px;
+    opacity: .2
+}
+
+.markdown-input-textarea[data-v-72e4e2f1] {
+    transition: none;
+    font-size: 14px;
+    padding: 4px 10px 6px;
+    height: 60px;
+    min-height: 60px;
+    width: 100%;
+    resize: none;
+    overflow: hidden;
+    background: var(--input-bg-color);
+    outline: none;
+    border: none
+}
+
+.md-preview[data-v-72e4e2f1] {
+    display: inline-block;
+    align-self: flex-end
+}
+
+.markdown-input[data-v-72e4e2f1]:focus-within {
+    outline: 1px solid
+}
+
+.md_button_selected[data-v-72e4e2f1] {
+    background: var(--icon-hover-bg-color)
+}
+
+.icon-watcher * {
+    color: var(--on-button-icon-color)
+}
+
+.icon-watcher-disabled * {
+    color: var(--off-button-icon-color)
+}
+
+$main-menu-width: 60px; $main-menu-width-open: 210px; $border-radius: 8px; $min-win-height: 600px; $min-win-width: 800px; $font-size: 14px; $top-menu-height: 68px; $input-height: 30px; $border-width: 1px; [theme="dark_3d"][data-v-13aa1bd6] {
+    --body-bg-color: rgb(51, 61, 69);
+    --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, .5);
+    --text-color: rgb(190, 190, 190);
+    --border-color: rgba(128, 128, 128, 0);
+    --table-row-color: rgb(40, 45, 50);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+    --input-bg-color: rgb(19, 17, 39);
+    --input-bg-color-disabled: rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #333;
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(32, 36, 40, .3);
+    --loading-bar-color: rgba(20, 22, 24, .5);
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=light][data-v-13aa1bd6] {
+    --body-bg-color: rgb(231,237,255);
+    --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, .5);
+    --text-color: #114066;
+    --border-color: rgb(108, 146, 211);
+    --table-row-color: #f7f9fa;
+    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-border-color: rgb(51, 51, 51);
+    --input-bg-color: rgb(231,237,255);
+    --input-bg-color-disabled: rgb(240, 240, 240);
+    --input-hover-bg-color: #f7f9fa;
+    --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
+    --workflow-marker-color: rgb(80, 80, 100);
+    --workflow-g-hover-color: rgb(100, 120, 190);
+    --workflow-g-selected-color: rgb(80, 90, 230);
+    --workflow-g-fill-color: rgb(235, 246, 255);
+    --workflow-g-hover-fill-color: rgb(215, 226, 255);
+    --link-color: rgb(38, 66, 205);
+    --issue-card-descr-color: rgb(28, 46, 57);
+    --button-color: rgb(235, 246, 255);
+    --on-button-icon-color: rgb(80, 90, 255);
+    --off-button-icon-color: rgb(140, 140, 140);
+    --issues-search-idx-0-color: green;
+    --issues-search-idx-1-color: rgb(192, 179, 2);
+    --issues-search-idx-2-color: blue;
+    --issues-search-idx-3-color: rgb(221, 145, 2);
+    --issues-search-idx-4-color: rgb(107, 98, 66);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(250, 250, 255, .3);
+    --loading-bar-color: rgba(201,217,245, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: solid;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #F6F6F6;
+    --code-scroll-thumb-bg-color: #ababab;
+    --code-scroll-track-bg-color: #d7e1e9;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E11E5A;
+    --code-fragment-border-color: #DADADA;
+    --code-bg-color: #F6F6F6;
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, .7);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark][data-v-13aa1bd6] {
+    --body-bg-color: rgb(23, 33, 43);
+    --panel-bg-color: #242F3D;
+    --group-bg-color: rgba(30, 40, 50, .5);
+    --text-color: rgba(228, 230, 240);
+    --border-color: rgba(71, 81, 89, .6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
+    --table-row-border-color: black;
+    --input-bg-color: rgb(30 34 46);
+    --input-bg-color-disabled: rgb(35, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(108, 146, 211);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #4a5867;
+    --on-button-icon-color: rgb(198, 216, 227);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(30, 170, 30);
+    --issues-search-idx-1-color: rgb(207, 207, 22);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(187, 174, 130);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(30, 34, 37, .3);
+    --loading-bar-color: rgba(20, 24, 30, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: inset;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+.relative-box-container[data-v-13aa1bd6] {
+    position: relative;
+    width: 0;
+    height: 0;
+    cursor: default!important
+}
+
+.relative-box[data-v-13aa1bd6] {
+    display: inline-block;
+    position: relative;
+    min-width: 10px;
+    min-height: 10px;
+    padding: 2px;
+    z-index: 1;
+    background: var(--panel-bg-color);
+    border-color: var(--border-color);
+    border-style: var(--border-style);
+    border-width: var(--border-width);
+    border-radius: var(--border-radius)
+}
+
+.gpt-panel {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+    z-index: 2;
+    height: auto
+}
+
+.toggle-panel {
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end
+}
+
+.toggle-panel.closed {
+    width: 30px;
+    position: absolute;
+    right: 0
+}
+
+.toggle-icon {
+    font-size: 20px;
+    padding: 3px
+}
+
+.gpt-down-panel {
+    overflow: hidden;
+    transition: height .2s ease;
+    display: flex
+}
+
+.gpt-down-panel.open {
+    height: 205px
+}
+
+.gpt-down-panel.closed {
+    height: 0px
+}
+
+.gpt-down-panel .text .text-input {
+    min-height: 140px;
+    height: 140px
+}
+
+@keyframes active_icon_blink {
+    0% {
+        color: var(--off-button-icon-color);
+        text-shadow: -1px 0 transparent,0 1px transparent,1px 0 transparent,0 -1px transparent
+    }
+
+    70% {
+        color: var(--on-button-icon-color);
+        text-shadow: -1px 0 var(--on-button-icon-color),0 1px var(--on-button-icon-color),1px 0 var(--on-button-icon-color),0 -1px var(--on-button-icon-color)
+    }
+
+    80% {
+        color: var(--on-button-icon-color);
+        font-size: 31px;
+        text-shadow: -1px 0 var(--on-button-icon-color),0 1px var(--on-button-icon-color),1px 0 var(--on-button-icon-color),0 -1px var(--on-button-icon-color)
+    }
+
+    to {
+        color: var(--off-button-icon-color);
+        text-shadow: -1px 0 transparent,0 1px transparent,1px 0 transparent,0 -1px transparent
+    }
+}
+
+.gpt-down-panel i {
+    font-size: 30px;
+    padding-bottom: 10px;
+    padding-right: 10px;
+    opacity: .3;
+    color: var(--off-button-icon-color);
+    text-shadow: -1px 0 transparent,0 1px transparent,1px 0 transparent,0 -1px transparent
+}
+
+.gpt-down-panel .active_icon {
+    animation: active_icon_blink 1.5s infinite;
+    cursor: pointer;
+    opacity: 1
+}
+
+.gpt-down-panel-half {
+    width: 100%;
+    padding-left: 25px;
+    padding-right: 25px
+}
+
+.gpt-result-loader {
+    width: 50%;
+    height: 140px;
+    position: absolute;
+    top: 44px;
+    left: 50%;
+    padding-left: 25px;
+    padding-right: 25px
+}
+
+.gpt-canvas {
+    opacity: .6;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--border-radius)
+}
+
+.user-avatar img[data-v-1eb7930e] {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--border-radius);
+    border-style: outset;
+    border-width: 1px
+}
+
+.maintop-title {
+    font-size: 20px;
+    padding-bottom: 5px;
+    z-index: 1;
+    display: flex;
+    width: 100%;
+    text-align: center;
+    align-items: center;
+    justify-content: center
+}
+
+.maintop-title a {
+    font-size: 40px;
+    text-align: center;
+    font-weight: 350;
+    text-decoration: none;
+    color: var(--text-color);
+    z-index: 1
+}
+
+.maintop-title2 {
+    font-size: 20px;
+    padding-bottom: 70px;
+    z-index: 1;
+    display: flex;
+    width: 100%;
+    text-align: center;
+    align-items: center;
+    justify-content: center
+}
+
+.maintop-title2 span {
+    font-size: 22px;
+    text-align: center;
+    font-weight: 100
+}
+
+.maintop-title svg {
+    width: 50px;
+    height: 50px
+}
+
+.maintop-title g {
+    fill: var(--text-color);
+    stroke: none
+}
+
+@keyframes moveHoneypot0 {
+    0%,to {
+        transform: translateY(200pt) scale(.08,-.08)
+    }
+
+    20% {
+        transform: translate(10pt,180pt) scale(.08,-.08)
+    }
+
+    40% {
+        transform: translateY(200pt) scale(.08,-.08)
+    }
+}
+
+@keyframes moveHoneypot1 {
+    0%,to {
+        transform: translateY(200pt) scale(.08,-.08)
+    }
+
+    20% {
+        transform: translate(-20pt,200pt) scale(.08,-.08)
+    }
+
+    40% {
+        transform: translateY(200pt) scale(.08,-.08)
+    }
+}
+
+@keyframes moveHoneypot2 {
+    0%,to {
+        transform: translateY(200pt) scale(.08,-.08)
+    }
+
+    20% {
+        transform: translate(10pt,220pt) scale(.08,-.08)
+    }
+
+    40% {
+        transform: translateY(200pt) scale(.08,-.08)
+    }
+}
+
+.maintop-title .honeypot0 {
+    animation: moveHoneypot0 4s linear infinite
+}
+
+.maintop-title .honeypot1 {
+    animation: moveHoneypot1 4s linear infinite
+}
+
+.maintop-title .honeypot2 {
+    animation: moveHoneypot2 4s linear infinite
+}
+
+[theme=dark_3d] {
+    --body-bg-color: rgb(51, 61, 69);
+    --panel-bg-color: rgb(35, 39, 43);
+    --group-bg-color: rgba(58, 68, 77, .5);
+    --text-color: rgb(190, 190, 190);
+    --border-color: rgba(128, 128, 128, 0);
+    --table-row-color: rgb(40, 45, 50);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+    --input-bg-color: rgb(19, 17, 39);
+    --input-bg-color-disabled: rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: rgb(30, 35, 38);
+    --disabled-text-color: rgb(190, 190, 190);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #333;
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(32, 36, 40, .3);
+    --loading-bar-color: rgba(20, 22, 24, .5);
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=light] {
+    --body-bg-color: rgb(231,237,255);
+    --panel-bg-color: #fff;
+    --group-bg-color: rgba(238, 244, 255, .5);
+    --text-color: #114066;
+    --border-color: rgb(108, 146, 211);
+    --table-row-color: #f7f9fa;
+    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-border-color: rgb(51, 51, 51);
+    --input-bg-color: rgb(231,237,255);
+    --input-bg-color-disabled: rgb(240, 240, 240);
+    --input-hover-bg-color: #f7f9fa;
+    --disabled-bg-color: rgb(240, 240, 240);
+    --disabled-text-color: #114066;
+    --workflow-marker-color: rgb(80, 80, 100);
+    --workflow-g-hover-color: rgb(100, 120, 190);
+    --workflow-g-selected-color: rgb(80, 90, 230);
+    --workflow-g-fill-color: rgb(235, 246, 255);
+    --workflow-g-hover-fill-color: rgb(215, 226, 255);
+    --link-color: rgb(38, 66, 205);
+    --issue-card-descr-color: rgb(28, 46, 57);
+    --button-color: rgb(235, 246, 255);
+    --on-button-icon-color: rgb(80, 90, 255);
+    --off-button-icon-color: rgb(140, 140, 140);
+    --issues-search-idx-0-color: green;
+    --issues-search-idx-1-color: rgb(192, 179, 2);
+    --issues-search-idx-2-color: blue;
+    --issues-search-idx-3-color: rgb(221, 145, 2);
+    --issues-search-idx-4-color: rgb(107, 98, 66);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(250, 250, 255, .3);
+    --loading-bar-color: rgba(201,217,245, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: solid;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #F6F6F6;
+    --code-scroll-thumb-bg-color: #ababab;
+    --code-scroll-track-bg-color: #d7e1e9;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E11E5A;
+    --code-fragment-border-color: #DADADA;
+    --code-bg-color: #F6F6F6;
+    --scroll-color: rgb(235, 246, 255);
+    --scroll-shadow-color: rgb(165,176,185);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(183, 228, 255, .7);
+    --err-color: rgb(166, 13, 13)
+}
+
+[theme=dark] {
+    --body-bg-color: rgb(23, 33, 43);
+    --panel-bg-color: #242F3D;
+    --group-bg-color: rgba(30, 40, 50, .5);
+    --text-color: rgba(228, 230, 240);
+    --border-color: rgba(71, 81, 89, .6);
+    --table-row-color: #242F3D;
+    --table-row-color-selected: #394c60;
+    --table-row-border-color: black;
+    --input-bg-color: rgb(30 34 46);
+    --input-bg-color-disabled: rgb(35, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+    --disabled-bg-color: #283240;
+    --disabled-text-color: rgba(118, 120, 130);
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color: rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+    --link-color: rgb(108, 146, 211);
+    --issue-card-descr-color: rgb(128, 146, 157);
+    --button-color: #4a5867;
+    --on-button-icon-color: rgb(198, 216, 227);
+    --off-button-icon-color: rgb(108, 108, 108);
+    --issues-search-idx-0-color: rgb(30, 170, 30);
+    --issues-search-idx-1-color: rgb(207, 207, 22);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(187, 174, 130);
+    --issues-search-bad-color: red;
+    --loading-bg-color: rgba(30, 34, 37, .3);
+    --loading-bar-color: rgba(20, 24, 30, .5);
+    --panel-border-radius: 4px;
+    --border-radius: 3px;
+    --border-style: inset;
+    --border-width: 1px;
+    --issue-search-btn-top-border-width: 1px;
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+    --scroll-color: rgb(65, 70, 73);
+    --scroll-shadow-color: rgb(10,15,20);
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, .6);
+    --err-color: rgb(166, 13, 13)
+}
+
+  </style></head>
+  <body>
+    <div id="app" data-v-app=""><div id="router-view-container" class="no-menu-container"><div class="landing-panel panel rv-container"><div class="maintop"><div class="maintop-title"><svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="278.000000pt" height="267.000000pt" viewBox="0 0 278.000000 267.000000" preserveAspectRatio="xMidYMid meet"><g class="honeypot0" transform="translate(0.000000,267.000000) scale(0.020000,-0.020000)"><path d="M1420 2420 c-18 -14 -75 -116 -162 -290 -106 -212 -134 -277 -134
+        -309 0 -62 258 -573 303 -601 30 -18 53 -19 389 -19 196 0 363 3 371 6 16 6
+        212 384 271 521 23 54 32 89 29 109 -3 16 -63 149 -134 295 -71 147 -129 271
+        -129 277 0 28 -48 32 -408 32 -361 0 -370 0 -396 -21z m716 -414 l93 -185 -93
+        -185 -92 -185 -238 0 -237 0 -93 185 -92 185 92 185 93 185 237 0 238 0 92
+        -185z"></path></g><g class="honeypot1" transform="translate(0.000000,267.000000) scale(0.100000,-0.100000)"><path d="M508 1943 c-14 -16 -84 -147 -157 -292 -95 -190 -131 -273 -131 -299
+        0 -26 38 -111 137 -310 110 -220 144 -279 168 -294 28 -17 56 -18 409 -16
+        l380 3 122 242 c156 311 168 341 161 398 -6 40 -12 56 -38 105 -45 83 -182
+        368 -200 415 -12 33 -27 63 -33 67 -6 4 -187 8 -402 8 l-390 0 -26 -27z m723
+        -402 c49 -95 89 -181 89 -190 0 -9 -40 -95 -88 -191 l-88 -175 -231 -3 -231
+        -2 -92 186 -93 187 94 183 94 184 229 -2 229 -3 88 -174z"></path></g><g class="honeypot2" transform="translate(0.000000,267.000000) scale(0.100000,-0.100000)"><path d="M1396 1469 c-18 -14 -75 -116 -162 -290 -106 -212 -134 -277 -134
+        -309 0 -62 258 -573 303 -601 30 -18 53 -19 389 -19 196 0 363 3 371 6 16 6
+        212 384 271 521 23 54 32 89 29 109 -3 16 -63 149 -134 295 -71 147 -129 271
+        -129 277 0 28 -48 32 -408 32 -361 0 -370 0 -396 -21z m716 -414 l93 -185 -93
+        -185 -92 -185 -238 0 -237 0 -93 185 -92 185 92 185 93 185 237 0 238 0 92
+        -185z"></path></g></svg><a href="/">Unkaos</a></div><div class="maintop-title2"><span>трекер задач c открытым исходным кодом</span></div></div><div class="landing-down-panel"><div class="panel landing-small-panel landing-small-panel-main"><span class="landing-span">Идет обновление, система временно недоступна... </span></div><div class="landing-small-panel landing-small-panel-author"><span class="landing-span landing-span-last"><a href="https://t.me/Khvilon"><i class="bx bxl-telegram"></i>@Khvilon</a></span><span class="landing-span landing-span-last"><a href="mailto:n@khvilon.ru"><i class="bx bx-envelope"></i>n@khvilon.ru</a></span><span class="landing-span landing-span-last">Николай Хвилон</span></div></div><img class="landing-corner-bg-img" src="/b3-1.png"><div class="langselect input landing-lang-select"><div class="vs__actions"><button type="button" class="vs__clear" title="Clear Selected" aria-label="Clear Selected" style="display: none;"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><path d="M6.895455 5l2.842897-2.842898c.348864-.348863.348864-.914488 0-1.263636L9.106534.261648c-.348864-.348864-.914489-.348864-1.263636 0L5 3.104545 2.157102.261648c-.348863-.348864-.914488-.348864-1.263636 0L.261648.893466c-.348864.348864-.348864.914489 0 1.263636L3.104545 5 .261648 7.842898c-.348864.348863-.348864.914488 0 1.263636l.631818.631818c.348864.348864.914773.348864 1.263636 0L5 6.895455l2.842898 2.842897c.348863.348864.914772.348864 1.263636 0l.631818-.631818c.348864-.348864.348864-.914489 0-1.263636L6.895455 5z"></path></svg></button><svg xmlns="http://www.w3.org/2000/svg" width="14" height="10" role="presentation" class="vs__open-indicator"><path d="M9.211364 7.59931l4.48338-4.867229c.407008-.441854.407008-1.158247 0-1.60046l-.73712-.80023c-.407008-.441854-1.066904-.441854-1.474243 0L7 5.198617 2.51662.33139c-.407008-.441853-1.066904-.441853-1.474243 0l-.737121.80023c-.407008.441854-.407008 1.158248 0 1.600461l4.48338 4.867228L7 10l2.211364-2.40069z"></path></svg><div class="vs__spinner" style="display: none;">Loading...</div></div></div><ul id="vs1__listbox" role="listbox" style="display: none; visibility: hidden;"></ul></div></div></div></div></div><div class="loading-background" style="display: none;"><div class="loading-bar"></div></div><!----><!----><div id="alert-container"></div></div>
+    
+  
+
+<div id="scrnli_recorder_root"></div>
+
+
+<input type="file" id="" name="file" style="display: none;">
+<div data-v-f3fb3dc8=""><div data-v-f3fb3dc8="" class="container_selected_area" style="cursor: crosshair;"></div> <div data-v-f3fb3dc8="" class="area" style="left: 0px; top: 0px; width: 0px; height: 0px;"></div></div></body></html>
