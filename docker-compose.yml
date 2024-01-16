@@ -99,15 +99,6 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_DATABASE=${DB_DATABASE}
-      - DISCORD_TOKEN=${DISCORD_TOKEN}
-      - EMAIL_SERVICE=${EMAIL_SERVICE}
-      - EMAIL_USER=${EMAIL_USER}
-      - EMAIL_PASS=${EMAIL_PASS}
-      - EMAIL_FROM=${EMAIL_FROM}
-      - SLACK_TOKEN=${SLACK_TOKEN}
-      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
-      - WHATSAPP_CODE=${WHATSAPP_CODE}
-      - WHATSAPP_PHONE=${WHATSAPP_PHONE}
     depends_on:
       - postgres
 
@@ -119,7 +110,6 @@ services:
     ports:
       - '5010'
     environment:
-      - OPENAI_KEY=${OPENAI_KEY}
       - ATHENA_PORT=${ATHENA_PORT}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}

@@ -135,8 +135,8 @@ fi
 
 CPU_CORES=1
 
-docker-compose down ossa cerberus zeus gateway hermes eileithia athena postgres
-docker-compose up -d  eileithia athena postgres
+docker-compose down ossa cerberus zeus gateway hermes eileithyia athena postgres
+docker-compose up -d  eileithyia athena postgres
 
 case $OS_ID in
     ubuntu|debian|raspbian)
