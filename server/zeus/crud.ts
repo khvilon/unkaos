@@ -479,7 +479,6 @@ crud.load = async function () {
 };
 
 
-
 crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is_revert:any) {
   //console.log('------------push_query0', '#' + query0 + '#', '##' + query1+ '##')
 

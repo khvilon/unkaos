@@ -69,7 +69,7 @@ normalize_version() {
 CURRENT_VERSION=$(grep -o '"version": "[^"]*' /var/app/unkaos/meta.json | grep -o '[0-9].*')
 
 TIMESTAMP=$(date +%s)
-wget --header="Cache-Control: no-cache" -O - "$META_FILE_URL?$TIMESTAMP" > temp_meta.json
+curl -H "Cache-Control: no-cache" "$META_FILE_URL?$TIMESTAMP" -o temp_meta.json
 NEW_VERSION=$(grep -o '"version": "[^"]*' temp_meta.json | grep -o '[0-9].*')
 rm temp_meta.json
 
@@ -166,5 +166,6 @@ docker-compose exec nginx nginx -s reload
 
 # Main Script Output
 echo "Autoupdate conf: $AUTO_UPDATE, $ALLOWED_UPDATE_FROM-$ALLOWED_UPDATE_TO, $CHECK_INTERVAL"
-echo "Current Version: $CURRENT_VERSION"
+echo "Your old version: $CURRENT_VERSION"
+echo "Your new version: $NEW_VERSION"
 echo "Current Time: $CURRENT_TIME"
