@@ -1,29 +1,5 @@
 #!/bin/bash
 
-# Function to generate a random 8-letter password
-generate_password() {
-    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1
-}
-
-# Function to validate the workspace name
-validate_workspace_name() {
-    local name=$1
-    if [[ -z $name ]]; then
-        echo "Workspace name cannot be empty."
-        return 1
-    elif [[ $name =~ [^a-zA-Z0-9_] ]]; then
-        echo "Workspace name can only contain letters, numbers, and underscores."
-        return 1
-    elif [[ ${#name} -ge 64 ]]; then
-        echo "Workspace name should be shorter than 64 characters."
-        return 1
-    elif [[ ! $name =~ ^[a-zA-Z_] ]]; then
-        echo "Workspace name should start with a letter or an underscore."
-        return 1
-    fi
-    return 0
-}
-
 # Detect OS and set package manager commands
 OS_ID=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
 OS_ID="${OS_ID//\"/}" # Remove quotes from the string
@@ -35,6 +11,8 @@ case $OS_ID in
         PKG_INSTALL="$PKG_MANAGER install -y"
         CERT_INSTALL="$PKG_INSTALL certbot"
         DOCKER_INSTALL="$PKG_INSTALL docker.io docker-compose"
+        DOCKER_COMPOSE="docker-compose"
+        PSQL="postgresql-client"
         ;;
     centos)
         PKG_MANAGER="yum"
@@ -42,6 +20,8 @@ case $OS_ID in
         PKG_INSTALL="$PKG_MANAGER install -y"
         CERT_INSTALL="$PKG_INSTALL epel-release && $PKG_MANAGER install certbot -y"
         DOCKER_INSTALL="$PKG_MANAGER install -y yum-utils && $PKG_MANAGER-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo && $PKG_MANAGER install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin"
+        DOCKER_COMPOSE="docker compose"
+        PSQL="postgresql"
         ;;
     *)
         echo "Unsupported OS: $OS_ID"
@@ -57,6 +37,9 @@ cd /var/app
 sudo $PKG_INSTALL git
 git clone -b dev https://github.com/khvilon/unkaos.git
 cd /var/app/unkaos
+
+source /tools.sh
+sudo $PKG_INSTALL $PSQL
 
 # 2. Set your env variables
 # Path to the .env file
@@ -154,28 +137,12 @@ else
     CPU_CORES=1
 fi
 
-case $OS_ID in
-    ubuntu|debian|raspbian)
-        docker-compose up -d \
-        --scale ossa=$CPU_CORES \
-        --scale cerberus=$CPU_CORES \
-        --scale zeus=$CPU_CORES \
-        --scale gateway=$CPU_CORES \
-        --scale hermes=$CPU_CORES
-        ;;
-    centos)
-        docker compose up -d \
-        --scale ossa=$CPU_CORES \
-        --scale cerberus=$CPU_CORES \
-        --scale zeus=$CPU_CORES \
-        --scale gateway=$CPU_CORES \
-        --scale hermes=$CPU_CORES
-        ;;
-    *)
-        echo "Unsupported OS: $OS_ID"
-        ;;
-esac
-
+$DOCKER_COMPOSE up -d \
+--scale ossa=$CPU_CORES \
+--scale cerberus=$CPU_CORES \
+--scale zeus=$CPU_CORES \
+--scale gateway=$CPU_CORES \
+--scale hermes=$CPU_CORES
 
 # 6. Set up a Cron Job to run update.sh every 5 minutes
 (crontab -l ; echo "*/5 * * * * /bin/bash /var/app/unkaos/update.sh") | crontab -

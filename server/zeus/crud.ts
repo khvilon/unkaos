@@ -472,7 +472,7 @@ crud.load = async function () {
     T1.service, 
     T1.name, 
     T1.value
-	FROM admin.config;
+	FROM admin.config T1;
   `
   crud.querys["server_config"]["create"] = ``;
   crud.querys["server_config"]["update"] = `UPDATE admin.config $@2 WHERE TRUE $@1`;

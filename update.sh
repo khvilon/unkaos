@@ -6,8 +6,20 @@
 OS_ID=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
 OS_ID="${OS_ID//\"/}" # Remove quotes from the string
 
-cd /var/app/unkaos
+case $OS_ID in
+    ubuntu|debian|raspbian)
+        DOCKER_COMPOSE="docker-compose"
+        ;;
+    centos)
+        DOCKER_COMPOSE="docker compose"
+        ;;
+    *)
+        echo "Unsupported OS: $OS_ID"
+        exit 1
+        ;;
+esac
 
+cd /var/app/unkaos
 source /vcheck.sh
 
 # Load environment variables
@@ -44,8 +56,6 @@ if [[ "$AUTO_UPDATE" != "true" || $TIME_ALLOWED -ne 0 ]]; then
   exit 0
 fi
 
-check_versions
-
 CURRENT_VERSION=$(grep -o '"version": "[^"]*' /var/app/unkaos/meta.json | grep -o '[0-9].*')
 
 TIMESTAMP=$(date +%s)
@@ -67,8 +77,7 @@ fi
 echo "New version available! Updating..."
 
 # Enable maintenance mode in Nginx
-docker-compose exec nginx sh -c 'touch /etc/nginx/conf.d/maintenance.flag'  
-docker-compose exec nginx nginx -s reload
+$DOCKER_COMPOSE exec nginx sh -c 'touch /etc/nginx/conf.d/maintenance.flag'  
 
 # Switch to the correct branch before pulling updates
 git stash
@@ -115,30 +124,15 @@ fi
 
 CPU_CORES=1
 
-docker-compose down ossa cerberus zeus gateway hermes eileithyia athena postgres
-docker-compose up -d  eileithyia athena postgres
+$DOCKER_COMPOSE down ossa cerberus zeus gateway hermes eileithyia athena postgres
+$DOCKER_COMPOSE up -d  eileithyia athena postgres
 
-case $OS_ID in
-    ubuntu|debian|raspbian)
-        docker-compose up -d \
-        --scale ossa=$CPU_CORES \
-        --scale cerberus=$CPU_CORES \
-        --scale zeus=$CPU_CORES \
-        --scale gateway=$CPU_CORES \
-        --scale hermes=$CPU_CORES
-        ;;
-    centos)
-        docker compose up -d \
-        --scale ossa=$CPU_CORES \
-        --scale cerberus=$CPU_CORES \
-        --scale zeus=$CPU_CORES \
-        --scale gateway=$CPU_CORES \
-        --scale hermes=$CPU_CORES
-        ;;
-    *)
-        echo "Unsupported OS: $OS_ID"
-        ;;
-esac
+$DOCKER_COMPOSE up -d \
+--scale ossa=$CPU_CORES \
+--scale cerberus=$CPU_CORES \
+--scale zeus=$CPU_CORES \
+--scale gateway=$CPU_CORES \
+--scale hermes=$CPU_CORES
 
 # Disable maintenance mode in Nginx
 docker-compose exec nginx sh -c 'rm /etc/nginx/conf.d/maintenance.flag'
