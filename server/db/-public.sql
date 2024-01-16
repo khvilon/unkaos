@@ -80,6 +80,7 @@ ALTER TABLE ONLY public.boards_filters
 
 CREATE TABLE public.configs (
     uuid uuid NOT NULL,
+    service text NOT NULL,
     name text NOT NULL,
     value text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -87,7 +88,7 @@ CREATE TABLE public.configs (
     deleted_at timestamp with time zone
 );
 ALTER TABLE ONLY public.configs
-    ADD CONSTRAINT configs_pkey PRIMARY KEY (uuid);
+    ADD CONSTRAINT configs_pkey PRIMARY KEY (uuid);    
 
 CREATE TABLE public.dashboards (
     uuid uuid NOT NULL,

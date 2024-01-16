@@ -96,13 +96,13 @@ const init = async function() {
     })
     listeners.push({"method": 'get',"func":'read_watcher'})
 
-    app.get('/read_server_config', async (req:any, res:any) => {   
-        let ans = await sql.query('server', `SELECT 
+    app.get('/read_config', async (req:any, res:any) => {   
+        let ans = await sql.query('admin', `SELECT 
             T1.uuid, 
             T1.service, 
             T1.name, 
             T1.value
-        FROM admin.config T1`)
+        FROM config T1`)
         res.send(ans)
     })
     listeners.push({"method": 'get',"func":'read_server_config'})
