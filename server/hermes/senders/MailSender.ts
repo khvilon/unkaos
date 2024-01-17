@@ -11,7 +11,7 @@ class MailSender {
   }
 
   async init(){
-    let ans = await sql`SELECT name, value FROM admin.config WHERE service = 'email'`
+    let ans = await sql`SELECT name, value FROM server.configs WHERE service = 'email'`
             
     let ans_dict = ans.reduce((obj: any, item: any) => {
       obj[item.name] = item.value;

@@ -12,7 +12,7 @@ class DiscordMessage {
     }
 
     async init(userData: UserData) {    
-      const ans = await sql`SELECT value FROM admin.config WHERE service = 'discord' AND name = 'token'`;
+      const ans = await sql`SELECT value FROM server.configs WHERE service = 'discord' AND name = 'token'`;
       discordConf = { token: ans[0].value };
        
       this.client = new Client({intents: [

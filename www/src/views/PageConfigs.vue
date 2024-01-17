@@ -3,6 +3,19 @@ import page_helper from "../page_helper.ts";
 import rest from "../rest.ts";
 
 
+const data = {
+  name: "configs",
+  label: "Настройки",
+  collumns: [],
+  inputs: [],
+  instance: {},
+};
+
+const mod = await page_helper.create_module(data);
+
+export default mod;
+
+
 </script>
 
 <template ref="config" v-if="config">
