@@ -116,9 +116,14 @@ mod.methods.saved = function (users) {
 };
 
 mod.computed.is_this_user2=function(){
-  if(!this.is_selected) return false
+  if(!this.users_selected) return false
   let user = cache.getObject("profile");
   return this.selected_users.uuid == user.uuid;
+};
+
+mod.computed.filteredInputs=function(){
+  console.log('filteredInputs', this.users_selected)
+  return this.users_selected ? this.inputs : this.inputs.filter((f)=>f.id != 'created_at' && f.id != 'active' )
 };
 
 
@@ -149,7 +154,7 @@ export default mod;
         <div class="table_card_fields">
           <component 
             v-bind:is="input.type + 'Input'"
-            v-for="(input, index) in is_selected ? inputs : inputs.filter((f)=>f.id != 'created_at' && f.id != 'active' )"
+            v-for="(input, index) in filteredInputs"
             :label="input.label"
             :key="index"
             :id="input.id"
@@ -166,7 +171,7 @@ export default mod;
           
         </div>
         <div class="table_card_buttons">
-          <KButton v-if="is_selected"
+          <KButton v-if="users_selected && !is_this_user2"
             class="change-password"
             :name="'Сбросить пароль'"
             @click="change_password()"

@@ -44,6 +44,9 @@ INSERT INTO server.configs(uuid, service, name, value) VALUES ('d4606eb0-62ac-47
 INSERT INTO server.configs(uuid, service, name, value) VALUES ('dc06c54f-319f-478d-99fa-9066ffd584ca', 'telegram', 'token', '');
 INSERT INTO server.configs(uuid, service, name, value) VALUES ('d91958eb-b3b9-465f-a680-62a830b8a358', 'slack', 'token', '');
 INSERT INTO server.configs(uuid, service, name, value) VALUES ('a8224636-7603-48dd-a2c4-1e38eaf9599c', 'openai', 'key', '');
+INSERT INTO server.configs(uuid, service, name, value) VALUES ('7a75fc39-5319-48d7-8fb3-85e2cf53edb9', 'autoupdate', 'allow', 'true');
+INSERT INTO server.configs(uuid, service, name, value) VALUES ('c6f6e1fb-8433-41b9-9b79-8eea42945152', 'autoupdate', 'from', '23');
+INSERT INTO server.configs(uuid, service, name, value) VALUES ('bfb2df42-317d-4323-8109-cc7b1f30ddb0', 'autoupdate', 'to', '5');
 
 CREATE INDEX ON server.field_values_rows USING btree (uuid);
 CREATE INDEX ON server.attachments USING btree (issue_uuid);

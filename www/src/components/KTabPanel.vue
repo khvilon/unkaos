@@ -8,7 +8,7 @@ export default {
     };
   },
   created() {
-    this.tabs = this.$slots.default();
+    this.tabs = this.$slots.default().filter((t)=>t.props.visible);
     this.selected = this.tabs[0].props.title;
   },
   mounted() {
@@ -27,7 +27,7 @@ export default {
     <slot></slot>
     <ul class="tabs__header">
       <li
-        v-for="(tab, index) in tabs.filter((t)=>t.props.visible)"
+        v-for="(tab, index) in tabs"
         :key="tab.props.title"
         @click="select_tab($event, index)"
         :class="{ tab__selected: selected == tab.props.title }"
