@@ -45,19 +45,21 @@ let items = [
           name: "Настройки",
           icon: "bx-cog",
           level: 1,
+          server: true
         },
         {
           link: "/configs/sprints",
           name: "Спринты",
           icon: "bx-timer",
           level: 2,
-          admin_only: true,
+          admin_only: true
         },
         {
           link: "/configs/users",
           name: "Пользователи",
           icon: "bx-user",
           level: 2,
+          server: true
         },
         {
           link: "/configs/roles",
@@ -177,6 +179,11 @@ export default {
         return "";
       }
     },
+    filteredMenuItems() {
+      if(this.$store.state['common'].workspace == 'server') 
+        return this.menuItems.filter((mi)=>mi.server);
+      return this.menuItems.filter((mi) => !mi.admin_only || !$store.state['common']['is_mobile'])
+    }
   },
 };
 </script>
@@ -217,9 +224,7 @@ export default {
       ></div>
       <div
         class="main-menu-element"
-        v-for="(menuItem, index) in menuItems.filter(
-          (mi) => !mi.admin_only || !$store.state['common']['is_mobile']
-        )"
+        v-for="(menuItem, index) in filteredMenuItems"
         :key="index"
       >
         <router-link :to="menuItem.link">

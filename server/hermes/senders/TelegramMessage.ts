@@ -13,7 +13,7 @@ class TelegramMessage {
   }
 
   async init(userData: UserData) {
-    const ans = await sql`SELECT value FROM admin.config WHERE service = 'telegram' AND name = 'token'`;
+    const ans = await sql`SELECT value FROM server.configs WHERE service = 'telegram' AND name = 'token'`;
     telegramConf = { token: ans[0].value };
 
     this.bot = new TelegramBot(telegramConf.token, { polling: true });
