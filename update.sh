@@ -90,6 +90,8 @@ echo "New version available! Updating..."
 docker-compose exec nginx sh -c 'touch /etc/nginx/conf.d/maintenance.flag'  
 docker-compose exec nginx nginx -s reload
 
+docker image prune -f
+
 # Switch to the correct branch before pulling updates
 git stash
 if [ "$BRANCH" == "dev" ]; then
