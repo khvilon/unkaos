@@ -82,7 +82,7 @@ class UsersData {
 
     private async handleNotify(row:any, { command, relation, key, old }: any){
         if(relation.table != 'users') return
-        if(!this.users[relation.schema]) return
+        if(!this.users[relation.schema]) this.workspaces = await this.loadWorkspaces()
         console.log('updating user data')
         this.users[relation.schema] = await this.loadWorkspaceUsers(relation.schema)
     }

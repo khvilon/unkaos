@@ -29,10 +29,17 @@ class MailSender {
       from: ans_dict.from,
     };
 
+    if(!ans_dict.service || !ans_dict.user || !ans_dict.pass) return;
+
     this.transport = nodemailer.createTransport(emailConf.transport);
   }
 
   async send(address: string, title: string, body: string) {
+    if(!this.transport) {
+      console.log('email service not configured');
+      return;
+    }
+
     // Определяем, содержит ли тело сообщения HTML-теги
     const isHtml = /<\/?[a-z][\s\S]*>/i.test(body);
   
