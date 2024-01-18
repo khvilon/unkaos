@@ -470,6 +470,8 @@ let methods = {
         if (this.issue[0].values[i].name === "Автор")
           this.issue[0].values[i].value = cache.getObject("profile").uuid;
       }
+      if(!this.projects.some((p)=>p.uuid == this.issue[0].project_uuid)) this.issue[0].project_uuid = this.projects[0].uuid;
+      if(!this.issue_types.some((it)=>it.uuid == this.issue[0].type_uuid)) this.issue[0].type_uuid = this.issue_types[0].uuid;
       // console.log("ibiiit issue", this.issue[0]);
     }
 

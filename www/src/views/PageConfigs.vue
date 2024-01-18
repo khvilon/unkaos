@@ -11,7 +11,126 @@ const data = {
   collumns: [],
   inputs: [],
   instance: {},
-  values: []
+  values: [],
+
+  tabs: [
+    {
+      label: 'Общие',
+      is_server: false,
+      groups:[
+        {
+          label: 'Использовать в рабочем пространстве',
+          fields: [{
+              label: 'Спринты',
+              type: 'Boolean',
+              service: 'workspace_use',
+              config: 'sprints'
+            },{
+              label: 'Учет времени',
+              type: 'Boolean',
+              service: 'workspace_use',
+              config: 'time_tracking'
+            },
+          ]
+        }
+      ]
+    },{
+      label: 'Оповещения',
+      is_server: true,
+      groups:[
+        {
+          label: 'Почта',
+          fields: [{
+              label: 'Сервис',
+              type: 'String',
+              service: 'email',
+              config: 'service'
+            },{
+              label: 'Пользователь',
+              type: 'String',
+              service: 'email',
+              config: 'user'
+            },{
+              label: 'Пароль',
+              type: 'String',
+              service: 'email',
+              config: 'pass'
+            },{
+              label: 'Поле "ОТ"',
+              type: 'String',
+              service: 'email',
+              config: 'from'
+            }
+          ]
+        },{
+          label: 'Telegram',
+          fields: [{
+              label: 'Токен бота',
+              type: 'String',
+              service: 'telegram',
+              config: 'token'
+            }
+          ]
+        },{
+          label: 'Discord',
+          fields: [{
+              label: 'Токен бота',
+              type: 'String',
+              service: 'discord',
+              config: 'token'
+            }
+          ]
+        }
+      ]
+    },{
+      label: 'Автообновление',
+      is_server: true,
+      groups:[
+        {
+          label: '',
+          fields: [{
+              label: 'Разрешить автообновление',
+              type: 'Boolean',
+              service: 'autoupdate',
+              config: 'allow'
+            }
+          ]
+        },{
+          label: 'Разрешенный интервал автобновления',
+          fields: [{
+              label: 'C, час',
+              type: 'Numeric',
+              service: 'autoupdate',
+              config: 'from'
+            },
+            {
+              label: 'По, час',
+              type: 'Numeric',
+              service: 'autoupdate',
+              config: 'to'
+            }
+          ]
+        }
+
+      ]
+    },{
+      label: 'ИИ',
+      is_server: true,
+      groups:[
+        {
+          label: 'Openai chatGPT 4',
+          fields: [{
+              label: 'Ключ API',
+              type: 'String',
+              service: 'openai',
+              config: 'key'
+            }
+          ]
+        }
+      ]
+    }
+
+  ]
 
 };
 
@@ -74,18 +193,28 @@ export default mod;
     <TopMenu :label="'Настройки'" />
     <div id="config_down_panel" class="panel">
       <KTabPanel>
-
-        <KTab title="Основное" :visible="$store.state['common'].workspace != 'server'"  class="table_card">
+        <KTab 
+          v-for="(tab, index) in tabs" 
+          :key="index"
+          :title="tab.label" 
+          :visible="tab.is_server == ($store.state['common'].workspace == 'server')"
+          class="table_card"
+        >
           <div class="table_card_fields">
-          <div class="config-group">
-            <div class="config-label">Использовать {{$store.state['common'].workspace}}</div>
-            <boolean-input
-              label="Спринты"
-            />  
-            <boolean-input
-              label="Учет времени"
-            />  
-          </div>
+            <div class="config-group"
+              v-for="(group, gindex) in tab.groups" 
+              :key="gindex"
+            >
+              <div class="config-label">{{ group.label }}</div>
+              <component
+                v-bind:is="input.type + 'Input'"
+                v-for="(input, iindex) in group.fields"
+                :label="input.label"
+                :key="iindex"
+                :value="getValue(input.service, input.config)"
+                @update_parent_from_input="(val) => updateValue(input.service, input.config, val)" 
+              ></component>
+            </div>
         </div>
         <div class="table_card_buttons">
             <div class="table_card_footer">
@@ -103,143 +232,6 @@ export default mod;
             </k-button>
           </div>
           </div>
-        </KTab>
-
-        <KTab title="Оповещения" :visible="$store.state['common'].workspace == 'server'" class="table_card">
-          <div class="table_card_fields">
-          <div class="config-group">
-            <div class="config-label">Почта</div>
-            <string-input
-              label="Сервис"
-              :value="getValue('email', 'service')"
-              @update_parent_from_input="(val) => updateValue('email', 'service', val)"
-            />  
-            <string-input
-              label="Пользователь"
-              :value="getValue('email', 'user')"
-              @update_parent_from_input="(val) => updateValue('email', 'user', val)"
-            />
-            <string-input
-              label="Пароль"
-              :value="getValue('email', 'pass')"
-              @update_parent_from_input="(val) => updateValue('email', 'pass', val)"
-            />  
-            <string-input
-              label='Поле "ОТ"'
-              :value="getValue('email', 'from')"
-              @update_parent_from_input="(val) => updateValue('email', 'from', val)"
-            />  
-          </div>
-          <div class="config-group">
-            <div class="config-label">Discord</div>
-            <string-input
-              label='Токен бота'
-              :value="getValue('discord', 'token')"
-              @update_parent_from_input="(val) => updateValue('discord', 'token', val)"
-            />
-          </div>
-          <div class="config-group">
-            <div class="config-label">Telegram</div>
-            <string-input
-              label='Токен бота'
-              :value="getValue('telegram', 'token')"
-              @update_parent_from_input="(val) => updateValue('telegram', 'token', val)"
-            /> 
-          </div>
-        </div>
-
-          <div class="table_card_buttons">
-            <div class="table_card_footer">
-            <k-button 
-            name="Сохранить"
-            class="table_card_footer_btn"
-            @click="save"
-            >  
-            </k-button>
-            <k-button 
-            name="Отменить"
-            class="table_card_footer_btn"
-            @click="cancel"
-            >  
-            </k-button>
-          </div>
-          </div>
-          
-           
-        </KTab>
-        <KTab title="Автообновление" :visible="$store.state['common'].workspace == 'server'"  class="table_card">
-          <div class="table_card_fields">
-          <div class="config-group">
-            <boolean-input
-              label="Разрешить автообновление"
-              :value="getValue('autoupdate', 'allow')"
-              @update_parent_from_input="(val) => updateValue('autoupdate', 'allow', val)"
-            />  
-          </div>
-          <div class="config-group">
-            <div class="config-label">Разрешенный интервал автобновления</div>
-            <numeric-input
-              label="С, час"
-              :value="getValue('autoupdate', 'from')"
-              @update_parent_from_input="(val) => updateValue('autoupdate', 'from', val)"
-              :disabled="!getValue('autoupdate', 'allow')"
-            />  
-            <numeric-input
-              label="По, час"
-              :value="getValue('autoupdate', 'to')"
-              @update_parent_from_input="(val) => updateValue('autoupdate', 'to', val)"
-              :disabled="!getValue('autoupdate', 'allow')"
-            />  
-          </div>
-        </div>
-        <div class="table_card_buttons">
-            <div class="table_card_footer">
-            <k-button 
-            name="Сохранить"
-            class="table_card_footer_btn"
-            @click="save"
-            >  
-            </k-button>
-            <k-button 
-            name="Отменить"
-            class="table_card_footer_btn"
-            @click="cancel"
-            >  
-            </k-button>
-          </div>
-          </div>
-        </KTab>
-        <KTab title="ИИ" :visible="$store.state['common'].workspace == 'server'"  class="table_card">
-          <div class="table_card_fields">
-          <div class="config-group">
-            <div class="config-label">Openai chatGPT 4</div>
-            <string-input
-              label="Ключ API"
-              :value="getValue('openai', 'key')"
-              @update_parent_from_input="(val) => updateValue('openai', 'key', val)"
-            />  
-            <numeric-input v-if="false"
-              label="Допустимое количество запросов на рабочее пространство в день"
-            />  
-          </div>
-        </div>
-        <div class="table_card_buttons">
-            <div class="table_card_footer">
-            <k-button 
-            name="Сохранить"
-            class="table_card_footer_btn"
-            @click="save"
-            >  
-            </k-button>
-            <k-button 
-            name="Отменить"
-            class="table_card_footer_btn"
-            @click="cancel"
-            >  
-            </k-button>
-          </div>
-          </div>
-          
         </KTab>
       </KTabPanel>
     </div>
