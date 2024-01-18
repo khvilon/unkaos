@@ -16,6 +16,8 @@ class TelegramMessage {
     const ans = await sql`SELECT value FROM server.configs WHERE service = 'telegram' AND name = 'token'`;
     telegramConf = { token: ans[0].value };
 
+    if(!telegramConf.token) return;
+
     this.bot = new TelegramBot(telegramConf.token, { polling: true });
     let me = this
 
@@ -35,6 +37,11 @@ class TelegramMessage {
   }
 
   async send(userId: string, title: string, body: string) {
+
+    if(!this.bot){
+      console.log('cant send telegram - not configured');
+      return;
+    }
 
     console.log('userId', userId)
     try{ 

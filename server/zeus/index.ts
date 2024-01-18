@@ -96,8 +96,6 @@ const init = async function() {
     })
     listeners.push({"method": 'get',"func":'read_watcher'})
 
-    
-
     app.get('/read_listeners', async (req:any, res:any) => {   
         res.send(listeners)
     }) 
