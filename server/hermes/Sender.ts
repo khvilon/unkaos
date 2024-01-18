@@ -29,7 +29,7 @@ class Sender {
     console.log('updating sender conf', row)
     if(row.service == 'email' ) this.email = new MailSender();
     if(row.service == 'discord' ) this.discord = new DiscordMessage(this.userData);
-    if(row.service == 'telegram' ) this.telegram = new TelegramMessage(this.userData);
+    if(row.service == 'telegram' ) this.telegram.init(this.userData);
   }
 
   private isUUID(str: string): boolean {
