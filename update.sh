@@ -24,34 +24,32 @@ YML_PATH="/var/docker-compose.yml"
 MIGRATIONS_DIR="server/db/"
 
 
-
 # Fetch configurations
-CONFIGS=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name, value FROM server.configs WHERE service = 'autoupdate'" | sed -n '/^ /p' | tr -s ' ' | cut -d '|' -f2,3)
+CONFIGS=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name, value FROM server.configs WHERE service = 'autoupdate'" | grep -E 'from|allow|to')
+
 echo "CONFIGS Output: $CONFIGS"
+
 # Process and assign values to variables
 while IFS='|' read -r name value; do
-    name=$(echo "$name" | xargs)  # Trim whitespace
-    value=$(echo "$value" | xargs)  # Trim whitespace
-
     case $name in
         "from")
-            ALLOWED_UPDATE_FROM=$value
+            ALLOWED_UPDATE_FROM=$(echo "$value" | xargs)  # Trim whitespace
             ;;
         "to")
-            ALLOWED_UPDATE_TO=$value
+            ALLOWED_UPDATE_TO=$(echo "$value" | xargs)  # Trim whitespace
             ;;
         "allow")
-            AUTO_UPDATE=$value
+            AUTO_UPDATE=$(echo "$value" | xargs)  # Trim whitespace
             ;;
     esac
 done <<< "$CONFIGS"
-
-
 
 # Echo variables for verification
 echo "ALLOWED_UPDATE_FROM: $ALLOWED_UPDATE_FROM"
 echo "ALLOWED_UPDATE_TO: $ALLOWED_UPDATE_TO"
 echo "AUTO_UPDATE: $AUTO_UPDATE"
+
+
 
 # Function to check if update time is allowed
 is_time_allowed() {
