@@ -13,6 +13,7 @@ if [ -f .env ]; then
   source .env
 fi
 
+
 # Configuration
 CHECK_INTERVAL=5000
 ALLOWED_UPDATE_FROM=0
