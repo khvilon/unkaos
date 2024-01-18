@@ -47,6 +47,8 @@ INSERT INTO server.configs(uuid, service, name, value) VALUES ('a8224636-7603-48
 INSERT INTO server.configs(uuid, service, name, value) VALUES ('7a75fc39-5319-48d7-8fb3-85e2cf53edb9', 'autoupdate', 'allow', 'true');
 INSERT INTO server.configs(uuid, service, name, value) VALUES ('c6f6e1fb-8433-41b9-9b79-8eea42945152', 'autoupdate', 'from', '23');
 INSERT INTO server.configs(uuid, service, name, value) VALUES ('bfb2df42-317d-4323-8109-cc7b1f30ddb0', 'autoupdate', 'to', '5');
+INSERT INTO server.configs(uuid, service, name, value) VALUES ('cb15b3a7-503c-4026-a2bc-bd104cb6dedf', 'workspace_use', 'sprints', 'false');
+INSERT INTO server.configs(uuid, service, name, value) VALUES ('85dfea7a-fc6f-440f-b414-fe63cd652318', 'workspace_use', 'time_tracking', 'false');
 
 CREATE INDEX ON server.field_values_rows USING btree (uuid);
 CREATE INDEX ON server.attachments USING btree (issue_uuid);
