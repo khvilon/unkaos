@@ -18,6 +18,8 @@ class TelegramMessage {
 
     if(!telegramConf.token) return;
 
+    await this.stopBot();
+
     this.bot = new TelegramBot(telegramConf.token, { polling: true });
     let me = this
 
@@ -34,6 +36,14 @@ class TelegramMessage {
     });
 
     console.log('telegram bot up', telegramConf.token)
+  }
+
+  async stopBot() {
+    if (this.bot) {
+      await this.bot.stopPolling();
+      console.log('Stopped existing bot instance');
+      this.bot = null;
+    }
   }
 
   async send(userId: string, title: string, body: string) {
