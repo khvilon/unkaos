@@ -31,15 +31,19 @@ echo "CONFIGS Output: $CONFIGS"
 
 # Process and assign values to variables
 while IFS='|' read -r name value; do
+    # Trim whitespace from name and value
+    name=$(echo "$name" | xargs)
+    value=$(echo "$value" | xargs)
+
     case $name in
         "from")
-            ALLOWED_UPDATE_FROM=$(echo "$value" | xargs)  # Trim whitespace
+            ALLOWED_UPDATE_FROM="$value"
             ;;
         "to")
-            ALLOWED_UPDATE_TO=$(echo "$value" | xargs)  # Trim whitespace
+            ALLOWED_UPDATE_TO="$value"
             ;;
         "allow")
-            AUTO_UPDATE=$(echo "$value" | xargs)  # Trim whitespace
+            AUTO_UPDATE="$value"
             ;;
     esac
 done <<< "$CONFIGS"
