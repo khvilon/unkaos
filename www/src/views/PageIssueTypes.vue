@@ -1,11 +1,13 @@
 <script>
 import page_helper from "../page_helper.ts";
+import tools from "../tools.ts";
 
 const data = {
   name: "issue_types",
   label: "Типы задач",
   instance: {
-    fields: [],
+    fields: [
+    ],
   },
   collumns: [
     {
@@ -45,9 +47,33 @@ const data = {
       disabled: true,
     },
   ],
+  customFields: [],
+
+
 };
 
 const mod = await page_helper.create_module(data);
+
+mod.methods.filterCustomFieldsSelected = function (selectedFields) {
+  return selectedFields
+  let customUuids = this.customFields.map((f)=>f.uuid);
+  if(!selectedFields || !selectedFields.filter) return [];
+  return selectedFields.filter((f)=>customUuids.includes(f.uuid));
+};
+
+mod.methods.init = function (fields, selectedFields) {
+    if(!this.fields || !this.fields.length) {
+      setTimeout(this.init, 200);
+      return;
+    }
+    this.customFields = tools.clone_obj(this.fields).filter((f)=>f.is_custom);
+    console.log('customFields',this.customFields)
+};
+
+mod.mounted = function () {
+  console.log("mounted configs!", this.configs);
+  this.init();
+};
 
 export default mod;
 </script>
@@ -80,7 +106,7 @@ export default mod;
             :parent_name="'issue_types'"
             :disabled="input.disabled"
             :clearable="input.clearable"
-            :values="input.values"
+            :values="input.id != 'fields' ? input.values : customFields"
             :parameters="input"
             :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
           ></component>

@@ -25,7 +25,7 @@ const methods = {
     return row.value;
   },
   init: function(){
-    console.log("try inited configs!", this.configs);
+
     if(!this.configs || !this.configs.length) {
       setTimeout(this.init, 200);
       return;
