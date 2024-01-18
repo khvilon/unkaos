@@ -6,8 +6,7 @@ const data = {
   name: "issue_types",
   label: "Типы задач",
   instance: {
-    fields: [
-    ],
+    fields: [],
   },
   collumns: [
     {
@@ -48,20 +47,21 @@ const data = {
     },
   ],
   customFields: [],
-
+  filteredCustomFields: []
 
 };
 
 const mod = await page_helper.create_module(data);
 
-mod.methods.filterCustomFieldsSelected = function (selectedFields) {
-  return selectedFields
+mod.methods.filterCustomFieldsSelected = function(selectedFields) {
+  console.log('>>>filterCustomFieldsSelected', selectedFields)
   let customUuids = this.customFields.map((f)=>f.uuid);
-  if(!selectedFields || !selectedFields.filter) return [];
-  return selectedFields.filter((f)=>customUuids.includes(f.uuid));
+  if(!selectedFields || !selectedFields.filter || !selectedFields.length) return [];
+  if(selectedFields[0].uuid) this.filteredCustomFields = selectedFields.filter((f)=>customUuids.includes(f.uuid));
+  else this.filteredCustomFields = selectedFields.filter((f)=>customUuids.includes(f));  
 };
 
-mod.methods.init = function (fields, selectedFields) {
+mod.methods.init = function () {
     if(!this.fields || !this.fields.length) {
       setTimeout(this.init, 200);
       return;
@@ -74,6 +74,17 @@ mod.mounted = function () {
   console.log("mounted configs!", this.configs);
   this.init();
 };
+
+mod.watch = {
+  selected_issue_types: {
+      handler: function(val, oldVal) {
+        if(val.uuid == oldVal.uuid) return;
+        console.log('>>>>>>>>>>>>', 'changed!', val, oldVal)
+        this.filterCustomFieldsSelected(val.fields)
+      },
+      deep: true
+    }
+  }
 
 export default mod;
 </script>
@@ -102,7 +113,7 @@ export default mod;
             :label="input.label"
             :key="index"
             :id="input.id"
-            :value="get_json_val(selected_issue_types, input.id)"
+            :value="(input.id != 'fields' || !this.selected_issue_types || !this.selected_issue_types.fields || !this.selected_issue_types.fields.length) ? get_json_val(selected_issue_types, input.id) : filteredCustomFields"
             :parent_name="'issue_types'"
             :disabled="input.disabled"
             :clearable="input.clearable"

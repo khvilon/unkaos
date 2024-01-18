@@ -1400,7 +1400,7 @@ export default mod;
         </Transition>
         <Transition name="element_fade">
           <KTimeEntries
-            v-if="!loading && id != ''"
+            v-if="!loading && id != '' && $store.state['common'].use_time_tracking"
             label=""
             id="issue_time_entries"
             @new_time_entry="new_time_entry"

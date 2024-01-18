@@ -180,10 +180,11 @@ export default {
       }
     },
     filteredMenuItems() {
-      return this.menuItems;
-      if(this.$store.state['common'].workspace == 'server') 
-        return this.menuItems.filter((mi)=>mi.server);
-      return this.menuItems.filter((mi) => !mi.admin_only || !$store.state['common']['is_mobile'])
+      let filteredMenuItems
+      if(this.$store.state['common'].workspace == 'server') filteredMenuItems = this.menuItems.filter((mi)=>mi.server);
+      else filteredMenuItems = this.menuItems.filter((mi) => !mi.admin_only || !this.$store.state['common']['is_mobile']);
+      if(!this.$store.state['common'].use_sprints) filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/sprints'));
+      return filteredMenuItems;
     }
   },
 };

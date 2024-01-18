@@ -5,8 +5,9 @@ import KAlerter from "./components/KAlerter.vue";
 
 import palette from "./palette.ts";
 import dict from "./dict.ts";
-import tools from "./tools.ts";
+import store_helper from "./store_helper.ts";
 import cache from "./cache.ts";
+import rest from "./rest.ts";
 
 import { useYandexMetrika } from 'yandex-metrika-vue3'
 
@@ -46,6 +47,8 @@ export default {
 
     this.$store.state["common"]["is_mobile"] = this.is_mobile() || this.in_iframe();
     this.$store.state["common"]["in_iframe"] = this.in_iframe();
+
+    this.get_configs();
 
     console.log(
       "this.$store.state[common][is_mobile]",
@@ -101,6 +104,21 @@ export default {
     },
   },
   methods: {
+    get_configs: async function () {
+
+      if(!this.$store.state["common"].workspace){
+        setTimeout(this.get_configs, 100);
+        return;
+      }
+
+      let configs = await rest.run_method('read_configs', {service: 'workspace_use'})
+      console.log('aaapp', configs)
+
+      for(let i in configs){
+        if(configs[i].name == 'sprints') this.$store.state['common'].use_sprints = (configs[i].value == 'true')
+        else if(configs[i].name == 'time_tracking') this.$store.state['common'].use_time_tracking = (configs[i].value == 'true')
+      }
+    },
     is_mobile: function () {
       return window.innerHeight > window.innerWidth;
     },

@@ -268,7 +268,7 @@ let methods = {
 			}
 		}
 
-		if(this.selected_board.use_sprint_filter){
+		if(this.selected_board.use_sprint_filter && this.$store.state['common'].use_sprints){
 			let sprint_uuid = this.sprints[this.curr_sprint_num].uuid
 			if(!this.conf.sprints) this.conf.sprints = {}
 			this.conf.sprints[sprint_uuid] = { swimlanes: swimlanes }
@@ -391,7 +391,7 @@ let methods = {
 		
 
 
-			if(this.selected_board.use_sprint_filter){
+			if(this.selected_board.use_sprint_filter && this.$store.state['common'].use_sprints){
 				let sprint_uuid = this.sprints[this.curr_sprint_num].uuid
 				
 				if (this.conf && this.conf.sprints && this.conf.sprints[sprint_uuid] && this.conf.sprints[sprint_uuid].swimlanes[x]){
@@ -421,7 +421,7 @@ let methods = {
 			let is_in_columns = this.boards_columns.map((obj) => obj.uuid).indexOf(this.boards_issues[i].status_uuid) > -1
 
 			if (is_in_columns &&
-				(!this.selected_board.use_sprint_filter || this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num].uuid)) {
+				(!(this.selected_board.use_sprint_filter && this.$store.state['common'].use_sprints) || this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num].uuid)) {
 				//console.log(this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num], this.boards_issues[i].sprint_uuid, this.sprints[this.curr_sprint_num])
 				if (this.swimlanes[x].filtered_issues[status_uuid] == undefined) this.swimlanes[x].filtered_issues[status_uuid] = []
 
@@ -496,17 +496,18 @@ let methods = {
 	get_issues: async function (query) ///added other things on mount
 	{
 		let options = {}
-		if (query != undefined && query != '') {
-			options.query = query
+		//if (query != undefined && query != '') {
+			options.query = query.trim();
 			this.encoded_query = query
-		}
+		/*}
 		else if (this.encoded_query != undefined && this.encoded_query != '') {
 			options.query = this.encoded_query
 		}
-		else return
+		else return*/
 
-		let query_str = '(' + decodeURIComponent(atob(options.query)).split('order by')[0] + ')'
-		if (this.selected_board.use_sprint_filter) {
+		let query_str = decodeURIComponent(atob(options.query)).split('order by')[0]
+		if(query_str != '') query_str = '(' + query_str + ')'
+		if (this.selected_board.use_sprint_filter && this.$store.state['common'].use_sprints) {
 			query_str += " and attr#sprint_uuid#='" + this.sprints[this.curr_sprint_num].uuid + "'#"
 		}
 
@@ -515,11 +516,15 @@ let methods = {
 			query_str += ' and (' + active_filters[i].converted_query + ')'
 		}
 
+	
+
 		console.log('options.query', query_str)
 		options.query = btoa(encodeURIComponent(query_str))
 
+		console.log('>>>>>>>>>>>>>>>>>>>>get_issues2' , options, '#')
 
-		this.boards_issues = await rest.run_method('read_issues', options)
+		if(options.query) this.boards_issues = await rest.run_method('read_issues', options)
+		else this.boards_issues = await rest.run_method('read_issues')
 
 		this.make_swimlanes()
 	},
@@ -934,7 +939,7 @@ let methods = {
 			}
 		}
 
-		if (this.selected_board.use_sprint_filter) issue.sprint_uuid = this.sprints[this.curr_sprint_num].uuid
+		if (this.selected_board.use_sprint_filter && this.$store.state['common'].use_sprints) issue.sprint_uuid = this.sprints[this.curr_sprint_num].uuid
 
 		for (let i in issue.values) {
 			issue.values[i].issue_uuid = issue.uuid;
@@ -1040,6 +1045,8 @@ const data =
 		name: '',
 		boards_columns: [],
 		boards_fields: [],
+		use_sprint_filter: false,
+		query: ''
 	},
 	statuses_ends_dict: {},
 	conf: {},
@@ -1291,7 +1298,7 @@ export default mod
 				</StringInput>
 
 
-				<div v-if="board != undefined && selected_board != undefined && selected_board.use_sprint_filter && sprints.length > 0"
+				<div v-if="board != undefined && selected_board != undefined && selected_board.use_sprint_filter && this.$store.state['common'].use_sprints && sprints.length > 0"
 					class="board-sprint-filter">
 					<span class='board-sprint-filter-btn' @click="update_sprint_num(curr_sprint_num - 1)">❮</span>
 					<SelectInput class="board-sprint-filter-string" label=''
@@ -1473,7 +1480,7 @@ export default mod
 				<div class="panel modal board-config">
 
 					<IssuesSearchInput v-if="board != undefined && 
-					selected_board && (!selected_board.use_sprint_filter || sprints[curr_sprint_num])" label="Запрос" class='board-issue-search-input'
+					selected_board && (!(selected_board.use_sprint_filter && $store.state['common'].use_sprints) || sprints[curr_sprint_num])" label="Запрос" class='board-issue-search-input'
 						:parent_name="'board'" @update_parent_from_input="update_search_query" :fields="fields"
 						@search_issues="get_issues" :projects="projects" :issue_statuses="issue_statuses"
 						:tags="issue_tags" :issue_types="issue_types" :users="users" :sprints="sprints"
@@ -1501,7 +1508,9 @@ export default mod
 						:value="get_json_val(selected_board, 'boards_fields')" :values="fields_values"
 						:parameters="{ multiple: true }"></SelectInput>
 
-					<BooleanInput label='Использовать фильтр по спринтам' id='use_sprint_filter'
+					<BooleanInput 
+					v-show = "$store.state['common'].use_sprints"
+					label='Использовать фильтр по спринтам' id='use_sprint_filter'
 						:value="get_json_val(selected_board, 'use_sprint_filter')" :parent_name="'board'"
 						@update_parent_from_input="make_swimlanes"></BooleanInput>
 
