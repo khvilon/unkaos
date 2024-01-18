@@ -11,23 +11,15 @@ if [ -f .env ]; then
   source .env
 fi
 
-
 # Configuration
-CHECK_INTERVAL=5000
-ALLOWED_UPDATE_FROM=0
-ALLOWED_UPDATE_TO=23
-AUTO_UPDATE="true"
 BRANCH=${1:-master}
 META_FILE_BASE_URL="https://raw.githubusercontent.com/khvilon/unkaos"
 META_FILE_URL="$META_FILE_BASE_URL/$BRANCH/meta.json"
 YML_PATH="/var/docker-compose.yml"
 MIGRATIONS_DIR="server/db/"
 
-
 # Fetch configurations
 CONFIGS=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name, value FROM server.configs WHERE service = 'autoupdate'" | grep -E 'from|allow|to')
-
-echo "CONFIGS Output: $CONFIGS"
 
 # Process and assign values to variables
 while IFS='|' read -r name value; do
@@ -215,7 +207,7 @@ docker-compose exec nginx sh -c 'rm /etc/nginx/conf.d/maintenance.flag'
 docker-compose exec nginx nginx -s reload
 
 # Main Script Output
-echo "Autoupdate conf: $AUTO_UPDATE, $ALLOWED_UPDATE_FROM-$ALLOWED_UPDATE_TO, $CHECK_INTERVAL"
+echo "Autoupdate conf: $AUTO_UPDATE, $ALLOWED_UPDATE_FROM-$ALLOWED_UPDATE_TO"
 echo "Your old version: $CURRENT_VERSION"
 echo "Your new version: $NEW_VERSION"
 echo "Current Time: $CURRENT_TIME"
