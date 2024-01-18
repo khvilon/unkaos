@@ -33,7 +33,7 @@ class TelegramMessage {
       me.bot.sendMessage(telegramId, username + ', ' + ans);
     });
 
-    console.log('telegram bot up')
+    console.log('telegram bot up', telegramConf.token)
   }
 
   async send(userId: string, title: string, body: string) {

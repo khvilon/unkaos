@@ -195,6 +195,7 @@ ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.users;
 ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.watchers;
 ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.msg_out;
 ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.users;
+ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.configs;
 
 ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.attachments;
 ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.field_values;
