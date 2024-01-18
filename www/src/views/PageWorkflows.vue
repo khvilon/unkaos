@@ -74,7 +74,7 @@ export default mod;
       </div>
       <div class="table_card panel workflow-table-card">
         <KTabPanel>
-          <KTab title="Основное">
+          <KTab title="Основное" :visible="true">
             <div class="table_card_fields">
               <component
                 v-bind:is="input.type + 'Input'"
@@ -102,7 +102,7 @@ export default mod;
               </div>
             </div>
           </KTab>
-          <KTab title="Схема">
+          <KTab title="Схема" :visible="true">
             <WorkflowsEditor :wdata="selected_workflows" />
             <div class="table_card_buttons">
               <div class="table_card_footer">

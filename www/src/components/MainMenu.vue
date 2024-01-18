@@ -180,6 +180,7 @@ export default {
       }
     },
     filteredMenuItems() {
+      return this.menuItems;
       if(this.$store.state['common'].workspace == 'server') 
         return this.menuItems.filter((mi)=>mi.server);
       return this.menuItems.filter((mi) => !mi.admin_only || !$store.state['common']['is_mobile'])

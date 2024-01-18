@@ -1038,6 +1038,14 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
 
         query = q;
         pg_params = p;
+      } else if(table_name == "issue_types" && method != "read"){
+        let req_fields = [
+          "c96966ea-a591-47a9-992c-0a2f6443bc80", "4a095ff5-c1c4-4349-9038-e3c35a2328b9","733f669a-9584-4469-a41b-544e25b8d91a"
+        ]
+
+        for (const reqField of req_fields) {
+          if (!params.fields.includes(reqField)) params.fields.push(reqField);
+        }
       }
 
       let old_uuids = crud.get_uuids(data.rows[0]);
