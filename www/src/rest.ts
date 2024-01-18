@@ -113,7 +113,7 @@ export default class rest {
       headers: options.headers,
       method: options.method,
     });
-    if (resp.status == 401) window.location.href = '/' + rest.workspace + '/login';
+    if (resp.status == 401 && !window.location.href.endsWith('/login')) window.location.href = '/' + rest.workspace + '/login';
     //console.log('resp.status', resp  )
     if (resp.status != 200) {
       store.state["alerts"][alert_id].text = resp.statusText + " >>";

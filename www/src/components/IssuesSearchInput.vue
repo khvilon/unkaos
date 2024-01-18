@@ -257,7 +257,12 @@ export default {
         return;
       }
 
+
+      
+
       if (this.value == undefined) return;
+
+
       if (!this.convert_query(this.value, true)){
 
         this.gpt_loader_visible = true
@@ -525,6 +530,9 @@ export default {
     },
 
     convert_query(query, use_to_end) {
+
+      query = query.trim();
+      console.log('convert_query', '#'+query+'#')
       let waits_for_idx = 0;
 
       //query data

@@ -36,19 +36,6 @@ BEGIN
 END;
 $$;
 
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('074a8ea8-95f4-49e6-9a60-4c84a7380100', 'email', 'service', '');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('eee93825-be47-4c6c-a69a-028b6b26243c', 'email', 'user', '');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('14d4d184-7f58-4064-9461-795aa13210de', 'email', 'pass', '');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('84d6511e-c78e-436b-9051-5cec4379ac19', 'email', 'from', 'Unkaos');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('d4606eb0-62ac-474e-ab26-b840c145e1fa', 'discord', 'token', '');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('dc06c54f-319f-478d-99fa-9066ffd584ca', 'telegram', 'token', '');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('d91958eb-b3b9-465f-a680-62a830b8a358', 'slack', 'token', '');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('a8224636-7603-48dd-a2c4-1e38eaf9599c', 'openai', 'key', '');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('7a75fc39-5319-48d7-8fb3-85e2cf53edb9', 'autoupdate', 'allow', 'true');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('c6f6e1fb-8433-41b9-9b79-8eea42945152', 'autoupdate', 'from', '23');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('bfb2df42-317d-4323-8109-cc7b1f30ddb0', 'autoupdate', 'to', '5');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('cb15b3a7-503c-4026-a2bc-bd104cb6dedf', 'workspace_use', 'sprints', 'false');
-INSERT INTO server.configs(uuid, service, name, value) VALUES ('85dfea7a-fc6f-440f-b414-fe63cd652318', 'workspace_use', 'time_tracking', 'false');
 
 CREATE INDEX ON server.field_values_rows USING btree (uuid);
 CREATE INDEX ON server.attachments USING btree (issue_uuid);
@@ -88,51 +75,114 @@ CREATE TRIGGER server_inserted AFTER INSERT ON server.fields FOR EACH ROW EXECUT
 CREATE TRIGGER server_update_field_values_rows AFTER INSERT OR UPDATE ON server.field_values FOR EACH ROW EXECUTE FUNCTION server.update_field_values_rows();
 
 
-INSERT INTO server.favourites_types (uuid, name) VALUES ('ac367512-c614-4f2a-b7d3-816018f71ad8', 'Сохраненный запрос');
-INSERT INTO server.favourites_types (uuid, name) VALUES ('46d00448-4d13-471e-b996-070c0650c113', 'Дашборд');
-INSERT INTO server.favourites_types (uuid, name) VALUES ('1b6832db-7d94-4423-80f2-10ed989af9f8', 'Доска');
+INSERT INTO server.configs(uuid, service, name, value) VALUES 
+('074a8ea8-95f4-49e6-9a60-4c84a7380100', 'email', 'service', ''),
+('eee93825-be47-4c6c-a69a-028b6b26243c', 'email', 'user', ''),
+('14d4d184-7f58-4064-9461-795aa13210de', 'email', 'pass', ''),
+('84d6511e-c78e-436b-9051-5cec4379ac19', 'email', 'from', 'Unkaos'),
+('d4606eb0-62ac-474e-ab26-b840c145e1fa', 'discord', 'token', ''),
+('dc06c54f-319f-478d-99fa-9066ffd584ca', 'telegram', 'token', ''),
+('d91958eb-b3b9-465f-a680-62a830b8a358', 'slack', 'token', ''),
+('a8224636-7603-48dd-a2c4-1e38eaf9599c', 'openai', 'key', ''),
+('7a75fc39-5319-48d7-8fb3-85e2cf53edb9', 'autoupdate', 'allow', 'true'),
+('c6f6e1fb-8433-41b9-9b79-8eea42945152', 'autoupdate', 'from', '23'),
+('bfb2df42-317d-4323-8109-cc7b1f30ddb0', 'autoupdate', 'to', '5'),
+('cb15b3a7-503c-4026-a2bc-bd104cb6dedf', 'workspace_use', 'sprints', 'false'),
+('85dfea7a-fc6f-440f-b414-fe63cd652318', 'workspace_use', 'time_tracking', 'false');
 
-INSERT INTO server.field_types (uuid, name, code) VALUES ('ba3c701d-ccdf-4af6-8ec1-d72fbb4fdc75', 'Время', 'Time');
-INSERT INTO server.field_types (uuid, name, code) VALUES ('c001b93c-3676-4e1d-b52a-4e2008c62c45', 'Дата и время', 'Timestamp');
-INSERT INTO server.field_types (uuid, name, code) VALUES ('a842d209-0111-4b8a-8ba6-cba191c1f4a1', 'Булево', 'Boolean');
-INSERT INTO server.field_types (uuid, name, code) VALUES ('93d432ce-d64e-4b1d-a358-87fd5de9e3e4', 'Дата', 'Date');
-INSERT INTO server.field_types (uuid, name, code) VALUES ('507278cc-a98e-4725-a248-7289dbbd4be1', 'Длительность', 'Duration');
-INSERT INTO server.field_types (uuid, name, code) VALUES ('891b02c9-a559-44da-8840-6e93bf2d8d22', 'Строка', 'String');
-INSERT INTO server.field_types (uuid, name, code) VALUES ('9d8ddcc7-a4e8-4ea8-b3d0-e7c9686abc6f', 'Текст', 'Text');
-INSERT INTO server.field_types (uuid, name, code) VALUES ('c0c4036c-3dd2-4264-ba2e-ec7180a4d35c', 'Числовое', 'Numeric');
-INSERT INTO server.field_types (uuid, name, code) VALUES ('d57da84f-ed1b-4596-9fb9-9d4c500af63d', 'Пользователь', 'User');
-INSERT INTO server.field_types (uuid, name, code) VALUES ('457da84d-2d1d-3595-6fba-4d4d674af63f', 'Значение из списка', 'Select');
+INSERT INTO server.favourites_types (uuid, name) VALUES 
+('ac367512-c614-4f2a-b7d3-816018f71ad8', 'Сохраненный запрос'),
+('46d00448-4d13-471e-b996-070c0650c113', 'Дашборд'),
+('1b6832db-7d94-4423-80f2-10ed989af9f8', 'Доска');
 
-INSERT INTO server.fields (uuid, name, type_uuid, is_custom) VALUES ('c96966ea-a591-47a9-992c-0a2f6443bc80', 'Название', '891b02c9-a559-44da-8840-6e93bf2d8d22', false);
-INSERT INTO server.fields (uuid, name, type_uuid, is_custom) VALUES ('4a095ff5-c1c4-4349-9038-e3c35a2328b9', 'Описание', '9d8ddcc7-a4e8-4ea8-b3d0-e7c9686abc6f', false);
-INSERT INTO server.fields (uuid, name, type_uuid, is_custom) VALUES ('60d53a40-cda9-4cb2-a207-23f8236ee9a7', 'Spent time', 'c0c4036c-3dd2-4264-ba2e-ec7180a4d35c', true);
-INSERT INTO server.fields (uuid, name, type_uuid, is_custom) VALUES ('e85ccb15-c1d2-433b-bb45-473a9a36a02c', 'Assignee', 'd57da84f-ed1b-4596-9fb9-9d4c500af63d', true);
-INSERT INTO server.fields (uuid, name, type_uuid, is_custom, available_values) VALUES ('b6ddb33f-eea9-40c0-b1c2-d9ab983026a1', 'Priority', '457da84d-2d1d-3595-6fba-4d4d674af63f', true, 'Show-stopper,Critical,Major,Normal,Minor');
-INSERT INTO server.fields (uuid, name, type_uuid, is_custom) VALUES ('733f669a-9584-4469-a41b-544e25b8d91a', 'Автор', 'd57da84f-ed1b-4596-9fb9-9d4c500af63d', false);
+INSERT INTO server.field_types (uuid, name, code) VALUES 
+('ba3c701d-ccdf-4af6-8ec1-d72fbb4fdc75', 'Время', 'Time'),
+('c001b93c-3676-4e1d-b52a-4e2008c62c45', 'Дата и время', 'Timestamp'),
+('a842d209-0111-4b8a-8ba6-cba191c1f4a1', 'Булево', 'Boolean'),
+('93d432ce-d64e-4b1d-a358-87fd5de9e3e4', 'Дата', 'Date'),
+('507278cc-a98e-4725-a248-7289dbbd4be1', 'Длительность', 'Duration'),
+('891b02c9-a559-44da-8840-6e93bf2d8d22', 'Строка', 'String'),
+('9d8ddcc7-a4e8-4ea8-b3d0-e7c9686abc6f', 'Текст', 'Text'),
+('c0c4036c-3dd2-4264-ba2e-ec7180a4d35c', 'Числовое', 'Numeric'),
+('d57da84f-ed1b-4596-9fb9-9d4c500af63d', 'Пользователь', 'User'),
+('457da84d-2d1d-3595-6fba-4d4d674af63f', 'Значение из списка', 'Select');
+
+INSERT INTO server.fields (uuid, name, type_uuid, is_custom) VALUES 
+('c96966ea-a591-47a9-992c-0a2f6443bc80', 'Название', '891b02c9-a559-44da-8840-6e93bf2d8d22', false),
+('4a095ff5-c1c4-4349-9038-e3c35a2328b9', 'Описание', '9d8ddcc7-a4e8-4ea8-b3d0-e7c9686abc6f', false),
+('733f669a-9584-4469-a41b-544e25b8d91a', 'Автор', 'd57da84f-ed1b-4596-9fb9-9d4c500af63d', false),
+('60d53a40-cda9-4cb2-a207-23f8236ee9a7', 'Spent time', 'c0c4036c-3dd2-4264-ba2e-ec7180a4d35c', true),
+('e85ccb15-c1d2-433b-bb45-473a9a36a02c', 'Assignee', 'd57da84f-ed1b-4596-9fb9-9d4c500af63d', true);
+INSERT INTO server.fields (uuid, name, type_uuid, is_custom, available_values) VALUES 
+('b6ddb33f-eea9-40c0-b1c2-d9ab983026a1', 'Priority', '457da84d-2d1d-3595-6fba-4d4d674af63f', true, 'Show-stopper,Critical,Major,Normal,Minor');
 
 --CREATE INDEX "field_values_rows_1b54a2db-3df4-485e-9ebc-77bb51f2d490_idx" ON server.field_values_rows USING btree ("1b54a2db-3df4-485e-9ebc-77bb51f2d490");
 --CREATE INDEX "field_values_rows_22cf17d4-b21c-4141-8a54-356af786940f_idx" ON server.field_values_rows USING btree ("22cf17d4-b21c-4141-8a54-356af786940f");
 
-INSERT INTO server.gadget_types (uuid, name, code) VALUES ('4a20ebc1-2740-4304-b2ea-8527f423dacd', 'Диаграмма Ганта', 'Gantt');
-INSERT INTO server.gadget_types (uuid, name, code) VALUES ('a558d34b-0bfb-4494-bb22-40ec15e97f0a', 'Таблица задач', 'IssuesTable');
-INSERT INTO server.gadget_types (uuid, name, code) VALUES ('4419f964-e212-4466-811e-056c1241b426', 'Отчет по затраченному времени', 'TimeReport');
+INSERT INTO server.gadget_types (uuid, name, code) VALUES 
+('4a20ebc1-2740-4304-b2ea-8527f423dacd', 'Диаграмма Ганта', 'Gantt'),
+('a558d34b-0bfb-4494-bb22-40ec15e97f0a', 'Таблица задач', 'IssuesTable'),
+('4419f964-e212-4466-811e-056c1241b426', 'Отчет по затраченному времени', 'TimeReport');
 
-INSERT INTO server.issue_actions_types VALUES ('1ff12964-4f5c-4be9-8fe3-f3d9a7225300', '📝');
-INSERT INTO server.issue_actions_types VALUES ('4d7d3265-806b-492a-b6c1-636e1fa653a9', '🔁');
-INSERT INTO server.issue_actions_types VALUES ('f53d8ecc-c26e-4909-a070-5c33e6f7a196', '💬');
+INSERT INTO server.issue_actions_types VALUES 
+('1ff12964-4f5c-4be9-8fe3-f3d9a7225300', '📝'),
+('4d7d3265-806b-492a-b6c1-636e1fa653a9', '🔁'),
+('f53d8ecc-c26e-4909-a070-5c33e6f7a196', '💬');
 
-INSERT INTO server.issue_statuses (uuid, name, is_start, is_end) VALUES ('6b0e63d5-3dcf-4c91-9f80-3c5e525c6b83', 'Новая', true, false);
-INSERT INTO server.issue_statuses (uuid, name, is_start, is_end) VALUES ('197ae224-6990-4ba8-873d-c2aa7a63a7c5', 'В работе', false, false);
-INSERT INTO server.issue_statuses (uuid, name, is_start, is_end) VALUES ('0f1dd8a2-159c-44cb-8254-caa8a596693b', 'Отложена', false, false);
-INSERT INTO server.issue_statuses (uuid, name, is_start, is_end) VALUES ('f735a09b-2b0c-4541-bd3d-88ca4c27002b', 'Завершена', false, true);
-INSERT INTO server.issue_statuses (uuid, name, is_start, is_end) VALUES ('e57cebc2-5300-47ff-8f72-5d24c5c0ac47', 'Отклонена', false, true);
+INSERT INTO server.issue_statuses (uuid, name, is_start, is_end) VALUES 
+('6b0e63d5-3dcf-4c91-9f80-3c5e525c6b83', 'Новая', true, false),
+('197ae224-6990-4ba8-873d-c2aa7a63a7c5', 'В работе', false, false),
+('0f1dd8a2-159c-44cb-8254-caa8a596693b', 'Отложена', false, false),
+('f735a09b-2b0c-4541-bd3d-88ca4c27002b', 'Завершена', false, true),
+('e57cebc2-5300-47ff-8f72-5d24c5c0ac47', 'Отклонена', false, true);
 
-INSERT INTO server.relation_types (uuid, name, revert_name) VALUES ('73b0a22e-4632-453d-903b-09804093ef1b', 'Родительская к', 'Дочерняя к');
-INSERT INTO server.relation_types (uuid, name, revert_name) VALUES ('b44dab29-bd47-4507-91b1-d62ddf34d09f', 'Необходима для', 'Требуется');
-INSERT INTO server.relation_types (uuid, name, revert_name) VALUES ('06e7ced5-d15c-412c-9e64-0858840d542d', 'Связана с', 'Связана с');
-INSERT INTO server.relation_types (uuid, name, revert_name) VALUES ('d279639b-2a7b-44d3-b317-eceea45c5592', 'Дублирует', 'Дублируема');
+INSERT INTO server.relation_types (uuid, name, revert_name) VALUES 
+('73b0a22e-4632-453d-903b-09804093ef1b', 'Родительская к', 'Дочерняя к'),
+('b44dab29-bd47-4507-91b1-d62ddf34d09f', 'Необходима для', 'Требуется'),
+('06e7ced5-d15c-412c-9e64-0858840d542d', 'Связана с', 'Связана с'),
+('d279639b-2a7b-44d3-b317-eceea45c5592', 'Дублирует', 'Дублируема');
 
 INSERT INTO server.roles (uuid, name, is_custom) VALUES ('556972a6-0370-4f00-aca2-73a477e48999', 'Администратор', false);
+
+INSERT INTO server.workflows(uuid, name) VALUES 
+('50097b48-a68d-4e77-a930-c2037f213703', 'Простой'),
+('9e7dc78e-ee4b-48fa-9577-5a91e3958d0a', 'Полный');
+
+INSERT INTO server.workflow_nodes(uuid, x, y, workflows_uuid, issue_statuses_uuid) VALUES
+('35e819ed-0eee-4a3d-b225-a52a73bc7c76', 202, 185, '50097b48-a68d-4e77-a930-c2037f213703', '6b0e63d5-3dcf-4c91-9f80-3c5e525c6b83'),
+('0fe8717f-eae0-4057-a4f7-8c73a1803f62', 363, 185, '50097b48-a68d-4e77-a930-c2037f213703', '197ae224-6990-4ba8-873d-c2aa7a63a7c5'),
+('c4c3030d-1470-468e-a66b-99a8257d6359', 522, 186, '50097b48-a68d-4e77-a930-c2037f213703', 'f735a09b-2b0c-4541-bd3d-88ca4c27002b'),
+('7e90f4c0-4b5c-4839-9fa5-25773c5e5972', 215, 248, '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a', '6b0e63d5-3dcf-4c91-9f80-3c5e525c6b83'),
+('7ad0eb9b-03c5-4a38-ba23-6303562edadc', 389, 250, '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a', '197ae224-6990-4ba8-873d-c2aa7a63a7c5'),
+('c5f2c2b9-0977-4ac6-bde2-d8d031c8522b', 297, 374, '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a', '0f1dd8a2-159c-44cb-8254-caa8a596693b'),
+('17465530-7430-450d-aa13-c374eea7b623', 551, 253, '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a', 'f735a09b-2b0c-4541-bd3d-88ca4c27002b'),
+('cf1587ec-ab88-4eb8-a5d7-94fd90cb96dc', 305, 126, '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a', 'e57cebc2-5300-47ff-8f72-5d24c5c0ac47');
+
+INSERT INTO server.transitions(uuid, status_from_uuid, status_to_uuid, name, workflows_uuid) VALUES
+('9d97c30b-d86e-40c1-9411-213f4709a752', '6b0e63d5-3dcf-4c91-9f80-3c5e525c6b83', '197ae224-6990-4ba8-873d-c2aa7a63a7c5', 'Взять в работу', '50097b48-a68d-4e77-a930-c2037f213703'),
+('56b1b4ed-b30a-4b58-92f3-ea264949a8dd', '197ae224-6990-4ba8-873d-c2aa7a63a7c5', 'f735a09b-2b0c-4541-bd3d-88ca4c27002b', 'Завершить', '50097b48-a68d-4e77-a930-c2037f213703'),
+('a757bfc1-fa1b-4029-8cfc-fae7f5b740d2', '6b0e63d5-3dcf-4c91-9f80-3c5e525c6b83', '197ae224-6990-4ba8-873d-c2aa7a63a7c5', 'В работу', '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a'),
+('5dd50672-ea17-47c7-86a6-82bbbbab4904', '197ae224-6990-4ba8-873d-c2aa7a63a7c5', 'f735a09b-2b0c-4541-bd3d-88ca4c27002b', 'Завершить', '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a'),
+('4b776166-1a7b-4e6a-ab2e-99e2f7277b9c', '197ae224-6990-4ba8-873d-c2aa7a63a7c5', 'e57cebc2-5300-47ff-8f72-5d24c5c0ac47', 'Отклонить', '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a'),
+('5091a1cb-3157-4972-a3f8-416915e0dfa8', '6b0e63d5-3dcf-4c91-9f80-3c5e525c6b83', 'e57cebc2-5300-47ff-8f72-5d24c5c0ac47', 'Отклонить', '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a'),
+('6c48b135-2331-4f4f-84fa-be2b5d1f7d8a', '197ae224-6990-4ba8-873d-c2aa7a63a7c5', '0f1dd8a2-159c-44cb-8254-caa8a596693b', 'Отложить', '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a'),
+('044718ce-da73-4eef-a90a-9b40425bbc6c', '0f1dd8a2-159c-44cb-8254-caa8a596693b', '197ae224-6990-4ba8-873d-c2aa7a63a7c5', 'В работу', '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a'),
+('84fd0574-3203-4ac6-8202-feb3cb64ad91', 'e57cebc2-5300-47ff-8f72-5d24c5c0ac47', '197ae224-6990-4ba8-873d-c2aa7a63a7c5', 'В работу', '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a'),
+('587dcb8f-1643-4ddb-89af-e4e678d47093', 'e57cebc2-5300-47ff-8f72-5d24c5c0ac47', '6b0e63d5-3dcf-4c91-9f80-3c5e525c6b83', 'Вернуть в новые', '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a'),
+('2acf3d91-3224-4e0a-86fe-15673db2d623', '6b0e63d5-3dcf-4c91-9f80-3c5e525c6b83', '0f1dd8a2-159c-44cb-8254-caa8a596693b', 'Отложить', '9e7dc78e-ee4b-48fa-9577-5a91e3958d0a');
+
+INSERT INTO server.issue_types(uuid, name, workflow_uuid) VALUES 
+('e26201a2-1fde-440b-b189-c97a3413359f','Задача', '50097b48-a68d-4e77-a930-c2037f213703');
+
+INSERT INTO server.issue_types_to_fields(issue_types_uuid, fields_uuid) VALUES
+('e26201a2-1fde-440b-b189-c97a3413359f', 'c96966ea-a591-47a9-992c-0a2f6443bc80'),
+('e26201a2-1fde-440b-b189-c97a3413359f', '4a095ff5-c1c4-4349-9038-e3c35a2328b9'),
+('e26201a2-1fde-440b-b189-c97a3413359f', '733f669a-9584-4469-a41b-544e25b8d91a'),
+('e26201a2-1fde-440b-b189-c97a3413359f', 'b6ddb33f-eea9-40c0-b1c2-d9ab983026a1'),
+('e26201a2-1fde-440b-b189-c97a3413359f', '60d53a40-cda9-4cb2-a207-23f8236ee9a7');
+
+INSERT INTO server.projects(uuid, name, short_name, owner_uuid, description) VALUES
+('f8f78225-1970-47d6-a36e-5b0b773eb8a1', 'Основной проект', 'BS', 'ba52933b-9c25-4be5-8b8e-02bd26ba8feb', 'Базовый проект по умолчанию');
 
 --INSERT INTO server.users (uuid, name, login, mail, password, is_active) VALUES ('dbe1a000-40de-428c-bc0a-4fd590a466a5', 'my_name', 'my_login', 'my_mail', md5('my_password'), true);
 

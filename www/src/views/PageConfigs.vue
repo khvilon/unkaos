@@ -160,11 +160,13 @@ const methods = {
           if(this.configs[j].uuid != this.values[i].uuid) continue;
           if(this.configs[j].value == this.values[i].value) continue;
           console.log('save', this.values[i])
+
+          if(this.values[i].name == 'sprints') this.$store.state['common'].use_sprints = this.values[i].value
+          else if(this.values[i].name == 'time_tracking') this.$store.state['common'].use_time_tracking = this.values[i].value
           await rest.run_method('update_configs', this.values[i])
         }
       }
       this.update_data();
-      //this.values = tools.clone_obj(this.configs);
   },
   updateValue: function(service, name, val){
     for(let i in this.values){

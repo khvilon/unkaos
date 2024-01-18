@@ -23,16 +23,14 @@ export default {
 
   beforeCreate() {},
   watch: {
-    value: function (val, oldVal) {
-     
-        
-        this.val = val
-    
+    value: function (val, oldVal) {        
+        if(this.val != val) this.val = val
     },
     val: function (val, oldVal) {
+
+      if(oldVal != undefined && val != undefined && val.toString()==oldVal.toString()) return;
       //this.convert_values_to_uuids()
 
-      
       if(this.updated_at == undefined) 
       {
         this.updated_at = new Date()
@@ -47,6 +45,7 @@ export default {
           break;
         }
       }
+      
 
       console.log("vue_select", val, oldVal, this.id, val_obj);
       //   console.log('pname', this.parent_name)
