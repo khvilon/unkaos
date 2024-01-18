@@ -39,6 +39,7 @@ class TelegramMessage {
   }
 
   async stopBot() {
+    console.log('stopBot');
     if (this.bot) {
       await this.bot.stopPolling();
       console.log('Stopped existing bot instance');
