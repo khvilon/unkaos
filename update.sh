@@ -26,6 +26,7 @@ MIGRATIONS_DIR="server/db/"
 
 # Fetch configurations
 CONFIGS=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name, value FROM server.configs WHERE service = 'autoupdate'" | sed -n '/^ /p' | tr -s ' ' | cut -d ' ' -f2,3)
+echo "CONFIGS Output: $CONFIGS"
 
 # Process and assign values to variables
 while IFS= read -r line; do
@@ -44,6 +45,7 @@ while IFS= read -r line; do
             ;;
     esac
 done <<< "$CONFIGS"
+
 
 # Echo variables for verification
 echo "ALLOWED_UPDATE_FROM: $ALLOWED_UPDATE_FROM"
