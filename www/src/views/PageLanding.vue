@@ -83,7 +83,7 @@ export default landing_page;
 
     
 
-    <img class="landing-corner-bg-img" src="/b3-1.png"/>
+    <img class="landing-corner-bg-img" src="/b3-1.jpg"/>
 
     <lang-select class="landing-lang-select"></lang-select>
 

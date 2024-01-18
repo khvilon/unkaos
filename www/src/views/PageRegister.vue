@@ -81,7 +81,7 @@ export default {
 
 <template ref="issues">
   <div class="register-container">
-    <img class="register-corner-bg-img" src="/b3.png"/>
+    <img class="register-corner-bg-img" src="/b3-1.jpg"/>
     <MainTop :name="t('создание рабочего пространства')"></MainTop>
 
   <div class="register-panel panel" :class="{ 'panel-register-process': uuid != undefined && uuid != '' }" @keyup.enter="register()" >
