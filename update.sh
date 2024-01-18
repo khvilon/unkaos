@@ -6,8 +6,6 @@ OS_ID="${OS_ID//\"/}" # Remove quotes from the string
 
 cd /var/app/unkaos
 
-CONFIGS=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name FROM admin.workspaces" | tail -n +3 | grep -v '^(.*row)')
-
 # Load environment variables
 if [ -f .env ]; then
   source .env
