@@ -24,6 +24,7 @@ class Sender {
   }
 
   private async updateSender(row:any, { command, relation, key, old }: any){
+    console.log('updateSender', command, relation, key, old)
     if(relation.table != 'configs' || relation.schema != 'server') return
     console.log('updating sender conf', row)
     if(row.service == 'email' ) this.email = new MailSender();

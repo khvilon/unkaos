@@ -1843,7 +1843,7 @@
 .landing-small-panel-main {
     left: 50vw;
     top: 50vh;
-    height: 320px;
+    height: 120px;
     transform: translate(-50%,-50%);
     width: 380px;
     box-shadow: 0 4px 15px #0006,0 1px 2px #a8bac51a inset;
@@ -1851,6 +1851,17 @@
     border-radius: 4px!important;
     border-style: outset!important;
     border-color: #47515980!important
+}
+
+@keyframes blink {
+    0%, 100% { content: '.'; }
+    33% { content: '..'; }
+    66% { content: '...'; }
+}
+
+#updateMessage:after {
+    content: '.';
+    animation: blink 2s step-start infinite;
 }
 
 .landing-small-panel-v {
@@ -6977,7 +6988,8 @@ $main-menu-width: 60px; $main-menu-width-open: 210px; $border-radius: 8px; $min-
         212 384 271 521 23 54 32 89 29 109 -3 16 -63 149 -134 295 -71 147 -129 271
         -129 277 0 28 -48 32 -408 32 -361 0 -370 0 -396 -21z m716 -414 l93 -185 -93
         -185 -92 -185 -238 0 -237 0 -93 185 -92 185 92 185 93 185 237 0 238 0 92
-        -185z"></path></g></svg><a href="/">Unkaos</a></div><div class="maintop-title2"><span>трекер задач c открытым исходным кодом</span></div></div><div class="landing-down-panel"><div class="panel landing-small-panel landing-small-panel-main"><span class="landing-span">Идет обновление, система временно недоступна... </span></div><div class="landing-small-panel landing-small-panel-author"><span class="landing-span landing-span-last"><a href="https://t.me/Khvilon"><i class="bx bxl-telegram"></i>@Khvilon</a></span><span class="landing-span landing-span-last"><a href="mailto:n@khvilon.ru"><i class="bx bx-envelope"></i>n@khvilon.ru</a></span><span class="landing-span landing-span-last">Николай Хвилон</span></div></div><img class="landing-corner-bg-img" src="/b3-1.png"><div class="langselect input landing-lang-select"><div class="vs__actions"><button type="button" class="vs__clear" title="Clear Selected" aria-label="Clear Selected" style="display: none;"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><path d="M6.895455 5l2.842897-2.842898c.348864-.348863.348864-.914488 0-1.263636L9.106534.261648c-.348864-.348864-.914489-.348864-1.263636 0L5 3.104545 2.157102.261648c-.348863-.348864-.914488-.348864-1.263636 0L.261648.893466c-.348864.348864-.348864.914489 0 1.263636L3.104545 5 .261648 7.842898c-.348864.348863-.348864.914488 0 1.263636l.631818.631818c.348864.348864.914773.348864 1.263636 0L5 6.895455l2.842898 2.842897c.348863.348864.914772.348864 1.263636 0l.631818-.631818c.348864-.348864.348864-.914489 0-1.263636L6.895455 5z"></path></svg></button><svg xmlns="http://www.w3.org/2000/svg" width="14" height="10" role="presentation" class="vs__open-indicator"><path d="M9.211364 7.59931l4.48338-4.867229c.407008-.441854.407008-1.158247 0-1.60046l-.73712-.80023c-.407008-.441854-1.066904-.441854-1.474243 0L7 5.198617 2.51662.33139c-.407008-.441853-1.066904-.441853-1.474243 0l-.737121.80023c-.407008.441854-.407008 1.158248 0 1.600461l4.48338 4.867228L7 10l2.211364-2.40069z"></path></svg><div class="vs__spinner" style="display: none;">Loading...</div></div></div><ul id="vs1__listbox" role="listbox" style="display: none; visibility: hidden;"></ul></div></div></div></div></div><div class="loading-background" style="display: none;"><div class="loading-bar"></div></div><!----><!----><div id="alert-container"></div></div>
+        -185z"></path></g></svg><a href="/">Unkaos</a></div><div class="maintop-title2"><span>трекер задач c открытым исходным кодом</span></div></div><div class="landing-down-panel">
+            <div class="panel landing-small-panel landing-small-panel-main"><span id="updateMessage" class="landing-span">Идет обновление, система временно недоступна</span></div><div class="landing-small-panel landing-small-panel-author"><span class="landing-span landing-span-last"><a href="https://t.me/Khvilon"><i class="bx bxl-telegram"></i>@Khvilon</a></span><span class="landing-span landing-span-last"><a href="mailto:n@khvilon.ru"><i class="bx bx-envelope"></i>n@khvilon.ru</a></span><span class="landing-span landing-span-last">Николай Хвилон</span></div></div><img class="landing-corner-bg-img" src="/b3-1.png"><div class="langselect input landing-lang-select"><div class="vs__actions"><button type="button" class="vs__clear" title="Clear Selected" aria-label="Clear Selected" style="display: none;"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><path d="M6.895455 5l2.842897-2.842898c.348864-.348863.348864-.914488 0-1.263636L9.106534.261648c-.348864-.348864-.914489-.348864-1.263636 0L5 3.104545 2.157102.261648c-.348863-.348864-.914488-.348864-1.263636 0L.261648.893466c-.348864.348864-.348864.914489 0 1.263636L3.104545 5 .261648 7.842898c-.348864.348863-.348864.914488 0 1.263636l.631818.631818c.348864.348864.914773.348864 1.263636 0L5 6.895455l2.842898 2.842897c.348863.348864.914772.348864 1.263636 0l.631818-.631818c.348864-.348864.348864-.914489 0-1.263636L6.895455 5z"></path></svg></button><svg xmlns="http://www.w3.org/2000/svg" width="14" height="10" role="presentation" class="vs__open-indicator"><path d="M9.211364 7.59931l4.48338-4.867229c.407008-.441854.407008-1.158247 0-1.60046l-.73712-.80023c-.407008-.441854-1.066904-.441854-1.474243 0L7 5.198617 2.51662.33139c-.407008-.441853-1.066904-.441853-1.474243 0l-.737121.80023c-.407008.441854-.407008 1.158248 0 1.600461l4.48338 4.867228L7 10l2.211364-2.40069z"></path></svg><div class="vs__spinner" style="display: none;">Loading...</div></div></div><ul id="vs1__listbox" role="listbox" style="display: none; visibility: hidden;"></ul></div></div></div></div></div><div class="loading-background" style="display: none;"><div class="loading-bar"></div></div><!----><!----><div id="alert-container"></div></div>
     
   
 
