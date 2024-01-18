@@ -24,14 +24,14 @@ YML_PATH="/var/docker-compose.yml"
 MIGRATIONS_DIR="server/db/"
 
 
-# Fetch configurations
-CONFIGS=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name, value FROM server.configs WHERE service = 'autoupdate'" | sed -n '/^ /p' | tr -s ' ' | cut -d ' ' -f2,3)
-echo "CONFIGS Output: $CONFIGS"
 
+# Fetch configurations
+CONFIGS=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name, value FROM server.configs WHERE service = 'autoupdate'" | sed -n '/^ /p' | tr -s ' ' | cut -d '|' -f2,3)
+echo "CONFIGS Output: $CONFIGS"
 # Process and assign values to variables
-while IFS= read -r line; do
-    name=$(echo "$line" | cut -d ' ' -f1)
-    value=$(echo "$line" | cut -d ' ' -f2)
+while IFS='|' read -r name value; do
+    name=$(echo "$name" | xargs)  # Trim whitespace
+    value=$(echo "$value" | xargs)  # Trim whitespace
 
     case $name in
         "from")
@@ -45,6 +45,7 @@ while IFS= read -r line; do
             ;;
     esac
 done <<< "$CONFIGS"
+
 
 
 # Echo variables for verification
