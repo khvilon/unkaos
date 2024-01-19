@@ -101,7 +101,7 @@ mod.methods.update_password = function () {
 };
 
 mod.methods.change_password = function () {
-  if (this.is_selected) rest.run_method("update_password_rand", { user: this.selected_users });
+  if (this.users_selected) rest.run_method("update_password_rand", { user: this.selected_users });
 };
 
 mod.methods.change_pass_var = function (val) {

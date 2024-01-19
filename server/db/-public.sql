@@ -415,40 +415,6 @@ CREATE TABLE public.old_issues_num (
 ALTER TABLE ONLY public.old_issues_num
     ADD CONSTRAINT old_issues_num_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.permition_targets (
-    uuid uuid NOT NULL,
-    name text NOT NULL,
-    table_name text
-);
-ALTER TABLE ONLY public.permition_targets
-    ADD CONSTRAINT permition_targets_pkey PRIMARY KEY (uuid);
-
-CREATE TABLE public.permitions (
-    uuid uuid NOT NULL,
-    role_uuid uuid NOT NULL,
-    target_uuid uuid NOT NULL,
-    permits boolean DEFAULT true NOT NULL,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    deleted_at timestamp without time zone
-);
-ALTER TABLE ONLY public.permitions
-    ADD CONSTRAINT permitions_pkey PRIMARY KEY (uuid);
-
-
-
-CREATE TABLE public.permitions_for_issues (
-    uuid uuid NOT NULL,
-    project_uuid uuid,
-    permits boolean DEFAULT true NOT NULL,
-    issue_uuid uuid,
-    role_uuid uuid NOT NULL,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    deleted_at timestamp without time zone
-);
-ALTER TABLE ONLY public.permitions_for_issues
-    ADD CONSTRAINT permitions_for_issues_pkey PRIMARY KEY (uuid);
 
 CREATE TABLE public.projects (
     uuid uuid NOT NULL,
