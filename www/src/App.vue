@@ -111,6 +111,8 @@ export default {
         return;
       }
 
+      if(window.location.href.endsWith('/login')) return;
+
       let configs = await rest.run_method('read_configs', {service: 'workspace_use'})
       console.log('aaapp', configs)
 

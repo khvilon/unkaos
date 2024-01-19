@@ -29,7 +29,7 @@ export default class Security {
     U.avatar,
     U.created_at,
     U.updated_at,
-    json_agg(R) as roles
+    COALESCE(json_agg(R) FILTER (WHERE R.uuid IS NOT NULL), '[]') as roles
     FROM ${sql(workspace + '.users')} U
     LEFT JOIN ${sql(workspace + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
     LEFT JOIN (SELECT uuid, name FROM ${sql(workspace + '.roles')}) R ON R.uuid = UR.roles_uuid
