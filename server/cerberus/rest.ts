@@ -76,6 +76,9 @@ export default class Rest {
     }
 
     if (request == 'check_session') {
+        const func: string = req.headers.func
+
+        console.log('>>>>>>>>>>>>test', user, func)
         res.send(user)
     } 
     else if (request == 'upsert_password') {

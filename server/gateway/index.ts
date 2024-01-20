@@ -49,7 +49,7 @@ async function init() {
         cerberus_ans = await axios({
           method: "get",
           url: conf.cerberusUrl + "/check_session",
-          headers: { token: req.headers.token, subdomain: req.headers.subdomain },
+          headers: { token: req.headers.token, subdomain: req.headers.subdomain,  func: req.headers.request_function},
           validateStatus: function (status) {
             return true; // Разрешить, только если код состояния меньше 500
           },

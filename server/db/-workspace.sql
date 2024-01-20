@@ -142,7 +142,142 @@ INSERT INTO server.relation_types (uuid, name, revert_name) VALUES
 ('06e7ced5-d15c-412c-9e64-0858840d542d', 'Связана с', 'Связана с'),
 ('d279639b-2a7b-44d3-b317-eceea45c5592', 'Дублирует', 'Дублируема');
 
-INSERT INTO server.roles (uuid, name, is_custom) VALUES ('556972a6-0370-4f00-aca2-73a477e48999', 'Администратор', false);
+INSERT INTO server.projects(uuid, name, short_name, owner_uuid, description) VALUES
+('f8f78225-1970-47d6-a36e-5b0b773eb8a1', 'Основной проект', 'BS', 'ba52933b-9c25-4be5-8b8e-02bd26ba8feb', 'Базовый проект по умолчанию');
+
+
+INSERT INTO server.roles (uuid, name, is_custom) VALUES 
+('556972a6-0370-4f00-aca2-73a477e48999', 'Администратор', false),
+('3a556a56-eb59-4654-92ac-1921040eeea1', 'Помощник администратора', true),
+('fa9d5af3-3567-4a63-9653-3567a636cc6a', 'Менеджер', true),
+('0090d50a-d3de-4bb2-822f-c8b5dd4428da', 'Работник', true),
+('287ccc96-30ed-4b14-81d2-905140b32eab', 'Гость', true);
+
+
+INSERT INTO server.permissions (uuid, code, name, targets) VALUES 
+('199f5994-7ba3-4619-a4f5-15e6a9185fe5', 'common', 'Общие разрешения', 
+'[
+    {"allow": "R", "table": "favourites"},
+
+    {"allow": "R", "table": "configs"},
+    {"allow": "R", "table": "sprints"},
+    {"allow": "R", "table": "projects"},
+    {"allow": "R", "table": "users"},
+    {"allow": "R", "table": "roles"},
+    {"allow": "R", "table": "users_to_roles"},
+    {"allow": "R", "table": "boards"},
+    {"allow": "R", "table": "dashboards"},
+
+    {"allow": "R", "table": "field_types"},
+    {"allow": "R", "table": "gadget_types"},
+    {"allow": "R", "table": "issue_actions_types"},
+    {"allow": "R", "table": "favourites_types"},
+    {"allow": "R", "table": "relation_types"},
+
+    {"allow": "R", "table": "transitions"},
+    {"allow": "R", "table": "workflow_nodes"},
+    {"allow": "R", "table": "fields"},
+    {"allow": "R", "table": "issue_statuses"},
+    {"allow": "R", "table": "issue_types"},
+    {"allow": "R", "table": "issue_types_to_fields"}
+]'),
+('f47c6d41-60f9-4871-8d12-c1ee6682f2e0', 'configs_U', 'Управление настройками рабочего пространства', 
+'[{"allow": "CRUD", "table": "configs"}]'),
+('54b36ed9-e5c6-4c5c-b700-182db3b78662', 'sprints_CUD', 'Управление спринтами', 
+'[{"allow": "CUD", "table": "sprints"}]'),
+('6aec376f-307b-497d-8509-c834308130f6', 'projects_CU', 'Создание и изменение проектов', 
+'[{"allow": "CU", "table": "sprints"}]'),
+('18996546-0d37-460c-90e0-d3cddef188d3', 'projects_D', 'Удаление проектов', 
+'[{"allow": "D", "table": "projects"}]'),
+('df343f32-013c-4c59-af2b-e6540a6c51e8', 'users_and_roles_CUD', 'Управление ролями и пользователями', 
+'[
+    {"allow": "CUD", "table": "users"},
+    {"allow": "CUD", "table": "roles"},
+    {"allow": "CUD", "table": "users_to_roles"}
+]'),
+('3cdbc5cd-c6bd-484e-8295-1d70aaa69469', 'boards_own_CUD', 'Создание, изменение и удаление своих досок и дашбордов', 
+'[
+    {"allow": "CUD", "table": "boards", "self": true},
+    {"allow": "CUD", "table": "boards_columns", "self": true},
+    {"allow": "CUD", "table": "boards_fields", "self": true},
+    {"allow": "CUD", "table": "boards_filters", "self": true}, 
+    {"allow": "CUD", "table": "dashboards", "self": true}, 
+    {"allow": "CUD", "table": "gadgets", "self": true}
+]'),
+('322149d3-50f3-4e55-99be-ad5c6bfbcb28', 'boards_not_own_UD', 'Изменение и удаление чужих досок и дашбордов', 
+'[
+    {"allow": "CUD", "table": "boards"},
+    {"allow": "CUD", "table": "boards_columns"},
+    {"allow": "CUD", "table": "boards_fields"},
+    {"allow": "CUD", "table": "boards_filters"}, 
+    {"allow": "CUD", "table": "dashboards"}, 
+    {"allow": "CUD", "table": "gadgets"}
+]'),
+('debb49fd-b2de-44f0-8972-4f6042e5221f', 'workflow_CRU', 'Создание и изменение полей, статусов, воркфлоу, типов задач', 
+'[
+    {"allow": "CU", "table": "workflows"},
+    {"allow": "CUD", "table": "transitions"},
+    {"allow": "CUD", "table": "workflow_nodes"},
+    {"allow": "CU", "table": "fields"},
+    {"allow": "CU", "table": "issue_statuses"},
+    {"allow": "CU", "table": "issue_types"},
+    {"allow": "CUD", "table": "issue_types_to_fields"}
+]'),
+('2a8047f3-2c50-4881-a5d3-e1389f45df76', 'workflow_CRU', 'Удаление полей, статусов, воркфлоу, типов задач', 
+'[
+    {"allow": "D", "table": "workflows"},
+    {"allow": "D", "table": "fields"},
+    {"allow": "D", "table": "issue_statuses"},
+    {"allow": "D", "table": "issue_types"} 
+]'),
+('a17e7a35-14da-4d86-97fe-1b4b1b19126d', 'issues_R', 'Читать задачи во всех проектах', 
+'[
+    {"allow": "R", "table": "issues"}
+]'),
+('d90d0117-0afa-4638-8d34-c7902c79451e', 'issues_CU', 'Создавать и изменть задачи во всех проектах', 
+'[
+    {"allow": "CRU", "table": "issues"},
+    {"allow": "CRUD", "table": "transitions"},
+    {"allow": "CRUD", "table": "workflow_nodes"},
+    {"allow": "CRU", "table": "fields"},
+    {"allow": "CRU", "table": "issue_statuses"},
+    {"allow": "CRU", "table": "issue_types"},
+    {"allow": "CRUD", "table": "issue_types_to_fields"}
+]'),
+('93ad4495-a8d6-4258-aa2c-671ac298947b', 'issues_R_project', 'Читать задачи в проекте', 
+'[
+    {"allow": "R", "table": "issues"}
+]'),
+('c7941144-18ef-4a27-b5af-a227fba2c742', 'issues_CU_project', 'Создавать и изменть задачи в проекте', 
+'[
+    {"allow": "CU", "table": "issues"},
+    {"allow": "CUD", "table": "transitions"},
+    {"allow": "CUD", "table": "workflow_nodes"},
+    {"allow": "CU", "table": "fields"},
+    {"allow": "CU", "table": "issue_statuses"},
+    {"allow": "CU", "table": "issue_types"},
+    {"allow": "CUD", "table": "issue_types_to_fields"}
+]');
+
+INSERT INTO server.roles_to_permissions (role_uuid, permission_uuid) VALUES
+('3a556a56-eb59-4654-92ac-1921040eeea1', 'f47c6d41-60f9-4871-8d12-c1ee6682f2e0'), 
+('3a556a56-eb59-4654-92ac-1921040eeea1', '18996546-0d37-460c-90e0-d3cddef188d3'), 
+('3a556a56-eb59-4654-92ac-1921040eeea1', 'df343f32-013c-4c59-af2b-e6540a6c51e8'), 
+('3a556a56-eb59-4654-92ac-1921040eeea1', '2a8047f3-2c50-4881-a5d3-e1389f45df76'), 
+('3a556a56-eb59-4654-92ac-1921040eeea1', 'df343f32-013c-4c59-af2b-e6540a6c51e8'), 
+
+('fa9d5af3-3567-4a63-9653-3567a636cc6a', '54b36ed9-e5c6-4c5c-b700-182db3b78662'), 
+('fa9d5af3-3567-4a63-9653-3567a636cc6a', '6aec376f-307b-497d-8509-c834308130f6'), 
+('fa9d5af3-3567-4a63-9653-3567a636cc6a', '322149d3-50f3-4e55-99be-ad5c6bfbcb28'), 
+('fa9d5af3-3567-4a63-9653-3567a636cc6a', 'debb49fd-b2de-44f0-8972-4f6042e5221f'), 
+
+('0090d50a-d3de-4bb2-822f-c8b5dd4428da', '3cdbc5cd-c6bd-484e-8295-1d70aaa69469');
+
+INSERT INTO server.projects_permissions(uuid, project_uuid, role_uuid, allow) VALUES 
+('f7a26dbb-6a4b-4855-bf02-ccd197ad1227', 'f8f78225-1970-47d6-a36e-5b0b773eb8a1', '3a556a56-eb59-4654-92ac-1921040eeea1', 'CRUD'),
+('f54974a4-50f1-421f-9032-ada7f908c83a', 'f8f78225-1970-47d6-a36e-5b0b773eb8a1', 'fa9d5af3-3567-4a63-9653-3567a636cc6a', 'CRUD'),
+('62f88de1-8f33-44da-9f1a-0bdc8522f253', 'f8f78225-1970-47d6-a36e-5b0b773eb8a1', '0090d50a-d3de-4bb2-822f-c8b5dd4428da', 'CRUD'),
+('6dac11c8-31c0-46f0-9942-aeb3911061df', 'f8f78225-1970-47d6-a36e-5b0b773eb8a1', '287ccc96-30ed-4b14-81d2-905140b32eab', 'R');
 
 INSERT INTO server.workflows(uuid, name) VALUES 
 ('50097b48-a68d-4e77-a930-c2037f213703', 'Простой'),
@@ -181,8 +316,7 @@ INSERT INTO server.issue_types_to_fields(issue_types_uuid, fields_uuid) VALUES
 ('e26201a2-1fde-440b-b189-c97a3413359f', 'b6ddb33f-eea9-40c0-b1c2-d9ab983026a1'),
 ('e26201a2-1fde-440b-b189-c97a3413359f', '60d53a40-cda9-4cb2-a207-23f8236ee9a7');
 
-INSERT INTO server.projects(uuid, name, short_name, owner_uuid, description) VALUES
-('f8f78225-1970-47d6-a36e-5b0b773eb8a1', 'Основной проект', 'BS', 'ba52933b-9c25-4be5-8b8e-02bd26ba8feb', 'Базовый проект по умолчанию');
+
 
 --INSERT INTO server.users (uuid, name, login, mail, password, is_active) VALUES ('dbe1a000-40de-428c-bc0a-4fd590a466a5', 'my_name', 'my_login', 'my_mail', md5('my_password'), true);
 

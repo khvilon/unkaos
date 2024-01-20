@@ -59,6 +59,10 @@ export default class Security {
     return (roles.find((role: any) => role.name == 'Администратор') !== undefined)
   }
 
+  static async checkPermission(workspace: string, user: any, table: string) : Promise<boolean> {
+    return true;
+  }
+
   static async setRandomPassword(workspace : string, user : any) : Promise<string> {
     const password = this.generateRandomPassword()
     await this.setUserPassword(workspace, user, password)
