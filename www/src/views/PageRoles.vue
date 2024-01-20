@@ -1,6 +1,117 @@
 <script>
 import page_helper from "../page_helper.ts";
 
+/*
+ВСЕ МОГУТ
+  читать пользователей
+  читать проекты
+  вести свое избранное
+
+
+АДМИНИСТРАТОР МОЖЕТ ВСЕ
+
+
+АДМИНИСТРАТОР структуры
+  Круд Воркфлоу
+  КРУД Статусов
+  Круд Полей
+  Круд Типов Задач
+
+Управление ролями - нельзя дать те права, которых нет у самого
+
+Круд пользователей
+
+Круд проектов
+
+
+
+
+
+Читать пользователей, проеты, свое избранное
+
+SYSTEM
+"gpt_logs"
+"logs_done"
+"msg_in"
+"msg_in_parts"
+"msg_out"
+"msg_pipes"
+"user_sessions"
+
+
+READ EVERYBODY
+"field_types"
+"gadget_types"
+"issue_actions_types"
+"favourites_types"
+"relation_types"
+
+READ, WRITE OWN EVERYBODY
+"favourites"
+
+READ
+WRITE
+READ FOR PROJECT
+WRITE FOR PROJRCT
+"issues"
+"attachments"
+"field_values"
+"field_values_rows"
+"issue_actions"
+"old_issues_num"
+"issue_tags"
+"issue_tags_selected"
+"relations"
+"time_entries"
+"watchers"
+
+READ WRITE
+"configs"
+
+READ WRITE
+DELETE
+"workflows"
+"transitions"
+"workflow_nodes"
+"fields"
+"issue_statuses"
+"issue_types"
+"issue_types_to_fields"
+
+
+READ PUBLIC
+EDIT, DELETE OWN
+EDIT NOT OWN
+DELETE NOT OWN
+"boards"
+"boards_columns"
+"boards_fields"
+"boards_filters"
+"dashboards"
+"gadgets"
+
+
+READ - EVERYBODY
+EDIT
+DELETE
+"projects"
+
+
+EDIT, DELETE
+ASSIGN
+"roles"
+"users_to_roles"
+
+READ - EVERYBODY
+CRUD
+"sprints"
+
+READ - EVERYVODY
+CRUD
+"users"
+
+*/
+
 const data = {
   name: "roles",
   label: "Роли пользователей",

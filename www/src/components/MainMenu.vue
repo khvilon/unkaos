@@ -35,24 +35,11 @@ let items = [
             level: 1
           },*/
         {
-          link: "/projects",
-          name: "Проекты",
-          icon: "bx-briefcase-alt-2",
-          level: 1,
-        },
-        {
           link: "/configs",
           name: "Настройки",
           icon: "bx-cog",
           level: 1,
           server: true
-        },
-        {
-          link: "/configs/sprints",
-          name: "Спринты",
-          icon: "bx-timer",
-          level: 2,
-          admin_only: true
         },
         {
           link: "/configs/users",
@@ -67,6 +54,19 @@ let items = [
           icon: "bx-group",
           level: 2,
           admin_only: true,
+        },
+        {
+          link: "/projects",
+          name: "Проекты",
+          icon: "bx-briefcase-alt-2",
+          level: 2,
+        },
+        {
+          link: "/configs/sprints",
+          name: "Спринты",
+          icon: "bx-timer",
+          level: 2,
+          admin_only: true
         },
         {
           link: "/configs/fields",
