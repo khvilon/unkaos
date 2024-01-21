@@ -101,14 +101,30 @@ export default class Data {
         let crud: string = targets[j].allow;
         for(let l = 0; l < crud.length; l++){
           let method: string = this.CRUD[crud[l]];
-          let key = permissions[i].user_uuid + '.' + method + '_' + targets[j].table;
-          console.log('workspace', workspace);
-          workspace.permissions.set(key, true)
+          let request: string = method + '_' + targets[j].table;
+          let key = permissions[i].user_uuid + '.' + request;
+          workspace.permissions.set(key, true);
           console.log('permissions key created', key);
+          if(request == 'update_users') workspace.permissions.set(permissions[i].user_uuid + '.upsert_password_rand', true)
         }
       }
     }
 
+    let admins = (await sql`
+      SELECT 
+        U.uuid user_uuid
+      FROM 
+        ${sql(workspaceName + '.users')} U
+        JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
+      WHERE
+        U.active AND 
+        U.deleted_at IS NULL AND 
+        UR.roles_uuid = '556972a6-0370-4f00-aca2-73a477e48999'
+    `)
+
+    for(let i in admins){
+      workspace.permissions.set(admins[i].user_uuid, true);
+    }
   }
 
   private async updateWorkspaceSessions(workspaceName: string) {
@@ -201,10 +217,10 @@ export default class Data {
   }
 
   public checkPermission(workspaceName: string, user_uuid: string, func: string): boolean {
-    let [method, table_name] = tools.split2(func, '_');
     let workspace: Workspace | undefined = this.workspaces.get(workspaceName);
     if(!workspace) return false;
-    return Boolean(workspace.permissions.get(user_uuid + '.' + func))
+    let isAdmin = Boolean(workspace.permissions.get(user_uuid));
+    return isAdmin || Boolean(workspace.permissions.get(user_uuid + '.' + func.replace('upsert', 'update')));
   }
 
 }

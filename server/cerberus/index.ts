@@ -77,28 +77,29 @@ export default class Rest {
       return
     }
 
-    
+    let allow = this.data.checkPermission(workspace, user.uuid, request);
+    let self = (user.uuid == req.body.user?.uuid);
+    if(request == 'upsert_user') allow = self || allow;
+    else if(request == 'upsert_password') allow = self
+
+    console.log('>>>>>>>>>>>>test', user, request, allow)
+
+    if(!allow){
+        res.status(403);
+        res.send({ message: 'Forbidden' });
+        return
+    }
 
     if (request == 'check_session') {
-
-        console.log('>>>>>>>>>>>>test', user, request)
-        let allow = this.data.checkPermission(workspace, user.uuid, request)
-
-        
         res.send(user)
     } 
     else if (request == 'upsert_password') {
-      const params = req.body
-      if (user.uuid != params.user.uuid) {
-        res.status(403);
-        res.send({ message: 'Нельзя изменять пароль других пользователей' });
-        return
-      }
-      await Security.setUserPassword(workspace, params.user, params.password)
+      await Security.setUserPassword(workspace, req.body.user, req.body.password)
       res.send({})
     } 
     else if (request == 'upsert_password_rand') {
       this.upsertPasswordRand(workspace, user, req, res);
+      res.send({})
     } 
     else {
       res.status(501)
@@ -108,40 +109,39 @@ export default class Rest {
 
   private async upsertPasswordRand(workspace: string, user: User, req: any, res: any) {
 
-   // if (await Security.checkUserIsAdmin(workspace, user)) {
-      if (await this.checkHermesAvailable()) {
-        const password = await Security.setRandomPassword(workspace, req.body.user)
-        try {
-          const hermes_answer = await axios({
+    if (!await this.checkHermesAvailable()) {
+        res.status(503)
+        res.send({message: "Service Temporarily Unavailable"})
+    }
+
+    const password = await Security.setRandomPassword(workspace, user)
+
+    try {
+        const hermes_answer = await axios({
             method: "post",
             url: conf.hermesUrl + "/send",
             data: {
-              transport: "email",
-              recipient: req.body.user.mail,
-              title: "Новый пароль Unkaos",
-              body: "Ваш новый пароль Unkaos: " + password,
-              workspace: workspace
+                transport: "email",
+                recipient: req.body.user.mail,
+                title: "Новый пароль Unkaos",
+                body: "Ваш новый пароль Unkaos: " + password,
+                workspace: workspace
             }
-          })
-          res.status(hermes_answer.status);
-          if (hermes_answer.status == 200) {
+        })
+
+        res.status(hermes_answer.status);
+        if (hermes_answer.status == 200) {
             res.send({message: 'Пароль упешно изменён'});
-          } else {
+        } else {
             res.send({message: 'Ошибка сброса пароля'});
-          }
-        } catch(e) {
-          console.log('/upsert_password_rand error: ' + JSON.stringify(e))
-          res.status(500)
-          res.send({message: "Internal Server Error"})
         }
-      } else {
-        res.status(503)
-        res.send({message: "Service Temporarily Unavailable"})
-      }
-    /*} else {
-      res.status(403);
-      res.send({message: 'Данное действие доступно только администратору'});
-    }*/
+    } 
+    catch(e) {
+        console.log('/upsert_password_rand error: ' + JSON.stringify(e))
+        res.status(500)
+        res.send({message: "Internal Server Error"})
+    }
+      
   }
 
   private async handleGetToken(req: any, workspace: string, res: any) {
@@ -151,7 +151,8 @@ export default class Rest {
     if (token == null) {
       res.status(401);
       res.send({message: 'Неверное имя пользователя или пароль'});
-    } else {
+    } 
+    else {
       res.send(token)
     }
   }
