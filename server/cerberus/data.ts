@@ -124,6 +124,29 @@ export default class Data {
 
     for(let i in admins){
       workspace.permissions.set(admins[i].user_uuid, true);
+      console.log('admin permissions key created', admins[i].user_uuid);
+    }
+
+    let commonPermissions = (await sql`
+      SELECT 
+        P.targets
+      FROM 
+        ${sql(workspaceName + '.permissions')} P
+      WHERE
+        P.deleted_at IS NULL AND P.code = 'common'
+    `)
+
+    let targets = commonPermissions[0]?.targets
+    if(!targets) return
+
+    for(let j in targets){
+      let crud: string = targets[j].allow;
+      for(let l = 0; l < crud.length; l++){
+        let method: string = this.CRUD[crud[l]];
+        let request: string = method + '_' + targets[j].table;
+        workspace.permissions.set(request, true);
+        console.log('common permissions key created', request);
+      }
     }
   }
 
