@@ -2,6 +2,7 @@ FROM node:18-bullseye-slim
 
 COPY ./server /app
 WORKDIR /app/cerberus
+RUN npm install npm@10.3.0
 RUN yarn install
 RUN npm i --save-dev @types/express
 RUN yarn build
