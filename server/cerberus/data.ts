@@ -33,13 +33,13 @@ export default class Data {
       AND schema_name NOT LIKE 'pg_%'
     `;
 
-    this.workspaces = schemas.map((schema: any) => {
-      return {
+    this.workspaces = new Map(schemas.map((schema: any) => {
+      return [schema.schema_name, {
         name: schema.schema_name,
         users: new Map(),
         sessions: new Map()
-      } as Workspace
-    });
+      } as Workspace]
+    }));
 
 
     for (let [workspaceName, workspace] of this.workspaces) {
