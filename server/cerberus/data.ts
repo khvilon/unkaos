@@ -91,7 +91,7 @@ export default class Data {
       ${sql(workspaceName + '.users')} U
         JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
         JOIN ${sql(workspaceName + '.roles')} R ON R.uuid = UR.roles_uuid
-        JOIN ${sql(workspaceName + '.roles_to_permissions')} RP ON RP.role_uuid = R.uuid
+        JOIN ${sql(workspaceName + '.roles_to_permissions')} RP ON RP.roles_uuid = R.uuid
         JOIN ${sql(workspaceName + '.permissions')} P ON P.uuid = RP.permission_uuid
       WHERE
         U.active AND 

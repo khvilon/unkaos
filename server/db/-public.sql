@@ -430,8 +430,8 @@ ALTER TABLE ONLY public.permissions
 
 CREATE TABLE IF NOT EXISTS public.roles_to_permissions
 (
-    role_uuid uuid NOT NULL,
-    permission_uuid uuid NOT NULL
+    roles_uuid uuid NOT NULL,
+    permissions_uuid uuid NOT NULL
 );
 
 CREATE TABLE public.projects_permissions
@@ -683,10 +683,10 @@ ALTER TABLE ONLY public.issue_types_to_fields
     ADD CONSTRAINT fk_issue_types_to_fields FOREIGN KEY (issue_types_uuid) REFERENCES public.issue_types(uuid) NOT VALID;
 
 ALTER TABLE ONLY public.roles_to_permissions
-    ADD CONSTRAINT fk_roles_to_issue_permissions FOREIGN KEY (role_uuid) REFERENCES public.roles(uuid) NOT VALID;
+    ADD CONSTRAINT fk_roles_to_issue_permissions FOREIGN KEY (roles_uuid) REFERENCES public.roles(uuid) NOT VALID;
 
 ALTER TABLE ONLY public.roles_to_permissions
-    ADD CONSTRAINT fk_permissions_to_roles FOREIGN KEY (permission_uuid) REFERENCES public.permissions(uuid) NOT VALID;
+    ADD CONSTRAINT fk_permissions_to_roles FOREIGN KEY (permissions_uuid) REFERENCES public.permissions(uuid) NOT VALID;
 
 ALTER TABLE ONLY public.issue_types
     ADD CONSTRAINT fk_issue_types_to_workflows FOREIGN KEY (workflow_uuid) REFERENCES public.workflows(uuid) NOT VALID;
