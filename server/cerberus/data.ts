@@ -248,7 +248,10 @@ export default class Data {
     let workspace: Workspace | undefined = this.workspaces.get(workspaceName);
     if(!workspace) return false;
     let isAdmin = Boolean(workspace.permissions.get(user_uuid));
-    return isAdmin || Boolean(workspace.permissions.get(user_uuid + '.' + func.replace('upsert', 'update')));
+    if(isAdmin) return true;
+    let isCommon = Boolean(workspace.permissions.get(func));
+    if(isCommon) return true;
+    return Boolean(workspace.permissions.get(user_uuid + '.' + func.replace('upsert', 'update')));
   }
 
 }
