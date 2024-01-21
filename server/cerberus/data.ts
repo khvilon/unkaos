@@ -245,8 +245,12 @@ export default class Data {
   }
 
   public checkPermission(workspaceName: string, user_uuid: string, func: string): boolean {
+
+    console.log('www')
     let workspace: Workspace | undefined = this.workspaces.get(workspaceName);
     if(!workspace) return false;
+
+    console.log('www1', user_uuid,func, workspace.permissions)
     let isAdmin = Boolean(workspace.permissions.get(user_uuid));
     if(isAdmin) return true;
     let isCommon = Boolean(workspace.permissions.get(func));
