@@ -120,13 +120,14 @@ async function init() {
     const request = req.url.split('/')[1]
     console.log(request, req.body)
 
+    req.headers.request_function = request;
+
     try {
       const cerberus_ans = await axios({
         method: "post",
         url: conf.cerberusUrl + "/" + request,
         headers: req.headers,
-        data: req.body,
-        request_function: request
+        data: req.body
       })
       res.status(cerberus_ans.status);
       res.send(cerberus_ans.data);
