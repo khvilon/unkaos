@@ -36,8 +36,9 @@ export default class Data {
     this.workspaces = new Map(schemas.map((schema: any) => {
       return [schema.schema_name, {
         name: schema.schema_name,
-        users: new Map(),
-        sessions: new Map()
+        sessions: new Map(),//token, user_uuid
+        permissions: new Map(),//user_uuid.table_name.CRUD as ke
+        users: new Map() //users by uuid
       } as Workspace]
     }));
 
@@ -101,6 +102,7 @@ export default class Data {
         for(let l = 0; l < crud.length; l++){
           let method: string = this.CRUD[crud[l]];
           let key = permissions[i].user_uuid + '.' + method + '_' + targets[j].table;
+          console.log('workspace', workspace);
           workspace.permissions.set(key, true)
           console.log('permissions key created', key);
         }
