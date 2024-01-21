@@ -49,7 +49,7 @@ async function init() {
         cerberus_ans = await axios({
           method: "get",
           url: conf.cerberusUrl + "/check_session",
-          headers: { token: req.headers.token, subdomain: req.headers.subdomain,  func: req.headers.request_function},
+          headers: { token: req.headers.token, subdomain: req.headers.subdomain,  request_function: req.headers.request_function},
           validateStatus: function (status) {
             return true; // Разрешить, только если код состояния меньше 500
           },
@@ -125,7 +125,8 @@ async function init() {
         method: "post",
         url: conf.cerberusUrl + "/" + request,
         headers: req.headers,
-        data: req.body
+        data: req.body,
+        request_function: request
       })
       res.status(cerberus_ans.status);
       res.send(cerberus_ans.data);

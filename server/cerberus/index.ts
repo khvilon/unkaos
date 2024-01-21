@@ -77,12 +77,12 @@ export default class Rest {
       return
     }
 
-    let allow = this.data.checkPermission(workspace, user.uuid, request);
+    let allow = this.data.checkPermission(workspace, user.uuid, req.headers.request_function);
     let self = (user.uuid == req.body.user?.uuid);
-    if(request == 'upsert_user') allow = self || allow;
-    else if(request == 'upsert_password') allow = self
+    if(req.headers.request_function == 'upsert_user') allow = self || allow;
+    else if(req.headers.request_function == 'upsert_password') allow = self
 
-    console.log('>>>>>>>>>>>>test', user, request, allow)
+    console.log('>>>>>>>>>>>>test', user, req.headers.request_function, request, allow)
 
     if(!allow){
         res.status(403);
