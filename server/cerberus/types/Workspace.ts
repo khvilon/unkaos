@@ -4,6 +4,7 @@ import Role from "./Role";
 
 export default interface Workspace {
   name: string;
-  users: Map<string, User & { roles: Role[] }>;
-  sessions: Map<string, UserSession>;
+  sessions: Map<string, UserSession>; //token, user_uuid
+  permissions: Map<string, boolean>; //user_uuid.table_name.CRUD as key
+  users: Map<string, User>; //users by uuid
 }

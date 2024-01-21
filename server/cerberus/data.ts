@@ -1,4 +1,5 @@
 import sql from "./sql";
+import tools from "../tools";
 import Workspace from "./types/Workspace";
 import UserSession from "./types/UserSession";
 import User from "./types/User";
@@ -7,39 +8,50 @@ import {Row} from "postgres";
 
 export default class Data {
 
-  workspaces: Workspace[] = [];
-  tokenExpirationTimeSec: number = 30 * 60 * 60 * 24 // 30 days
-  checkExpiredIntervalMs: number = 5 * 1000 // 1 minute in ms
+  private workspaces: Map<string, Workspace> = new Map();
+  private tokenExpirationTimeSec: number = 30 * 60 * 60 * 24 // 30 days
+  private checkExpiredIntervalMs: number = 10 * 1000 // 10 minutes in ms
 
-  async init() {
-    this.workspaces = await this.getWorkspaces()
-    for (const workspace of this.workspaces) {
-      await this.updateWorkspaceUsers(workspace.name)
-      await this.updateWorkspaceSessions(workspace.name)
-      console.log(`Loaded workspace: ${workspace.name}, users: ${workspace.users.length}, sessions: ${workspace.sessions.length}`)
-    }
-    this.removeExpiredTokens()
-    await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect) // bind to keep `this` reference
+  private CRUD: any = {
+    'C': 'create',
+    'R': 'read',
+    'U': 'update',
+    'D': 'delete'
   }
 
-  async getWorkspaces() : Promise<Workspace[]> {
+  public async init() {
+    await this.getWorkspaces();
+    this.removeExpiredTokens();
+    await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect); // bind to keep `this` reference
+  }
+
+  private async getWorkspaces() {
     const schemas = await sql`    
       SELECT schema_name
       FROM information_schema.schemata
       WHERE schema_name NOT IN ('information_schema', 'admin', 'public') 
       AND schema_name NOT LIKE 'pg_%'
-    `
-    return schemas.map((schema: any) => {
+    `;
+
+    this.workspaces = schemas.map((schema: any) => {
       return {
         name: schema.schema_name,
-        users: [],
-        sessions: []
+        users: new Map(),
+        sessions: new Map()
       } as Workspace
-    })
+    });
+
+
+    for (let [workspaceName, workspace] of this.workspaces) {
+      this.updateWorkspaceUsers(workspaceName);
+      this.updateWorkspaceSessions(workspaceName);
+      this.updateWorkspacePermissions(workspaceName);
+      console.log(`Loaded workspace: ${workspaceName}, users: ${workspace.users.size}, sessions: ${workspace.sessions.size}`)
+    }
   }
 
-  async updateWorkspaceUsers(workspaceName: string) {
-    this.workspaces.find(ws => ws.name === workspaceName)!.users = (await sql<User>`
+  private async updateWorkspaceUsers(workspaceName: string) {
+    this.workspaces.get(workspaceName)!.users = (await sql<User>`
       SELECT 
           U.uuid,
           U.name,
@@ -61,8 +73,47 @@ export default class Data {
     `)
   }
 
-  async updateWorkspaceSessions(workspaceName: string) {
-    this.workspaces.find(ws => ws.name === workspaceName)!.sessions = (await sql<UserSession>`
+  private async updateWorkspacePermissions(workspaceName: string) {
+    const workspace = this.workspaces.get(workspaceName);
+    if(!workspace) return;
+
+    let permissions = (await sql`
+      SELECT 
+        U.uuid user_uuid,
+        P.targets
+      FROM 
+      ${sql(workspaceName + '.users')} U
+        JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
+        JOIN ${sql(workspaceName + '.roles')} R ON R.uuid = UR.roles_uuid
+        JOIN ${sql(workspaceName + '.roles_to_permissions')} RP ON RP.role_uuid = R.uuid
+        JOIN ${sql(workspaceName + '.permissions')} P ON P.uuid = RP.permission_uuid
+      WHERE
+        U.active AND 
+        U.deleted_at IS NULL AND 
+        R.deleted_at IS NULL AND
+        P.deleted_at IS NULL
+    `)
+
+    for(let i in permissions){
+      let targets = permissions[i].targets;
+      for(let j in targets){
+        let crud: string = targets[j].allow;
+        for(let l = 0; l < crud.length; l++){
+          let method: string = this.CRUD[crud[l]];
+          let key = permissions[i].user_uuid + '.' + method + '_' + targets[j].table;
+          workspace.permissions.set(key, true)
+          console.log('permissions key created', key);
+        }
+      }
+    }
+
+  }
+
+  private async updateWorkspaceSessions(workspaceName: string) {
+    const workspace = this.workspaces.get(workspaceName);
+    if(!workspace) return;
+
+    const sessions = (await sql<UserSession>`
       SELECT 
         US.uuid,
         US.user_uuid,
@@ -78,57 +129,80 @@ export default class Data {
         AND US.deleted_at IS NULL
       ORDER BY US.CREATED_AT
     `)
+
+    workspace.sessions = new Map(sessions.map((session: UserSession)=>[session.token, session]))
   }
 
-  async md5(text: string){
-    
+  private async md5(text: string){
     let md5text = (await sql`SELECT MD5( ${text})`)[0].md5
     console.log('md5', md5text)
     return await md5text
   }
   
 
-  removeExpiredTokens() {
-    // removes expired user tokens
+  // removes expired user tokens
+  private removeExpiredTokens() { 
     const now = new Date()
-    this.workspaces.forEach((workspace: Workspace, workspaceIndex: number) => {
-      workspace.sessions.forEach((session: UserSession, sessionIndex: number) => {
+    this.workspaces.forEach((workspace: Workspace, workspaceName: string) => {
+      workspace.sessions.forEach((session: UserSession, token: string) => {
         if (session.expires_at !== undefined && session.expires_at < now) {
-          this.workspaces[workspaceIndex].sessions.splice(sessionIndex, 1)
-          console.log("Removed expired token: ", session.token)
+          workspace.sessions.delete(token);
+          console.log('Removed expired token: ', token, 'from', workspaceName);
         }
       })
     })
     setTimeout(() => { this.removeExpiredTokens() }, this.checkExpiredIntervalMs)
   }
 
-  async handleNotify(row: Row, { command, relation, _key, _old }: any) {
+  private async handleNotify(row: Row, { command, relation, _key, _old }: any) {
     if (relation.table == 'user_sessions' && command == 'insert') {
-      row.expires_at = new Date(Date.parse(row.created_at) + this.tokenExpirationTimeSec * 1000 )
-      this.workspaces.find(ws => ws.name === relation.schema)?.sessions?.push(row as UserSession)
+      let session: UserSession = {
+        uuid: row.uuid,
+        user_uuid: row.user_uuid,
+        token: row.token,
+        token_created_at: row.created_at,
+        expires_at: new Date(Date.parse(row.created_at) + this.tokenExpirationTimeSec * 1000 )
+      }
+      this.workspaces.get(relation.schema)?.sessions?.set(session.token, session)
     } else if (relation.table == 'users') {
-      // is users table is updated, update users of a workspace
+      // if users table is updated, update users of a workspace
       await this.updateWorkspaceUsers(relation.schema)
     } else if (relation.table == 'user_sessions') {
-      // is user_sessions table is updated, update sessions of a workspace
+      // if user_sessions table is updated, update sessions of a workspace
       await this.updateWorkspaceSessions(relation.schema)
+    } else if(relation.table == 'permissions' || 
+        relation.table == 'roles' || 
+        relation.table == 'roles_to_permissions' || 
+        relation.table == 'users_to_roles'){
+      await this.updateWorkspacePermissions(relation.schema)
     }
   }
 
-  handleSubscribeConnect() {
+  private handleSubscribeConnect() {
     console.log('subscribe connected!')
   }
 
-  async checkSession(workspaceName: string, token: string): Promise<User | null> {
+  public async checkSession(workspaceName: string, token: string): Promise<User | null> {
     //const md5Token = md5(token)
-    const md5Token = await this.md5(token)
-    const workspace = this.workspaces.find(workspace => workspace.name === workspaceName)
-    if (!workspace) return null
-    const session = workspace.sessions.find((sess) => sess?.token === md5Token)
-    if (!session) return null
-    const user = workspace.users.find(user => user.uuid === session?.user_uuid)
-    if (!user) return null
-    return user
+    const md5Token: string = await this.md5(token)
+    let workspace: Workspace | undefined = this.workspaces.get(workspaceName);
+    if(!workspace){
+      await this.getWorkspaces();
+      workspace = this.workspaces.get(workspaceName);
+      if(!workspace) return null;
+    }
+    const userSession: UserSession | undefined = workspace.sessions.get(md5Token);
+    if(!userSession) return null;
+    const user: User | undefined = workspace.users.get(userSession.user_uuid);
+    if(!user) return null;
+    return user;
+  }
+
+  public checkPermission(workspaceName: string, user_uuid: string, func: string): boolean {
+    let [method, table_name] = tools.split2(func, '_');
+    let workspace: Workspace | undefined = this.workspaces.get(workspaceName);
+    if(!workspace) return false;
+    return Boolean(workspace.permissions.get(user_uuid + '.' + func))
   }
 
 }
