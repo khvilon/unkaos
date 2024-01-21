@@ -179,7 +179,8 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
     {"allow": "R", "table": "fields"},
     {"allow": "R", "table": "issue_statuses"},
     {"allow": "R", "table": "issue_types"},
-    {"allow": "R", "table": "issue_types_to_fields"}
+    {"allow": "R", "table": "issue_types_to_fields"},
+    {"allow": "R", "table": "issue_tags"}
 ]'),
 ('f47c6d41-60f9-4871-8d12-c1ee6682f2e0', 'configs_U', 'Управление настройками рабочего пространства', 
 '[{"allow": "CRUD", "table": "configs"}]'),
@@ -259,7 +260,8 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
     {"allow": "CUD", "table": "issue_types_to_fields"}
 ]');
 
-INSERT INTO server.roles_to_permissions (role_uuid, permission_uuid) VALUES
+
+INSERT INTO server.roles_to_permissions (roles_uuid, permissions_uuid) VALUES
 ('3a556a56-eb59-4654-92ac-1921040eeea1', 'f47c6d41-60f9-4871-8d12-c1ee6682f2e0'), 
 ('3a556a56-eb59-4654-92ac-1921040eeea1', '18996546-0d37-460c-90e0-d3cddef188d3'), 
 ('3a556a56-eb59-4654-92ac-1921040eeea1', 'df343f32-013c-4c59-af2b-e6540a6c51e8'), 
@@ -325,6 +327,10 @@ INSERT INTO server.issue_types_to_fields(issue_types_uuid, fields_uuid) VALUES
 
 ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.user_sessions;
 ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.users;
+ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.roles;
+ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.roles_to_permissions;
+ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.users_to_roles;
+ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.permissions;
 
 ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.watchers;
 ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.msg_out;
