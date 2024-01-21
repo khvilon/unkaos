@@ -52,7 +52,10 @@ export default class Data {
   }
 
   private async updateWorkspaceUsers(workspaceName: string) {
-    this.workspaces.get(workspaceName)!.users = (await sql<User>`
+    const workspace = this.workspaces.get(workspaceName);
+    if(!workspace) return;
+
+    let users = (await sql<User>`
       SELECT 
           U.uuid,
           U.name,
@@ -71,7 +74,9 @@ export default class Data {
       U.login,
       U.mail,
       U.telegram
-    `)
+    `);
+
+    workspace.users = new Map(users.map((user: User)=>[user.uuid, user]));
   }
 
   private async updateWorkspacePermissions(workspaceName: string) {
