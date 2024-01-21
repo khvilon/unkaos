@@ -35,8 +35,8 @@ export default class rest {
     if (resp.status != 200) return null;
     const data = await resp.json();
     
-    cache.setString("user_token", data.user_token)
-    cache.setObject("profile", data.profile)
+    cache.setString("user_token", data.user_token);
+    cache.setObject("profile", data.profile);
     return data;
   }
 
