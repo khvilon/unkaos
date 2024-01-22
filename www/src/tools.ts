@@ -129,7 +129,7 @@ export default class tools {
 
   static obj_attr_by_path(obj: any, path: string): string {
     if (obj == undefined) return "";
-    // console.log('obj_attr_by_path0', JSON.stringify(obj), path)
+     console.log('obj_attr_by_path0', JSON.stringify(obj), path)
     if (Array.isArray(path)) {
       let ans = "";
       for (const i in path) {
@@ -154,7 +154,7 @@ export default class tools {
       data_part = data_part[path_parts[i]];
       if (data_part == undefined) return "";
     }
-    // console.log('obj_attr_by_path2', path, data_part)
+    console.log('obj_attr_by_path2', path, data_part)
     return data_part;
   }
 

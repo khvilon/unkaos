@@ -175,7 +175,6 @@ export default {
 .text-input {
   width: 100%;
   font-size: 14px;
-  font-weight: 400;
   background: var(--input-bg-color);
   border-color: var(--border-color);
   border-style: var(--border-style);

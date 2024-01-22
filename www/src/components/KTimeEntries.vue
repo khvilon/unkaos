@@ -113,7 +113,6 @@ $time_entry_input_border_width: 2px;
 
 .time-entries-input {
   font-size: 20px;
-  font-weight: 400;
   border-radius: var(--border-radius);
   transition: all 0.5s ease;
   background-color: transparent;

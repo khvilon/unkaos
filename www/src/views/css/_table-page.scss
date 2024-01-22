@@ -55,7 +55,7 @@ $table-card-width: calc(100% - $table-panel-width);
 }
 
 .table_card_fields::-webkit-scrollbar {
-  display: none;
+  //display: none;
 }
 
 .table_card_fields .input{

@@ -172,7 +172,6 @@ $attachment_input_border_width: 2px;
   min-height: 86px;
   min-width: 125px;
   font-size: 20px;
-  font-weight: 400;
   transition: all 0.5s ease;
   background-color: transparent;
   text-align: center;
