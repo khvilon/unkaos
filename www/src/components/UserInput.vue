@@ -123,6 +123,12 @@ export default {
       type: Boolean,
       default: false,
     },
+    multiple: {
+      type: Boolean,
+      default: false,
+    },
+
+    
   },
 
 };
@@ -141,6 +147,7 @@ export default {
       :reduce="(user) => user.uuid"
       @open="is_open=true"
       @close="is_open=false"
+      :multiple="multiple"
     >
       <template v-if="is_open" #option="{ name, active, avatar }">
         <img :src="avatar ?? default_avatar" />{{ name

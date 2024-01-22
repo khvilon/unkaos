@@ -437,9 +437,9 @@ CREATE TABLE IF NOT EXISTS public.roles_to_permissions
 CREATE TABLE public.projects_permissions
 (
     uuid uuid NOT NULL,
-    project_uuid uuid NOT NULL,
-    role_uuid uuid,
-    user_uuid uuid,
+    projects_uuid uuid NOT NULL,
+    roles_uuid uuid,
+    users_uuid uuid,
     allow text NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
@@ -462,8 +462,6 @@ CREATE TABLE public.projects (
 );
 ALTER TABLE ONLY public.projects
     ADD CONSTRAINT projects_pkey PRIMARY KEY (uuid);
-ALTER TABLE ONLY public.projects
-    ADD CONSTRAINT projects_uuid_key UNIQUE (short_name);
 
 CREATE TABLE public.relation_types (
     uuid uuid NOT NULL,
@@ -709,14 +707,14 @@ ALTER TABLE ONLY public.old_issues_num
 ALTER TABLE ONLY public.projects
     ADD CONSTRAINT fk_projects_to_owner FOREIGN KEY (owner_uuid) REFERENCES public.users(uuid) ON DELETE RESTRICT NOT VALID;
 
-ALTER TABLE ONLY public.projects_permissions
-    ADD CONSTRAINT fk_projects_permissions_to_project FOREIGN KEY (project_uuid) REFERENCES public.projects(uuid) ON DELETE RESTRICT NOT VALID;
+--ALTER TABLE ONLY public.projects_permissions
+--    ADD CONSTRAINT fk_projects_permissions_to_project FOREIGN KEY (projects_uuid) REFERENCES public.projects(uuid) ON DELETE RESTRICT NOT VALID;
 
 ALTER TABLE ONLY public.projects_permissions
-    ADD CONSTRAINT fk_projects_permissions_to_role FOREIGN KEY (role_uuid) REFERENCES public.roles(uuid) ON DELETE RESTRICT NOT VALID;
+    ADD CONSTRAINT fk_roles_to_projects_permissions FOREIGN KEY (roles_uuid) REFERENCES public.roles(uuid) ON DELETE RESTRICT NOT VALID;
 
-ALTER TABLE ONLY public.projects_permissions
-    ADD CONSTRAINT fk_projects_permissions_to_user FOREIGN KEY (user_uuid) REFERENCES public.users(uuid) ON DELETE RESTRICT NOT VALID;
+--ALTER TABLE ONLY public.projects_permissions
+--    ADD CONSTRAINT fk_uaers_to_projects_permissions FOREIGN KEY (users_uuid) REFERENCES public.users(uuid) ON DELETE RESTRICT NOT VALID;
 
 ALTER TABLE ONLY public.relations
     ADD CONSTRAINT fk_relation_issue0_to_issues FOREIGN KEY (issue0_uuid) REFERENCES public.issues(uuid) NOT VALID;

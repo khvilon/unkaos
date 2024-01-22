@@ -115,7 +115,6 @@ export default {
 
 .date-input {
   font-size: 15px;
-  font-weight: 400;
   border-radius: var(--border-radius);
   transition: all 0.5s ease;
   background: var(--input-bg-color);

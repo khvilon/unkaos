@@ -27,6 +27,9 @@ crud.jsonSql = function (table_name:string) {
 };
 
 crud.make_read_query_template = function (table_name:string, num:number) {
+
+  
+
   if (num == undefined) num = 1;
   let select = "'" + table_name + "' AS table_name";
   let join = "";

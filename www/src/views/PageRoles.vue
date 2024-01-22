@@ -1,5 +1,7 @@
 <script>
 import page_helper from "../page_helper.ts";
+import tools from "../tools.ts";
+import rest from "../rest.ts";
 
 /*
 ВСЕ МОГУТ
@@ -116,7 +118,9 @@ const data = {
   name: "roles",
   label: "Роли пользователей",
   instance: {
-    fields: [],
+    name: 'Новая роль',
+    permissions: [],
+    projects_permissions: []
   },
   collumns: [
     {
@@ -130,25 +134,93 @@ const data = {
     {
       label: "Название",
       id: "name",
-      type: "String",
+      type: "String"
     },
     {
-      label: "Пользователи",
-      id: "users",
-      dictionary: "users",
-      type: "User",
-      clearable: false,
+      label: "Разрешения",
+      id: "permissions",
+      dictionary: "permissions",
+      type: "CheckboxList"
     },
     {
-      label: "Зарегистрирована",
-      id: "created_at",
-      type: "Date",
-      disabled: true,
+      dictionary: "users"
     },
+    {
+      dictionary: "projects"
+    }
   ],
+
+  roleToSave:null,
+  usersToSave:null
+
+
 };
 
 const mod = await page_helper.create_module(data);
+
+
+mod.methods.roleChanged = function (fieldName, value, crud) {
+  if(!this.roleToSave || this.roleToSave.uuid != this.selected_roles.uuid ) {
+    this.roleToSave = tools.clone_obj(this.selected_roles);
+    console.log('role updated!!!aaa', fieldName, this.roleToSave)
+  }
+
+ // console.log('role changed!!!000', fieldName, this.roleToSave[fieldName])
+
+  if(fieldName == 'projects_permissions'){
+
+    if(!this.roleToSave[fieldName].filter) return;
+    
+    let anticrud = crud == 'CRUD' ? 'R' : 'CRUD';
+
+    let otherValues = this.roleToSave[fieldName].filter((p)=>p.allow==anticrud);
+
+
+    if(crud == 'CRUD'){
+      for(let i in value){
+        if(!otherValues.find((v)=>value[i].projects_uuid == v.projects_uuid)){
+          
+          let newElement = tools.obj_clone(value[i]);
+          newElement.uuid = tools.uuidv4();
+          newElement.allow = 'R'
+          otherValues.push(newElement);
+        }
+      }
+    }
+    else{
+      for(let i in otherValues){
+        if(!value.find((v)=>otherValues[i].projects_uuid == v.projects_uuid)){
+          otherValues.splice(i, 1);
+        }
+      }
+    }
+ 
+
+    this.roleToSave[fieldName] =  tools.obj_clone([...value, ...otherValues]);
+  }
+  else this.roleToSave[fieldName] = tools.obj_clone(value);
+
+  console.log('role changed!!!', this.roleToSave[fieldName])
+}
+
+mod.methods.clone = function(obj){
+  return tools.clone_obj(obj);
+};
+mod.methods.uuidv4 = function(){
+  return tools.uuidv4();
+};
+
+mod.methods.save = function(){
+  rest.run_method('upsert_roles', this.roleToSave)
+};
+
+mod.methods.usersUpdated = function(val){
+  console.log('usersUpdated!!!', val)
+};
+
+
+
+
 
 export default mod;
 </script>
@@ -166,31 +238,83 @@ export default mod;
         <KTable :collumns="collumns" :table-data="roles" :name="'roles'" />
       </div>
       <div class="table_card panel">
-        <component
-          v-bind:is="input.type + 'Input'"
-          v-for="(input, index) in inputs"
-          :label="input.label"
-          :key="index"
-          :id="input.id"
-          :value="get_json_val(selected_roles, input.id)"
-          :parent_name="'roles'"
-          :disabled="input.disabled"
-          :clearable="input.clearable"
-          :values="input.values"
-          :parameters="input"
-        ></component>
-        <div class="table_card_footer">
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Сохранить'"
-            :func="'save_roles'"
+        <div class="table_card_fields">
+        <StringInput
+          :label="'Название'"
+          :value="get_json_val(selected_roles, 'name')"
+          @update_parent_from_input="(updatedVal) => roleChanged( 'name', updatedVal)"
+        />
+        <checkbox-list-input
+          :label="'Разрешения'"
+          :value="get_json_val(selected_roles, 'permissions')"
+          :values="permissions.filter((p)=>p.code != 'common')"  
+          @update_parent_from_input="(updatedVal) => roleChanged( 'permissions', updatedVal)"
+        />
+        <div class="project-permissions-line">
+          <checkbox-list-input
+            :label="'Чтение'"
+            :value="get_json_val(roleToSave, 'projects_permissions').filter ? get_json_val(roleToSave, 'projects_permissions')?.filter((p)=>p.allow=='R') : []"
+            :values="projects"  
+            :uuid_match_field="'projects_uuid'"
+            @update_parent_from_input="(updatedVal) => roleChanged( 'projects_permissions', updatedVal, 'R')"
+            :new_instance_creation="function(lineObject, parameters){
+              let instance = clone(parameters);
+              instance.projects_uuid = lineObject.uuid;
+              instance.uuid = uuidv4();
+              return instance;
+            }"
+            :new_instance_parameters="{
+              allow: 'R',
+              table_name: 'projects_permissions',
+              roles_uuid: selected_roles.uuid
+            }" 
           />
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Удалить'"
-            :func="'delete_roles'"
+          <checkbox-list-input
+            :label="'Запись'"
+            :value="get_json_val(roleToSave, 'projects_permissions').filter ? get_json_val(roleToSave, 'projects_permissions')?.filter((p)=>p.allow=='CRUD') : []"
+            :values="projects"  
+            :uuid_match_field="'projects_uuid'"
+            @update_parent_from_input="(updatedVal) => roleChanged( 'projects_permissions', updatedVal, 'CRUD')"
+            :new_instance_creation="function(lineObject, parameters){
+              let instance = clone(parameters);
+              instance.projects_uuid = lineObject.uuid;
+              instance.uuid = uuidv4();
+              return instance;
+            }"
+            :new_instance_parameters="{
+              allow: 'CRUD',
+              table_name: 'projects_permissions',
+              roles_uuid: selected_roles.uuid
+            }" 
           />
-        </div>
+        </div> 
+        <UserInput
+          :label="'Пользователи'"
+          :multiple="true"
+          :value="users.filter((u)=>u.roles.find((r)=>r.uuid == roleToSave?.uuid))"
+          @updated_full_user="usersUpdated"
+        />
+        <date-input
+          :label="'Создана'"
+          :value="get_json_val(selected_roles, 'created_at')"
+          :disabled="true"
+        />
+      </div>
+
+        <div class="table_card_buttons">
+            <div class="table_card_footer">
+              <KButton
+                class="table_card_footer_btn"
+                name="Сохранить"
+                @click="save"
+              />
+              <KButton v-if="roles_selected"
+                class="table_card_footer_btn"
+                :name="'Удалить'"
+        
+              />
+            </div>
+          </div>
       </div>
     </div>
   </div>
@@ -200,4 +324,12 @@ export default mod;
 @use 'css/table-page' with (
   $table-panel-width: 25%
 );
+
+.project-permissions-line{
+  display: flex;
+}
+
+.project-permissions-line .checkboxlist{
+  width: 50%;
+}
 </style>

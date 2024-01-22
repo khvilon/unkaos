@@ -165,8 +165,12 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
     {"allow": "R", "table": "users"},
     {"allow": "R", "table": "roles"},
     {"allow": "R", "table": "users_to_roles"},
+    {"allow": "R", "table": "permissions"},
     {"allow": "R", "table": "boards"},
     {"allow": "R", "table": "dashboards"},
+    {"allow": "R", "table": "dashboard"},
+    {"allow": "R", "table": "board"},
+    {"allow": "R", "table": "boards_filters"},
 
     {"allow": "R", "table": "field_types"},
     {"allow": "R", "table": "gadget_types"},
@@ -175,19 +179,33 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
     {"allow": "R", "table": "relation_types"},
 
     {"allow": "R", "table": "transitions"},
+    {"allow": "R", "table": "workflows"},
     {"allow": "R", "table": "workflow_nodes"},
     {"allow": "R", "table": "fields"},
     {"allow": "R", "table": "issue_statuses"},
     {"allow": "R", "table": "issue_types"},
     {"allow": "R", "table": "issue_types_to_fields"},
-    {"allow": "R", "table": "issue_tags"}
+    {"allow": "R", "table": "issue_tags"},
+
+    {"allow": "CRU", "table": "issues"},
+    {"allow": "CRU", "table": "issue"},
+    {"allow": "R", "table": "issues_count"},
+    {"allow": "R", "table": "issue_uuid"},
+    {"allow": "R", "table": "old_issue_uuid"},
+    {"allow": "R", "table": "formated_relations"},
+    {"allow": "R", "table": "watcher"},
+    {"allow": "R", "table": "issue_formated_actions"},
+    {"allow": "R", "table": "attachments"},
+    {"allow": "R", "table": "time_entries"},
+    {"allow": "R", "table": "issue_tags_selected"}
+
 ]'),
 ('f47c6d41-60f9-4871-8d12-c1ee6682f2e0', 'configs_U', 'Управление настройками рабочего пространства', 
 '[{"allow": "CRUD", "table": "configs"}]'),
 ('54b36ed9-e5c6-4c5c-b700-182db3b78662', 'sprints_CUD', 'Управление спринтами', 
 '[{"allow": "CUD", "table": "sprints"}]'),
 ('6aec376f-307b-497d-8509-c834308130f6', 'projects_CU', 'Создание и изменение проектов', 
-'[{"allow": "CU", "table": "sprints"}]'),
+'[{"allow": "CU", "table": "projects"}]'),
 ('18996546-0d37-460c-90e0-d3cddef188d3', 'projects_D', 'Удаление проектов', 
 '[{"allow": "D", "table": "projects"}]'),
 ('df343f32-013c-4c59-af2b-e6540a6c51e8', 'users_and_roles_CUD', 'Управление ролями и пользователями', 
@@ -199,6 +217,7 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
 ('3cdbc5cd-c6bd-484e-8295-1d70aaa69469', 'boards_own_CUD', 'Создание, изменение и удаление своих досок и дашбордов', 
 '[
     {"allow": "CUD", "table": "boards", "self": true},
+    {"allow": "CUD", "table": "board", "self": true},
     {"allow": "CUD", "table": "boards_columns", "self": true},
     {"allow": "CUD", "table": "boards_fields", "self": true},
     {"allow": "CUD", "table": "boards_filters", "self": true}, 
@@ -208,6 +227,7 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
 ('322149d3-50f3-4e55-99be-ad5c6bfbcb28', 'boards_not_own_UD', 'Изменение и удаление чужих досок и дашбордов', 
 '[
     {"allow": "CUD", "table": "boards"},
+    {"allow": "CUD", "table": "board"},
     {"allow": "CUD", "table": "boards_columns"},
     {"allow": "CUD", "table": "boards_fields"},
     {"allow": "CUD", "table": "boards_filters"}, 
@@ -251,13 +271,7 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
 ]'),
 ('c7941144-18ef-4a27-b5af-a227fba2c742', 'issues_CU_project', 'Создавать и изменть задачи в проекте', 
 '[
-    {"allow": "CU", "table": "issues"},
-    {"allow": "CUD", "table": "transitions"},
-    {"allow": "CUD", "table": "workflow_nodes"},
-    {"allow": "CU", "table": "fields"},
-    {"allow": "CU", "table": "issue_statuses"},
-    {"allow": "CU", "table": "issue_types"},
-    {"allow": "CUD", "table": "issue_types_to_fields"}
+    {"allow": "CU", "table": "issues"}
 ]');
 
 

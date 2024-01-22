@@ -813,7 +813,6 @@ export default {
 
 .text-input {
   font-size: 14px;
-  font-weight: 400;
   transition: all 0.5s ease;
   background: var(--input-bg-color);
   width: 100%;
