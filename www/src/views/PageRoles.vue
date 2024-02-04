@@ -151,7 +151,8 @@ const data = {
   ],
 
   roleToSave:null,
-  usersToSave:null
+  usersToSave:[],
+  usersWithRole:null
 
 
 };
@@ -162,6 +163,8 @@ const mod = await page_helper.create_module(data);
 mod.methods.roleChanged = function (fieldName, value, crud) {
   if(!this.roleToSave || this.roleToSave.uuid != this.selected_roles.uuid ) {
     this.roleToSave = tools.clone_obj(this.selected_roles);
+    this.usersWithRole = tools.clone_obj(this.users.filter((u)=>u.roles.find((r)=>r.uuid == this.roleToSave?.uuid)))
+    this.usersToSave = [];
     console.log('role updated!!!aaa', fieldName, this.roleToSave)
   }
 
@@ -212,14 +215,59 @@ mod.methods.uuidv4 = function(){
 
 mod.methods.save = function(){
   rest.run_method('upsert_roles', this.roleToSave)
+
+  for(let i in this.usersToSave){
+    rest.run_method('upsert_users', this.usersToSave[i])
+  }
+  this.usersToSave = [];
 };
 
 mod.methods.usersUpdated = function(val){
-  console.log('usersUpdated!!!', val)
+  /*if(!this.usersToSave || this.roleToSave || this.roleToSave.uuid != this.selected_roles.uuid ) {
+    this.roleToSave = tools.clone_obj(this.selected_roles);
+    this.usersToSave = tools.clone_obj(this.users.filter((u)=>u.roles.find((r)=>r.uuid == this.roleToSave?.uuid)))
+    
+  }*/
+
+  let users = []
+  for(let i in val){
+    let user = tools.obj_clone(val[i])
+    if(!user.uuid) user = tools.obj_clone(this.users.find((u)=>u.uuid == val[i]))
+    users.push(user);
+  }
+
+  this.usersWithRole = tools.obj_clone(users);
+
+  console.log('usersUpdated!!!bbb', val , this.roleToSave)
+
+  let me = this;
+  
+  let oldUsersWithRole = tools.clone_obj(this.users.filter((u)=>u.roles.find((r)=>r.uuid == this.roleToSave?.uuid)));
+  
+  let excludedUsers = oldUsersWithRole.filter((u)=>!(users.map((u)=>u.uuid).includes(u.uuid)));
+  let addedUsers = users.filter((u)=>!(oldUsersWithRole.map((u)=>u.uuid).includes(u.uuid)));
+
+  this.usersToSave = [];
+
+  for(let i in excludedUsers){
+    excludedUsers[i].roles = excludedUsers[i].roles.filter((r)=>r.uuid != me.roleToSave.uuid)
+    this.usersToSave.push(excludedUsers[i])
+  }
+
+  for(let i in addedUsers){
+    addedUsers[i].roles.push(this.roleToSave)
+    this.usersToSave.push(addedUsers[i])
+  }
+
+    //TODO1 if is in usersWithRole but not in users from val - delete the role from his roles and add to usersToSave
+    //TODO2 if is in in users from val but not in  usersWithRole - add the role to his roles and add to usersToSave
+    //TODO check about several usersUpdated without saving to db - would be todo1 and todo2 correct
+    ///usersToSave.push(user);
+ 
+  
+
+  console.log('usersUpdated!!!', this.usersWithRole, this.usersToSave)
 };
-
-
-
 
 
 export default mod;
@@ -291,8 +339,8 @@ export default mod;
         <UserInput
           :label="'Пользователи'"
           :multiple="true"
-          :value="users.filter((u)=>u.roles.find((r)=>r.uuid == roleToSave?.uuid))"
-          @updated_full_user="usersUpdated"
+          :value="usersWithRole"
+          @updated="usersUpdated"
         />
         <date-input
           :label="'Создана'"
