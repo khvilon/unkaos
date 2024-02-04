@@ -50,6 +50,7 @@ services:
       - DB_DATABASE=${DB_DATABASE}
     depends_on:
       - postgres
+      - ossa
   
   eileithyia:
     build:
