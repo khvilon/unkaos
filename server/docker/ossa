@@ -4,6 +4,7 @@ COPY ./server /app
 WORKDIR /app/ossa
 RUN yarn install
 RUN yarn build
+RUN yarn add memcached
 
 USER node
 

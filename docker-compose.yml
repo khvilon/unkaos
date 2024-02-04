@@ -16,6 +16,7 @@ services:
       - DB_DATABASE=${DB_DATABASE}
     depends_on:
       - postgres
+      - memcached
 
   cerberus:
     build:
@@ -119,6 +120,18 @@ services:
     depends_on:
       - postgres
 
+  memcached:
+    image: memcached:latest
+    ports:
+      - "11211:11211"
+    command:
+      - memcached
+      - -o modern # Enable modern mode with better defaults
+      - -v # Increase verbosity
+    depends_on:
+      - postgres
+
+      
   nginx:
     build:
       context: .
