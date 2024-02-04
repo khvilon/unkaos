@@ -1076,7 +1076,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
             " where " +
             old_uuids[i] +
             "_uuid = '" +
-            i +
+            i + "' and " + table_name + "_uuid = '" + params.uuid + 
             "';";
         else
           del_query +=

@@ -24,6 +24,9 @@ export default {
     value: function (val, oldVal) {
       console.log("change_val", val, oldVal, this.id, this.parent_name);
 
+      if(!val || !oldVal) return; 
+      if(val.toString && oldVal.toString && val.toString() === oldVal.toString()) return;
+
       this.$emit("updated", val);
 
       for(let i = 0; i < this.options.length; i++){
