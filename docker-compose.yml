@@ -126,7 +126,6 @@ services:
       - "11211:11211"
     command:
       - memcached
-      - -o modern # Enable modern mode with better defaults
       - -v # Increase verbosity
     depends_on:
       - postgres
