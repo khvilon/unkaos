@@ -8,6 +8,20 @@ import conf from './conf.json';
 
 import sql from "./sql";
 
+import Memcached from 'memcached';
+const memcached = new Memcached('memcached:11211');
+
+
+const lifetime = 60 * 60 * 24 * 365 * 10; // 10 years in seconds
+
+memcached.set('test', 'tval', lifetime, (err: any) => {
+    if (err) {
+        console.error('Memcached set error:', err);
+    } else {
+        console.log('Value set in Memcached:', 'test', 'tval');
+    }
+});
+
 class MonType{
     readonly type: string
     readonly key_path: string
