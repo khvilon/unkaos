@@ -982,7 +982,7 @@ crud.get_uuids = function (obj:any) {
   return ans;
 };
 
-crud.do = async function (subdomain:string, method:string, table_name:string, params:any, author_uuid:string) {
+crud.do = async function (subdomain:string, method:string, table_name:string, params:any, author_uuid:string, is_admin: boolean) {
   if (table_name == "issue") table_name = "issues";
   else if (table_name == "board") table_name = "boards";
   //else if(table_name == 'dashboard') table_name = 'dashboards'
@@ -1120,6 +1120,8 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     }
   }
   }
+
+  console.log('is_admin:', is_admin)
 
   let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects_r'
     memcached.get(key, (err: any, data: any) => {

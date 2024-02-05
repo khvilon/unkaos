@@ -87,7 +87,8 @@ async function init() {
         url: conf.zeusUrl + req.url,
         headers: {
           subdomain: req.headers.subdomain,
-          user_uuid: user_uuid
+          user_uuid: user_uuid,
+          is_admin: cerberus_ans.data.is_admin
         },
       });
       res.status(zeus_ans.status);
