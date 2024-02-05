@@ -92,6 +92,7 @@ export default class Cache {
         try {
             let key = 'w:' +workspaceName  + ':u:' + userProjects.user_uuid + ':projects';
             console.log('key', key)
+            console.log('val', typeof userProjects.projects, userProjects.projects)
             const result = await this.setAsync(key, userProjects.projects);
             console.log('Set operation result:', result);
         } catch (err) {
