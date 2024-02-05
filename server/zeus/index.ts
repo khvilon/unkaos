@@ -9,8 +9,13 @@ import cors from 'cors';
 import express from "express";
 import tools from "../tools";
 
-import Memcached from 'memcached';
-const memcached = new Memcached('memcached:11211');
+const Memcached = require('memcached');
+const memcached = new Memcached('localhost:11211');
+
+const key = "sampleKey";
+
+
+
 
 const app:any = express()
 const port = 3006
@@ -35,13 +40,16 @@ app.use(express.urlencoded({limit: '150mb', extended: true}));
 
 const handleRequest = async function(req:any, res:any) {
 
-    memcached.get('test', (err: any, data: any) => {
+    memcached.get(key, (err: any, data: any) => {
         if (err) {
           console.error('Memcached get error:', err);
-        } else if (data) {
-          console.log('>>>>>>>>>>>>>>>>>>>>>>>>Retrieved value from Memcached:', data);
+          return;
+        }
+      
+        if (data) {
+          console.log('Retrieved value from Memcached:', data);
         } else {
-          console.log('Key not found:', 'test');
+          console.log('Key not found:', key);
         }
       });
 

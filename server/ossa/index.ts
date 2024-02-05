@@ -8,19 +8,34 @@ import conf from './conf.json';
 
 import sql from "./sql";
 
-import Memcached from 'memcached';
-const memcached = new Memcached('memcached:11211');
+import * as Memcached from 'memcached';
+const memcached = new Memcached('127.0.0.1:11211');
 
+const key: string = "sampleKey";
+const value: string = "Hello, Memcached!";
+const lifetime: number = 300; // 5 minutes in seconds
 
-const lifetime = 60 * 60 * 24 * 365 * 10; // 10 years in seconds
+// Wrap the set operation in a function that returns a Promise
+function setAsync(key: string, value: string, lifetime: number): Promise<any> {
+  return new Promise((resolve, reject) => {
+    memcached.set(key, value, lifetime, (err: any, result: any) => {
+      if (err) reject(err);
+      else resolve(result);
+    });
+  });
+}
 
-memcached.set('test', 'tval', lifetime, (err: any) => {
-    if (err) {
-        console.error('Memcached set error:', err);
-    } else {
-        console.log('Value set in Memcached:', 'test', 'tval');
-    }
-});
+// Use async function to await the Promise
+async function test(): Promise<void> {
+  try {
+    const result = await setAsync(key, value, lifetime);
+    console.log('Set operation result:', result);
+  } catch (err) {
+    console.error('Error setting value in Memcached:', err);
+  }
+}
+test();
+
 
 class MonType{
     readonly type: string
