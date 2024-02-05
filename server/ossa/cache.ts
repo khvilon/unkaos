@@ -3,7 +3,7 @@ import sql from "./sql";
 
 export default class Cache {
   private memcached: any = new Memcached('memcached:11211');
-  private cacheLifetime: number =  365 * 24 * 60 * 60; // year in seconds
+  private cacheLifetime: number =  2592000;//365 * 24 * 60 * 60; // year in seconds
 
   public async init() {
     await this.loadCacheFromDB();
