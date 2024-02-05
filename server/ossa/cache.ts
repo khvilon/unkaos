@@ -83,7 +83,7 @@ export default class Cache {
     FROM ${sql(workspaceName + '.users')} U
     LEFT JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
     LEFT JOIN (SELECT uuid, name FROM ${sql(workspaceName + '.roles')} WHERE deleted_at IS NULL) R ON R.uuid = UR.roles_uuid
-    LEFT JOIN (SELECT roles_uuid, projects_uuid FROM ${sql(workspaceName + '.projects_permissions')} WHERE deleted_at IS NULL AND allow = 'R') PPR ON PPR.roles_uuid = R.uuid
+    LEFT JOIN (SELECT roles_uuid, projects_uuid FROM ${sql(workspaceName + '.projects_permissions')} WHERE deleted_at IS NULL) PPR ON PPR.roles_uuid = R.uuid
     LEFT JOIN (SELECT roles_uuid, projects_uuid, allow FROM ${sql(workspaceName + '.projects_permissions')} WHERE deleted_at IS NULL AND allow = 'CRUD') PPW ON PPW.roles_uuid = R.uuid
     WHERE U.active 
     AND U.deleted_at IS NULL
@@ -95,7 +95,7 @@ export default class Cache {
             let key = 'w:' +workspaceName  + ':user:' + userProjects.user_uuid + ':projects';
              
             let val_r = JSON.stringify(userProjects.projects_r)
-            let val_w = JSON.stringify(userProjects.projects_r)
+            let val_w = JSON.stringify(userProjects.projects_w)
             console.log('key', key, val_r, val_w)
             const result_r = await this.setAsync(key + '_r', val_r);
             const result_w = await this.setAsync(key + '_w', val_w);
