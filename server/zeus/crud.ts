@@ -1120,7 +1120,6 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     }
   }
   }
-
   let key = 'workspace:' + subdomain  + ':user:' + pg_params.user_uuid + ':projects_r'
     memcached.get(key, (err: any, data: any) => {
         if (err) {
