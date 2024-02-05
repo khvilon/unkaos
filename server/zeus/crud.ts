@@ -1015,18 +1015,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
  
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
-  if(!is_admin){
-    let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects'
-    if(method == "read") key += '_r'
-    else key += '_w'
-    let projects_uuids = await cacheGet(key)
-
-    if(projects_uuids && typeof projects_uuids === 'string'){
-      projects_uuids = JSON.parse(projects_uuids)
-    }
-
-    console.log('projects_uuids', projects_uuids)
-  }
+  
 
   console.log('paraaaaaaaaaaaaaaaaaaaaaams', query, pg_params)
   
@@ -1163,39 +1152,26 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
 
   console.log('is_admin:', is_admin)
 
-  let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects_r'
-    memcached.get(key, (err: any, data: any) => {
-        if (err) {
-          console.error('Memcached get error:', err);
-          return;
-        }
-      
-        if (data) {
-          console.log('Retrieved value from Memcached:', data);
-        } else {
-          console.log('Key not found:', key);
-        }
-      });
+  if(!is_admin){
+    let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects'
+    if(method == "read") key += '_r'
+    else key += '_w'
+    let projects_uuids = await cacheGet(key)
 
-     let key2 = 'w:' + subdomain  + ':user:' + author_uuid + ':projects_w'
-    memcached.get(key2, (err: any, data: any) => {
-        if (err) {
-          console.error('Memcached get error:', err);
-          return;
-        }
-      
-        if (data) {
-          console.log('Retrieved value from Memcached:', data);
-        } else {
-          console.log('Key not found:', key2);
-        }
-      });
+    if(projects_uuids && typeof projects_uuids === 'string'){
+      projects_uuids = JSON.parse(projects_uuids)
+    }
+    if(!projects_uuids) projects_uuids = []
+    let projects_uuids_array = Array(projects_uuids);
+    
+    if(method == "read" && table_name == "projects"){
+      query = query.raplace('t1.deleted_at IS NULL', 't1.deleted_at IS NULL AND t1.uuid IN ' + `'{"${projects_uuids_array.join('","')}"}'`)
+    }
 
-      //workspace:khvilon:user:1d61c259-00e6-4739-98fa-6aad35a7d688:projects_r
-      //worksace:khvilon:user:1d61c259-00e6-4739-98fa-6aad35a7d688:projects
+    console.log('projects_uuids', projects_uuids)
+  }
 
-
-      //if(table_name == 'projects') query += ' AND '
+     
 
   let ans = await sql.query(subdomain, query, pg_params);
 
