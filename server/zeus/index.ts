@@ -9,9 +9,6 @@ import cors from 'cors';
 import express from "express";
 import tools from "../tools";
 
-const Memcached = require('memcached');
-const memcached = new Memcached('memcached:11211');
-
 
 const app:any = express()
 const port = 3006
@@ -35,20 +32,6 @@ app.use(express.raw({limit: '150mb'}));
 app.use(express.urlencoded({limit: '150mb', extended: true}));
 
 const handleRequest = async function(req:any, res:any) {
-
-    let key = 'workspace:' +req.headers.subdomain  + ':user:' + req.headers.user_uuid + ':projects'
-    memcached.get(key, (err: any, data: any) => {
-        if (err) {
-          console.error('Memcached get error:', err);
-          return;
-        }
-      
-        if (data) {
-          console.log('Retrieved value from Memcached:', data);
-        } else {
-          console.log('Key not found:', key);
-        }
-      });
 
     // console.log("request: ", req)
     let req_uuid = tools.uuidv4()

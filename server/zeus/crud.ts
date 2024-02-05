@@ -4,6 +4,9 @@ import data_model from "./data_model";
 import tools from "../tools";
 import sql from "./sql";
 
+const Memcached = require('memcached');
+const memcached = new Memcached('memcached:11211');
+
 const edited_type_uuid = "1ff12964-4f5c-4be9-8fe3-f3d9a7225300";
 const transition_type_uuid = "4d7d3265-806b-492a-b6c1-636e1fa653a9";
 const author_field_uuid = "733f669a-9584-4469-a41b-544e25b8d91a";
@@ -1117,6 +1120,22 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     }
   }
   }
+
+  let key = 'workspace:' + subdomain  + ':user:' + pg_params.user_uuid + ':projects_r'
+    memcached.get(key, (err: any, data: any) => {
+        if (err) {
+          console.error('Memcached get error:', err);
+          return;
+        }
+      
+        if (data) {
+          console.log('Retrieved value from Memcached:', data);
+        } else {
+          console.log('Key not found:', key);
+        }
+      });
+
+      //if(table_name == 'projects') query += ' AND '
 
   let ans = await sql.query(subdomain, query, pg_params);
 
