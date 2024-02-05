@@ -93,9 +93,10 @@ export default class Cache {
     for(let userProjects of usersProjects){
         try {
             let key = 'worksace:' +workspaceName  + ':user:' + userProjects.user_uuid + ':projects';
-            console.log('key', key) 
+             
             let val_r = JSON.stringify(userProjects.projects_r)
             let val_w = JSON.stringify(userProjects.projects_r)
+            console.log('key', key, val_r, val_w)
             const result_r = await this.setAsync(key + '_r', val_r);
             const result_w = await this.setAsync(key + '_w', val_w);
             console.log('Set operation result:', result_r, result_w);
