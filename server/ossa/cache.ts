@@ -22,7 +22,9 @@ export default class Cache {
   private async setAsync(key: string, value: string): Promise<any> {
     let me = this;
     return new Promise((resolve, reject) => {
+        console.log('>>>>>>>mem0', me.cacheLifetime, me)
       me.memcached.set(key, value, me.cacheLifetime, (err: any, result: any) => {
+        console.log('>>>>>>>mem1', result, err)
         if (err) reject(err);
         else resolve(result);
       });
