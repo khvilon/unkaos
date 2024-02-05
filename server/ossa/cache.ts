@@ -93,7 +93,7 @@ export default class Cache {
     for(let userProjects of usersProjects){
         try {
             let key = 'worksace:' +workspaceName  + ':user:' + userProjects.user_uuid + ':projects';
-            console.log('key', key)
+            console.log('key', key) 
             let val_r = JSON.stringify(userProjects.projects_r)
             let val_w = JSON.stringify(userProjects.projects_r)
             const result_r = await this.setAsync(key + '_r', val_r);
@@ -115,6 +115,5 @@ export default class Cache {
   private handleSubscribeConnect() {
     console.log('subscribe connected!')
   }
-
 
 }
