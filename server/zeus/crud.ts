@@ -989,7 +989,21 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
  
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
+  if(is_admin){
+    let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects'
+    if(method == "read") key += '_r'
+    else key += '_w'
+    let projects_uuids = await memcached.get(key);
+
+    if(projects_uuids){
+      projects_uuids = JSON.parse(projects_uuids)
+    }
+
+    console.log('projects_uuids', projects_uuids)
+  }
+
   console.log('paraaaaaaaaaaaaaaaaaaaaaams', query, pg_params)
+  
 
   if (method != "read") {
     let [read_query, read_params] = crud.make_query.read(table_name, {
