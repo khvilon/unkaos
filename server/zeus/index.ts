@@ -10,7 +10,7 @@ import express from "express";
 import tools from "../tools";
 
 const Memcached = require('memcached');
-const memcached = new Memcached('localhost:11211');
+const memcached = new Memcached('memcached:11211');
 
 const key = "sampleKey";
 
