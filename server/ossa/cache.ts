@@ -92,8 +92,9 @@ export default class Cache {
         try {
             let key = 'w:' +workspaceName  + ':u:' + userProjects.user_uuid + ':projects';
             console.log('key', key)
-            console.log('val', typeof userProjects.projects, userProjects.projects)
-            const result = await this.setAsync(key, userProjects.projects);
+            let val = JSON.stringify(userProjects.projects)
+            console.log('val', typeof val, val)
+            const result = await this.setAsync(key, val);
             console.log('Set operation result:', result);
         } catch (err) {
             console.error('Error setting value in Memcached:', err);
