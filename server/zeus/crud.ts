@@ -1121,7 +1121,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
   }
   }
 
-  let key = 'workspace:' + subdomain  + ':user:' + author_uuid + ':projects_r'
+  let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects_r'
     memcached.get(key, (err: any, data: any) => {
         if (err) {
           console.error('Memcached get error:', err);
@@ -1135,7 +1135,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
         }
       });
 
-     let key2 = 'workspace:' + subdomain  + ':user:' + author_uuid + ':projects_w'
+     let key2 = 'w:' + subdomain  + ':user:' + author_uuid + ':projects_w'
     memcached.get(key2, (err: any, data: any) => {
         if (err) {
           console.error('Memcached get error:', err);
@@ -1149,7 +1149,8 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
         }
       });
 
-      //workspace:khvilon:user:1d61c259-00e6-4739-98fa-6aad35a7d688:projects_w
+      //workspace:khvilon:user:1d61c259-00e6-4739-98fa-6aad35a7d688:projects_r
+      //worksace:khvilon:user:1d61c259-00e6-4739-98fa-6aad35a7d688:projects
 
 
       //if(table_name == 'projects') query += ' AND '
