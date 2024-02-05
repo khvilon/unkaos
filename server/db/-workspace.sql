@@ -358,6 +358,10 @@ ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.issue_actions;
 ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.issue_tags_selected;
 ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.issues;
 ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.relations;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.users;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.roles;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.users_to_roles;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.projects_permissions;
 
 INSERT INTO server.users (uuid, name, login, mail, active, password, avatar) VALUES (
     'ba52933b-9c25-4be5-8b8e-02bd26ba8feb',
