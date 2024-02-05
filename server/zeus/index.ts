@@ -36,7 +36,7 @@ app.use(express.urlencoded({limit: '150mb', extended: true}));
 
 const handleRequest = async function(req:any, res:any) {
 
-    let key = 'workspace:' +req.headers.subdomain  + ':' + req.headers.user_uuid + ':projects'
+    let key = 'workspace:' +req.headers.subdomain  + ':user:' + req.headers.user_uuid + ':projects'
     memcached.get(key, (err: any, data: any) => {
         if (err) {
           console.error('Memcached get error:', err);
