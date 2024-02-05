@@ -996,7 +996,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     let projects_uuids = await memcached.get(key);
 
     if(projects_uuids){
-      projects_uuids = JSON.parse(projects_uuids)
+     // projects_uuids = JSON.parse(projects_uuids)
     }
 
     console.log('projects_uuids', projects_uuids)
