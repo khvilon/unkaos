@@ -79,13 +79,11 @@ export default class Cache {
         json_agg(PP) as projects
     FROM ${sql(workspaceName + '.users')} U
     LEFT JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
-    LEFT JOIN (SELECT uuid, name FROM ${sql(workspaceName + '.roles')}) R ON R.uuid = UR.roles_uuid
-    LEFT JOIN (SELECT roles_uuid, projects_uuid, allow FROM ${sql(workspaceName + '.projects_permissions')}) PP ON PP.roles_uuid = R.uuid
+    LEFT JOIN (SELECT uuid, name FROM ${sql(workspaceName + '.roles')} WHERE deleted_at IS NULL) R ON R.uuid = UR.roles_uuid
+    LEFT JOIN (SELECT roles_uuid, projects_uuid, allow FROM ${sql(workspaceName + '.projects_permissions')} WHERE deleted_at IS NULL) PP ON PP.roles_uuid = R.uuid
     WHERE U.active 
     AND U.deleted_at IS NULL
-    AND R.deleted_at IS NULL
-    AND PP.deleted_at IS NULL
-    GROUP BY PP.uuid
+    GROUP BY U.uuid
     `
 
     for(let userProjects of usersProjects){
