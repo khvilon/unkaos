@@ -19,6 +19,32 @@ const select_limit = 1000;
 //const atob = require("atob");
 const { Console } = require("console");
 
+function getMemcachedValue(key) {
+  return new Promise((resolve, reject) => {
+    memcached.get(key, (err, data) => {
+      if (err) {
+        reject(err); // Rejects the promise if there's an error
+      } else {
+        resolve(data); // Resolves the promise with the data
+      }
+    });
+  });
+}
+
+async function cacheGet(key) {
+  try {
+    const data = await getMemcachedValue(key); // Wait for the promise to resolve
+    if (data) {
+      console.log('Retrieved value from Memcached:', data);
+      return data;
+    } else {
+      console.log('Key not found:', key);
+    }
+  } catch (err) {
+    console.error('Memcached get error:', err); // Handle any errors here
+  }
+}
+
 crud.jsonSql = function (table_name:string) {
   return (
     "CASE WHEN COUNT(" +
@@ -993,10 +1019,10 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects'
     if(method == "read") key += '_r'
     else key += '_w'
-    let projects_uuids = await memcached.get(key);
+    let projects_uuids = await cacheGet(key)
 
-    if(projects_uuids){
-     // projects_uuids = JSON.parse(projects_uuids)
+    if(projects_uuids && typeof projects_uuids === 'string'){
+      projects_uuids = JSON.parse(projects_uuids)
     }
 
     console.log('projects_uuids', projects_uuids)
