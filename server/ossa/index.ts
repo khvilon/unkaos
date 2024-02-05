@@ -3,38 +3,10 @@ const port = 3004
 import { WebSocketServer, WebSocket } from 'ws';
 const wss = new WebSocketServer({ port: port });
 
-import axios from 'axios';
-import conf from './conf.json';
-
 import sql from "./sql";
 
-import Memcached from 'memcached';
-const memcached = new Memcached('memcached:11211');
+import cache from "./cache";
 
-const key: string = "sampleKey";
-const value: string = "Hello, Memcached!";
-const lifetime: number = 300; // 5 minutes in seconds
-
-// Wrap the set operation in a function that returns a Promise
-function setAsync(key: string, value: string, lifetime: number): Promise<any> {
-  return new Promise((resolve, reject) => {
-    memcached.set(key, value, lifetime, (err: any, result: any) => {
-      if (err) reject(err);
-      else resolve(result);
-    });
-  });
-}
-
-// Use async function to await the Promise
-async function test(): Promise<void> {
-  try {
-    const result = await setAsync(key, value, lifetime);
-    console.log('Set operation result:', result);
-  } catch (err) {
-    console.error('Error setting value in Memcached:', err);
-  }
-}
-test();
 
 
 class MonType{
@@ -95,6 +67,9 @@ const handleNotify = async function(row:any, { command, relation, key, old }: an
    // console.log('test_alert', row, command, relation, key, old)
    
 }
+
+let c = new cache();
+c.init();
 
 const handleSubscribeConnect = function(){ console.log('subscribe connected!') }
 sql.subscribe('*',handleNotify, handleSubscribeConnect)
