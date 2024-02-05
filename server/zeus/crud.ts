@@ -1018,6 +1018,8 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
   
 
   console.log('paraaaaaaaaaaaaaaaaaaaaaams', query, pg_params)
+
+  let readed_data;
   
 
   if (method != "read") {
@@ -1028,6 +1030,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     //    console.log('rqrqrqrqrq0', read_query)
 
     let data = await sql.query(subdomain, read_query, read_params);
+    readed_data = data;
 
     //  console.log('rqrqrqrqrq', read_query, data)
 
@@ -1162,17 +1165,26 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
       projects_uuids = JSON.parse(projects_uuids)
     }
     if(!projects_uuids) projects_uuids = []
-    let projects_uuids_array = Array(projects_uuids);
+    let projects_uuids_array: Array<string> = Array(projects_uuids).map(p=>p.toString());
     
-    if(method == "read" && table_name == "projects"){
-      query = query.replace('t1.deleted_at IS NULL', 't1.deleted_at IS NULL AND t1.uuid IN ' + `('${projects_uuids_array.join("','")}')`)
+    if(method == "read"){
+      let uuids_str = `('${projects_uuids_array.join("','")}')`;
+      if(table_name == "projects") query = query.replace('t1.deleted_at IS NULL', 't1.deleted_at IS NULL AND t1.uuid IN ' + uuids_str)
+      else if(table_name == "issues") query = query.replace('T1.DELETED_AT IS NULL', 'T1.DELETED_AT IS NULL AND T1.PROJECT_UUID IN ' + uuids_str)
+      else if(table_name == "issues_count") query += ' AND PROJECT_UUID IN ' + uuids_str
+      else if(table_name == "short_issue_info") query = query.replace('I.DELETED_AT IS NULL', 'I.DELETED_AT IS NULL AND I.PROJECT_UUID IN ' + uuids_str)
+      else if(table_name == "short_issue_info_for_imort") query = query.replace('I.DELETED_AT IS NULL', 'I.DELETED_AT IS NULL AND I.PROJECT_UUID IN ' + uuids_str)
+      //TODO issue_actions issue_formated_actions
     }
+    else{
+      if(table_name == "projects" && !projects_uuids_array.includes(params.uuid)) return {message: 'forbidden'}
+      if(table_name == "issues" && !projects_uuids_array.includes(readed_data.rows[0].project_uuid)) return {message: 'forbidden'}
 
-    console.log('projects_uuids', projects_uuids)
+    }
+    
   }
 
      
-
   let ans = await sql.query(subdomain, query, pg_params);
 
   if (ans != null && ans[1] != undefined) ans = ans[ans.length - 1];
