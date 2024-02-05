@@ -68,8 +68,8 @@ export default class Cache {
 
     for(let user of users){
         try {
-            const result = await this.setAsync('workspace:' +workspaceName  + ':' + user.uuid + ':roles', user.roles);
-            console.log('Set operation result:', result);
+           // const result = await this.setAsync('workspace:' +workspaceName  + ':' + user.uuid + ':roles', user.roles);
+           // console.log('Set operation result:', result);
         } catch (err) {
             console.error('Error setting value in Memcached:', err);
         }
@@ -94,7 +94,7 @@ export default class Cache {
             console.log('key', key)
             let val = JSON.stringify(userProjects.projects)
             console.log('val', typeof val, val)
-            const result = await this.setAsync(key, val);
+            const result = await this.setAsync(key, 'true');
             console.log('Set operation result:', result);
         } catch (err) {
             console.error('Error setting value in Memcached:', err);
