@@ -78,8 +78,8 @@ export default class Cache {
     let usersProjects = await sql`
     SELECT
         U.uuid as user_uuid,
-        array_agg(PPR.projects_uuid) as projects_r,
-        array_agg(PPW) as projects_w
+        json_agg(PPR.projects_uuid) as projects_r,
+        json_agg(PPW.projects_uuid) as projects_w
     FROM ${sql(workspaceName + '.users')} U
     LEFT JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
     LEFT JOIN (SELECT uuid, name FROM ${sql(workspaceName + '.roles')} WHERE deleted_at IS NULL) R ON R.uuid = UR.roles_uuid
@@ -92,7 +92,7 @@ export default class Cache {
 
     for(let userProjects of usersProjects){
         try {
-            let key = 'worksace:' +workspaceName  + ':user:' + userProjects.user_uuid + ':projects';
+            let key = 'w:' +workspaceName  + ':user:' + userProjects.user_uuid + ':projects';
              
             let val_r = JSON.stringify(userProjects.projects_r)
             let val_w = JSON.stringify(userProjects.projects_r)
