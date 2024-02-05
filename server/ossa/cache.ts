@@ -50,7 +50,7 @@ export default class Cache {
           U.login,
           U.mail,
           U.telegram,
-          json_agg(R) as roles,
+          json_agg(R) as roles
       FROM ${sql(workspaceName + '.users')} U
       LEFT JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
       LEFT JOIN (SELECT uuid, name FROM ${sql(workspaceName + '.roles')}) R ON R.uuid = UR.roles_uuid
