@@ -68,8 +68,8 @@ export default class Cache {
 
     for(let user of users){
         try {
-           // const result = await this.setAsync('workspace:' +workspaceName  + ':' + user.uuid + ':roles', user.roles);
-           // console.log('Set operation result:', result);
+            const result = await this.setAsync('workspace:' +workspaceName  + ':user:' + user.uuid + ':roles', user.roles);
+            console.log('Set operation result:', result);
         } catch (err) {
             console.error('Error setting value in Memcached:', err);
         }
@@ -78,11 +78,13 @@ export default class Cache {
     let usersProjects = await sql`
     SELECT
         U.uuid as user_uuid,
-        json_agg(PP) as projects
+        array_agg(PPR.projects_uuid) as projects_r,
+        array_agg(PPW) as projects_w
     FROM ${sql(workspaceName + '.users')} U
     LEFT JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
     LEFT JOIN (SELECT uuid, name FROM ${sql(workspaceName + '.roles')} WHERE deleted_at IS NULL) R ON R.uuid = UR.roles_uuid
-    LEFT JOIN (SELECT roles_uuid, projects_uuid, allow FROM ${sql(workspaceName + '.projects_permissions')} WHERE deleted_at IS NULL) PP ON PP.roles_uuid = R.uuid
+    LEFT JOIN (SELECT roles_uuid, projects_uuid FROM ${sql(workspaceName + '.projects_permissions')} WHERE deleted_at IS NULL AND allow = 'R') PPR ON PPR.roles_uuid = R.uuid
+    LEFT JOIN (SELECT roles_uuid, projects_uuid, allow FROM ${sql(workspaceName + '.projects_permissions')} WHERE deleted_at IS NULL AND allow = 'CRUD') PPW ON PPW.roles_uuid = R.uuid
     WHERE U.active 
     AND U.deleted_at IS NULL
     GROUP BY U.uuid
@@ -90,12 +92,13 @@ export default class Cache {
 
     for(let userProjects of usersProjects){
         try {
-            let key = 'w:' +workspaceName  + ':u:' + userProjects.user_uuid + ':projects';
+            let key = 'worksace:' +workspaceName  + ':user:' + userProjects.user_uuid + ':projects';
             console.log('key', key)
-            let val = JSON.stringify(userProjects.projects)
-            console.log('val', typeof val, val)
-            const result = await this.setAsync(key, 'true');
-            console.log('Set operation result:', result);
+            let val_r = JSON.stringify(userProjects.projects_r)
+            let val_w = JSON.stringify(userProjects.projects_r)
+            const result_r = await this.setAsync(key + '_r', val_r);
+            const result_w = await this.setAsync(key + '_w', val_w);
+            console.log('Set operation result:', result_r, result_w);
         } catch (err) {
             console.error('Error setting value in Memcached:', err);
         }
