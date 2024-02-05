@@ -1120,7 +1120,22 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     }
   }
   }
-  let key = 'workspace:' + subdomain  + ':user:' + pg_params.user_uuid + ':projects_r'
+
+  let key = 'workspace:' + subdomain  + ':user:' + author_uuid + ':projects_r'
+    memcached.get(key, (err: any, data: any) => {
+        if (err) {
+          console.error('Memcached get error:', err);
+          return;
+        }
+      
+        if (data) {
+          console.log('Retrieved value from Memcached:', data);
+        } else {
+          console.log('Key not found:', key);
+        }
+      });
+
+      key = 'workspace:' + subdomain  + ':user:' + author_uuid + ':projects_w'
     memcached.get(key, (err: any, data: any) => {
         if (err) {
           console.error('Memcached get error:', err);
