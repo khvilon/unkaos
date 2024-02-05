@@ -989,7 +989,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
  
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
-  if(is_admin){
+  if(!is_admin){
     let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects'
     if(method == "read") key += '_r'
     else key += '_w'
