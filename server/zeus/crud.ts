@@ -1165,7 +1165,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     let projects_uuids_array = Array(projects_uuids);
     
     if(method == "read" && table_name == "projects"){
-      query = query.replace('t1.deleted_at IS NULL', 't1.deleted_at IS NULL AND t1.uuid IN ' + `'{"${projects_uuids_array.join('","')}"}'`)
+      query = query.replace('t1.deleted_at IS NULL', 't1.deleted_at IS NULL AND t1.uuid IN ' + `{"${projects_uuids_array.join('","')}"}`)
     }
 
     console.log('projects_uuids', projects_uuids)
