@@ -8,8 +8,8 @@ import conf from './conf.json';
 
 import sql from "./sql";
 
-import * as Memcached from 'memcached';
-const memcached = new Memcached('127.0.0.1:11211');
+import Memcached from 'memcached';
+const memcached = new Memcached('memcached:11211');
 
 const key: string = "sampleKey";
 const value: string = "Hello, Memcached!";
