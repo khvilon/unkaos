@@ -244,13 +244,17 @@ export default class Data {
     return user;
   }
 
-  public checkPermission(workspaceName: string, user_uuid: string, func: string): boolean {
-
-    console.log('www')
+  public isAdmin(workspaceName: string, user_uuid: string): boolean {
     let workspace: Workspace | undefined = this.workspaces.get(workspaceName);
     if(!workspace) return false;
 
-    console.log('www1', user_uuid,func, workspace.permissions)
+    return Boolean(workspace.permissions.get(user_uuid));
+  }
+
+  public checkPermission(workspaceName: string, user_uuid: string, func: string): boolean {
+    let workspace: Workspace | undefined = this.workspaces.get(workspaceName);
+    if(!workspace) return false;
+
     let isAdmin = Boolean(workspace.permissions.get(user_uuid));
     if(isAdmin) return true;
     let isCommon = Boolean(workspace.permissions.get(func));

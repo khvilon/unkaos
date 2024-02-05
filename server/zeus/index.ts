@@ -54,7 +54,7 @@ const handleRequest = async function(req:any, res:any) {
         }
     }
 
-    let ans = await crud.do(subdomain, method, table_name, params, req.headers.user_uuid)
+    let ans = await crud.do(subdomain, method, table_name, params, req.headers.user_uuid, req.headers.is_admin)
 
     if(ans.rows == undefined){
         res.status(ans.http_code != undefined ? ans.http_code : '400');

@@ -77,7 +77,8 @@ export default class Rest {
       return
     }
 
-    let allow = this.data.checkPermission(workspace, user.uuid, req.headers.request_function);
+    let isAdmin = this.data.isAdmin(workspace, user.uuid);
+    let allow = isAdmin || this.data.checkPermission(workspace, user.uuid, req.headers.request_function);
     let self = (user.uuid == req.body.user?.uuid);
     if(req.headers.request_function == 'upsert_user') allow = self || allow;
     else if(req.headers.request_function == 'upsert_password') allow = self
@@ -91,6 +92,7 @@ export default class Rest {
     }
 
     if (request == 'check_session') {
+        user.is_admin = isAdmin;
         res.send(user)
     } 
     else if (request == 'upsert_password') {
