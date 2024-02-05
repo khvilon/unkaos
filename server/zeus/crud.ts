@@ -19,9 +19,9 @@ const select_limit = 1000;
 //const atob = require("atob");
 const { Console } = require("console");
 
-function getMemcachedValue(key) {
+function getMemcachedValue(key: string) {
   return new Promise((resolve, reject) => {
-    memcached.get(key, (err, data) => {
+    memcached.get(key, (err: any, data: any) => {
       if (err) {
         reject(err); // Rejects the promise if there's an error
       } else {
@@ -31,7 +31,7 @@ function getMemcachedValue(key) {
   });
 }
 
-async function cacheGet(key) {
+async function cacheGet(key: string) {
   try {
     const data = await getMemcachedValue(key); // Wait for the promise to resolve
     if (data) {
