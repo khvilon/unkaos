@@ -12,10 +12,6 @@ import tools from "../tools";
 const Memcached = require('memcached');
 const memcached = new Memcached('memcached:11211');
 
-const key = "sampleKey";
-
-
-
 
 const app:any = express()
 const port = 3006
@@ -40,6 +36,7 @@ app.use(express.urlencoded({limit: '150mb', extended: true}));
 
 const handleRequest = async function(req:any, res:any) {
 
+    let key = 'workspace:' +req.headers.subdomain  + ':' + req.headers.user_uuid + ':projects'
     memcached.get(key, (err: any, data: any) => {
         if (err) {
           console.error('Memcached get error:', err);
