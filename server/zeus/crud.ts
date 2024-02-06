@@ -14,6 +14,11 @@ const name_field_uuid = "c96966ea-a591-47a9-992c-0a2f6443bc80";
 const parent_relation_type_uuid = "73b0a22e-4632-453d-903b-09804093ef1b";
 const comment_type_uuid = "f53d8ecc-c26e-4909-a070-5c33e6f7a196";
 
+//title, description, author
+const reqIssueTypesfields = [
+  "c96966ea-a591-47a9-992c-0a2f6443bc80", "4a095ff5-c1c4-4349-9038-e3c35a2328b9","733f669a-9584-4469-a41b-544e25b8d91a"
+];
+
 const select_limit = 1000;
 
 //const atob = require("atob");
@@ -1008,155 +1013,9 @@ crud.get_uuids = function (obj:any) {
   return ans;
 };
 
-crud.do = async function (subdomain:string, method:string, table_name:string, params:any, author_uuid:string, is_admin: boolean) {
-  if (table_name == "issue") table_name = "issues";
-  else if (table_name == "board") table_name = "boards";
-  //else if(table_name == 'dashboard') table_name = 'dashboards'
- 
-  let [query, pg_params] = crud.get_query(method, table_name, params);
 
-  
-
-  console.log('paraaaaaaaaaaaaaaaaaaaaaams', query, pg_params)
-
-  let readed_data;
-  
-
-  if (method != "read") {
-    let [read_query, read_params] = crud.make_query.read(table_name, {
-      uuid: params.uuid,
-    });
-
-    //    console.log('rqrqrqrqrq0', read_query)
-
-    let data = await sql.query(subdomain, read_query, read_params);
-    readed_data = data;
-
-    //  console.log('rqrqrqrqrq', read_query, data)
-
-    if (data.rows.length > 0) {
-      if (
-        table_name == "issues" &&
-        data.rows[0].status_uuid != params.status_uuid
-      ) {
-        let status_text = data.rows[0].status_name + "->" + params.status_name;
-
-        let action_options = {
-          value: status_text,
-          issue_uuid: params.uuid,
-          author_uuid: params.author_uuid,
-          type_uuid: transition_type_uuid,
-          uuid: tools.uuidv4(),
-        };
-
-        let [ia_query, ia_params] = crud.make_query.create(
-          "issue_actions",
-          action_options
-        );
-
-        let [q, p] = crud.push_query(query, pg_params, ia_query, ia_params);
-
-        query = q;
-        pg_params = p;
-      } else if (table_name == "issues") {
-        let action_options = {
-          value: "",
-          issue_uuid: params.uuid,
-          author_uuid: params.author_uuid,
-          type_uuid: edited_type_uuid,
-          uuid: tools.uuidv4(),
-        };
-
-        let [ia_query, ia_params] = crud.make_query.create(
-          "issue_actions",
-          action_options
-        );
-
-        let [q, p] = crud.push_query(query, pg_params, ia_query, ia_params);
-
-        query = q;
-        pg_params = p;
-      } else if(table_name == "issue_types" && method != "read"){
-        //title, description, author
-        let req_fields = [
-          "c96966ea-a591-47a9-992c-0a2f6443bc80", "4a095ff5-c1c4-4349-9038-e3c35a2328b9","733f669a-9584-4469-a41b-544e25b8d91a"
-        ]
-
-        for (const reqField of req_fields) {
-          if (!params.fields.includes(reqField)) params.fields.push(reqField);
-        }
-      }
-
-      let old_uuids = crud.get_uuids(data.rows[0]);
-
-      //    console.log('old_uuids', old_uuids)
-
-      let new_uuids = crud.get_uuids(params);
-
-      //   console.log('new_uuids', new_uuids)
-
-      if(old_uuids != null && new_uuids != null){
-
-      
-      let del_query = "";
-      for (let i in old_uuids) {
-        if (new_uuids[i] != undefined) continue;
-        //   console.log('del', old_uuids[i], JSON.stringify(i))
-        if (data_model.has_fk(table_name, old_uuids[i]))
-          del_query +=
-            "delete from " +
-            table_name +
-            "_to_" +
-            old_uuids[i] +
-            " where " +
-            old_uuids[i] +
-            "_uuid = '" +
-            i + "' and " + table_name + "_uuid = '" + params.uuid + 
-            "';";
-        else
-          del_query +=
-            crud.get_query("delete", old_uuids[i], { uuid: i })[0] +
-            ";" +
-            del_query;
-
-        //    console.log('del2', del_query)
-      }
-
-      for (let i in new_uuids) {
-        if (old_uuids[i] != undefined) continue;
-        if (!data_model.has_fk(table_name, new_uuids[i])) continue;
-        del_query +=
-          "insert into " +
-          table_name +
-          "_to_" +
-          new_uuids[i] +
-          "(" +
-          new_uuids[i] +
-          "_uuid, " +
-          table_name +
-          "_uuid) VALUES('" +
-          i +
-          "', '" +
-          params.uuid +
-          "');";
-
-        //  console.log('addddd', del_query)
-      }
-
-      if (del_query != "") {
-        let [q, p] = crud.push_query([query, pg_params, del_query], [[]], true);
-
-        query = q;
-        pg_params = p;
-      }
-    }
-  }
-  }
-
-  console.log('is_admin:', is_admin)
-
-  if(!is_admin){
-    let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects'
+crud.updateQueryWithProjectsPermissionsFilter = function(subdomain: string, table_name: string, method: string, author_uuid: string, query: string, params: any, readed_data: any){
+  let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects'
     if(method == "read") key += '_r'
     else key += '_w'
     let projects_uuids = await cacheGet(key)
@@ -1178,14 +1037,138 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
       //TODO issue_actions issue_formated_actions
     }
     else{
-      if(table_name == "projects" && !projects_uuids_array.includes(params.uuid)) return {message: 'forbidden'}
-      if(table_name == "issues" && !projects_uuids_array.includes(readed_data.rows[0].project_uuid)) return {message: 'forbidden'}
-
+      if(table_name == "projects" && !projects_uuids_array.includes(params.uuid)) return false;
+      if(table_name == "issues"  && !projects_uuids_array.includes(readed_data.rows[0].project_uuid)) return false;
     }
-    
+
+    return query;
+}
+
+crud.writeIssueHistory = function(query: any, pg_params: any, readed_data: any, params: any){
+  let status_text = '';
+  let type_uuid = edited_type_uuid;
+
+  if (readed_data.rows[0].status_uuid != params.status_uuid){
+    status_text = readed_data.rows[0].status_name + "->" + params.status_name;
+    type_uuid = transition_type_uuid
   }
 
-     
+  let action_options = {
+    value: status_text,
+    issue_uuid: params.uuid,
+    author_uuid: params.author_uuid,
+    type_uuid: transition_type_uuid,
+    uuid: tools.uuidv4(),
+  };
+
+  let [ia_query, ia_params] = crud.make_query.create(
+    "issue_actions",
+    action_options
+  );
+
+  let [q, p] = crud.push_query(query, pg_params, ia_query, ia_params);
+
+  return [q, p]
+}
+
+crud.setIssueTypeReqFields = function(params: any){
+  for (const reqField of reqIssueTypesfields) {
+    if (!params.fields.includes(reqField)) params.fields.push(reqField);
+  }
+  return params;
+}
+
+
+
+crud.do = async function (subdomain:string, method:string, table_name:string, params:any, author_uuid:string, is_admin: boolean) {
+  if (table_name == "issue") table_name = "issues";
+  else if (table_name == "board") table_name = "boards";
+  //else if(table_name == 'dashboard') table_name = 'dashboards'
+ 
+  let [query, pg_params] = crud.get_query(method, table_name, params);
+
+  console.log('paraaaaaaaaaaaaaaaaaaaaaams', query, pg_params)
+
+  let readed_data: any;
+  
+
+  if (method != "read") {
+    let [read_query, read_params] = crud.make_query.read(table_name, {
+      uuid: params.uuid,
+    });
+
+    //current version of object to be changed
+    let readed_data = await sql.query(subdomain, read_query, read_params);
+
+    if (readed_data.rows.length > 0) {
+
+      if (table_name == "issues") [query, pg_params] = crud.writeIssueHistory(query, pg_params, readed_data, params);
+      else if(table_name == "issue_types") params = crud.setIssueTypeReqFields(params);
+
+      let old_uuids = crud.get_uuids(readed_data.rows[0]);
+      let new_uuids = crud.get_uuids(params);
+      if(old_uuids != null && new_uuids != null){
+
+      let del_query = "";
+      for (let i in old_uuids) {
+        if (new_uuids[i] != undefined) continue;
+        //   console.log('del', old_uuids[i], JSON.stringify(i))
+        if (data_model.has_fk(table_name, old_uuids[i]))
+          del_query +=
+            "delete from " +
+            table_name +
+            "_to_" +
+            old_uuids[i] +
+            " where " +
+            old_uuids[i] +
+            "_uuid = '" +
+            i + "' and " + table_name + "_uuid = '" + params.uuid + 
+            "';";
+        else
+          del_query +=
+            crud.get_query("delete", old_uuids[i], { uuid: i })[0] +
+            ";" +
+            del_query;
+      }
+
+      for (let i in new_uuids) {
+        if (old_uuids[i] != undefined) continue;
+        if (!data_model.has_fk(table_name, new_uuids[i])) continue;
+        del_query +=
+          "insert into " +
+          table_name +
+          "_to_" +
+          new_uuids[i] +
+          "(" +
+          new_uuids[i] +
+          "_uuid, " +
+          table_name +
+          "_uuid) VALUES('" +
+          i +
+          "', '" +
+          params.uuid +
+          "');";
+
+      }
+
+      if (del_query != "" && table_name != 'roles' && table_name != 'users') {
+        let [q, p] = crud.push_query([query, pg_params, del_query], [[]], true);
+
+        query = q;
+        pg_params = p;
+      }
+    }
+  }
+  }
+
+  //check projects permissions for user
+  console.log('is_admin:', is_admin)
+  if(!is_admin){
+    let q = crud.updateQueryWithProjectsPermissionsFilter(subdomain, table_name, method, author_uuid, query, params, readed_data)
+    if(!q) return {message: 'forbidden'}
+    query = q;
+  }
+
   let ans = await sql.query(subdomain, query, pg_params);
 
   if (ans != null && ans[1] != undefined) ans = ans[ans.length - 1];
