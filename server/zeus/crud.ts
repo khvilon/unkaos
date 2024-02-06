@@ -1014,7 +1014,7 @@ crud.get_uuids = function (obj:any) {
 };
 
 
-crud.updateQueryWithProjectsPermissionsFilter = function(subdomain: string, table_name: string, method: string, author_uuid: string, query: string, params: any, readed_data: any){
+crud.updateQueryWithProjectsPermissionsFilter = async function(subdomain: string, table_name: string, method: string, author_uuid: string, query: string, params: any, readed_data: any){
   let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects'
     if(method == "read") key += '_r'
     else key += '_w'
@@ -1164,7 +1164,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
   //check projects permissions for user
   console.log('is_admin:', is_admin)
   if(!is_admin){
-    let q = crud.updateQueryWithProjectsPermissionsFilter(subdomain, table_name, method, author_uuid, query, params, readed_data)
+    let q = await crud.updateQueryWithProjectsPermissionsFilter(subdomain, table_name, method, author_uuid, query, params, readed_data)
     if(!q) return {message: 'forbidden'}
     query = q;
   }
