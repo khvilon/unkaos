@@ -904,6 +904,8 @@ crud.make_query = {
     for (let i in params) {
       // console.log('ccc1', params[i], typeof params[i])
 
+      
+
       if (
         !params[i] ||
         params[i][0] === undefined ||
@@ -919,6 +921,9 @@ crud.make_query = {
       // console.log(typeof params[i])
       for (let j in params[i]) {
         let child = params[i][j];
+
+        if(table_name == "roles" && child.table_name == 'permissions') continue;
+        else if(table_name == "users" && child.table_name == 'roles') continue;
 
         let [new_subqyery, new_subparams] = crud.make_query.upsert(
           child.table_name,

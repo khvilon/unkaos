@@ -213,12 +213,13 @@ mod.methods.uuidv4 = function(){
   return tools.uuidv4();
 };
 
-mod.methods.save = function(){
-  rest.run_method('upsert_roles', this.roleToSave)
+mod.methods.save = async function(){
 
   for(let i in this.usersToSave){
-    rest.run_method('upsert_users', this.usersToSave[i])
+    await rest.run_method('upsert_users', this.usersToSave[i])
   }
+  rest.run_method('upsert_roles', this.roleToSave)
+  
   this.usersToSave = [];
 };
 
