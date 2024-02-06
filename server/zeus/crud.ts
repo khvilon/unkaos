@@ -109,7 +109,7 @@ crud.make_read_query_template = function (table_name:string, num:number) {
     let relations_table_name = table_name + "_to_" + fk_table_name;
     let forein_table_num_str = num + "" + forein_table_num;
 
-    //console.log('lll', fk_table_name, relations_table_name)
+    
 
     select +=
       ", " +
@@ -145,7 +145,7 @@ crud.make_read_query_template = function (table_name:string, num:number) {
   }
   for (let i in data_model.model[table_name]["fks"]) {
     let fk_table_name = data_model.model[table_name]["fks"][i];
-    //    console.log('fk_table_name', table_name, fk_table_name)
+
 
     let forein_table_num_str = num + "" + forein_table_num + "_" + i;
 
@@ -192,7 +192,7 @@ crud.make_read_query_template = function (table_name:string, num:number) {
     and +
     group;
 
-  // if(num == 1) console.log('q', table_name, query)
+
   return query;
 };
 
@@ -506,7 +506,7 @@ crud.load = async function () {
 
 
 crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is_revert:any) {
-  //console.log('------------push_query0', '#' + query0 + '#', '##' + query1+ '##')
+
 
   if (query1 == "") return [query0, params0];
   let query = [];
@@ -542,13 +542,13 @@ crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is
     }
   }
 
-  // console.log('--------------push_query1',query0 , query1)
+  
 
   return [query, params];
 };
 
 crud.concat_querys = function (query0:any, params0:any, query1:any, params1:any, middle:any) {
-  // console.log('concstart', query0, params0, query1, params1, middle)
+
 
   if (Array.isArray(query0)) return [query0, params0];
 
@@ -560,19 +560,19 @@ crud.concat_querys = function (query0:any, params0:any, query1:any, params1:any,
   for (let i = 0; i < params1.length; i++) {
     params.push(params1[i]);
 
-    // console.log('$' + (i+1), '$' + params.length, query)
+ 
     query = query.replace("$" + (i + 1), "$" + params.length);
   }
   query = query0 + middle + query;
 
-  // console.log('concend', query, params)
+
   return [query, params];
 };
 
 crud.make_query = {
   read: function (table_name:string, params:any) {
     if (table_name == undefined) return ["", []];
-    console.log(table_name)
+
     let query = crud.querys[table_name]["read"];
 
     if (
@@ -583,7 +583,7 @@ crud.make_query = {
       let user_query:String = ' TRUE '
       if (params["query"]) user_query = decodeURIComponent(atob(params["query"]));
 
-      //console.log('user_query', user_query)
+
 
       let filtered_issues_query = `WITH filtered_issues AS (
                 SELECT * FROM
@@ -635,7 +635,7 @@ crud.make_query = {
       let fv_count = 0
       //user_query = user_query.replaceAll("='(resolved)'", '=ANY '  + q_resolved_uuids )
 
-      console.log('>>>>>>>>>>>>>>>>>>>', user_query)
+      //console.log('>>>>>>>>>>>>>>>>>>>', user_query)
       
       while (user_query.indexOf("attr#") > -1) {
         let start = user_query.indexOf("attr#");
@@ -705,7 +705,6 @@ crud.make_query = {
 
     if (!params || params.length == 0) return [query.replace("$@1", ""), []];
 
-    //console.log(params)
 
     let pg_params = [];
 
@@ -730,14 +729,13 @@ crud.make_query = {
 
   delete: function (table_name:string, params:any) {
 
-    console.log('table_name', table_name)
+    console.log('create delete query from ', table_name)
     let query = crud.querys[table_name]["delete"];
 
     return [query.replace("$@1", "'" + params.uuid + "'"), []];
   },
 
   create: function (table_name:string, params:any) {
-    //console.log('tn', table_name)
 
     if (table_name == undefined) return ["", []];
 
@@ -825,7 +823,7 @@ crud.make_query = {
       set = set.concat(i, "=$", pg_params.length.toString());
     }
 
-    // if(set.indexOf('SELECT x.* FROM integration_1c.messages x') > 0)console.log('aaaaaleeeertttt0', set)
+
 
     query = query.replace("$@2", set);
 
@@ -840,7 +838,6 @@ crud.make_query = {
     );
 
     let upd = crud.make_query.update;
-    // console.log(upd)
 
     if(query_create == '' && upd){
       return crud.push_query(upd, params, '', []);
@@ -902,7 +899,6 @@ crud.make_query = {
     let subparams:any[] = [];
 
     for (let i in params) {
-      // console.log('ccc1', params[i], typeof params[i])
 
       
 
@@ -911,14 +907,11 @@ crud.make_query = {
         params[i][0] === undefined ||
         typeof params[i][0] !== "object"
       ) {
-        // for(let j in params[i]){
-        //     let child =  params[i][j]
-        // if(data_model.has_fk(table_name, j)) console.log('chiiiild', child)//subquerys += '\r\n' + 'INSERT INTO ' table_name + '_to_'
-        // }
+
         continue;
       }
 
-      // console.log(typeof params[i])
+
       for (let j in params[i]) {
         let child = params[i][j];
 
@@ -930,8 +923,7 @@ crud.make_query = {
           child
         );
 
-        //   console.log('_________0', new_subqyery)
-        //   console.log('_________00')
+
         let [q, p]:any[] = crud.push_query(
           subquerys,
           subparams,
@@ -944,16 +936,13 @@ crud.make_query = {
       }
     }
 
-    //  console.log('tntntntnttntnt', table_name)
 
-    // console.log('_________1', subquerys)
-    //  console.log('_________11')
     return crud.push_query(query, pg_params, subquerys, subparams);
   },
 };
 
 crud.get_query = function (method:string, table_name:string, params:any) {
-  //console.log( method, 'bb', table_name)
+
   if (table_name == undefined) return ["", []];
 
   let [query, pg_params] = crud.make_query[method](table_name, params);
@@ -963,9 +952,7 @@ crud.get_query = function (method:string, table_name:string, params:any) {
       uuid: params.uuid,
     });
 
-    //console.log('reeeeeeeeeeeeeeeeeeeeeeeeeeeeead_query', read_query + '###' + query, pg_params)
 
-    //   console.log('_________2')
     let [q, p] = crud.push_query(query, pg_params, read_query, read_params);
     query = q;
     pg_params = p;
@@ -988,10 +975,10 @@ crud.get_uuids = function (obj:any) {
       continue;
 
 
-    console.log('obj.table_name', obj, obj.table_name)
+    //console.log('obj.table_name', obj, obj.table_name)
     let fk = data_model.model[obj.table_name]["fk"];
     if (fk !== undefined) {
-      // console.log('fk', obj.table_name, fk)
+ 
 
       for (let k in fk) {
         for (let j in obj[fk[k]]) {
@@ -1002,10 +989,9 @@ crud.get_uuids = function (obj:any) {
     }
 
     let fks = data_model.model[obj.table_name]["fks"];
-    // console.log(obj.table_name, 'fff', fks, 'fdfdfd', obj[i][0].table_name, obj[i][0])
+ 
 
     if (fks == undefined || !fks.includes(obj[i][0].table_name)) continue;
-    // console.log('fff2', fks, 'fdfdfd', obj[i][0].table_name)
 
     for (let j in obj[i]) {
       let ch_uuids = crud.get_uuids(obj[i][j])
@@ -1014,7 +1000,6 @@ crud.get_uuids = function (obj:any) {
     }
   }
 
-  //  console.log('aaaaaaaaaans uuids', ans)
   return ans;
 };
 
@@ -1092,7 +1077,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
  
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
-  console.log('paraaaaaaaaaaaaaaaaaaaaaams', query, pg_params)
+ 
 
   let readed_data: any;
   
@@ -1117,7 +1102,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
       let del_query = "";
       for (let i in old_uuids) {
         if (new_uuids[i] != undefined) continue;
-        //   console.log('del', old_uuids[i], JSON.stringify(i))
+      
         if (data_model.has_fk(table_name, old_uuids[i]))
           del_query +=
             "delete from " +
@@ -1174,6 +1159,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     query = q;
   }
 
+  
   let ans = await sql.query(subdomain, query, pg_params);
 
   if (ans != null && ans[1] != undefined) ans = ans[ans.length - 1];
