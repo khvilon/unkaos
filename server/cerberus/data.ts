@@ -83,6 +83,8 @@ export default class Data {
     const workspace = this.workspaces.get(workspaceName);
     if(!workspace) return;
 
+    
+
     let permissions = (await sql`
       SELECT 
         U.uuid user_uuid,
@@ -99,6 +101,8 @@ export default class Data {
         R.deleted_at IS NULL AND
         P.deleted_at IS NULL
     `)
+
+    workspace.permissions = new Map();
 
     for(let i in permissions){
       let targets = permissions[i].targets;
