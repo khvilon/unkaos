@@ -56,7 +56,7 @@ let items = [
           admin_only: true,
         },
         {
-          link: "/projects",
+          link: "/configs/projects",
           name: "Проекты",
           icon: "bx-briefcase-alt-2",
           level: 2,
@@ -184,6 +184,37 @@ export default {
       if(this.$store.state['common'].workspace == 'server') filteredMenuItems = this.menuItems.filter((mi)=>mi.server);
       else filteredMenuItems = this.menuItems.filter((mi) => !mi.admin_only || !this.$store.state['common']['is_mobile']);
       if(!this.$store.state['common'].use_sprints) filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/sprints'));
+
+      let user = cache.getObject('profile')
+
+      console.log('rrr!!!', user)
+
+      if(this.$store.state['common'].is_admin) return filteredMenuItems;
+
+      let permissions = [];
+      for(let role of user.roles){
+        if(!role.permissions) continue;
+        for(let permission of role.permissions){
+          if(!permissions.includes(permission.code)) permissions.push(permission.code)
+        }
+      }
+
+      console.log('perm!!!', permissions)
+      if(!permissions.includes('workflow_CRU') && !permissions.includes('workflow_RD')) {
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/workflows'));
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/issue_types'));
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/issue_statuses'));
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/fields'));
+      }
+      if(!permissions.includes('projects_CU') && !permissions.includes('projects_D')) {
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/projects'));
+      }
+      if(!permissions.includes('users_and_roles_CUD')) {
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/roles'));
+      }
+      if(!permissions.includes('sprints_CUD')) {
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/sprints'));
+      }
       return filteredMenuItems;
     }
   },

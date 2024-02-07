@@ -3,6 +3,8 @@ import tools from "./tools";
 import conf from "./conf";
 import cache from "./cache";
 
+const adminRoleUUID = '556972a6-0370-4f00-aca2-73a477e48999'
+
 export default class rest {
 
   static workspace: string = "public"; // Default value
@@ -124,6 +126,13 @@ export default class rest {
     const data = await resp.json();
     if (data[1] != undefined) return data[1].rows;
     store.state["alerts"][alert_id].type = "ok";
+
+    if(method == 'read_users'){
+      let user_uuid = cache.getObject("profile").uuid;
+      let user = data.rows.find((u:any)=>u.uuid==user_uuid)
+      if(user) cache.setObject("profile", user);
+    }
+
     return data.rows;
   }
 }
