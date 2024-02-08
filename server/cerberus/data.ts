@@ -235,12 +235,16 @@ export default class Data {
   public async checkSession(workspaceName: string, token: string): Promise<User | null> {
     //const md5Token = md5(token)
     const md5Token: string = await this.md5(token)
+
+    
     let workspace: Workspace | undefined = this.workspaces.get(workspaceName);
     if(!workspace){
       await this.getWorkspaces();
       workspace = this.workspaces.get(workspaceName);
       if(!workspace) return null;
     }
+
+    console.log('checkSession', md5Token, workspace.sessions)
     const userSession: UserSession | undefined = workspace.sessions.get(md5Token);
     if(!userSession) return null;
     const user: User | undefined = workspace.users.get(userSession.user_uuid);
