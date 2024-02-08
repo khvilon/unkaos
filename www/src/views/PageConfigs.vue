@@ -195,6 +195,7 @@ export default mod;
     <TopMenu :label="'Настройки'" />
     <div id="config_down_panel" class="panel">
       <KTabPanel>
+       
         <KTab 
           :title="'Персональные'" 
           class="table_card"
@@ -230,7 +231,6 @@ export default mod;
         </div>
        
         </KTab>
-        </KTabPanel>
         <KTab 
           v-for="(tab, index) in tabs" 
           :key="index"
