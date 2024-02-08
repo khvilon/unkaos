@@ -5,6 +5,8 @@ import IssuesTable from "../gadgets/IssuesTable.vue";
 import IssuesTableConfig from "../gadgets/IssuesTableConfig.vue";
 import TimeReport from "../gadgets/TimeReport.vue";
 import TimeReportConfig from "../gadgets/TimeReportConfig.vue";
+import Burndown from "../gadgets/Burndown.vue";
+import BurndownConfig from "../gadgets/BurndownConfig.vue";
 
 
 import d from "../dict.ts";
@@ -167,7 +169,7 @@ let methods = {
     rest.run_method('upsert_gadgets', gadget)
   },
   new_gadget:  function(type){
-    if(type.code != 'TimeReport') return
+    if(type.code != 'TimeReport' && type.code != 'Burndown') return
 
     let gadget = {
       uuid: tools.uuidv4(),
@@ -355,6 +357,8 @@ mod.components = {
   IssuesTableConfig,
   TimeReport,
   TimeReportConfig,
+  Burndown,
+  BurndownConfig,
 };
 
 export default mod;
@@ -372,7 +376,7 @@ export default mod;
             v-for="(gadget_type) in gadget_types"
             @click="new_gadget(gadget_type)"
             class="gadget-types-cell"
-            :class="{'gadget-types-cell-disabled' : gadget_type.code != 'TimeReport'}"
+            :class="{'gadget-types-cell-disabled' : gadget_type.code != 'TimeReport' && gadget_type.code != 'Burndown'}"
             >
             <span>{{ gadget_type.name }}</span>
             </div>

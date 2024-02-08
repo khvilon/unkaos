@@ -71,6 +71,8 @@ export default class Rest {
     }
 
     const user = await this.data.checkSession(workspace, token)
+
+    console.log('>>>>>>>>>>>>test', user, workspace, token)
     if (!user) {
       res.status(401);
       res.send({ message: 'Пользовательский токен не валиден' });
