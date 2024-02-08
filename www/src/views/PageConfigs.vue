@@ -196,6 +196,42 @@ export default mod;
     <div id="config_down_panel" class="panel">
       <KTabPanel>
         <KTab 
+          :title="'Персональные'" 
+          class="table_card"
+        >
+          <div class="table_card_fields">
+            <div class="config-group">
+              <SelectInput
+                label="Тема"
+                :values="themes"
+                :value="theme"
+                :reduce="(obj) => obj.val"
+                @update_parent_from_input="set_theme"
+                :close_on_select="false"
+                :parameters="{ clearable: false }"
+              >
+              </SelectInput>
+              <SelectInput
+                label="Язык"
+                :values="langs"
+                :value="lang"
+                :reduce="(obj) => obj.val"
+                @update_parent_from_input="set_lang"
+                :parameters="{ clearable: false }"
+              >
+              </SelectInput>
+              <BooleanInput
+                label="Главное меню по щелчку на логотип"
+                :value="lock_main_menu"
+                @update_parent_from_input="update_lock_main_menu"
+                style="margin-bottom: 10px"
+              ></BooleanInput>
+            </div>
+        </div>
+       
+        </KTab>
+        </KTabPanel>
+        <KTab 
           v-for="(tab, index) in tabs" 
           :key="index"
           :title="tab.label" 
