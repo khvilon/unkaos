@@ -282,7 +282,7 @@ INSERT INTO server.projects(uuid, name, short_name, owner_uuid, description) VAL
 ('f8f78225-1970-47d6-a36e-5b0b773eb8a1', 'Основной проект', 'BS', 'ba52933b-9c25-4be5-8b8e-02bd26ba8feb', 'Базовый проект по умолчанию');
 
 
-INSERT INTO server.projects_permissions(uuid, projects_uuid, role_uuid, allow) VALUES 
+INSERT INTO server.projects_permissions(uuid, projects_uuid, roles_uuid, allow) VALUES 
 ('f7a26dbb-6a4b-4855-bf02-ccd197ad1227', 'f8f78225-1970-47d6-a36e-5b0b773eb8a1', '3a556a56-eb59-4654-92ac-1921040eeea1', 'CRUD'),
 ('f54974a4-50f1-421f-9032-ada7f908c83a', 'f8f78225-1970-47d6-a36e-5b0b773eb8a1', 'fa9d5af3-3567-4a63-9653-3567a636cc6a', 'CRUD'),
 ('62f88de1-8f33-44da-9f1a-0bdc8522f253', 'f8f78225-1970-47d6-a36e-5b0b773eb8a1', '0090d50a-d3de-4bb2-822f-c8b5dd4428da', 'CRUD'),
