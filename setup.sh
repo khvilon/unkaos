@@ -136,6 +136,7 @@ if [ "$CPU_CORES" -gt 1 ]; then
 else
     CPU_CORES=1
 fi
+CPU_CORES=1
 
 $DOCKER_COMPOSE up -d \
 --scale ossa=$CPU_CORES \
