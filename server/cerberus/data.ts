@@ -205,6 +205,10 @@ export default class Data {
   }
 
   private async handleNotify(row: Row, { command, relation, _key, _old }: any) {
+    if(!this.workspaces.get(relation.schema)){
+      await this.getWorkspaces();
+    }
+
     if (relation.table == 'user_sessions' && command == 'insert') {
       let session: UserSession = {
         uuid: row.uuid,

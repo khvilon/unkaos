@@ -75,6 +75,30 @@ CREATE TRIGGER server_inserted AFTER INSERT ON server.fields FOR EACH ROW EXECUT
 CREATE TRIGGER server_update_field_values_rows AFTER INSERT OR UPDATE ON server.field_values FOR EACH ROW EXECUTE FUNCTION server.update_field_values_rows();
 
 
+ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.user_sessions;
+ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.users;
+ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.roles;
+ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.roles_to_permissions;
+ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.users_to_roles;
+ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.permissions;
+
+ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.watchers;
+ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.msg_out;
+ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.users;
+ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.configs;
+
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.attachments;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.field_values;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.fields;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.issue_actions;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.issue_tags_selected;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.issues;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.relations;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.users;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.roles;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.users_to_roles;
+ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.projects_permissions;
+
 INSERT INTO server.configs(uuid, service, name, value) VALUES 
 ('074a8ea8-95f4-49e6-9a60-4c84a7380100', 'email', 'service', ''),
 ('eee93825-be47-4c6c-a69a-028b6b26243c', 'email', 'user', ''),
@@ -332,29 +356,6 @@ INSERT INTO server.issue_types_to_fields(issue_types_uuid, fields_uuid) VALUES
 --INSERT INTO server.users_to_roles (users_uuid, roles_uuid) VALUES ('dbe1a000-40de-428c-bc0a-4fd590a466a5', '556972a6-0370-4f00-aca2-73a477e48999');
 
 
-ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.user_sessions;
-ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.users;
-ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.roles;
-ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.roles_to_permissions;
-ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.users_to_roles;
-ALTER PUBLICATION cerberus_publication ADD TABLE ONLY server.permissions;
-
-ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.watchers;
-ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.msg_out;
-ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.users;
-ALTER PUBLICATION hermes_publication ADD TABLE ONLY server.configs;
-
-ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.attachments;
-ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.field_values;
-ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.fields;
-ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.issue_actions;
-ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.issue_tags_selected;
-ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.issues;
-ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.relations;
-ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.users;
-ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.roles;
-ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.users_to_roles;
-ALTER PUBLICATION ossa_publication ADD TABLE ONLY server.projects_permissions;
 
 
 DO $$
