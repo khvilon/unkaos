@@ -534,4 +534,10 @@ $loading-bar-width: 200vw;
 	border-color: transparent;
 }
 
+.maintop-title svg{
+  z-index: 1;
+}
+
+
+
 </style>
