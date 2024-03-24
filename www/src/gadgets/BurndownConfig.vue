@@ -1,4 +1,5 @@
 <script>
+import page_helper from "../page_helper.ts";
 
 export default {
   /*  data()
@@ -49,8 +50,3 @@ export default {
     </div>
   </div>
 </template>
-
-<style lang="scss">
-@import "../css/global.scss";
-
-</style>

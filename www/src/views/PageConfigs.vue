@@ -3,6 +3,7 @@ import page_helper from "../page_helper.ts";
 import tools from "../tools.ts";
 import { nextTick } from "vue";
 import rest from "../rest.ts";
+import cache from "../cache.ts";
 
 
 const data = {
@@ -12,6 +13,14 @@ const data = {
   inputs: [],
   instance: {},
   values: [],
+  themes: [
+        { name: "Темная", val: "dark" },
+        { name: "Темная теплая", val: "dark_warm" },
+        { name: "Светлая", val: "light" }
+      ],
+  theme: "dark",
+  langs: [{ name: "Русский", val: "ru" }],
+  lang: { name: "Русский", val: "ru" },
 
   tabs: [
     {
@@ -150,6 +159,10 @@ const methods = {
       return;
     }
     this.values = tools.clone_obj(this.configs);
+
+    for (let i = 0; i < this.themes.length; i++) {
+      if (cache.getString("theme") === this.themes[i].val) this.theme = this.themes[i];
+    }
   },
   cancel: async function(){
       this.values = tools.clone_obj(this.configs);
@@ -175,7 +188,17 @@ const methods = {
       this.values[i].value = val;
       return;
     }
-  }
+  },
+  set_theme(theme) {
+      this.theme = theme;
+      cache.setString("theme", theme.val)
+      let htmlElement = document.documentElement;
+      htmlElement.setAttribute("theme", theme.val);
+    },
+    set_lang(lang) {},
+    update_lock_main_menu(value) {
+      cache.setObject("lock_main_menu", value)
+    },
 };
 
 const mod = await page_helper.create_module(data, methods);
@@ -202,18 +225,17 @@ export default mod;
         >
           <div class="table_card_fields">
             <div class="config-group">
+              <div class="config-label">Тема</div>
               <SelectInput
-                label="Тема"
                 :values="themes"
                 :value="theme"
                 :reduce="(obj) => obj.val"
                 @update_parent_from_input="set_theme"
-                :close_on_select="false"
                 :parameters="{ clearable: false }"
               >
               </SelectInput>
+              <div class="config-label">Язык</div>
               <SelectInput
-                label="Язык"
                 :values="langs"
                 :value="lang"
                 :reduce="(obj) => obj.val"
@@ -221,8 +243,8 @@ export default mod;
                 :parameters="{ clearable: false }"
               >
               </SelectInput>
+              <div class="config-label">Главное меню по щелчку на логотип</div>
               <BooleanInput
-                label="Главное меню по щелчку на логотип"
                 :value="lock_main_menu"
                 @update_parent_from_input="update_lock_main_menu"
                 style="margin-bottom: 10px"
@@ -331,7 +353,7 @@ $card-width: 400px;
 
 #config_down_panel span {
   font-size: 15px;
-  padding: 20px;
+  
 }
 
 #config_down_panel .boolean-input{
@@ -350,6 +372,7 @@ $card-width: 400px;
   margin-bottom: 8px;
   font-weight: 400;
   font-size: 16px;
+  
 }
 
 .config-group .label{

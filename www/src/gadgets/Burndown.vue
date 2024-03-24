@@ -1,10 +1,10 @@
+
+
 <script>
 import page_helper from "../page_helper.ts";
-import query_parser from "../query_parser.ts";
 
 import d from "../dict.ts";
 import rest from "../rest";
-import tools from "../tools.ts";
 import cache from "../cache";
 
 let methods = {
@@ -118,6 +118,97 @@ const data = {
   label: "Задачи",
   search_query: undefined,
   search_query_encoded: "",
+  test_data: [
+  {name: 'Идеальное выполнение', color: 'gray', yAxis: 0, dashStyle: 'Dash',
+    data: {
+      '2017-01-01 00:00:00 -0800': 7,
+      '2017-01-02 00:00:00 -0800': 6,
+      '2017-01-03 00:00:00 -0800': 5,
+      '2017-01-04 00:00:00 -0800': 4,
+      '2017-01-05 00:00:00 -0800': 3,
+      '2017-01-06 00:00:00 -0800': 2,
+      '2017-01-07 00:00:00 -0800': 1,
+      '2017-01-08 00:00:00 -0800': 0
+    }
+  },
+  {name: 'Объем задач', color: 'blue', yAxis: 1,
+    data: {
+      '2017-01-01 00:00:00 -0800': 22,
+      '2017-01-02 00:00:00 -0800': 10,
+      '2017-01-03 00:00:00 -0800': 10,
+      '2017-01-04 00:00:00 -0800': 10,
+      '2017-01-05 00:00:00 -0800': 10,
+      '2017-01-06 00:00:00 -0800': 2,
+      '2017-01-07 00:00:00 -0800': 2,
+      '2017-01-08 00:00:00 -0800': 0
+    }
+  },
+  {name: 'Количество задач', color: 'green', yAxis: 0,
+  data: {
+      '2017-01-01 00:00:00 -0800': 7,
+      '2017-01-02 00:00:00 -0800': 7,
+      '2017-01-03 00:00:00 -0800': 6,
+      '2017-01-04 00:00:00 -0800': 6,
+      '2017-01-05 00:00:00 -0800': 2,
+      '2017-01-06 00:00:00 -0800': 2,
+      '2017-01-07 00:00:00 -0800': 1,
+      '2017-01-08 00:00:00 -0800': 1
+    }
+  }
+  
+],
+chartOptions: {
+  height: '100%',
+      chart: {
+          type: 'line',
+          backgroundColor: 'rgba(255, 255, 255, 0)', // Прозрачный фон
+         // height: '100%' // Высота в 100%
+        },
+        xAxis: {
+   
+      labels: {
+        style: {
+          color: 'red' // Красные подписи оси X
+        }
+      },
+      lineColor: 'red', // Красная ось X
+      tickColor: 'red' // Красные деления на оси X
+    },
+      yAxis: [{ // Первая ось Y для количества задач
+        title: {
+          text: 'Количество',
+          style: {
+            color: 'green' // Красный цвет заголовка оси Y
+          }
+        },
+        labels: {
+        style: {
+          color: 'green' // Красные подписи оси Y
+        }
+      },
+      gridLineColor: 'red'
+      }, { // Вторая ось Y для объема задач
+        title: {
+          text: 'Объем',
+          style: {
+            color: 'blue' // Красный цвет заголовка оси Y
+          }
+        },
+        labels: {
+        style: {
+          color: 'blue' // Красные подписи оси Y
+        }
+      },
+        opposite: true,
+        gridLineColor: 'red'
+      }],
+      legend: {
+      itemStyle: {
+         color: 'red' // Красный цвет легенды
+      },
+      
+    },
+    },
   collumns: [
     {
       name: "",
@@ -207,6 +298,8 @@ const data = {
 const mod = await page_helper.create_module(data, methods);
 
 mod.mounted = function () {
+
+
   console.log("this.url_params", this.url_params);
 
   if (this.url_params.query != undefined) {
@@ -221,7 +314,8 @@ mod.mounted = function () {
     });
   }
 
-  //this.
+
+
 };
 
 mod.activated = function () {
@@ -242,7 +336,7 @@ export default mod;
 </script>
 
 <template ref="issues">
-  <div>
+  <div class="burndown-container">
     <div class="panel topbar" v-show="false">
       <div
         style="
@@ -273,15 +367,8 @@ export default mod;
 
 
       <div class="gadget_burndown_panel panel">
-        <Transition name="element_fade">
-          <KTable
-            v-if="!loading"
-            @scroll_update="load_more"
-            :collumns="collumns"
-            :table-data="loaded_issues"
-            :name="'issues'"
-            :dicts="{ users: users }"
-          />
+        <Transition name="element_fade"> 
+          <line-chart :data="test_data" :library="chartOptions" height="100%"></line-chart>
         </Transition>
       </div>
 
@@ -293,13 +380,13 @@ export default mod;
 @import "../css/global.scss";
 
 .gadget_burndown_panel {
-  height: auto;
+  height: 100%;
   width: 100%;
   border: none !important;
 }
 
-.gadget_burndown_panel .ktable {
-  margin: 0px;
-  padding: 10px;
+
+.burndown-container{
+  height: 100%;
 }
 </style>

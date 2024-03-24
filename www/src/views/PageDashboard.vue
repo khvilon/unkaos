@@ -758,6 +758,10 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
 
 .gadget-types-modal .btn input{
   width: 340px;
+  height: $input-height;
+  width: 100%;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 

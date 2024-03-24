@@ -8,9 +8,8 @@ export default {
       common: this.$store.state["common"],
       themes: [
         { name: "Темная", val: "dark" },
-        { name: "Темная объемная", val: "dark_3d" },
-        { name: "Светлая", val: "light" },
-        { name: "Я блондинка!", val: "pink" },
+        { name: "Темная теплая", val: "dark_warm" },
+        { name: "Светлая", val: "light" }
       ],
       theme: "dark",
       langs: [{ name: "Русский", val: "ru" }],
@@ -67,8 +66,10 @@ export default {
       this.menu_visible = false;
     },
     set_theme(theme) {
+      console.log("theme0", theme.val)
       this.theme = theme;
       cache.setString("theme", theme.val)
+      console.log("theme1", theme.val)
       let htmlElement = document.documentElement;
       htmlElement.setAttribute("theme", theme.val);
     },

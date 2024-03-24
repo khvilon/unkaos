@@ -7,7 +7,7 @@ export default {
     },
     label: {
       type: String,
-      default: "label",
+      default: "",
     },
     value: {
       type: String,
@@ -88,7 +88,7 @@ export default {
 
 <template>
   <div class="string input">
-    <div class="label">{{ label }}</div>
+    <div class="label" v-if="label != ''">{{ label }}</div>
     <input
       ref="inputField"
       class="string-input"

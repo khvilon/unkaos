@@ -3,9 +3,7 @@ import MainMenu from "./components/MainMenu.vue";
 import Profile from "./components/Profile.vue";
 import KAlerter from "./components/KAlerter.vue";
 
-import palette from "./palette.ts";
 import dict from "./dict.ts";
-import store_helper from "./store_helper.ts";
 import cache from "./cache.ts";
 import rest from "./rest.ts";
 
