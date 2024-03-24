@@ -27,10 +27,11 @@ export default {
         if(this.val != val) this.val = val
     },
     val: function (val, oldVal) {
-
-      if(oldVal != undefined && val != undefined && val.toString()==oldVal.toString()) return;
-      //this.convert_values_to_uuids()
-
+      if (typeof val === 'object' && typeof oldVal === 'object'){
+        if(JSON.stringify(val) === JSON.stringify(oldVal)) return
+      }
+      else if(oldVal != undefined && val != undefined && val.toString()==oldVal.toString()) return;
+      console.log('watch1')
       if(this.updated_at == undefined) 
       {
         this.updated_at = new Date()

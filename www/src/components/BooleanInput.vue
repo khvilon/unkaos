@@ -8,7 +8,7 @@ export default {
     },
     label: {
       type: String,
-      default: "label",
+      default: "",
     },
     value: {
       type: Boolean,
