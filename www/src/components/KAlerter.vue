@@ -60,7 +60,7 @@ export default {
       class="alert"
       @click="hide($event)"
     >
-      <img :src="icons[alert.type]" /><span>{{ alert.text }}</span>
+      <img v-show="alert.method.indexOf('read_')!= 0 || alert.type=='error'" :src="icons[alert.type]" /><span>{{ alert.text }}</span>
     </div>
   </div>
 </template>

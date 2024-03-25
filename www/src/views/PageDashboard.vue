@@ -371,16 +371,21 @@ export default mod;
     <div v-if="gadget_types_modal_visible" class = gadget-types-modal-container>
       <div class="modal-bg" @mousedown.self="gadget_types_modal_visible=false">
         <div class="panel modal gadget-types-modal">
+          <Transition name="element_fade">
           <div class="gadget-types-cells">
+            
             <div
             v-for="(gadget_type) in gadget_types"
             @click="new_gadget(gadget_type)"
             class="gadget-types-cell"
             :class="{'gadget-types-cell-disabled' : gadget_type.code != 'TimeReport' && gadget_type.code != 'Burndown'}"
             >
+          
             <span>{{ gadget_type.name }}</span>
             </div>
+          
           </div>
+        </Transition>
           <KButton name="Отменить" @click="gadget_types_modal_visible=false" />
         </div>
       </div>
@@ -554,7 +559,8 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   flex-direction: column;
   height: calc(100vh - $top-menu-height);
 
-  background: var(--input-bg-color);
+ // background: var(--input-bg-color);
+ background: transparent;
 
   overflow: scroll;
 }
@@ -611,6 +617,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   align-items: center;
 
   border-style: var(--border-style);
+  border-style: groove;
   border-color: var(--border-color);
 
   border-top-left-radius: var(--border-radius);
@@ -644,6 +651,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   border-bottom-left-radius: var(--border-radius);
   border-bottom-right-radius: var(--border-radius);
 
+  border-style: groove;
   border-top-width: var(--border-width);
   border-left-width: var(--border-width);
   border-right-width: var(--border-width);

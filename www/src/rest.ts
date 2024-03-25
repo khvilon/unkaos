@@ -79,6 +79,7 @@ export default class rest {
       type: "loading",
       status: "new",
       start: new Date(),
+      method: method
     };
     method = method.replace("create", "upsert").replace("update", "upsert");
     rest.headers.set("token", cache.getString("user_token"));
