@@ -7,6 +7,8 @@ import d from "../dict.ts";
 import rest from "../rest";
 import cache from "../cache";
 
+import palette from '../css/palette.scss'
+
 let methods = {
   add_with_children: function (obj, arr, ch_level) {
     if (ch_level > 10) return arr;
@@ -118,97 +120,8 @@ const data = {
   label: "Задачи",
   search_query: undefined,
   search_query_encoded: "",
-  test_data: [
-  {name: 'Идеальное выполнение', color: 'gray', yAxis: 0, dashStyle: 'Dash',
-    data: {
-      '2017-01-01 00:00:00 -0800': 7,
-      '2017-01-02 00:00:00 -0800': 6,
-      '2017-01-03 00:00:00 -0800': 5,
-      '2017-01-04 00:00:00 -0800': 4,
-      '2017-01-05 00:00:00 -0800': 3,
-      '2017-01-06 00:00:00 -0800': 2,
-      '2017-01-07 00:00:00 -0800': 1,
-      '2017-01-08 00:00:00 -0800': 0
-    }
-  },
-  {name: 'Объем задач', color: 'blue', yAxis: 1,
-    data: {
-      '2017-01-01 00:00:00 -0800': 22,
-      '2017-01-02 00:00:00 -0800': 10,
-      '2017-01-03 00:00:00 -0800': 10,
-      '2017-01-04 00:00:00 -0800': 10,
-      '2017-01-05 00:00:00 -0800': 10,
-      '2017-01-06 00:00:00 -0800': 2,
-      '2017-01-07 00:00:00 -0800': 2,
-      '2017-01-08 00:00:00 -0800': 0
-    }
-  },
-  {name: 'Количество задач', color: 'green', yAxis: 0,
-  data: {
-      '2017-01-01 00:00:00 -0800': 7,
-      '2017-01-02 00:00:00 -0800': 7,
-      '2017-01-03 00:00:00 -0800': 6,
-      '2017-01-04 00:00:00 -0800': 6,
-      '2017-01-05 00:00:00 -0800': 2,
-      '2017-01-06 00:00:00 -0800': 2,
-      '2017-01-07 00:00:00 -0800': 1,
-      '2017-01-08 00:00:00 -0800': 1
-    }
-  }
   
-],
-chartOptions: {
-  height: '100%',
-      chart: {
-          type: 'line',
-          backgroundColor: 'rgba(255, 255, 255, 0)', // Прозрачный фон
-         // height: '100%' // Высота в 100%
-        },
-        xAxis: {
-   
-      labels: {
-        style: {
-          color: 'red' // Красные подписи оси X
-        }
-      },
-      lineColor: 'red', // Красная ось X
-      tickColor: 'red' // Красные деления на оси X
-    },
-      yAxis: [{ // Первая ось Y для количества задач
-        title: {
-          text: 'Количество',
-          style: {
-            color: 'green' // Красный цвет заголовка оси Y
-          }
-        },
-        labels: {
-        style: {
-          color: 'green' // Красные подписи оси Y
-        }
-      },
-      gridLineColor: 'red'
-      }, { // Вторая ось Y для объема задач
-        title: {
-          text: 'Объем',
-          style: {
-            color: 'blue' // Красный цвет заголовка оси Y
-          }
-        },
-        labels: {
-        style: {
-          color: 'blue' // Красные подписи оси Y
-        }
-      },
-        opposite: true,
-        gridLineColor: 'red'
-      }],
-      legend: {
-      itemStyle: {
-         color: 'red' // Красный цвет легенды
-      },
-      
-    },
-    },
+
   collumns: [
     {
       name: "",
@@ -299,6 +212,7 @@ const mod = await page_helper.create_module(data, methods);
 
 mod.mounted = function () {
 
+  //console.log('palette', typeof palette, palette)
 
   console.log("this.url_params", this.url_params);
 
@@ -325,50 +239,138 @@ mod.activated = function () {
     this.search_query = cache.getString("issues_query")
   });
 };
-/*
-  mod.computed.issues2 = async function()
+
+  mod.computed.chartOptions = function()
   {
-	return await get_issues(this.search_query)
-	  return [this.issues[0]]
-  }*/
+    let theme = cache.getString("theme");
+
+    const themeStyle = getComputedStyle(document.body);
+    const gridColor = themeStyle.getPropertyValue('--chart-grid-color').trim();
+    const line0Color = themeStyle.getPropertyValue('--chart-color0').trim();
+    const line1Color = themeStyle.getPropertyValue('--chart-color1').trim();
+    const line2Color = themeStyle.getPropertyValue('--chart-color2').trim();
+    const textColor = themeStyle.getPropertyValue('--text-color').trim();
+    
+  // Now, get the value of --code-bg-color
+   // .trim() to remove any potential whitespace
+
+	  return {
+  height: '100%',
+      chart: {
+          type: 'line',
+          backgroundColor: 'rgba(255, 255, 255, 0)', 
+        },
+        xAxis: {
+   
+      labels: {
+        style: {
+          color: textColor // Красные подписи оси X
+        }
+      },
+      lineColor: gridColor, // Красная ось X
+      tickColor: gridColor // Красные деления на оси X
+    },
+      yAxis: [{ // Первая ось Y для количества задач
+        title: {
+          text: 'Количество',
+          style: {
+            color: line1Color // Красный цвет заголовка оси Y
+          }
+        },
+        labels: {
+        style: {
+          color: line1Color // Красные подписи оси Y
+        }
+      },
+      gridLineColor: gridColor
+      }, { // Вторая ось Y для объема задач
+        title: {
+          text: 'Объем',
+          style: {
+            color: line2Color // Красный цвет заголовка оси Y
+          }
+        },
+        labels: {
+        style: {
+          color: line2Color // Красные подписи оси Y
+        }
+      },
+        opposite: true,
+        gridLineColor: gridColor
+      }],
+      legend: {
+      itemStyle: {
+         color: textColor // Красный цвет легенды
+      },
+      
+    },
+    }
+  }
+
+  mod.computed.chartData = function()
+  {
+    const themeStyle = getComputedStyle(document.body);
+    const line0Color = themeStyle.getPropertyValue('--chart-color0').trim();
+    const line1Color = themeStyle.getPropertyValue('--chart-color1').trim();
+    const line2Color = themeStyle.getPropertyValue('--chart-color2').trim();
+    
+	  return [
+  {name: 'Идеальное выполнение', color: line0Color, yAxis: 0, dashStyle: 'Dash',
+    data: {
+      '2017-01-01 00:00:00 -0800': 7,
+      '2017-01-02 00:00:00 -0800': 6,
+      '2017-01-03 00:00:00 -0800': 5,
+      '2017-01-04 00:00:00 -0800': 4,
+      '2017-01-05 00:00:00 -0800': 3,
+      '2017-01-06 00:00:00 -0800': 2,
+      '2017-01-07 00:00:00 -0800': 1,
+      '2017-01-08 00:00:00 -0800': 0
+    }
+  },
+  {name: 'Объем задач', color: line1Color, yAxis: 1,
+    data: {
+      '2017-01-01 00:00:00 -0800': 22,
+      '2017-01-02 00:00:00 -0800': 10,
+      '2017-01-03 00:00:00 -0800': 10,
+      '2017-01-04 00:00:00 -0800': 10,
+      '2017-01-05 00:00:00 -0800': 10,
+      '2017-01-06 00:00:00 -0800': 2,
+      '2017-01-07 00:00:00 -0800': 2,
+      '2017-01-08 00:00:00 -0800': 0
+    }
+  },
+  {name: 'Количество задач', color: line2Color, yAxis: 0,
+  data: {
+      '2017-01-01 00:00:00 -0800': 7,
+      '2017-01-02 00:00:00 -0800': 7,
+      '2017-01-03 00:00:00 -0800': 6,
+      '2017-01-04 00:00:00 -0800': 6,
+      '2017-01-05 00:00:00 -0800': 2,
+      '2017-01-06 00:00:00 -0800': 2,
+      '2017-01-07 00:00:00 -0800': 1,
+      '2017-01-08 00:00:00 -0800': 1
+    }
+  }
+  
+]
+  }
 
 export default mod;
 </script>
 
 <template ref="issues">
   <div class="burndown-container">
-    <div class="panel topbar" v-show="false">
-      <div
-        style="
-          display: flex;
-          flex-direction: row;
-          flex-grow: 1;
-          max-height: calc(100% - 60px);
-        "
-      >
-        <span class="topbar-label">{{ label }}</span>
 
-        <IssuesSearchInput
-          label=""
-          class="issue-search-input"
-          @update_parent_from_input="update_search_query"
-          :fields="fields"
-          @search_issues="get_issues"
-          :projects="projects"
-          :issue_statuses="issue_statuses"
-          :issue_types="issue_types"
-          :users="users"
-          :sprints="sprints"
-          :parent_query="search_query"
-        >
-        </IssuesSearchInput>
-      </div>
-    </div>
+    
+    
+   <div class="loader"></div>
 
+
+   
 
       <div class="gadget_burndown_panel panel">
         <Transition name="element_fade"> 
-          <line-chart :data="test_data" :library="chartOptions" height="100%"></line-chart>
+          <line-chart :data="chartData" :library="chartOptions" height="100%"></line-chart>
         </Transition>
       </div>
 
@@ -386,7 +388,14 @@ export default mod;
 }
 
 
+
 .burndown-container{
   height: 100%;
 }
+
+    
+
+
+
+
 </style>

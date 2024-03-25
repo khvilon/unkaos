@@ -2,6 +2,7 @@
 import MainMenu from "./components/MainMenu.vue";
 import Profile from "./components/Profile.vue";
 import KAlerter from "./components/KAlerter.vue";
+import HexagonLoader from "./components/HexagonLoader.vue";
 
 import dict from "./dict.ts";
 import cache from "./cache.ts";
@@ -141,6 +142,7 @@ export default {
     MainMenu,
     Profile,
     KAlerter,
+    HexagonLoader
   },
 };
 </script>
@@ -167,13 +169,17 @@ export default {
       v-show="
         Object.values($store.state['alerts']).some(
           (o) =>
-            (o.type == 'loading' || o.type == 'ok') &&
+            (o.type == 'loading') &&
             (o.status == 'show' || o.status == 'new')
         )
       "
-      class="loading-background"
+      class="loading-background"      
     >
-      <div class="loading-bar"></div>
+  
+      
+    <HexagonLoader  class="loading-bar"/>
+
+
     </div>
   </Transition>
   <MainMenu
@@ -199,6 +205,12 @@ body {
 
   background-color: var(--body-bg-color);
 }
+
+
+
+
+
+
 
 
 .table_card_buttons .btn .btn_input {
@@ -301,14 +313,14 @@ input {
 
 .element_fade-enter-active,
 .element_fade-leave-active {
-  transition: opacity 0.1s;
+  transition: opacity 0.4s;
 }
 
 .loading_fade-enter-active {
   transition: opacity 4s ease;
 }
 .loading_fade-leave-active {
-  transition: opacity 0.5s;
+  transition: opacity 0.02s;
 }
 
 .element_fade-enter-from,
@@ -342,7 +354,6 @@ input {
   z-index: 0;
 }
 
-$loading-bar-width: 200vw;
 
 .loading-background {
   // display: none;
@@ -358,31 +369,21 @@ $loading-bar-width: 200vw;
 }
 
 .loading-bar {
-  position: absolute !important;
-  //height: 100%;
-  width: 100% !important;
 
-  height: 100vh !important;
-  top: -100vh;
+  position: fixed;
+  left: calc(50vw);
+  top: 50vh;
+  transform: translate(-50%, -50%);
+  scale: 0.6;
   z-index: 11 !important;
   //width: $loading-bar-width;
   //left:-$loading-bar-width;
   //background: linear-gradient(0.25turn, rgba(200,200,200,0.0), rgba(0,0,0,0.8), rgba(200,200,200,0.0));
   //animation: background 3s infinite ease-in-out;
-  background: linear-gradient(
-    rgba(200, 200, 200, 0),
-    var(--loading-bar-color),
-    rgba(200, 200, 200, 0)
-  ) !important;
-  animation: background 1.5s infinite alternate ease-in-out !important;
+  
 }
 
-@keyframes background {
-  100% {
-    //    left:calc(100%);
-    top: 90vh;
-  }
-}
+
 
 .ktable {
   width: 100%;

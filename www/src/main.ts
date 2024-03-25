@@ -61,6 +61,8 @@ import LangSelect from "@/components/LangSelect.vue";
 
 import CheckboxListInput from "./components/CheckboxListInput.vue";
 
+
+
 import VueChartkick from 'vue-chartkick'
 import Highcharts from 'highcharts'
 
@@ -166,6 +168,7 @@ app.component("KAvatar", KAvatar)
 app.component("MainTop", MainTop)
 app.component("LangSelect", LangSelect)
 app.component("CheckboxListInput", CheckboxListInput)
+
 
 
 
