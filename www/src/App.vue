@@ -148,6 +148,7 @@ export default {
 </script>
 
 <template>
+  <div class="main-container">
   <div
     id="router-view-container"
     v-bind:class="{
@@ -174,12 +175,8 @@ export default {
         )
       "
       class="loading-background"      
-    >
-  
-      
-    <HexagonLoader  class="loading-bar"/>
-
-
+    >  
+      <HexagonLoader  class="loading-bar"/>
     </div>
   </Transition>
   <MainMenu
@@ -188,6 +185,7 @@ export default {
   />
   <Profile v-if="$store.state['common']['is_in_workspace'] && $store.state['common'] && !$store.state['common']['in_iframe']" />
   <KAlerter />
+  </div>
 </template>
 
 <style lang="scss">
@@ -203,15 +201,20 @@ body {
   padding: 0px;
   margin: 0px;
 
-  background-color: var(--body-bg-color);
+  //background-color: var(--body-bg-color);
+  transition: all 0 ease !important;
+  background: black;
+  
 }
 
-
-
-
-
-
-
+.main-container{
+  background: var(--body-bg-color);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
 
 .table_card_buttons .btn .btn_input {
   width: 100% !important;
@@ -219,6 +222,7 @@ body {
 
 html {
   font-size: $font-size;
+  
 }
 
 * {

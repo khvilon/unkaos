@@ -111,14 +111,24 @@ export default class rest {
         options.body = JSON.stringify(body);
       }
     }
-    const resp = await fetch(conf.base_url + method, {
-      body: options.body,
-      headers: options.headers,
-      method: options.method,
-    });
+    let resp;
+    try {
+      resp = await fetch(conf.base_url + method, {
+        body: options.body,
+        headers: options.headers,
+        method: options.method,
+      });
+    }
+    catch(err){
+      console.log('>>>rest err', err)
+      store.state["alerts"][alert_id].text =  "Не удалось выполнить запрос к серверу >>";
+      store.state["alerts"][alert_id].type = "error";
+      return null;
+    }
     if (resp.status == 401 && !window.location.href.endsWith('/login')) window.location.href = '/' + rest.workspace + '/login';
     //console.log('resp.status', resp  )
     if (resp.status != 200) {
+      console.log('>>>rest err', resp)
       store.state["alerts"][alert_id].text = resp.statusText + " >>";
       store.state["alerts"][alert_id].type = "error";
       return null;
