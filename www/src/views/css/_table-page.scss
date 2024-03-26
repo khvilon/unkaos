@@ -21,7 +21,7 @@ $table-card-width: calc(100% - $table-panel-width);
 
 .table_card {
   height: calc(100vh - $top-menu-height - 20px);
-  padding: 10px 20px 20px 20px;
+  padding: 10px 14px 20px 20px;
   width: $table-card-width;
   margin-right: 20px;
   margin-bottom: 20px;
@@ -52,7 +52,10 @@ $table-card-width: calc(100% - $table-panel-width);
   flex-direction: column;
   flex-grow: 1;
   overflow-y: auto;
+  padding-right: 6px;
 }
+
+
 
 .table_card_fields::-webkit-scrollbar {
   //display: none;
@@ -60,6 +63,7 @@ $table-card-width: calc(100% - $table-panel-width);
 
 .table_card_fields .input{
   margin-bottom: 15px;
+  
 }
 
 .table_card_buttons{

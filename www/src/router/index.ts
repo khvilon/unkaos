@@ -39,10 +39,11 @@ let routes = [
     component: PageNotifications,
     name: "Оповещения",
   },
-  { path: "/projects", component: PageProjects, name: "Проекты" },
+ 
   { path: "/favourites", component: PageFavourites, name: "Избранное" },
   { path: "/configs/sprints", component: PageSprints, name: "Спринты" },
   { path: "/configs/roles", component: PageRoles, name: "Роли" },
+  { path: "/configs/projects", component: PageProjects, name: "Проекты" },
   {
     path: "/configs/issue_types",
     component: PageIssueTypes,

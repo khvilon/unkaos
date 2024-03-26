@@ -7,8 +7,6 @@ import d from "../dict.ts";
 import rest from "../rest";
 import cache from "../cache";
 
-import palette from '../css/palette.scss'
-
 let methods = {
   add_with_children: function (obj, arr, ch_level) {
     if (ch_level > 10) return arr;
@@ -113,97 +111,11 @@ let methods = {
 };
 
 const data = {
-  favourite_issues_type_uuid: "ac367512-c614-4f2a-b7d3-816018f71ad8",
   loaded_issues: [],
   loaded_issues_tree: [],
-  name: "issues",
-  label: "Задачи",
   search_query: undefined,
   search_query_encoded: "",
   
-
-  collumns: [
-    {
-      name: "",
-      id: "parent_uuid",
-    },
-    {
-      name: "№",
-      id: ["project_short_name", "'-'", "num"],
-      search: true,
-      type: "link",
-      link: "/issue/",
-      link_id: ["project_short_name", "'-'", "num"],
-    },
-    {
-      name: d.get("Название"),
-      id: "values.Название",
-      search: true,
-    },
-    {
-      name: "Тип",
-      id: "type_name",
-    },
-    {
-      name: "Статус",
-      id: "status_name",
-    },
-    {
-      name: "Проект",
-      id: "project_name",
-    },
-    {
-      name: d.get("Автор"),
-      id: "values.Автор",
-      type: "user",
-    },
-    {
-      name: d.get("Создана"),
-      id: "created_at",
-      type: "date",
-    },
-    {
-      name: d.get("Изменена"),
-      id: "updated_at",
-      type: "date",
-    },
-  ],
-  inputs: [
-    {
-      label: "fields",
-      id: "",
-      dictionary: "fields",
-      type: "Select",
-    },
-    {
-      label: "users",
-      id: "",
-      dictionary: "users",
-      type: "User",
-    },
-
-    {
-      label: "issue_statuses",
-      id: "",
-      dictionary: "issue_statuses",
-      type: "User",
-    },
-    {
-      label: "projects",
-      id: "",
-      dictionary: "projects",
-    },
-    {
-      label: "issue_types",
-      id: "",
-      dictionary: "issue_types",
-    },
-    {
-      label: "sprints",
-      id: "",
-      dictionary: "sprints",
-    },
-  ],
 };
 
 //sudo cp -r /var/app/unkaos/dist /srv/docker/nginx/www
@@ -327,7 +239,7 @@ mod.activated = function () {
       '2017-01-08 00:00:00 -0800': 0
     }
   },
-  {name: 'Объем задач', color: line1Color, yAxis: 1,
+  {name: 'Объем задач', color: line2Color, yAxis: 1,
     data: {
       '2017-01-01 00:00:00 -0800': 22,
       '2017-01-02 00:00:00 -0800': 10,
@@ -339,7 +251,7 @@ mod.activated = function () {
       '2017-01-08 00:00:00 -0800': 0
     }
   },
-  {name: 'Количество задач', color: line2Color, yAxis: 0,
+  {name: 'Количество задач', color: line1Color, yAxis: 0,
   data: {
       '2017-01-01 00:00:00 -0800': 7,
       '2017-01-02 00:00:00 -0800': 7,
@@ -360,14 +272,7 @@ export default mod;
 
 <template ref="issues">
   <div class="burndown-container">
-
-    
-    
    <div class="loader"></div>
-
-
-   
-
       <div class="gadget_burndown_panel panel">
         <Transition name="element_fade"> 
           <line-chart :data="chartData" :library="chartOptions" height="100%"></line-chart>

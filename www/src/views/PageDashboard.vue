@@ -573,6 +573,10 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   padding: 0px 20px 10px 0px;
 }
 
+.dashboard-name-input input{
+  font-size: 18px !important;
+}
+
 .gadgets {
   padding: 10px 10px 10px 10px;
   width: 100%;

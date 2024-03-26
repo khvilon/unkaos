@@ -18,8 +18,12 @@ export default {
   methods: {
     hide(e) {
       console.log('!!!hide', e)
-      if (e.target.localName == "div") e.target.removeClass("alert_show");
-      else if (e.target.localName == "span") e.target.parentElement.classList.remove('alert_show');
+      //if (e.target.localName == "div") e.target.removeClass("alert_show");
+      //else if (e.target.localName == "span") e.target.parentElement.classList.remove('alert_show');
+
+      for(let i in this.alerts){
+        if(this.alerts[i].type == 'error' && this.alerts[i].status == "show") this.alerts[i].status = "done";
+      }
     },
   },
   updated() {

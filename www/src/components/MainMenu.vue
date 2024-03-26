@@ -124,6 +124,7 @@ export default {
       default: () => items,
     },
   },
+
   data() {
     return {
       is_opened: false,
@@ -135,13 +136,16 @@ export default {
       select_opacity: 0,
       is_in_login_form: false,
       common: this.$store.state["common"],
+      
       environment: "",
     };
   },
   methods: {
     move_hover(e) {
+      console.log('mooooved', e)
       if (this.$store.state["common"]["is_mobile"]) return;
       if (cache.getObject("lock_main_menu") !== true) this.is_opened = true;
+      console.log('mooooved2', e)
       this.hover_opacity = 1;
       this.hover_offset_x = e.target.offsetLeft;
       this.hover_offset_y = e.target.offsetTop;
@@ -149,12 +153,17 @@ export default {
     hide_hover(e) {
       this.hover_opacity = 0;
     },
-    move_select(e) {
-      this.select_opacity = 1;
-      this.select_offset_x = e.target.offsetLeft;
-      this.select_offset_y = e.target.offsetTop;
-      this.exit_menu();
-      //[{type: 'loading'}, {type: 'ok'}, {type: 'error', text: 'Это очень страшная ошибка!'}]
+    moveSelected(to){
+      this.$nextTick(() => {
+        // Найти активный элемент меню
+        const activeElement = this.$el.querySelector('.router-link-active .main-menu-element-bg');
+        if (!activeElement) {this.select_opacity=0; return;}
+        this.select_offset_x = activeElement.offsetLeft;
+        this.select_offset_y = activeElement.offsetTop;
+        this.exit_menu();
+        if(!this.select_opacity) setTimeout(()=>{this.select_opacity = 0.8}, 300)
+        return;        
+      });
     },
     exit_menu(e) {
       if (e != undefined && e.x < 210) return; //todo magic number to variable
@@ -166,6 +175,10 @@ export default {
       for(let i in items){
         items[i].link = '/' + newWorkspace + items[i].link;
       }
+    },
+    // Наблюдение за изменением маршрута
+    '$route.path'(to, from) {
+      this.moveSelected(to);
     }
   },
   mounted() {
@@ -260,12 +273,12 @@ export default {
         v-for="(menuItem, index) in filteredMenuItems"
         :key="index"
       >
-        <router-link :to="menuItem.link">
+        <router-link :to="menuItem.link" v-slot="{ isActive }">
           <div
             class="main-menu-element-bg"
             @mouseenter="move_hover($event)"
             @mouseout="hide_hover($event)"
-            @click="move_select($event)"
+            :class="{ 'selected-item': isActive }"
           ></div>
           <div :class="'main-menu-link main-menu-element-' + menuItem.level">
             <i class="bx" :class="menuItem.icon || 'bx-square-rounded'"></i>
@@ -294,6 +307,7 @@ $main-menu-element-font-size: 16px;
 $main-menu-selection-offset: 10px;
 $logo-icon-size: 32px;
 
+
 .menu-logo {
   width: $logo-size;
   margin: 0 10px 0 10px;
@@ -307,13 +321,13 @@ $logo-icon-size: 32px;
   top: 0px;
   height: 100vh;
   width: $main-menu-width;
-  z-index: 100;
 
   min-height: $min-win-height;
 
   transition-property: all !important;
   transition-duration: $main-menu-open-time !important;
   z-index: 10;
+
 
   margin: 1px;
 }
