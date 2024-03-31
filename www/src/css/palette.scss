@@ -1,5 +1,79 @@
 
 
+[theme="pink"]
+{
+    --body-bg-color: rgb(46, 58, 64);
+
+    --panel-bg-color: rgb(119, 9, 53);
+    --group-bg-color: rgba(197, 65, 162, 0.5);
+
+    --text-color: rgb(190, 190, 190);
+    --text-gradient-color: rgba(130, 130, 130);
+
+    --border-color: rgba(156, 69, 69, 0);
+    --table-row-color: rgb(185, 27, 154);
+    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-border-color: black;
+
+    --input-bg-color: rgb(96, 6, 52);
+    --input-bg-color-disabled : rgb(30, 35, 38);
+    --input-hover-bg-color: rgb(34, 32, 54);
+
+    --disabled-bg-color: rgb(181, 48, 137);
+    --disabled-text-color: rgb(190, 190, 190);
+
+    --workflow-marker-color: rgb(230, 230, 230);
+    --workflow-g-hover-color: rgb(200, 200, 255);
+    --workflow-g-selected-color:rgb(150, 150, 255);
+    --workflow-g-fill-color: rgb(20, 20, 40);
+    --workflow-g-hover-fill-color: rgb(45, 45, 65);
+
+    --link-color: rgb(128, 146, 157);
+    --issue-card-descr-color: rgb(128, 146, 157);
+
+    --button-color: #333;
+
+    --on-button-icon-color: rgb(255, 255, 255);
+    --off-button-icon-color: rgb(108, 108, 108);
+
+  
+    --issues-search-idx-0-color: rgb(50, 210, 50);
+    --issues-search-idx-1-color: rgb(237, 237, 42);
+    --issues-search-idx-2-color: rgb(114, 114, 248);
+    --issues-search-idx-3-color: orange;
+    --issues-search-idx-4-color: rgb(197, 180, 124);
+    --issues-search-bad-color: red;
+
+    --loading-bg-color: rgba(32, 36, 40, 0.3);
+    --loading-bar-color: rgba(20, 22, 24, 0.5);
+
+    --panel-border-radius: 10px;
+    --border-radius: 6px;
+    --border-style: inset;
+    --border-width: 2px;
+    --issue-search-btn-top-border-width: 0px;
+
+    --code-block-bg-color: #29353f;
+    --code-scroll-thumb-bg-color: #344657;
+    --code-scroll-track-bg-color: #1d2831;
+    --code-scroll-thumb-hover-color: #4d6274;
+    --code-fragment-text-color: #E8912D;
+    --code-fragment-border-color: #3C3E42;
+    --code-bg-color: #29353f;
+
+    --scroll-color: rgb(70, 70, 70);
+    --scroll-shadow-color: rgb(10,10,10);
+
+    --link-hover-color: green;
+    --icon-hover-bg-color: rgba(37, 64, 81, 0.6);
+
+    --err-color: rgb(166, 13, 13);
+
+    --chart-grid-color: rgb(45, 50, 55);
+    --chart-color0: rgb(128, 146, 157);
+    --chart-color1: rgb(4, 4, 238);
+    --chart-color2: rgb(0, 208, 0);
+}
 [theme="dark_warm"]
 {
     --body-bg-color: rgb(46, 58, 64);
