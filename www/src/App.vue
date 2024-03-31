@@ -203,7 +203,8 @@ body {
 
   //background-color: var(--body-bg-color);
   transition: all 0 ease !important;
-  background: black;
+  background: 'https://sopranoclub.ru/images/150-fonov-i-oboev-s-serdechkami/file56005.jpeg';
+  //black;
   
 }
 
@@ -214,6 +215,7 @@ body {
   top: 0;
   width: 100%;
   height: 100%;
+  //background-image: url('');
 }
 
 .table_card_buttons .btn .btn_input {
@@ -268,6 +270,7 @@ html {
   left: $main-menu-width;
   width: calc(100vw - $main-menu-width);
   height: 100vh;
+ // background-image: url('');
 }
 
 .mobile-view {

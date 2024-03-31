@@ -13,7 +13,7 @@ export default {
     }
   },
   props: {
-    name: {
+    title: {
       type: String,
       default: undefined,
     },
@@ -28,11 +28,11 @@ export default {
     date_to_updated(val) {this.date_to = val},
     name_updated(val) { this.current_name = val},
     init(){
-      if(this.name == undefined){
+      if(this.title == undefined){
         setTimeout(this.init, 200)
         return
       }
-      this.current_name = this.name
+      this.current_name = this.title
       console.log('loaded_config', this.config)
       if(!this.config) return
       console.log('loaded_config u', this.config.user)

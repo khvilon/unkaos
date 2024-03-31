@@ -155,19 +155,18 @@ let methods = {
       this.shadow_gadget.y0 += diff;
       this.shadow_gadget.height -= diff;
     }
-
-
-
-
   },
   save_gadget: function(e, gadget){
-    console.log('saving_gadget',e)
+    console.log('>>>>>>>>>>>t saving_gadget',e, gadget)
     gadget.config_open = false;
-    gadget.name = e.name
-    gadget.config = JSON.stringify(e.config)
-    console.log('save_gadget',gadget)
+    gadget.name = e.name;
+    let config = tools.clone_obj(e);
+    delete config.name;
+    gadget.config = JSON.stringify(config);
+    console.log('>>>>>>>>>>>t saved_gadget',gadget)
     rest.run_method('upsert_gadgets', gadget)
   },
+
   new_gadget:  function(type){
     if(type.code != 'TimeReport' && type.code != 'Burndown') return
 
@@ -180,7 +179,8 @@ let methods = {
       y0: this.max_y,
       type_uuid: type.uuid,
       type: [type],
-      name:  type.name
+      name:  type.name,
+      config: {}
     }
 
     //console.log('new_gadget', gadget)
@@ -477,7 +477,7 @@ export default mod;
             <component
               v-show="gadget.config_open"
               v-bind:is="gadget.type[0].code + 'Config'"
-              :name="gadget.name"
+              :title="gadget.name"
               :config="gadget.config ? JSON.parse(gadget.config) : {}"
               @cancel="gadget.config_open=false"
               @ok="save_gadget($event, gadget)"

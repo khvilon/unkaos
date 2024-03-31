@@ -24,72 +24,31 @@ let methods = {
 
     return arr;
   },
-  get_issues: async function (query, offset) {
-    let url = "query=" + encodeURIComponent(this.search_query);
+  get_issues: async function (query) ///added other things on mount
+	{
+    return
+		let options = {}
 
-    this.$router.replace({});
-    cache.setString("issues_query", this.search_query)
-    cache.setString("issues_query_encoded",  this.search_query_encoded)
-    let options = {};
-    this.search_query_encoded = "";
-    if (query != undefined && query != "")
-      options.query = this.search_query_encoded = query;
-    if (offset != undefined) options.offset = offset;
+			options.query = query.trim();
+			this.encoded_query = query
 
-    let issues = await rest.run_method("read_issues", options);
+      
+		let query_str = decodeURIComponent(atob(options.query)).split('order by')[0]
+		if(query_str != '') query_str = '(' + query_str + ')'
+		//if (this.selected_board.use_sprint_filter && this.$store.state['common'].use_sprints) {
+	//		query_str += " and attr#sprint_uuid#='" + this.sprints[this.curr_sprint_num].uuid + "'#"
+		//}
+	
 
-    console.log("this.loaded_issues0", issues);
+		console.log('options.query', query_str)
+		options.query = btoa(encodeURIComponent(query_str))
 
-    if (offset != undefined) {
-      for (let i in issues) {
-        this.loaded_issues.push(issues[i]);
-      }
-    } else this.loaded_issues = issues;
+		console.log('>>>>>>>>>>>>>>>>>>>>get_issues2' , options, '#')
 
-    this.loaded_issues.map((issue) => (issue.children = []));
+		if(options.query) this.boards_issues = await rest.run_method('read_issues', options)
+		else this.boards_issues = await rest.run_method('read_issues')
 
-    for (let i in this.loaded_issues) {
-      this.loaded_issues[i].children = [];
-      this.loaded_issues[i].local_parent_uuid = null;
-    }
-
-    for (let i in this.loaded_issues) {
-      if (
-        this.loaded_issues[i].parent_uuid != null &&
-        this.loaded_issues[i].parent_uuid != undefined
-      ) {
-        for (let j in this.loaded_issues) {
-          if (this.loaded_issues[j].uuid == this.loaded_issues[i].parent_uuid) {
-            this.loaded_issues[j].children.push(this.loaded_issues[i]);
-            this.loaded_issues[i].local_parent_uuid =
-              this.loaded_issues[i].parent_uuid;
-          }
-        }
-      }
-    }
-
-    console.log("this.loaded_issues0", this.loaded_issues);
-
-    this.loaded_issues_tree = [];
-
-    for (let i in this.loaded_issues) {
-      if (this.loaded_issues[i].local_parent_uuid == null)
-        this.loaded_issues_tree = this.add_with_children(
-          this.loaded_issues[i],
-          this.loaded_issues_tree,
-          0
-        );
-    }
-
-    console.log(
-      "this.loaded_issues1",
-      this.loaded_issues,
-      this.loaded_issues_tree
-    );
-
-    //this.loaded_issues = issues
-    //console.log(this.loaded_issues[0], this.issues[0])
-  },
+	},
   get_field_path_by_name: function (name) {
     if (this.issue == undefined || this.issue.length != 1) return {};
     for (let i in this.issue[0].values) {
@@ -115,7 +74,7 @@ const data = {
   loaded_issues_tree: [],
   search_query: undefined,
   search_query_encoded: "",
-  
+  config: {}
 };
 
 //sudo cp -r /var/app/unkaos/dist /srv/docker/nginx/www
@@ -151,6 +110,19 @@ mod.activated = function () {
     this.search_query = cache.getString("issues_query")
   });
 };
+
+
+
+mod.watch = {
+  chartConfigs: function(val, old_val){
+  this.get_issues(JSON.parse(val).query)
+}
+}
+
+
+mod.computed.chartConfigs = function(){
+    return JSON.stringify(this.config)
+  };
 
   mod.computed.chartOptions = function()
   {
@@ -270,6 +242,7 @@ mod.activated = function () {
 export default mod;
 </script>
 
+
 <template ref="issues">
   <div class="burndown-container">
    <div class="loader"></div>
@@ -281,6 +254,7 @@ export default mod;
 
   </div>
 </template>
+
 
 <style lang="scss">
 @import "../css/palette.scss";

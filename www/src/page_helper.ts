@@ -67,8 +67,6 @@ const register_computed = async function (computed, name) {
 };
 
 page_helper.create_module = async function (data, methods) {
-  //data[data.name] = {}
-  //data[data.name]['selected_' + data.name] = {}
 
   data.visible = false;
   data.loaded = false;
@@ -78,10 +76,12 @@ page_helper.create_module = async function (data, methods) {
 
   if (data.buttons == undefined) data.buttons = [];
 
-  data.buttons.push({
-    name: "Создать",
-    func: "unselect_" + data.name
-  });
+  if(data.name){
+    data.buttons.push({
+      name: "Создать",
+      func: "unselect_" + data.name
+    });
+  }
 
   data.search_collumns = [];
   for (const i in data.collumns) {
@@ -94,7 +94,7 @@ page_helper.create_module = async function (data, methods) {
       return this.$store.state["common"]["loading"];
     },
   };
-  computed = await register_computed(computed, data.name);
+  if(data.name) computed = await register_computed(computed, data.name);
 
   for (const i in data.inputs) {
     if (data.inputs[i].dictionary == undefined) continue;
@@ -133,7 +133,8 @@ page_helper.create_module = async function (data, methods) {
       params = { uuid: this.uuid };
     }
 
-    await register_store_module_if_not_exists(this.name, params);
+    
+    if(this.name) await register_store_module_if_not_exists(this.name, params);
 
     for (const i in this.inputs) {
       if (this.inputs[i].dictionary == undefined) continue;
@@ -259,12 +260,14 @@ page_helper.create_module = async function (data, methods) {
       this.$store.state[this.name][this.name] = [instance];
     }
 
-    //console.log('ttt', this.$store.state[this.name][this.name])
-    this.$store.state[this.name]["selected_" + this.name] = instance;
+    if(this.name){
+      //console.log('ttt', this.$store.state[this.name][this.name])
+      this.$store.state[this.name]["selected_" + this.name] = instance;
 
-    //console.log("this.$store.state[this.name]['selected_' + this.name]", this.$store.state[this.name]['selected_' + this.name])
-    this.$store.state[this.name]["instance_" + this.name] =
-      tools.obj_clone(instance);
+      //console.log("this.$store.state[this.name]['selected_' + this.name]", this.$store.state[this.name]['selected_' + this.name])
+      this.$store.state[this.name]["instance_" + this.name] =
+        tools.obj_clone(instance);
+    }
 
     this.inputs_dict = {};
     for (const i in this.inputs) {
@@ -279,6 +282,8 @@ page_helper.create_module = async function (data, methods) {
       this.inputs_dict[this.inputs[i].id] = this.inputs[i];
       //this[this.inputs[i].dictionary] = this.$store.state[this.inputs[i].dictionary]
     }
+
+    
 
     //console.log('cr', this.$store.state[this.name])
 

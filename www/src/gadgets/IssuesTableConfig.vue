@@ -7,7 +7,7 @@ export default {
         return {name}
     },*/
   props: {
-    name: {
+    title: {
       type: String,
       default: "",
     },
@@ -25,7 +25,7 @@ export default {
 <template ref="config" v-if="config">
   <div class="panel gadget-config">
     <div class="gadget-config-fields">
-      <StringInput label="Название" :value="name"> </StringInput>
+      <StringInput label="Название" :value="title"> </StringInput>
       <IssuesSearchInput
         label="Запрос"
         class="issue-search-input"
