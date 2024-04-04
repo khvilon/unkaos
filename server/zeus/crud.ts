@@ -1034,16 +1034,18 @@ crud.updateQueryWithProjectsPermissionsFilter = async function(subdomain: string
     return query;
 }
 
-crud.writeIssueHistory = function(query: any, pg_params: any, readed_data: any, params: any){
+crud.writeIssueHistory = function(query: any, pg_params: any, readed_data: any, params: any, subdomain: string){
   let status_text, type_uuid;
   const attrToCheck: any = {'Тип': 'type_name', 'Проект':'project_name', 'Спринт':'sprint_name'}
 
   if (readed_data.rows[0].status_uuid != params.status_uuid){
     status_text = readed_data.rows[0].status_name + "->" + params.status_name;
     type_uuid = transition_type_uuid
+    
+    sql.query(subdomain, 'UPDATE issues SET resolved_at = NOW() WHERE uuid = $1 AND status_uuid IN (SELECT uuid FROM issue_statuses WHERE is_end)', [params.uuid]);
   }
   else {
-    console.log('>>>edit issue', params, readed_data.rows[0])
+    
     status_text = ''
     for(let i in attrToCheck){
       if(params[attrToCheck[i]] == readed_data.rows[0][attrToCheck[i]]) continue;
@@ -1113,7 +1115,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
 
     if (readed_data.rows.length > 0) {
 
-      if (table_name == "issues") [query, pg_params] = crud.writeIssueHistory(query, pg_params, readed_data, params);
+      if (table_name == "issues") [query, pg_params] = crud.writeIssueHistory(query, pg_params, readed_data, params, subdomain);
       else if(table_name == "issue_types") params = crud.setIssueTypeReqFields(params);
 
       let old_uuids = crud.get_uuids(readed_data.rows[0]);
