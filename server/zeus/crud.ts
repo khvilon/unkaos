@@ -597,6 +597,7 @@ crud.make_query = {
 					ISS.SPENT_TIME,
 					ISS.TYPE_UUID,
 					ISS.CREATED_AT,
+          ISS.RESOLVED_AT,
 					IA.UPDATED_AT,
 					ISS.DELETED_AT,
 					ISS.PROJECT_UUID,
