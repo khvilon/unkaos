@@ -299,9 +299,9 @@ ALTER TABLE ONLY public.issue_types_to_fields
 CREATE TABLE public.issues (
     uuid uuid NOT NULL,
     type_uuid uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone,
+    deleted_at timestamp without time zone,
     num bigint,
     project_uuid uuid,
     status_uuid uuid,
