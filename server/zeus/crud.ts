@@ -1053,6 +1053,17 @@ crud.writeIssueHistory = function(query: any, pg_params: any, readed_data: any, 
       }
       status_text += '\r\n'
     }
+    for(let i in params.values){
+      for(let j in readed_data.rows[0].values){
+        if(params.values[i].uuid != readed_data.rows[0].values[j].uuid) continue;
+        if(params.values[i].value == readed_data.rows[0].values[j].value) continue;
+        status_text += params.values[i].label;
+        if(params.values[i].type == 'String') {
+          status_text += ': ' + params.values[i].value + '->' + readed_data.rows[0].values[j].value;
+        }
+        status_text += '\r\n';
+      }
+    }
     type_uuid = edited_type_uuid
   }
 
