@@ -1042,7 +1042,14 @@ crud.writeIssueHistory = function(query: any, pg_params: any, readed_data: any, 
     status_text = readed_data.rows[0].status_name + "->" + params.status_name;
     type_uuid = transition_type_uuid
     
-    sql.query(subdomain, 'UPDATE issues SET resolved_at = NOW() WHERE uuid = $1 AND status_uuid IN (SELECT uuid FROM issue_statuses WHERE is_end)', [params.uuid]);
+    sql.query(subdomain, 
+      `UPDATE issues
+      SET resolved_at = CASE
+        WHEN status_uuid IN (SELECT uuid FROM issue_statuses WHERE is_end) THEN NOW()
+        ELSE NULL
+      END
+      WHERE uuid = $1;
+    `, [params.uuid]);
   }
   else {
     
