@@ -1036,7 +1036,7 @@ crud.updateQueryWithProjectsPermissionsFilter = async function(subdomain: string
 
 crud.writeIssueHistory = function(query: any, pg_params: any, readed_data: any, params: any){
   let status_text, type_uuid;
-  const attrToCheck = ['title', 'description', 'spent_time', 'type_name', 'project_name', 'sprint_name']
+  const attrToCheck: any = {'Тип': 'type_name', 'Проект':'project_name', 'Спринт':'sprint_name'}
 
   if (readed_data.rows[0].status_uuid != params.status_uuid){
     status_text = readed_data.rows[0].status_name + "->" + params.status_name;
@@ -1047,10 +1047,7 @@ crud.writeIssueHistory = function(query: any, pg_params: any, readed_data: any, 
     status_text = ''
     for(let i in attrToCheck){
       if(params[attrToCheck[i]] == readed_data.rows[0][attrToCheck[i]]) continue;
-      status_text += attrToCheck[i]
-      if(attrToCheck[i] != 'description'){
-        status_text += ': ' + readed_data.rows[0][attrToCheck[i]] + "->" + params[attrToCheck[i]];
-      }
+      status_text += i + ': ' + readed_data.rows[0][attrToCheck[i]] + "->" + params[attrToCheck[i]];
       status_text += '\r\n'
     }
     for(let i in params.values){
