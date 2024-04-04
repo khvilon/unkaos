@@ -1042,6 +1042,10 @@ crud.writeIssueHistory = function(query: any, pg_params: any, readed_data: any, 
     status_text = readed_data.rows[0].status_name + "->" + params.status_name;
     type_uuid = transition_type_uuid
   }
+  else {
+    console.log('>>>edit issue', params, readed_data.rows[0])
+    type_uuid = edited_type_uuid
+  }
 
   let action_options = {
     value: status_text,
