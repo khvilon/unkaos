@@ -471,7 +471,7 @@ export default mod;
             <component
               v-show="!gadget.config_open"
               v-bind:is="gadget.type[0].code"
-              :config="gadget.config ? JSON.parse(gadget.config) : {}"
+              :config="gadget.config ? JSON.parse(gadget.config) : {aaa:'afd'}"
             ></component>
 
             <component

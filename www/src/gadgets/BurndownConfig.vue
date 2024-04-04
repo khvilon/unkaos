@@ -4,8 +4,14 @@ import page_helper from "../page_helper.ts";
 import { gadgetConfigMixin } from './gadgetConfigMixin';
 
 let methods = {
+	updateSprint(val){
+		this.currentConfig.sprint=val; 
+		console.log('>>>sprint', val)
+		if(!val) return;
+		this.currentConfig.from = val.start_date;
+		this.currentConfig.to = val.end_date;
+	}
 }
-
 
 const data =
 {
@@ -75,7 +81,7 @@ export default mod
       label="Фильтр задач"
       @update_parent_from_input="(val)=>{currentConfig.query=val.trim()}"
       :fields="fields"
-      @search_issues="getIssues"
+      @search_issues="(val)=>{currentConfig.encoded_query=val}"
       :projects="projects"
       :issue_statuses="issue_statuses"
       :tags="issue_tags"
@@ -85,5 +91,30 @@ export default mod
       :parent_query="currentConfig.query"
     >
     </IssuesSearchInput>
+	<SelectInput 
+		v-if="this.$store.state['common'].use_sprints"
+		class="gadget-config-field" 
+		label='Спринт'
+		:value="currentConfig.sprint"
+		:values="sprints"
+		@updated="updateSprint"
+	>
+	</SelectInput>
+	<date-input
+		class="gadget-config-field"
+		label='С'
+		:value="currentConfig.from"
+		@updated="(val)=>{currentConfig.from=val}"
+		:disabled="currentConfig.sprint"
+	>
+	</date-input>
+	<date-input
+		class="gadget-config-field"
+		label='По'
+		:value="currentConfig.to"
+		@updated="(val)=>{currentConfig.to=val}"
+		:disabled="currentConfig.sprint"
+	>
+	</date-input>
   </GadgetConfig>
 </template>
