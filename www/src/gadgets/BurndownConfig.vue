@@ -65,6 +65,10 @@ mod.computed.config2 = function () {
     return {query: this.search_query}
 }
 
+mod.computed.costFields = function () {
+    return this.fields.filter((f)=>f.type[0].code=='Numeric')
+}
+
 export default mod
 
 </script>
@@ -116,5 +120,14 @@ export default mod
 		:disabled="currentConfig.sprint"
 	>
 	</date-input>
+	<SelectInput 
+		v-if="this.$store.state['common'].use_sprints"
+		class="gadget-config-field" 
+		label='Считать объем задач'
+		:value="currentConfig.cost_field"
+		:values="costFields"
+		@updated="(val)=>{currentConfig.cost_field=val}"
+	>
+	</SelectInput>
   </GadgetConfig>
 </template>

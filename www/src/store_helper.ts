@@ -211,7 +211,17 @@ store_helper.create_module = function (name) {
     //console.log('is_new', is_new)
     state.state["selected_" + name].is_new = false;
 
-    console.log('>>>save', state.state["selected_" + name])
+  if(name=='fields' && tools.isValidJSON('[' + state.state["selected_" + name].available_values + ']')){
+    let av = state.state["selected_" + name].available_values
+    if(av[0] != '[') av = '[' + av + ']'
+      let available_values = JSON.parse(av)
+      for(let i in available_values){
+        if(!available_values[i].uuid) available_values[i].uuid = tools.uuidv4();
+      }
+      state.state["selected_" + name].available_values = JSON.stringify(available_values, null, 4);
+    }
+
+    console.log('>>>save', name, state.state["selected_" + name])
     if (is_new) return this.dispatch("create_" + name);
     return this.dispatch("update_" + name);
   };

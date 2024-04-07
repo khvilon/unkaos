@@ -245,6 +245,19 @@ export default class tools {
     return new Date(dt).toLocaleString("ru", tools.date_options);
   }
 
+  static roundDate(dt: number | string | Date){
+    return new Date(dt).setHours(0, 0, 0, 0);
+  }
+
+  static isValidJSON(str: string) {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   static copy_text_to_clipboard(text:string) {
     var textArea = document.createElement("textarea");
     textArea.value = text;

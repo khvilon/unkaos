@@ -771,6 +771,8 @@ let methods = {
 		return val
 	},
 	get_card_color(issue) {
+		const colorFieldUUID = this.colo
+		let colorFieldObj = issue.values.filter((v)=>v.field_uuid==)
 		let p = this.get_field_value(issue, { uuid: 'b6ddb33f-eea9-40c0-b1c2-d9ab983026a1' })
 
 		if (p == 'Minor') return 'green'
@@ -1266,6 +1268,16 @@ mod.computed.active_filters = function(){
 	return this.filters.filter((f) => f.is_active)
 }
 
+mod.computed.colored_fields = function(){
+	return this.fields.filter((f) => {
+		if(f.type[0].code != 'Select' || !f.available_values) return false
+		if(!tools.isValidJSON(f.available_values)) return false;
+		let av = JSON.parse(f.available_values)
+		if(av && av[0] && av[0].color) return true;
+		return false;
+	});
+}
+
 
 mod.props = {
 	uuid:
@@ -1514,8 +1526,12 @@ export default mod
 						:value="get_json_val(selected_board, 'use_sprint_filter')" :parent_name="'board'"
 						@update_parent_from_input="make_swimlanes"></BooleanInput>
 
-					<SelectInput label='Поле цвета (функция в разработке)' id='fields' disabled="true"
-						:parent_name="'board'" clearable="false" :values="[]" multiple: false></SelectInput>
+					<SelectInput label='Поле цвета' id='fields'
+						:parent_name="'board'" 
+						clearable="false" 
+						:values="colored_fields"
+						multiple: false>
+					</SelectInput>
 
 
 					<div class="table_card_footer">

@@ -70,7 +70,14 @@ export default {
       this.$emit("updated", val);
     },
   },
-  computed: {},
+  computed: {
+    reduce(){
+      console.log('>>>reduce', this.value, this.parameters)
+      if(this.values && this.values[0] && this.values[0].uuid && (!this.parameters || !this.parameters.reduce)) return ((obj) => obj.uuid)
+      console.log('>>>reduce2')
+      return this.parameters.reduce
+    }
+  },
   props: {
     name_path: {
       type: String,
@@ -202,7 +209,7 @@ export default {
     <v-select
       v-model="val"
       label="name"
-      :reduce="parameters.reduce"
+      :reduce="reduce"
       :multiple="parameters.multiple"
       :clearable="parameters.clearable"
       :disabled="disabled"

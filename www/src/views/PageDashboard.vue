@@ -64,6 +64,8 @@ let methods = {
       y: e.clientY,
     };
 
+    console.log('>>>>>>>start_resize')
+
     this.shadow_gadget.width = this.resize_data.gadget.width
     this.shadow_gadget.height = this.resize_data.gadget.height
     this.shadow_gadget.x0 = this.resize_data.gadget.x0
@@ -168,7 +170,7 @@ let methods = {
   },
 
   new_gadget:  function(type){
-    if(type.code != 'TimeReport' && type.code != 'Burndown') return
+    if(type.code != 'TimeReport' && type.code != 'Burndown' && type.code != 'IssuesTable') return
 
     let gadget = {
       uuid: tools.uuidv4(),
@@ -378,7 +380,7 @@ export default mod;
             v-for="(gadget_type) in gadget_types"
             @click="new_gadget(gadget_type)"
             class="gadget-types-cell"
-            :class="{'gadget-types-cell-disabled' : gadget_type.code != 'TimeReport' && gadget_type.code != 'Burndown'}"
+            :class="{'gadget-types-cell-disabled' : gadget_type.code != 'TimeReport' && gadget_type.code != 'Burndown' && gadget_type.code != 'IssuesTable'}"
             >
           
             <span>{{ gadget_type.name }}</span>
@@ -459,19 +461,21 @@ export default mod;
           <div class="gadget-head">
             <span>{{ gadget.name }}</span>
             <i
-              class="bx bx-dots-horizontal-rounded gadget-btn"
-              @click="gadget.config_open = !gadget.config_open"
-            ></i>
-            <i
+              v-show="gadget.config_open"
               class="bx bx-trash gadget-btn"
               @click="delete_gadget(gadget)"
             ></i>
+            <i
+              class="bx bx-dots-horizontal-rounded gadget-btn"
+              @click="gadget.config_open = !gadget.config_open"
+            ></i>
+            
           </div>
           <div class="gadget-body">
             <component
               v-show="!gadget.config_open"
               v-bind:is="gadget.type[0].code"
-              :config="gadget.config ? JSON.parse(gadget.config) : {aaa:'afd'}"
+              :config="gadget.config ? JSON.parse(gadget.config) : {}"
             ></component>
 
             <component
@@ -578,7 +582,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
 }
 
 .gadgets {
-  padding: 10px 10px 10px 10px;
+  padding: 0px 10px 10px 10px;
   width: 100%;
   height: calc(v-bind(total_height) * 1px);
   min-height: calc(v-bind(total_height) * 1px);
@@ -594,6 +598,8 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   flex-direction: column;
   position: absolute;
   padding: 5px;
+  padding-top: 0px;
+  padding-bottom: 10px;
 }
 
 .shadow-gadget-container{
@@ -633,11 +639,13 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   border-left-width: var(--border-width);
   border-right-width: var(--border-width);
   border-bottom-width: 0px;
+  border: none;
 }
 
 .gadget-head span {
   padding-left: 10px;
   width: 100%;
+  font-weight: 400;
 }
 
 .gadget-body {
@@ -660,6 +668,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   border-left-width: var(--border-width);
   border-right-width: var(--border-width);
   border-bottom-width: var(--border-width);
+  border: none;
 }
 
 .gadget-body::-webkit-scrollbar {
@@ -677,6 +686,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   margin-left: calc(-1 * v-bind(virtual_border_width) / 2 * 1px);
   width: 0px;
   height: 0px;
+
 }
 
 .gadget-border {
@@ -708,7 +718,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
 .gadget-btn {
   height: 22px;
   width: 22px;
-  font-size: 15px;
+  font-size: 16px;
   border-radius: var(--border-radius);
   margin-left: 10px;
   color: var(--text-color);
@@ -723,7 +733,12 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   margin-right: 1px;
 
   text-align: center;
+  border: none;
+  background: transparent;
   //padding-top: 4px;
+}
+.gadget-btn:hover{
+  background-color: var(--button-color);
 }
 
 .delete-dashboard-btn:hover{

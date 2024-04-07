@@ -238,7 +238,7 @@ html {
   box-sizing: border-box;
   transition: all 0.2s ease;
   opacity: 1;
-  font-weight: 100;
+  font-weight: 300;
 
   // font-family: 'Poppins', sans-serif;
 }
@@ -491,7 +491,9 @@ input {
     cursor: pointer;
 	
     text-align: center;
-	padding-top: 4px;
+	  padding-top: 4px;
+    background: transparent;
+    border-color: var(--text-color);
   }
 
 .login-panel .btn_input {

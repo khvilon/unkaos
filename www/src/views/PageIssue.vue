@@ -349,9 +349,14 @@ let methods = {
     for (let i in this.fields) {
       if (this.fields[i].uuid == field_uuid) {
         if (this.fields[i].available_values == undefined) return;
-        let available_values = this.fields[i].available_values
-          .split(",")
-          .map((v) => v.replace("\n", "").replace("\r", "").trim());
+        let available_values = this.fields[i].available_values;
+        if(tools.isValidJSON(available_values)){
+          available_values = JSON.parse(available_values)
+        }
+        else{
+          available_values = available_values.split(",").map((v) => v.replace("\n", "").replace("\r", "").trim());
+        }
+        
         return available_values;
       }
     }
@@ -1194,7 +1199,7 @@ export default mod;
         <div
             v-if="!loading && id !== ''"
             :class="{ 'issue-top-button-inactive': !edit_mode }"
-            class="issue-top-button bx bx-edit"
+            class="top-menu-icon-btn bx bx-edit"
             title="Редактировать задачу"
             @click="enter_edit_mode"
         >
@@ -1204,7 +1209,7 @@ export default mod;
       <Transition name="element_fade">
         <div
             v-if="!loading && id !== ''"
-            class="issue-top-button"
+            class="top-menu-icon-btn"
             title="Следить за задачей (функция в разработке)"
             @click="togle_watch"
         >
@@ -1213,20 +1218,20 @@ export default mod;
       </Transition>
 
       <Transition name="element_fade">
-        <div class="issue-top-button">
+      
           <a
             v-if="!loading && id != '' &&
             !$store.state['common']['is_mobile']"
-            class="issue-clone-button bx bx-duplicate "
+            class="issue-clone-button top-menu-icon-btn bx bx-duplicate "
             title="Клонировать задачу"
             :href="get_clone_url()"
           >
           </a>
-        </div>
+       
       </Transition>
 
       <Transition name="element_fade">
-        <div class="issue-top-button">
+        <div class="top-menu-icon-btn" v-if="!loading && id !== ''">
           <a
             v-if="!loading && id != '' &&
             !$store.state['common']['is_mobile']"
@@ -1625,13 +1630,13 @@ $code-width: 160px;
 
 .make-child-btn {
   display: flex !important;
-  font-size: 27px !important;
+  font-size: 20px !important;
   border-radius: 50% !important;
   border-style: solid;
-  padding-top: 4px;
-  padding-left: 4px;
-  width: 32px !important;
-  height: 32px !important;
+  margin-top: 0px;
+  margin-left: 4px;
+  width: 20px !important;
+  height: 20px !important;
 }
 
 
