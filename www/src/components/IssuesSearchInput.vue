@@ -265,6 +265,8 @@ export default {
 
       if (!this.convert_query(this.value, true)){
 
+        return true;//todo
+        
         this.gpt_loader_visible = true
         let user = cache.getObject("profile");
 

@@ -32,15 +32,17 @@ const register_store_module_if_not_exists = async function (name, params) {
   if (!store.getters["get_" + name]) {
     const store_module = store_helper.create_module(name);
     store.registerModule(name, store_module);
+
+    if (name == "issue" && params == undefined) return;
+
+    if (name == "issues") return;
+
+    if ((name == "board" || name == "dashboard") && params == undefined) return;
+
+    await store.dispatch("get_" + name, params);
   }
 
-  if (name == "issue" && params == undefined) return;
-
-  if (name == "issues") return;
-
-  if ((name == "board" || name == "dashboard") && params == undefined) return;
-
-  await store.dispatch("get_" + name, params);
+  
 
   //console.log('meeeeeeeeeeeee.$store.state[name]', name, JSON.stringify(store.getters['get_' + name]))
 };

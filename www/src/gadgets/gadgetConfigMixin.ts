@@ -11,7 +11,7 @@ export const gadgetConfigMixin = {
 	  this.currentConfig = tools.clone_obj(this.config);
 	  this.currentTitle = this.title;
 
-	  console.log('this.currentConfig', this.currentConfig.query, this.currentConfig)
+	  console.log('this.currentConfig', this.currentConfig)
   
 	  // Следим за изменениями config и обновляем currentConfig
 	  this.$watch('config', (newVal) => {

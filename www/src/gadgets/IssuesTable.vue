@@ -24,71 +24,17 @@ let methods = {
 
     return arr;
   },
-  get_issues: async function (query, offset) {
-    let url = "query=" + encodeURIComponent(this.search_query);
+  get_issues: async function (encoded_query) {
+    
 
-    this.$router.replace({});
-    cache.setString("issues_query", this.search_query)
-    cache.setString("issues_query_encoded",  this.search_query_encoded)
-    let options = {};
-    this.search_query_encoded = "";
-    if (query != undefined && query != "")
-      options.query = this.search_query_encoded = query;
-    if (offset != undefined) options.offset = offset;
+    let options = {query: encoded_query}
 
-    let issues = await rest.run_method("read_issues", options);
+		if(options.query) this.loaded_issues = await rest.run_method('read_issues', options);
+		else this.loaded_issues = await rest.run_method('read_issues');
+  
 
-    console.log("this.loaded_issues0", issues);
+    this.loaded_issues = await rest.run_method("read_issues", options);
 
-    if (offset != undefined) {
-      for (let i in issues) {
-        this.loaded_issues.push(issues[i]);
-      }
-    } else this.loaded_issues = issues;
-
-    this.loaded_issues.map((issue) => (issue.children = []));
-
-    for (let i in this.loaded_issues) {
-      this.loaded_issues[i].children = [];
-      this.loaded_issues[i].local_parent_uuid = null;
-    }
-
-    for (let i in this.loaded_issues) {
-      if (
-        this.loaded_issues[i].parent_uuid != null &&
-        this.loaded_issues[i].parent_uuid != undefined
-      ) {
-        for (let j in this.loaded_issues) {
-          if (this.loaded_issues[j].uuid == this.loaded_issues[i].parent_uuid) {
-            this.loaded_issues[j].children.push(this.loaded_issues[i]);
-            this.loaded_issues[i].local_parent_uuid =
-              this.loaded_issues[i].parent_uuid;
-          }
-        }
-      }
-    }
-
-    console.log("this.loaded_issues0", this.loaded_issues);
-
-    this.loaded_issues_tree = [];
-
-    for (let i in this.loaded_issues) {
-      if (this.loaded_issues[i].local_parent_uuid == null)
-        this.loaded_issues_tree = this.add_with_children(
-          this.loaded_issues[i],
-          this.loaded_issues_tree,
-          0
-        );
-    }
-
-    console.log(
-      "this.loaded_issues1",
-      this.loaded_issues,
-      this.loaded_issues_tree
-    );
-
-    //this.loaded_issues = issues
-    //console.log(this.loaded_issues[0], this.issues[0])
   },
   get_field_path_by_name: function (name) {
     if (this.issue == undefined || this.issue.length != 1) return {};
@@ -224,19 +170,30 @@ mod.mounted = function () {
   //this.
 };
 
-mod.activated = function () {
-  console.log("activated!");
-  this.$nextTick(function () {
-    if (this.search_query === cache.getString("issues_query")) return;
-    this.search_query = cache.getString("issues_query")
-  });
+mod.props = {
+  config: {
+    type: Object,
+    default: {query: ''}
+  }
 };
-/*
-  mod.computed.issues2 = async function()
-  {
-	return await get_issues(this.search_query)
-	  return [this.issues[0]]
-  }*/
+
+mod.watch = {
+  config: {
+    deep: true,
+    handler: function(newVal, oldVal) {
+      console.log('>>>>>bconfwatchIT0', newVal, oldVal)
+      if(!newVal || !newVal.encoded_query) return;
+      if(oldVal && oldVal.toString() == newVal.toString() ) return;
+      console.log('>>>>>bconfwatchIT', newVal, oldVal)
+      //this.setChartOptions();
+      if(!oldVal || !oldVal.encoded_query) this.get_issues(newVal.encoded_query);
+      else if(oldVal.encoded_query != newVal.encoded_query) this.get_issues(newVal.encoded_query);
+      //else this.calcChart();
+    },
+    immediate: true
+  },
+
+};
 
 export default mod;
 </script>

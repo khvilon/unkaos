@@ -50,6 +50,10 @@ const data = {
 
 const mod = await page_helper.create_module(data);
 
+mod.methods.updateSelectVal = function(){
+  console.log('>>>>>>upd')
+}
+
 export default mod;
 </script>
 
@@ -138,6 +142,7 @@ export default mod;
               <KButton 
                 class="table_card_footer_btn"
                 :name="'Сохранить'"
+                @click="updateSelectVal"
                 :func="'save_fields'"
                 @button_ans="function(ans){try_done = !ans}"
                 :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid)"

@@ -63,6 +63,7 @@ export default class rest {
   }
 
   static async run_gpt(input: string): Promise<any> {
+    return null;//todo
     let user = cache.getObject("profile");
 
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {

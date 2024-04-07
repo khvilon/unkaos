@@ -22,19 +22,27 @@ export default {
   },
   watch: {
     value: function (val, oldVal) {
-      console.log("change_val", val, oldVal, this.id, this.parent_name);
+      console.log("change_val", val, oldVal, this.id, this.parent_name, this.options);
 
-      if(!val || !oldVal) return; 
-      if(val.toString && oldVal.toString && val.toString() === oldVal.toString()) return;
+      if(val && oldVal && val.toString && oldVal.toString && val.toString() === oldVal.toString()) return;
 
-      this.$emit("updated", val);
-
-      for(let i = 0; i < this.options.length; i++){
+      if(!val){
+        this.$emit("updated", null);
+        this.$emit("updated_full_user", null);
+      }
+      else if(val.uuid){
+        this.$emit("updated", val.uuid);
+        this.$emit("updated_full_user", val);
+      }
+      else{
+        this.$emit("updated", val);
+        for(let i = 0; i < this.options.length; i++){
         if(this.options[i].uuid && this.options[i].uuid == val){
           this.$emit("updated_full_user", this.options[i]);
           break
         }
         this.$emit("updated_full_user", null);
+      }
       }
 
       if (this.parent_name == undefined || this.parent_name == "") return;
