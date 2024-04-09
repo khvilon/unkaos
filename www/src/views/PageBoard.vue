@@ -771,16 +771,16 @@ let methods = {
 		return val
 	},
 	get_card_color(issue) {
-		const colorFieldUUID = this.colo
-		let colorFieldObj = issue.values.filter((v)=>v.field_uuid==)
-		let p = this.get_field_value(issue, { uuid: 'b6ddb33f-eea9-40c0-b1c2-d9ab983026a1' })
-
-		if (p == 'Minor') return 'green'
-		else if (p == 'Normal') return 'yellow'
-		else if (p == 'Major') return 'orange'
-		else if (p == 'Critical') return 'pink'
-		else if (p == 'Show-stopper') return 'red'
-		else return 'gray'
+		const defaultColor = 'gray';
+		const colorFieldUUID = this.selected_board.color_field_uuid;
+		if(!colorFieldUUID) return defaultColor;
+		const colorField = this.fields.filter((f)=>f.uuid == colorFieldUUID)[0]
+		if(!colorField || !tools.isValidJSON(colorField.available_values)) return defaultColor;	
+		const colorFieldValueUUID = this.get_field_value(issue, colorField)
+		if(!colorFieldValueUUID) return defaultColor;
+		const colorFieldValue = JSON.parse(colorField.available_values).filter((av)=>av.uuid==colorFieldValueUUID);
+		if(!colorFieldValue || !colorFieldValue[0] || !colorFieldValue[0].color) return defaultColor;
+		return colorFieldValue[0].color;	
 	},
 	delete_board() {
 		this.$store.dispatch('delete_board')
@@ -1121,6 +1121,11 @@ const data =
 	inputs: [
 		{
 			id: 'estimate_uuid',
+			dictionary: 'fields',
+			type: 'Select',
+		},
+		{
+			id: 'color_field_uuid',
 			dictionary: 'fields',
 			type: 'Select',
 		},
@@ -1509,7 +1514,8 @@ export default mod
 						:value="swimlanes_value" :values="swimlanes_values" :parameters="{ reduce: obj => obj.uuid }"
 						@update_parent_from_input="swimlanes_updated"></SelectInput>
 
-					<SelectInput v-if="inputs_dict != undefined" label='Суммируемое поле' id='estimate_uuid'
+					<SelectInput v-if="inputs_dict != undefined" 
+					label='Суммируемое поле' id='estimate_uuid'
 						:parent_name="'board'" clearable="false" :value="get_json_val(selected_board, 'estimate_uuid')"
 						:values="inputs_dict['estimate_uuid'].values.filter((v) => v.type[0].code == 'Numeric')"
 						:parameters="inputs_dict['estimate_uuid']" @update_parent_from_input="make_swimlanes">
@@ -1526,11 +1532,14 @@ export default mod
 						:value="get_json_val(selected_board, 'use_sprint_filter')" :parent_name="'board'"
 						@update_parent_from_input="make_swimlanes"></BooleanInput>
 
-					<SelectInput label='Поле цвета' id='fields'
+					<SelectInput label='Поле цвета' 
+						id='color_field_uuid'
 						:parent_name="'board'" 
 						clearable="false" 
 						:values="colored_fields"
-						multiple: false>
+						multiple: false
+						:value="get_json_val(selected_board, 'color_field_uuid')"
+					>
 					</SelectInput>
 
 
