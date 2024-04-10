@@ -118,6 +118,18 @@ The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Availab
 
 export class Gpt {
 
+  constructor() {
+    sql.subscribe('*', this.updateConfig.bind(this), this.handleSubscribeConnect)
+  }
+
+  private handleSubscribeConnect(){
+    console.log('subscribe sql configs connected!')
+  }
+
+  private async updateConfig(row:any, { command, relation, key, old }: any){
+    if(relation.table == 'configs' || relation.schema == 'server') this.init()
+  }
+
   public async init() { 
     const ans = await sql`SELECT value FROM server.configs WHERE service = 'openai'`;
 
@@ -156,25 +168,17 @@ export class Gpt {
       data : data
     };
 
-    axios(config)
-    .then((response) => {
-      try{
-        let gptResponse = JSON.parse(response.data.choices[0].message.content);
-        if(!gptResponse) return '';
-        console.log(JSON.stringify(gptResponse), null, 4);
-        return gptResponse;
-      }
-      catch{
-        console.log(response.data.choices[0].message.content);
-        return '';
-      }
-      
-    })
-    .catch((error) => {
-      
-      console.log(error);
+    try{
+      let response = await axios(config);
+      let gptResponse = JSON.parse(response.data.choices[0].message.content);
+      if(!gptResponse) return '';
+      console.log(JSON.stringify(gptResponse), null, 4);
+      return gptResponse;
+    }
+    catch(err) {
+      console.log(err);
       return '';
-    });
+    }
   }
 
 
