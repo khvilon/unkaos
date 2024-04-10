@@ -1,9 +1,26 @@
 
+import { Configuration, OpenAIApi } from 'openai';
 
-import sql from './sql';
-import axios from 'axios';
+let openaiConf;
 
-var openaiConfig: any = {}
+try {
+  const { openaiConfig } = require('./conf');
+  openaiConf = openaiConfig;
+} catch (error) {
+  openaiConf = {
+    key: process.env.OPENAI_KEY
+  };
+}
+
+
+const key = openaiConf.key
+
+console.log(key)
+
+const configuration = new Configuration({
+  apiKey: key,
+});
+const openai = new OpenAIApi(configuration);
 
 const commandAnswerSchemma =
 `{
@@ -116,65 +133,23 @@ Available issue attributes are 'sprint', 'status', 'project', 'type'.
 The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Available issue fields are:
 `
 
+//const model = 'gpt-3.5-turbo'
+const model = 'gpt-4'
+
 export class Gpt {
 
-  public async init() { 
-    const ans = await sql`SELECT value FROM server.configs WHERE service = 'openai'`;
-
-    for(let i in ans){
-      openaiConfig[ans[i].name] = ans[i].value
-    }    
-  }
-
-  private async ask(input: string, context: string = ''): Promise<string> {
-
-    let data = JSON.stringify({
-      "model": openaiConfig.model,
-      //"response_format": { "type": 'json_object' },
-      "messages": [
-            {
-                "role": "system",
-                "content": unkaosDescr
-            },
-           
-          {
-            "role": "user",
-            "content": input
-        }],
-       
-      "temperature": openaiConfig.temperature
+  private async ask(input: string, context: string = '', temper=0.1): Promise<string> {
+    const completion = await openai.createChatCompletion({
+      model: model,
+      messages: [{role: "system", content: context},{role: "user", content: input}],
+      temperature: temper,
     });
 
-    let config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: openaiConfig.url + 'chat/completions',
-      headers: { 
-        'Content-Type': 'application/json', 
-        'Authorization': 'Bearer ' + openaiConfig.key
-      },
-      data : data
-    };
+    console.log(context)
 
-    axios(config)
-    .then((response) => {
-      try{
-        let gptResponse = JSON.parse(response.data.choices[0].message.content);
-        if(!gptResponse) return '';
-        console.log(JSON.stringify(gptResponse), null, 4);
-        return gptResponse;
-      }
-      catch{
-        console.log(response.data.choices[0].message.content);
-        return '';
-      }
-      
-    })
-    .catch((error) => {
-      
-      console.log(error);
-      return '';
-    });
+    const gptResponse = completion.data.choices[0].message?.content ?  completion.data.choices[0].message?.content : ''
+
+    return gptResponse
   }
 
 
