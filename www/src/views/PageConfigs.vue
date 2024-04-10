@@ -123,16 +123,34 @@ const data = {
 
       ]
     },{
-      label: 'ИИ',
+      label: 'Искусственный интеллект',
       is_server: true,
       groups:[
         {
-          label: 'Openai chatGPT 4',
+          label: 'Openai API',
           fields: [{
-              label: 'Ключ API',
+              label: 'Ключ',
               type: 'String',
               service: 'openai',
               config: 'key'
+            },
+            {
+              label: 'url',
+              type: 'String',
+              service: 'openai',
+              config: 'url'
+            },
+            {
+              label: 'Модель',
+              type: 'String',
+              service: 'openai',
+              config: 'model'
+            },
+            {
+              label: 'Температура',
+              type: 'Numeric',
+              service: 'openai',
+              config: 'temperature'
             }
           ]
         }
