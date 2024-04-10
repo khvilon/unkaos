@@ -1,23 +1,25 @@
 # 
+<div align="center">
 
-<div>
-  <p align="center">
-    <img src="pictures/big_logo.png" width="800"> 
-  </p>
+![Unkaos Logo](pictures/big_logo.png)
+
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE) 
+[![Channel on Telegram](https://img.shields.io/badge/channel-Telegram-blueviolet.svg)](https://t.me/unkaos_info)
 </div>
-<br>
 
-## Overview
-Unkaos is a task tracker inspired by Jira and YouTrack but is free to use under the Apache 2 license. It offers powerful project management capabilities for all your teams, whether in the official cloud at http://unkaos.org or by installing Unkaos on your server.
+## Your Open Source Task Tracker
+
+**Unkaos** is a powerful, free-to-use task tracker inspired by the functionality of Jira and YouTrack, designed for development teams and beyond. Enjoy a robust project management tool with  flexible customization, all under the Apache 2 license.
+
+🌐 Official cloud: [http://unkaos.org](http://unkaos.org) | 📦 Install on your server: [Installation Guide](#📦standalone-setup)
+
 
 Built on stable and modern technologies such as Vue.js 3, Node.js, TypeScript, and PostgreSQL, it ensures a comfortable user experience, including real-time updates with WebSockets and even AI for understanding natural language user requests.
 
-The functionality is designed for flexible customization. There's no need to overhaul your processes, simply configure your fields, workflows, agile boards, and dashboards once, and then benefit. While Unkaos is a universal task tracker, it is primarily aimed at development teams.
+## 📖 Table of Contents
 
-## Table of Contents
-
-1. [User Guide](#user-guide)
-    - [For Team Members](#for-team-members)
+1. [📚User Guide](#📚user-guide)
+    - [🧑‍💻For Team Members](#🧑‍💻for-team-members)
       - [Issues](#issues)
         - [Finding Issues](#finding-issues)
         - [Creating Issues](#creating-issues)
@@ -32,24 +34,24 @@ The functionality is designed for flexible customization. There's no need to ove
         - [Time Reports](#time-reports)
         - [Burndown Charts](#burndown-charts)
       - [Personal Configurations](#personal-configurations)
-    - [For Workspace Administrators](#for-workspace-administrators)
+    - [🛠️For Workspace Administrators](#🛠️for-workspace-administrators)
       - [Workspace Configurations](#workspace-configurations)
       - [Customizing Processes](#customizing-processes)
       - [Users and Roles](#users-and-roles)
-    - [Standalone Setup](#standalone-setup)
+    - [📦Standalone Setup](#📦standalone-setup)
       - [Installation](#installation)
       - [Server Configurations](#server-configurations)
-2. [Developer Documentation](#developer-documentation)
+2. [💻Developer Documentation](#💻developer-documentation)
     - [Architecture](#architecture)
     - [Contributing](#contributing)
     - [API Reference (in progress)](#api-reference-in-progress)
-3. [Info](#info)
+3. [📢Info](#📢info)
     - [News](#news)
     - [Contact the Author](#contact-the-author)
 
-# User Guide
+# 📚User Guide
 
-## For Team Members
+## 🧑‍💻For Team Members
 If you are invited to join an existing project, you should contact your admin. They will add you to the workspace, and you will receive an email with a link to sign in and a temporary password, which you can then change in your user settings.
 
 ### Issues
@@ -123,7 +125,7 @@ Burndown charts visualize your project's progress against its timeline, helping 
 
 In your user settings, you can configure notifications, update your profile, and change your password. Access settings from the user menu in the top right corner.
 
-## For Workspace Administrators
+## 🛠️For Workspace Administrators
 
 As a workspace administrator, you have additional responsibilities and capabilities within Unkaos.
 
@@ -139,11 +141,11 @@ Customize workflows, issue fields, and user roles to fit your team's processes. 
 
 Manage user accounts and roles from the "Users" section in the admin dashboard. You can add new users, assign roles, and set permissions.
 
-## Standalone Setup
+## 📦Standalone Setup
 
 
 
-## Installation
+### Installation
 The installation should be performed on a machine with a fresh OS, currently supporting Ubuntu and Debian.
 
 Log into the machine as a user with sudo rights and run the command:
@@ -156,11 +158,11 @@ This will execute the installation script with a wizard that asks for your domai
 
 Additionally, the script will install a Certbot certificate for HTTPS, or you can skip this step if you already have one.
 
-#### Server Configurations
+### Server Configurations
 
 ...
 
-# Developer Documentation
+# 💻Developer Documentation
 
 ## Architecture
 
@@ -196,15 +198,10 @@ For the moment, you can leverage requests captured from developer tools for temp
 Stay tuned for updates and the detailed documentation on how to utilize the Unkaos API effectively.
 
 
-# Info
+# 📢Info
 
-### News
+Stay updated with the latest news and updates from Unkaos. Join our Telegram channel, or reach out to the author directly.
 
-Stay updated with all project developments by following our information channel on Telegram:
-[https://t.me/unkaos_info](https://t.me/unkaos_info)
-
-### Contact the Author
-
-If you need to get in touch with the author, you can reach out via:
-- Email: [n@khvilon.ru](mailto:n@khvilon.ru)
-- Telegram: [@khvilon](https://t.me/khvilon)
+🔔News: [https://t.me/unkaos_info](https://t.me/unkaos_info)
+<br>
+📧 Contact: n@khvilon.ru | [@khvilon](https://t.me/khvilon)
