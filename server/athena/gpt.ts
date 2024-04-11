@@ -114,7 +114,7 @@ Do not translate any values. Ignore unuseful information like emotions and use o
 
 Available issue attributes are 'sprint', 'status', 'project', 'type'. 
 The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Available issue fields are:
-` + 'Автор, Назначеа на, Создана, Обновлена, Назвние, Описание, Приоритет'
+`
 
 export class Gpt {
 
@@ -148,7 +148,7 @@ export class Gpt {
       "messages": [
             {
                 "role": "system",
-                "content": unkaosDescr
+                "content": context
             },
            
           {
