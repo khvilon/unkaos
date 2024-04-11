@@ -1,5 +1,5 @@
 const axios = require('axios');
-const token='sk-or-vv-d392da0526319502caf0f09ad4ca3f35c6cbbfdb3a2498c3539aeadedeeccd50'
+const token='sk-or-vv-5e773ad23da8603b16267d5d9bf6912e8619ae9326d8320616cd9482905f7171'
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 const commandAnswerSchemma =
@@ -159,15 +159,15 @@ unkaosDescr += '. for any date or time you use note that it is now ' + new Date(
 //"openai/gpt-3.5-turbo-instruct"
 
 let data = JSON.stringify({
-  "model": "openai/gpt-3.5-turbo-instruct",
+  "model": "openai/gpt-3.5-turbo-0125",
  // "model": "cohere/command-r-plus",
   //"response_format": { "type": 'json_object' },
-  "messages": [
-        {
-            "role": "system",
-            "content": unkaosDescr
-        },
-       
+  
+  "messages": [  
+    {
+      "role": "system",
+      "content": unkaosDescr
+  },     
       {
         "role": "user",
         "content": 'Задай спринт 88 дочерним задачам созданным в этом году Соколовой со статусом новая или в работе'
@@ -175,6 +175,14 @@ let data = JSON.stringify({
    
   "temperature": 0.4
 });
+
+/*
+data = JSON.stringify({
+  "model": "openai/gpt-3.5-turbo-0125", 
+  "messages": [
+    {"role": "user", "content": "What is the meaning of life?"}
+  ]
+})*/
 
 /*
 data = JSON.stringify({
