@@ -110,6 +110,16 @@ export class Data {
         return i;
       }
     }
+
+    let trValue = tools.transliterateRuToEn();
+    if(trValue === value) trValue = tools.transliterateEnToRu();
+
+    for (let i = 0; i < values.length; i++) {
+      if (this.isMatching(trValue, values[i])) {
+        return i;
+      }
+    }
+    
     return -1;
   }
 

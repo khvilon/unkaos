@@ -138,7 +138,34 @@ INSERT INTO server.fields (uuid, name, type_uuid, is_custom) VALUES
 ('60d53a40-cda9-4cb2-a207-23f8236ee9a7', 'Spent time', 'c0c4036c-3dd2-4264-ba2e-ec7180a4d35c', true),
 ('e85ccb15-c1d2-433b-bb45-473a9a36a02c', 'Assignee', 'd57da84f-ed1b-4596-9fb9-9d4c500af63d', true);
 INSERT INTO server.fields (uuid, name, type_uuid, is_custom, available_values) VALUES 
-('b6ddb33f-eea9-40c0-b1c2-d9ab983026a1', 'Priority', '457da84d-2d1d-3595-6fba-4d4d674af63f', true, 'Show-stopper,Critical,Major,Normal,Minor');
+('b6ddb33f-eea9-40c0-b1c2-d9ab983026a1', 'Priority', '457da84d-2d1d-3595-6fba-4d4d674af63f', true, 
+'[
+    {
+        "name": "Minor",
+        "color": "green",
+        "uuid": "6acf918c-c9d1-4ba9-8c5b-15d7547e256f"
+    },
+    {
+        "name": "Normal",
+        "color": "yellow",
+        "uuid": "d6cb57e0-009e-41c6-9881-869efff966e8"
+    },
+    {
+        "name": "Major",
+        "color": "orange",
+        "uuid": "a07ca498-e623-4d6b-afe5-ea6b3fe5e5dd"
+    },
+    {
+        "name": "Critical",
+        "color": "rose",
+        "uuid": "9c9ae9e2-206d-4095-8d29-8329b77d4bd0"
+    },
+    {
+        "name": "Show-stopper",
+        "color": "red",
+        "uuid": "667dd8eb-c225-4d47-a898-136ca2efbaf9"
+    }
+]');
 
 --CREATE INDEX "field_values_rows_1b54a2db-3df4-485e-9ebc-77bb51f2d490_idx" ON server.field_values_rows USING btree ("1b54a2db-3df4-485e-9ebc-77bb51f2d490");
 --CREATE INDEX "field_values_rows_22cf17d4-b21c-4141-8a54-356af786940f_idx" ON server.field_values_rows USING btree ("22cf17d4-b21c-4141-8a54-356af786940f");
