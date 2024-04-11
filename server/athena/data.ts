@@ -110,17 +110,17 @@ export class Data {
       }
     }
 
-    for (let i = 0; i < values.length; i++) {
-      if (this.isMatching(value, values[i]), 0.8) {
-        return i;
-      }
-    }
-
     let trValue = tools.transliterateRuToEn(value);
     if(trValue === value) trValue = tools.transliterateEnToRu(value);
 
     for (let i = 0; i < values.length; i++) {
-      if (this.isMatching(trValue, values[i]), 0.8){
+      if (this.isMatching(trValue, values[i])){
+        return i;
+      }
+    }
+
+    for (let i = 0; i < values.length; i++) {
+      if (this.isMatching(value, values[i]), 0.8) {
         return i;
       }
     }
