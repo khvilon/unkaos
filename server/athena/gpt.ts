@@ -114,7 +114,7 @@ Do not translate any values. Ignore unuseful information like emotions and use o
 
 Available issue attributes are 'sprint', 'status', 'project', 'type'. 
 The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Available issue fields are:
-`
+` + 'Автор, Назначеа на, Создана, Обновлена, Назвние, Описание, Приоритет'
 
 export class Gpt {
 
@@ -133,18 +133,14 @@ export class Gpt {
   public async init() { 
     const ans = await sql`SELECT name, value FROM server.configs WHERE service = 'openai'`;
 
-    console.log('init gpt ans', ans)
-
     for(let i in ans){
       openaiConfig[ans[i].name] = ans[i].value
     }    
-
-    console.log('init gpt openaiConfig', openaiConfig)
   }
 
   private async ask(input: string, context: string = ''): Promise<string> {
 
-    console.log('init gpt openaiConfig', openaiConfig)
+    console.log('ask gpt openaiConfig', openaiConfig)
 
     let data = JSON.stringify({
       "model": openaiConfig.model,
@@ -160,7 +156,7 @@ export class Gpt {
             "content": input
         }],
        
-      "temperature": openaiConfig.temperature
+      "temperature": 0.4//openaiConfig.temperature
     });
 
     let config = {
@@ -178,7 +174,7 @@ export class Gpt {
       let response = await axios(config);
       let gptResponse = JSON.parse(response.data.choices[0].message.content);
       if(!gptResponse) return '';
-      console.log(JSON.stringify(gptResponse), null, 4);
+      console.log('>>gptResponse', JSON.stringify(gptResponse), null, 4);
       return gptResponse;
     }
     catch(err) {
