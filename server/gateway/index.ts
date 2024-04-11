@@ -153,7 +153,7 @@ async function init() {
       method: 'get',
       url: conf.athenaUrl + req.url,
       headers: {
-        subdomain: req.headers.subdomain,
+        workspace: req.headers.workspace,
         user_uuid: '-',
       },
     });
