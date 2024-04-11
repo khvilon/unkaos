@@ -75,9 +75,9 @@ const commandAnswerSchemma =
 `
 
 const unkaosDescr = `
-A user inputs a natural language command request in a task tracker. 
-Your task is to parse the input, identify the requested action and any necessary parameters for the action, 
-and convert it into a valid JSON that adheres to the following schema: ${commandAnswerSchemma}
+you are NLP for a task tracker, 
+answer schema: ${commandAnswerSchemma}
+answer only a valid JSON, no other text.
 
 Note that verbs resembling a status applied to issues indicate setting the status to that value and do not affect the filter query. 
 For example, to close an issue means just to change its status to a status like 'closed' without filtering, 
@@ -173,6 +173,10 @@ export class Gpt {
 
     try{
       let response = await axios(config);
+
+      console.log('>>gptResponse0', response.data.choices[0].message.content;
+
+
       let gptResponse = JSON.parse(response.data.choices[0].message.content);
       if(!gptResponse) return {};
       console.log('>>gptResponse', JSON.stringify(gptResponse), null, 4);
