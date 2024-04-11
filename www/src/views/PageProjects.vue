@@ -17,6 +17,11 @@ const data = {
       search: true,
     },
     {
+      name: "База знаний",
+      id: "is_knowledge_base",
+      type: "boolean",
+    },
+    {
       name: "Владелец",
       id: "owner_uuid",
       type: "user",
@@ -42,6 +47,11 @@ const data = {
       label: "Описание",
       id: "description",
       type: "Text",
+    },
+    {
+      label: "Является базой знаний",
+      id: "is_knowledge_base",
+      type: "Boolean",
     },
     {
       label: "Аватар",

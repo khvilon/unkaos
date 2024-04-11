@@ -1,0 +1,1 @@
+ALTER TABLE public.projects ADD COLUMN is_knowledge_base BOOLEAN DEFAULT false;
