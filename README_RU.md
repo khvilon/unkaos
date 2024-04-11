@@ -1,53 +1,53 @@
 # 
+# 
 <div align="center">
 
-![Unkaos Logo](pictures/big_logo.png)
+![Логотип Unkaos](pictures/big_logo.png)
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE) 
-[![Channel on Telegram](https://img.shields.io/badge/channel-Telegram-blueviolet.svg)](https://t.me/unkaos_info)
+[![Лицензия: Apache 2.0](https://img.shields.io/badge/Лицензия-Apache%202.0-blue.svg)](LICENSE) 
+[![Канал в Telegram](https://img.shields.io/badge/канал-Telegram-blueviolet.svg)](https://t.me/unkaos_info)
 </div>
 
-## Your Open Source Task Tracker
+## Ваш трекер задач с открытым исходным кодом
 
-**Unkaos** is a powerful, free-to-use task tracker inspired by the functionality of Jira and YouTrack, designed for development teams and beyond. Enjoy a robust project management tool with  flexible customization, all under the Apache 2 license.
+**Unkaos** — это мощный трекер задач с открытым исходным кодом, вдохновленный функциональностью Jira и YouTrack, предназначенный для команд разработчиков и не только. Наслаждайтесь надежным инструментом управления проектами с гибкой настройкой, все под лицензией Apache 2.
 
-🌐 Official cloud: [http://unkaos.org](http://unkaos.org) | 📦 Install on your server: [Installation Guide](#📦standalone-setup)
+🌐 Официальное облако: [http://unkaos.org](http://unkaos.org) | 📦 Установка на ваш сервер: [Руководство по установке](#standalone-setup)
 
+Построен на стабильных и современных технологиях, таких как Vue.js 3, Node.js, TypeScript и PostgreSQL, обеспечивает комфортное взаимодействие с пользователем, включая обновления в реальном времени с помощью WebSockets и даже ИИ для понимания запросов пользователей естественным языком.
 
-Built on stable and modern technologies such as Vue.js 3, Node.js, TypeScript, and PostgreSQL, it ensures a comfortable user experience, including real-time updates with WebSockets and even AI for understanding natural language user requests.
+## 📖 Содержание
 
-## 📖 Table of Contents
-
-1. [📚User Guide](#📚user-guide)
-    - [🧑‍💻For Team Members](#🧑‍💻for-team-members)
-      - [Issues](#issues)
-        - [Finding Issues](#finding-issues)
-        - [Creating Issues](#creating-issues)
-        - [Working with an Issue](#working-with-an-issue)
-        - [Bulk Changes and Other AI Options](#bulk-changes-and-other-ai-options)
-      - [Agile Boards](#agile-boards)
-        - [Using the Board](#using-the-board)
-        - [Creating and Configuring Your Board](#creating-and-configuring-your-board)
-      - [Dashboards](#dashboards)
-        - [Dashboard Overview](#dashboard-overview)
-        - [Issue List](#issue-list)
-        - [Time Reports](#time-reports)
-        - [Burndown Charts](#burndown-charts)
-      - [Personal Configurations](#personal-configurations)
-    - [🛠️For Workspace Administrators](#🛠️for-workspace-administrators)
-      - [Workspace Configurations](#workspace-configurations)
-      - [Customizing Processes](#customizing-processes)
-      - [Users and Roles](#users-and-roles)
-    - [📦Standalone Setup](#📦standalone-setup)
-      - [Installation](#installation)
-      - [Server Configurations](#server-configurations)
-2. [💻Developer Documentation](#💻developer-documentation)
-    - [Architecture](#architecture)
-    - [Contributing](#contributing)
-    - [API Reference (in progress)](#api-reference-in-progress)
-3. [📢Info](#📢info)
-    - [News](#news)
-    - [Contact the Author](#contact-the-author)
+1. [📚Руководство пользователя](#user-guide)
+    - [🧑‍💻Для членов команды](#for-team-members)
+      - [Задачи](#issues)
+        - [Поиск задач](#finding-issues)
+        - [Создание задач](#creating-issues)
+        - [Работа с задачей](#working-with-an-issue)
+        - [Массовые изменения и другие возможности ИИ](#bulk-changes-and-other-ai-options)
+      - [Доски Agile](#agile-boards)
+        - [Использование доски](#using-the-board)
+        - [Создание и настройка доски](#creating-and-configuring-your-board)
+      - [Панели мониторинга](#dashboards)
+        - [Обзор панелей](#dashboard-overview)
+        - [Список задач](#issue-list)
+        - [Отчеты по времени](#time-reports)
+        - [Диаграммы сгорания](#burndown-charts)
+      - [Персональные настройки](#personal-configurations)
+    - [🛠️Для администраторов рабочих пространств](#for-workspace-administrators)
+      - [Настройки рабочего пространства](#workspace-configurations)
+      - [Настройка процессов](#customizing-processes)
+      - [Пользователи и роли](#users-and-roles)
+    - [📦Автономная установка](#standalone-setup)
+      - [Установка](#installation)
+      - [Настройки сервера](#server-configurations)
+2. [💻Документация для разработчиков](#developer-documentation)
+    - [Архитектура](#architecture)
+    - [Участие в разработке](#contributing)
+    - [Справочник API (в разработке)](#api-reference-in-progress)
+3. [📢Информация](#info)
+    - [Новости](#news)
+    - [Контакт автора](#contact-the-author)
 
 # 📚User Guide
 
@@ -160,16 +160,7 @@ Additionally, the script will install a Certbot certificate for HTTPS, or you ca
 
 ### Server Configurations
 
-Once Unkaos is installed, you should sign in to the workspace 'Server' using the following URL:
-
-`https://[your.domain]/server/login`
-
-Log in with the credentials:
-- **Username**: `root@unkaos.org`
-- **Password**: `rootpass`
-
-⚠️ **Important!!!** As a security measure, make sure to change the default password immediately after you sign in for the first time. You can do this through the 'User Settings' or 'Account' section within the Unkaos platform.
-
+...
 
 # 💻Developer Documentation
 

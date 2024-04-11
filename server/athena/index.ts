@@ -35,7 +35,16 @@ const init = async function() {
 
     const userInput = req.query.userInput as string;
     const userUuid = req.query.userUuid as string;
-    const workspace = req.header('workspace') || 'oboz';
+    let workspace:string = '';
+
+    if (typeof req.headers.workspace === 'string') {
+      workspace = req.headers.workspace;
+    }
+
+    if(!workspace){
+      res.status(400).json({ error: 'Need workspace' });
+      return;
+    }
     const dataClass = new Data(workspace);
 
     let logUuid = await dataClass.log(userInput, userUuid)
