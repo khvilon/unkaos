@@ -131,7 +131,7 @@ export class Gpt {
   }
 
   public async init() { 
-    const ans = await sql`SELECT value FROM server.configs WHERE service = 'openai'`;
+    const ans = await sql`SELECT name, value FROM server.configs WHERE service = 'openai'`;
 
     console.log('init gpt ans', ans)
 
@@ -144,7 +144,7 @@ export class Gpt {
 
   private async ask(input: string, context: string = ''): Promise<string> {
 
-    console.log('ask gpt openaiConfig', openaiConfig)
+    console.log('init gpt openaiConfig', openaiConfig)
 
     let data = JSON.stringify({
       "model": openaiConfig.model,
