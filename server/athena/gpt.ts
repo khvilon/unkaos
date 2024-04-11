@@ -177,7 +177,7 @@ export class Gpt {
       console.log('>>gptResponse0', response.data.choices[0].message.content);
 
 
-      let gptResponse = JSON.parse(response.data.choices[0].message.content.replace('```', '').replace('```json', ''));
+      let gptResponse = JSON.parse(response.data.choices[0].message.content.replace('```json', '').replace('```', ''));
       if(!gptResponse) return {};
       console.log('>>gptResponse', JSON.stringify(gptResponse), null, 4);
       return gptResponse;
