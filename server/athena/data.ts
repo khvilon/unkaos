@@ -111,11 +111,11 @@ export class Data {
       }
     }
 
-    let trValue = tools.transliterateRuToEn();
-    if(trValue === value) trValue = tools.transliterateEnToRu();
+    let trValue = tools.transliterateRuToEn(value);
+    if(trValue === value) trValue = tools.transliterateEnToRu(value);
 
     for (let i = 0; i < values.length; i++) {
-      if (this.isMatching(trValue, values[i])) {
+      if (this.isMatching(trValue, values[i])){
         return i;
       }
     }
