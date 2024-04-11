@@ -111,6 +111,7 @@ Other conditions can be used as usual.
 dont use ' for attributes values, always use "
 
 Do not translate any values. Ignore unuseful information like emotions and use only the relevant information.
+If you update or create issues, 'set' cant be void.
 
 Available issue attributes are 'sprint', 'status', 'project', 'type'. 
 The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Available issue fields are:
