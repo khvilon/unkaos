@@ -71,6 +71,8 @@ const commandAnswerSchemma =
 }
 `
 
+//Задай спринт 1 всем задачам с синим цветным списком
+
 let unkaosDescr = `
 you are NLP for a task tracker, 
 answer schema: ${commandAnswerSchemma}
