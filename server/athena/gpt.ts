@@ -173,13 +173,13 @@ export class Gpt {
     try{
       let response = await axios(config);
       let gptResponse = JSON.parse(response.data.choices[0].message.content);
-      if(!gptResponse) return '';
+      if(!gptResponse) return {};
       console.log('>>gptResponse', JSON.stringify(gptResponse), null, 4);
       return gptResponse;
     }
     catch(err) {
       console.log(err);
-      return '';
+      return {};
     }
   }
 
@@ -192,17 +192,7 @@ export class Gpt {
     const context = `${unkaosDescr}.
     ${fieldsStr}.`
 
-
-    const parsedCommandStr = await this.ask(input, context)
-
-    let parsedCommand: any
-  
-    try {
-      parsedCommand = JSON.parse(parsedCommandStr);
-    } catch (error) {
-      console.log("Error gpt JSON", parsedCommandStr)
-      parsedCommand = {}
-    }
+    const parsedCommand = await this.ask(input, context)
 
     return parsedCommand
 
