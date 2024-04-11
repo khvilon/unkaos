@@ -138,7 +138,7 @@ export class Gpt {
     }    
   }
 
-  private async ask(input: string, context: string = ''): Promise<string> {
+  private async ask(input: string, context: string = ''): Promise<any> {
 
     console.log('ask gpt openaiConfig', openaiConfig)
 
