@@ -174,7 +174,7 @@ export class Gpt {
     try{
       let response = await axios(config);
 
-      console.log('>>gptResponse0', response.data.choices[0].message.content;
+      console.log('>>gptResponse0', response.data.choices[0].message.content);
 
 
       let gptResponse = JSON.parse(response.data.choices[0].message.content);
