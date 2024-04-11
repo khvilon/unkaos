@@ -31,7 +31,6 @@ export class Data {
   public async updateLogAthena(uuid: string, athenaAns: string){
     await sql`UPDATE ${sql(this.workspace + '.gpt_logs')} SET athena_answer = ${athenaAns} WHERE uuid = ${uuid}`
   }
-  
 
   public async getFields(workspace: string): Promise<Array<object>> {
     const fields = await sql`SELECT f.name, f.available_values, ft.code AS type, f.uuid FROM  ${sql(
