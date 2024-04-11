@@ -156,7 +156,18 @@ export class Gpt {
             "content": input
         }],
        
-      "temperature": 0.4//openaiConfig.temperature
+      "temperature": Number(openaiConfig.temperature)
+    });
+
+    data = JSON.stringify({
+      "model": "openai/gpt-3.5-turbo-instruct",
+      "messages": [           
+          {
+            "role": "user",
+            "content": 'Задай спринт 88 дочерним задачам созданным в этом году Соколовой со статусом новая или в работе'
+        }],
+       
+      "temperature": 0.4
     });
 
     let config = {
