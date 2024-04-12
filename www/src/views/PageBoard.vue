@@ -158,7 +158,7 @@ let methods = {
 		this.filters = filters//my_filters.concat(public_filters);
 
 		//console.log('sselected_board4')
-		if(this.board[0].query == '') return
+		//if(this.board[0].query == '') return
 		if(this.board[0].query[this.board[0].query.length-1] == ' ') this.board[0].query = this.board[0].query.trimEnd()
 		else this.board[0].query += ' '
 	},
@@ -984,9 +984,8 @@ let methods = {
 
 		//console.log(created_issue)
 	},
-	field_updated: async function (e, field) {
-		console.log("field_updated", e, field);
-
+	field_updated: async function (e, field, issue) {
+		console.log(">>>field_updated", e, field, issue);
 	},
 
 	start_add_filter: function () {
@@ -1044,7 +1043,7 @@ const data =
 	parent_relation_type_uuid: "73b0a22e-4632-453d-903b-09804093ef1b",
 	instance:
 	{
-		name: '',
+		name: 'Название',
 		boards_columns: [],
 		boards_fields: [],
 		use_sprint_filter: false,
@@ -1204,6 +1203,9 @@ mod.computed.board_query_info = function () {
 
 mod.computed.boards_columns = function () {
 	if (this.selected_board == undefined || this.selected_board.boards_columns == undefined) return []
+	console.log('boards_columns', this.column_values, this.selected_board.boards_columns)
+
+	
 	return this.selected_board.boards_columns.map((v) => v.status[0])
 }
 
@@ -1235,19 +1237,21 @@ mod.computed.display_description = function () {
 }
 
 mod.computed.available_values = function (field_uuid) {
-	//		console.log('get_available_values', field_uuid)
 	let av = {}
 
 	for (let i in this.fields) {
-		if (this.fields[i].available_values == undefined) {
+		if (!this.fields[i].available_values) {
 			av[this.fields[i].uuid] = []
-			continue;
 		}
-		let available_values = this.fields[i].available_values
+		else if(tools.isValidJSON(this.fields[i].available_values)){
+			av[this.fields[i].uuid] = JSON.parse(this.fields[i].available_values)
+		}
+		else{
+			let available_values = this.fields[i].available_values
 			.split(",")
 			.map((v) => v.replace("\n", "").replace("\r", "").trim());
-		av[this.fields[i].uuid] = available_values;
-
+			av[this.fields[i].uuid] = available_values;
+		}
 	}
 	return av
 }
@@ -1454,19 +1458,29 @@ export default mod
 												v-if="f.fields != undefined && f.fields[0] != undefined && f.fields[0].name != 'Описание'">
 												{{ f.fields[0].name }}: </label>
 											<component
-												v-if="false && f.fields != undefined && f.fields[0] != undefined && f.fields[0].name != 'Описание'"
+												v-if="true && f.fields != undefined && f.fields[0] != undefined && f.fields[0].name != 'Описание'"
 												v-bind:is="f.fields[0].type[0].code + 'Input'"
-												:value="get_field_value(issue, f.fields[0])" label=""
+												:value="get_field_value(issue, f.fields[0])" 
+												label=""
 												:key="issue.uuid + '_' + i_index + '_' + f_index"
-												:disabled="f.fields[0].name == 'Автор'"
-												:values="available_values[f.fields_uuid]" class="board-card-field-input"
-												@updated="field_updated($event, f.fields[0])"></component>
+												:disabled="true || f.fields[0].name == 'Автор'"
+												:values="available_values[f.fields_uuid]" 
+												class="board-card-field-input"
+												@updated="function(val){field_updated(val, f.fields[0], issue)}"
+												:parameters="{ reduce: obj => obj.uuid }"
+											>
+											</component>
 											<StringInput
-												v-if="swimlane.expanded && f.fields != undefined && f.fields[0] != undefined && f.fields[0].name != 'Описание'"
-												:value="get_field_value(issue, f.fields[0], true)" label=""
-												:key="issue.uuid + '_' + i_index + '_' + f_index" :disabled="true"
-												:values="available_values[f.fields_uuid]" class="board-card-field-input"
-												@updated="field_updated($event, f.fields[0])"></StringInput>
+												v-if="false && f.fields && f.fields[0] && f.fields[0].name != 'Описание'"
+												:value="get_field_value(issue, f.fields[0], true)" 
+												label=""
+												:key="issue.uuid + '_' + i_index + '_' + f_index" 
+												:disabled="true"
+												:values="available_values[f.fields_uuid]" 
+												class="board-card-field-input"
+												@updated="field_updated($event, f.fields[0])"
+											>
+											</StringInput>
 										</div>
 									</div>
 
@@ -1494,59 +1508,70 @@ export default mod
 
 
 			<div class="modal-bg" v-show="configs_open">
-				<div class="panel modal board-config">
+				<div class="panel modal board-config table_card">
+					
+					<div class="table_card_fields">
+						<IssuesSearchInput v-if="board != undefined && 
+						selected_board && (!(selected_board.use_sprint_filter && $store.state['common'].use_sprints) || sprints[curr_sprint_num])" label="Запрос" class='board-issue-search-input'
+							:parent_name="'board'" @update_parent_from_input="update_search_query" :fields="fields"
+							@search_issues="get_issues" :projects="projects" :issue_statuses="issue_statuses"
+							:tags="issue_tags" :issue_types="issue_types" :users="users" :sprints="sprints"
+							:disabled="!configs_open" id='query' :parent_query="selected_board.query">
 
-					<IssuesSearchInput v-if="board != undefined && 
-					selected_board && (!(selected_board.use_sprint_filter && $store.state['common'].use_sprints) || sprints[curr_sprint_num])" label="Запрос" class='board-issue-search-input'
-						:parent_name="'board'" @update_parent_from_input="update_search_query" :fields="fields"
-						@search_issues="get_issues" :projects="projects" :issue_statuses="issue_statuses"
-						:tags="issue_tags" :issue_types="issue_types" :users="users" :sprints="sprints"
-						:disabled="!configs_open" id='query' :parent_query="selected_board.query">
+						</IssuesSearchInput>
 
-					</IssuesSearchInput>
+						<SelectInput v-if="inputs_dict != undefined && selected_board != undefined" label='Статусы'
+							id='boards_columns' :parent_name="'board'" clearable="false"
+							:value="get_json_val(selected_board, 'boards_columns')" :values="column_values"
+							:parameters="{ multiple: true, reduce: obj => obj }" @update_parent_from_input="make_swimlanes"></SelectInput>
 
-					<SelectInput v-if="inputs_dict != undefined && selected_board != undefined" label='Статусы'
-						id='boards_columns' :parent_name="'board'" clearable="false"
-						:value="get_json_val(selected_board, 'boards_columns')" :values="column_values"
-						:parameters="{ multiple: true }" @update_parent_from_input="make_swimlanes"></SelectInput>
+						<SelectInput v-if="inputs_dict != undefined" label='Группировать по' clearable="true"
+							:value="swimlanes_value" :values="swimlanes_values" :parameters="{ reduce: obj => obj.uuid }"
+							@update_parent_from_input="swimlanes_updated"></SelectInput>
 
-					<SelectInput v-if="inputs_dict != undefined" label='Группировать по' clearable="true"
-						:value="swimlanes_value" :values="swimlanes_values" :parameters="{ reduce: obj => obj.uuid }"
-						@update_parent_from_input="swimlanes_updated"></SelectInput>
+						<SelectInput v-if="inputs_dict != undefined" 
+						label='Суммируемое поле' id='estimate_uuid'
+							:parent_name="'board'" clearable="false" :value="get_json_val(selected_board, 'estimate_uuid')"
+							:values="inputs_dict['estimate_uuid'].values.filter((v) => v.type[0].code == 'Numeric')"
+							:parameters="inputs_dict['estimate_uuid']" @update_parent_from_input="make_swimlanes">
+						</SelectInput>
 
-					<SelectInput v-if="inputs_dict != undefined" 
-					label='Суммируемое поле' id='estimate_uuid'
-						:parent_name="'board'" clearable="false" :value="get_json_val(selected_board, 'estimate_uuid')"
-						:values="inputs_dict['estimate_uuid'].values.filter((v) => v.type[0].code == 'Numeric')"
-						:parameters="inputs_dict['estimate_uuid']" @update_parent_from_input="make_swimlanes">
-					</SelectInput>
+						<SelectInput v-if="inputs_dict != undefined && selected_board != undefined" label='Поля карточки'
+							id='boards_fields' :parent_name="'board'" clearable="false"
+							:value="get_json_val(selected_board, 'boards_fields')" :values="fields_values"
+							:parameters="{ multiple: true }"></SelectInput>
 
-					<SelectInput v-if="inputs_dict != undefined && selected_board != undefined" label='Поля карточки'
-						id='boards_fields' :parent_name="'board'" clearable="false"
-						:value="get_json_val(selected_board, 'boards_fields')" :values="fields_values"
-						:parameters="{ multiple: true }"></SelectInput>
+						<BooleanInput 
+						v-show = "$store.state['common'].use_sprints"
+						label='Использовать фильтр по спринтам' id='use_sprint_filter'
+							:value="get_json_val(selected_board, 'use_sprint_filter')" :parent_name="'board'"
+							@update_parent_from_input="make_swimlanes"></BooleanInput>
 
-					<BooleanInput 
-					v-show = "$store.state['common'].use_sprints"
-					label='Использовать фильтр по спринтам' id='use_sprint_filter'
-						:value="get_json_val(selected_board, 'use_sprint_filter')" :parent_name="'board'"
-						@update_parent_from_input="make_swimlanes"></BooleanInput>
+						<SelectInput label='Поле цвета' 
+							id='color_field_uuid'
+							:parent_name="'board'" 
+							clearable="false" 
+							:values="colored_fields"
+							multiple: false
+							:value="get_json_val(selected_board, 'color_field_uuid')"
+						>
+						</SelectInput>
+					</div>
 
-					<SelectInput label='Поле цвета' 
-						id='color_field_uuid'
-						:parent_name="'board'" 
-						clearable="false" 
-						:values="colored_fields"
-						multiple: false
-						:value="get_json_val(selected_board, 'color_field_uuid')"
-					>
-					</SelectInput>
-
-
-					<div class="table_card_footer">
-						<KButton name="Сохранить" class="table_card_footer_btn" :func="'save_board'"
-							@click="configs_open = false" />
-						<KButton name="Отменить" class="table_card_footer_btn" @click="configs_open = false" />
+					<div class="table_card_buttons">
+						<div class="table_card_footer">
+							<KButton
+							class="table_card_footer_btn"
+							:name="'Сохранить'"
+							:func="'save_board'"
+							@click="configs_open = false"
+							/>
+							<KButton 
+							class="table_card_footer_btn"
+							:name="'Отменить'"
+							@click="configs_open = false"
+							/>
+						</div>
 					</div>
 
 				</div>
@@ -1609,6 +1634,14 @@ $cards_field_left: 20px;
 
 .board-config {
 	padding: 20px;
+	transform: translateX(-50%);
+    left: 50%;
+    position: relative;
+    margin-top: 10px !important;
+}
+
+.board-config .label {
+	text-wrap: nowrap;
 }
 
 .board-config>*:not(:last-child) {
@@ -1924,6 +1957,8 @@ $cards_field_left: 20px;
 	max-height: 0px !important;
 	min-height: 0px !important;
 	font-size: 11px !important;
+	margin: 0px !important;
+	padding: 0px !important;
 }
 
 .board-card-field-input {
@@ -2166,4 +2201,13 @@ $cards_field_left: 20px;
 .filters-row .filter:hover {
 	box-shadow: var(--text-color) 0px 0px 3px;
 }
+</style>
+
+<style lang="scss" scoped>
+@use 'css/table-page' with (
+  $table-panel-width: 20%
+);
+
+
+
 </style>

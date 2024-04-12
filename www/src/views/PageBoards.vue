@@ -60,6 +60,9 @@ const data = {
       route: "/board",
     },
   ],
+  instance: {
+    name: 'Название',
+  },
 };
 
 const mod = await page_helper.create_module(data, methods);
