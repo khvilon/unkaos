@@ -226,45 +226,49 @@ export default {
 <template>
   <div 
     @keydown.esc.exact.prevent="panelVisible=false"
-    class="gpt-panel panel"
+    class="gpt-panel"
+    :class="[panelVisible ? 'gpt-panel-open' : 'gpt-panel-closed']"
+    @click.self="togglePanel"
   >
-    <div :class="['toggle-panel', panelVisible ? 'open' : 'closed']" @click="togglePanel">
-      <i v-if="!panelVisible" class='bx bxs-magic-wand toggle-icon'></i>
-      <i v-else class='bx bx-chevron-down toggle-icon'></i>
+    <div @click="togglePanel" class="toggle-panel">
+      <i class='bx bxs-brain toggle-icon'></i>
+      
     </div>
-    <transition name="expand">
-      <div :class="['gpt-down-panel', panelVisible ? 'open' : 'closed', animationVisible ? 'gradient-background' : '']"> 
-        <div class="gpt-down-panel-half">
+  
+      <div class="panel" :class="['gpt-down-panel', animationVisible ? 'gradient-background' : '']"> 
+        
+        <div class="gpt-chat gradient-animation">
+          <TextInput 
+            class="fade-background"
+            :value="gptResultHuman" 
+            :disabled="true" 
+            label=""
+            :resize="false"
+            :class="{ 'hidden-fade-background': animationVisible}"
+          />
+         
+          <i 
+          :class="[gptResultHuman.length && gptResult && !actionDone ? 'active_icon' : '', actionDone ? 'bx-check-circle' : 'bx-play-circle']"
+          @click="run" class='bx'></i> 
+          <div class="gpt-avatar" >
+            <div class="gpt-avatar-load" :class="{ 'gpt-avatar-0': !animationVisible, 'gpt-avatar-1': animationVisible }" ></div>
+          </div>
+        </div>
+        <div class=" gpt-request">
           <TextInput 
             @keydown.enter.exact.prevent="()=>{if(gptResult) run(); else if(userInput.length) send()}" 
             @update_parent_from_input="(v)=>{gptResultHuman='';gptResult=undefined;actionDone=false;userInput=v}" 
-            label="Команда произвольным текстом"
-            :resize="false"
+            label=""
+           
           />
           <i 
           :class="[userInput.length && gptResultHuman.length == 0 && !animationVisible ? 'active_icon' : '']"
           @click="send" class='bx bxs-brain'
           ></i> 
         </div> 
-        <div class="gpt-down-panel-half gpt-down-panel-right gradient-animation">
-          <TextInput 
-            class="fade-background"
-            :value="gptResultHuman" 
-            :disabled="true" 
-            label="Трактовка ИИ"
-            :resize="false"
-          />
-          <div class="gpt-result-loader">
-            <canvas 
-            v-show="animationVisible"
-            id="gpt_canvas" class="gpt-canvas" ></canvas>
-          </div>
-          <i 
-          :class="[gptResultHuman.length && gptResult && !actionDone ? 'active_icon' : '', actionDone ? 'bx-check-circle' : 'bx-play-circle']"
-          @click="run" class='bx'></i> 
-        </div>
+        
       </div>
-    </transition>
+
   </div>
 </template>
 
@@ -276,51 +280,146 @@ export default {
   width: 100%;
   left: 0px;
   z-index: 2;
-  height: auto;
+  height: 100%;
+  background: var(--loading-bg-color);
+  transition: all 0.4s ease-in-out;
 }
 
+.gpt-panel-open{
+  
+}
+
+.gpt-panel-closed{
+  bottom: -100%;
+}
 
 
 .toggle-panel {
   right: 0;
-  bottom: 0;
-  width: 100%;
+  bottom: 100%;
   cursor: pointer;
   display: flex;
-  justify-content: flex-end;
+  justify-content:center;
   align-items: flex-end;
-  
+  background: var(--loading-bg-color);
+
+  clip-path: polygon(
+    0% 100%,
+    5% calc(-100% * sin(0.01 * 3.14159) + 100%),
+    10% calc(-100% * sin(0.03 * 3.14159) + 100%),
+    15% calc(-100% * sin(0.05 * 3.14159) + 100%),
+    20% calc(-100% * sin(0.08 * 3.14159) + 100%),
+    25% calc(-100% * sin(0.12 * 3.14159) + 100%),
+    30% calc(-100% * sin(0.18 * 3.14159) + 100%),
+    35% calc(-100% * sin(0.26 * 3.14159) + 100%),
+    40% calc(-100% * sin(0.35 * 3.14159) + 100%),
+    45% calc(-100% * sin(0.43 * 3.14159) + 100%),
+    50% calc(-100% * sin(0.5 * 3.14159) + 100%),
+    55% calc(-100% * sin(0.43 * 3.14159) + 100%),
+    60% calc(-100% * sin(0.35 * 3.14159) + 100%),
+    65% calc(-100% * sin(0.26 * 3.14159) + 100%),
+    70% calc(-100% * sin(0.18 * 3.14159) + 100%),
+    75% calc(-100% * sin(0.12 * 3.14159) + 100%),
+    80% calc(-100% * sin(0.08 * 3.14159) + 100%),
+    85% calc(-100% * sin(0.05 * 3.14159) + 100%),
+    90% calc(-100% * sin(0.03 * 3.14159) + 100%),
+    95% calc(-100% * sin(0.01 * 3.14159) + 100%),
+    100% 100%
+  );
+  width: 80px;
+  height: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.4s ease-in-out;
+  position: absolute; 
 }
 
-.toggle-panel.closed {
-  width: 30px;
-  position: absolute;
-  right: 0;
+.gpt-panel-open .toggle-panel{
+ // height: 0px;
+  //bottom: 99%;
+ // opacity: 0;
+ //bottom: 0;
 }
+
 
 .toggle-icon {
-  font-size: 20px;
-  padding: 3px;
+  font-size: 18px;
+  padding: 2px;
 }
 
 .gpt-down-panel {
-  overflow: hidden;
-  transition: height 0.2s ease;
+  //overflow: hidden;
+  bottom: 0px;
+  width: calc(100% - 200px);
+  margin-left: 100px;
+  margin-right: 100px;
+  height: 80vh;
+  top: 10vh;
 
+  position: relative;
   display: flex;
+  transition: all 0.4s ease-in-out;
+  
+  flex-direction: column;
 }
 
-.gpt-down-panel.open {
-  height: 205px;
+
+.gpt-panel-open .gpt-down-panel{
+  bottom: 0px;
+}
+.gpt-panel-closed .gpt-down-panel{
+  
+ // bottom: -100vh;
 }
 
-.gpt-down-panel.closed {
-  height: 0px;
+
+
+.gpt-avatar {
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100px;
+  height: 328px;
+   /* Ensure this only applies when needed */
+  animation: blinkAvatar 5s infinite;
+
+  position: absolute;
+    //top: 50%;
+    //transform: translateY(-50%);
+    top: 0;
+    right: 0;
 }
 
-.gpt-down-panel .text .text-input{
-  min-height: 140px;
-  height: 140px ;
+.gpt-avatar-load {
+  background-image: url('/unkaos_ai1.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  transition: opacity 0.5s ease-in-out;
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes blinkAvatar {
+  0%, 55%, 100% {
+    background-image: url('/unkaos_ai0.png');
+  }
+  64%, 70% {
+    background-image: url('/unkaos_ai00.png');
+  }
+}
+
+.gpt-avatar-0 {
+  opacity: 0;
+}
+
+.gpt-avatar-1 {
+  opacity: 1;
+  /* Correct the invalid transition duration syntax */
+  transition-duration: 2s !important;
+}
+
+
+.hidden-fade-background textarea{
+  display: none !important;
 }
 
 @keyframes active_icon_blink {
@@ -345,11 +444,14 @@ export default {
 
 .gpt-down-panel i{
   font-size: 30px;
-  padding-bottom: 10px;
-    padding-right: 10px;
- opacity: 0.3;
-    color: var(--off-button-icon-color);
-    text-shadow: -1px 0 transparent, 0 1px transparent, 1px 0 transparent, 0 -1px transparent;
+  padding-bottom: 15px;
+  padding-right: 15px;
+  opacity: 0.3;
+  color: var(--off-button-icon-color);
+  text-shadow: -1px 0 transparent, 0 1px transparent, 1px 0 transparent, 0 -1px transparent;
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }
 
 .gpt-down-panel .active_icon{
@@ -359,23 +461,46 @@ export default {
 }
 
 
-
-.gpt-down-panel-half {
+.gpt-request{
+  //height: 100px;
+  //min-height: 100px;
   width: 100%;
-  padding-left: 25px;
-  padding-right: 25px;
+  padding: 0 10px 5px 10px;
+}
+
+.gpt-request .text-input{
+  height: $input-height * 2;
+  min-height: $input-height * 2;
+  max-height: $input-height * 4;
+}
+
+.gpt-chat{
+  flex-grow: 1;
+  width: 100%;
+  position: relative;
+}
+
+.gpt-chat .text-input, .gpt-chat .text{
+  height: 100% !important;
+  width: calc(100% - 100px);
+  border:none;
+  background: transparent !important;
 }
 
 
 
 .gpt-result-loader{
-    width: 50%;
-    height: 140px;
-    position: absolute;
-    top: 44px;
-    left: 50%;
-    padding-left:25px;
-    padding-right:25px;
+  width: 100%;
+  height: 140px;
+  position: relative;
+  //top: 44px;
+  //left: 50%;
+  //padding-left:25px;
+  //padding-right:25px;
+  border-color: var(--border-color);
+  border-style: var(--border-style);
+  border-width: var(--border-width);
+  border-radius: var(--border-radius);
 }
 
 .gpt-canvas{

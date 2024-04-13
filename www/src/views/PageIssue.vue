@@ -1455,10 +1455,7 @@ export default mod;
             :images="images"
         />
 
-        <GptPanel
-          v-if="!loading && id !== '' && !$store.state['common']['is_mobile']"
-          :context="issue"
-        />
+       
       </div>
       <div
         id="issue_card"

@@ -163,7 +163,11 @@ export default {
         <component :is="Component" class="rv-container"></component>
       </transition>
     </router-view>
+    <GptPanel
+          v-if="!$store.state['common']['is_mobile']"
+    />
   </div>
+  
 
   <Transition name="loading_fade" mode="out-in">
     <div
