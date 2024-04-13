@@ -1580,10 +1580,7 @@ export default mod
 
 		</div>
 
-		<GptPanel
-          v-if="!loading && id !== '' && !$store.state['common']['is_mobile']"
-          :context="boards_issues"
-        />
+		
 
 
 	</div>
