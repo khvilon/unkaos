@@ -1453,9 +1453,7 @@ export default mod;
             v-if="!loading && !edit_mode && id != ''"
             v-model:actions="actions_with_time_entries"
             :images="images"
-        />
-
-       
+        />      
       </div>
       <div
         id="issue_card"
