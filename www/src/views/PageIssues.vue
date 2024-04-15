@@ -133,6 +133,15 @@ let methods = {
       link.click();
       URL.revokeObjectURL(link.href);
       return
+  },
+  order: function(column){
+    console.log('>>>column', column);
+    let query = this.search_query;
+    query = query.split(' order by')[0].split(' order by')[0];
+    query = query + ' order by ' + column.name;
+    if(column.desc) query += ' desc';
+    this.search_query = query;
+    this.search_issues();
   }
 };
 
@@ -158,11 +167,13 @@ const data = {
       type: "link",
       link: "/issue/",
       link_id: ["project_short_name", "'-'", "num"],
+      not_sortable: true
     },
     {
       name: d.get("Название"),
       id: "values.Название",
       search: true,
+      not_sortable: true
     },
     {
       name: "Тип",
@@ -180,6 +191,7 @@ const data = {
       name: d.get("Автор"),
       id: "values.Автор",
       type: "user",
+      not_sortable: true
     },
     {
       name: d.get("Создана"),
@@ -334,7 +346,7 @@ export default mod;
             :name="'issues'"
             :dicts="{ users: users }"
             :tree_view="tree_view"
-
+            @order="order"
           />
         </Transition>
       </div>
