@@ -185,7 +185,7 @@ export default {
         }
       }catch (error) {
         console.error('Request error:', error);
-        this.result = techErrText;
+        this.result = this.techErrText;
       } finally {
         this.animationVisible = false;
       }
