@@ -203,7 +203,7 @@ export class Gpt {
       console.log('>>gptResponse0', response.data.choices[0].message.content);
       if(!response.data.choices[0].message.content) return {};
       console.log('>>gptResponse', response.data.choices[0].message.content);
-      return {command: response.data.choices[0].message.content};
+      return {command: response.data.choices[0].message.content.replace('\n','')};
     }
     catch(err) {
       console.log(err);
