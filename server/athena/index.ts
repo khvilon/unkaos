@@ -34,7 +34,7 @@ const init = async function() {
   app.get('/gpt', async (req, res) => {
 
     const userInput = req.query.userInput as string;
-    const userCommand = req.query.userInput as string;
+    const userCommand = req.query.userCommand as string;
     const userUuid = req.query.userUuid as string;
     let workspace:string = '';
 
