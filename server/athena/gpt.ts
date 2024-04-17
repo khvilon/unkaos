@@ -7,10 +7,10 @@ var openaiConfig: any = {}
 
 const classifyDescr = `You are an ai assistant for a task tracker. your classify user request. 
 Answer with one of these categorys without comments: 
-'find_issues' - a query to filter issues
-'update_issues' - a query to filter some issues and set some values
-'use_readme' - any question about use of the task tracker
-'unknown' - if promt seems not matching any of the categorys, answer `
+find_issues - a query to filter issues
+update_issues - a query to filter some issues and set some values
+use_readme - any question about use of the task tracker
+unknown - if promt seems not matching any of the categorys, answer `
 
 const readmeDescr = `You are an ai assistant for a task tracker. 
 you should parse readme to bring user info about his question.
