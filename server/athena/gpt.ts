@@ -2,6 +2,7 @@
 
 import sql from './sql';
 import axios from 'axios';
+const HttpsProxyAgent = require('https-proxy-agent');
 
 var openaiConfig: any = {}
 
@@ -280,14 +281,12 @@ export class Gpt {
     };
 
     if(proxy){
-      config.proxy = {
+      const proxyAgent = new HttpsProxyAgent({
         host: proxy.split(':')[0],
-        port: proxy.split(':')[1]
-      }
+        port: parseInt(proxy.split(':')[1])
+      });
+      config.httpsAgent = proxyAgent;
     }
-
-
-    
 
     return config;
   }
