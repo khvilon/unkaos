@@ -48,6 +48,10 @@ const init = async function() {
       res.status(200).json(ans);
       return;
     }
+    else if(userCommand != 'find_issues' && userCommand != 'update_issues'){
+      res.status(400).json({error:'unknwn command'});
+      return;
+    }
 
     if (typeof req.headers.workspace === 'string') {
       workspace = req.headers.workspace;
@@ -65,7 +69,7 @@ const init = async function() {
     console.log('User request:', userInput + '\r\n');
 
     const data: any = await dataClass.get(workspace);
-    const parsedCommand = await gpt.parseUserCommand(userInput, data.field);
+    const parsedCommand = await gpt.parseUserCommand(userInput, userCommand, data.field);
 
     dataClass.updateLogGpt(logUuid, JSON.stringify(parsedCommand, null, 2))
 
