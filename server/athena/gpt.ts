@@ -224,6 +224,9 @@ export class Gpt {
 
   private createRequestConfig(systemMessage: string, userMessage: string, isSecond: boolean = false){
 
+    console.log('temperature00openaiConfig>>', openaiConfig)
+
+
     isSecond = isSecond && openaiConfig.url2 && openaiConfig.key2 && openaiConfig.model2
     let url = isSecond ? openaiConfig.url2 : openaiConfig.url;
     let key = isSecond ? openaiConfig.key2 : openaiConfig.key;
@@ -231,7 +234,10 @@ export class Gpt {
     let temperature = isSecond ? openaiConfig.temperature2 : openaiConfig.temperature;
     let proxy = isSecond ? openaiConfig.proxy2 : openaiConfig.proxy;
 
-    const defaultTemperature = 0.4;
+    console.log('temperature000 model>>', model)
+
+    const defaultTemperature = isSecond ? 0.2 : 0.4;
+    console.log('temperature0>>', temperature)
     try{
       temperature = Number(temperature);
       if( isNaN(temperature)) temperature = defaultTemperature;
