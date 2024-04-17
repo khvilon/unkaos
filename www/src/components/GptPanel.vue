@@ -26,6 +26,11 @@ export default {
       actionDone: false,
       issues: [],
       parent_relation_type_uuid: '73b0a22e-4632-453d-903b-09804093ef1b', 
+      step0text: {
+        use_readme: 'Выполняется поиск в документации',
+        find_issues: 'Формируется запрос на поиск задач',
+        update_issues: 'Формируется запрос на обновление задач',
+      }
     };
   },
   methods: {
@@ -121,17 +126,21 @@ export default {
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
           const commandAns = await rest.run_gpt(this.userInput, 'classify');
           let command = await commandAns.json();
-          this.gptResultHuman = command;
+          let step0text = this.step0text[command.command];
+
+          if(!step0text){
+            this.gptResultHuman = `Не удалось распознать требуемое действие. Попробуйте переформулировать.`
+            return;
+          }
+
+          this.gptResultHuman = step0text;
           console.log('>>>gpt command', command);
           const response = await rest.run_gpt(this.userInput, command.command);
         
-        /*await fetch(conf.base_url + 'gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
-          method: 'GET',
-        });*/
-
+    
         if (!response.ok) {
-          this.gptResultHuman = `Не удалось распознать требуемое действие`
-          throw new Error(`HTTP error! Status: ${response.status}`);
+          this.gptResultHuman = `Не удалось формализовать запрос. Попробуйте переформулировать.`;
+          return;
         }
 
         const data = await response.json();

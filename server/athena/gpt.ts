@@ -288,7 +288,7 @@ export class Gpt {
     try{
       let response = await axios(config);
       console.log('>>gptResponse0', response.data.choices[0].message.content);
-      return {readme: response.data.choices[0].message.content};
+      return {humanGpt: response.data.choices[0].message.content};
     }
     catch(err) {
       console.log(err);
