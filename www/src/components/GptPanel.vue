@@ -6,6 +6,8 @@ import tools from "../tools.ts";
 import cache from "../cache.ts";
 import conf from "../conf.ts";
 
+import { nextTick } from "vue";
+
 
 export default {
   props: {
@@ -30,7 +32,8 @@ export default {
         use_readme: 'Выполняется поиск в документации',
         find_issues: 'Формируется запрос на поиск задач',
         update_issues: 'Формируется запрос на обновление задач',
-      }
+      },
+      techErrText: 'Возникли технические неполадки - не удалось обработать ваш запрос'
     };
   },
   methods: {
@@ -121,21 +124,38 @@ export default {
     
       this.runMatrix()
       this.animationVisible = true;
+      this.gptResultHuman = '';
       
       try {
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
           const commandAns = await rest.run_gpt(this.userInput, 'classify');
-          let command = await commandAns.json();
-          let step0text = this.step0text[command.command];
+          let command = (await commandAns.json()).command;
+          let step0text = this.step0text[command];
 
           if(!step0text){
             this.gptResultHuman = `Не удалось распознать требуемое действие. Попробуйте переформулировать.`
             return;
           }
 
+          console.log('>>>gpt command', command, step0text);
+
           this.gptResultHuman = step0text;
-          console.log('>>>gpt command', command);
-          const response = await rest.run_gpt(this.userInput, command.command);
+
+          nextTick(() => {this.send2(command)})
+
+      } catch (error) {
+        console.error('Request error:', error);
+        this.gptResultHuman = techErrText;
+        this.animationVisible = false;
+      } 
+    },
+
+    async send2(command) {
+
+      try{
+
+      
+      const response = await rest.run_gpt(this.userInput, command);
         
     
         if (!response.ok) {
@@ -147,17 +167,31 @@ export default {
         
         this.gptResult= data.gpt;
         this.gptResultHumanData = data.humanGpt
-        await this.getIssues()
-        this.gptResultHuman = this.explain(data.humanGpt);
+
+        if(command == 'use_readme'){
+          if(data.humanGpt == 'not_found') this.gptResultHuman = `Не удалось найти информацию по интересующей вас теме.\r\n
+          Вы можете попробовать ознакомиться с документацией самостоятельно:\r\n
+          https://github.com/khvilon/unkaos/\r\n
+          Если ваша функция не реализована в системе, можете связаться с автором проекта по почте n@khvilon.ru`
+          else this.gptResultHuman = data.humanGpt;
+        }
+        else{
+          if(!this.gptResult.target) this.gptResult.target = 'global'
+          await this.getIssues()
+          this.gptResultHuman = this.explain(data.humanGpt);
         
-        console.log('this.gptResult', this.gptResult)
-      } catch (error) {
+          console.log('this.gptResult', this.gptResult)
+        }
+      }catch (error) {
         console.error('Request error:', error);
-        this.result = 'Error: Unable to process your request';
+        this.result = techErrText;
       } finally {
         this.animationVisible = false;
       }
     },
+
+
+    
 
     async writeValue(issue, v){
 
@@ -258,7 +292,7 @@ export default {
             :disabled="true" 
             label=""
             :resize="false"
-            :class="{ 'hidden-fade-background': animationVisible}"
+
           />
          
           <i 
@@ -431,9 +465,6 @@ export default {
 }
 
 
-.hidden-fade-background textarea{
-  display: none !important;
-}
 
 @keyframes active_icon_blink {
   0% {

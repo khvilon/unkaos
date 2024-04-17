@@ -12,10 +12,12 @@ Answer with one of these categorys without comments:
 'use_readme' - any question about use of the task tracker
 'unknown' - if promt seems not matching any of the categorys, answer `
 
-const readmeDescr = `You are an ai assistant for a task tracker. you should parse readme to bring user info about his question.
+const readmeDescr = `You are an ai assistant for a task tracker. 
+you should parse readme to bring user info about his question.
 translate the answer to users lang if the request lang differs from readme. 
 If no corresponding info found in the redme - answer just 'not_found'.
-Erase any markdown from your answer. Give only info from redme, dont invent any. The radme: `
+Erase any markdown from your answer. 
+Give only info from redme, dont invent any. dont provide any info not from the radme: `
 
 
 const commandAnswerSchemma :any= {
