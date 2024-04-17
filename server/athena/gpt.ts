@@ -139,6 +139,62 @@ export class Gpt {
     }    
   }
 
+  public async classify(input: string, context: string = ''): Promise<any> {
+    console.log('classify gpt', openaiConfig)
+
+    let data = JSON.stringify({
+      "model": openaiConfig.model,
+      //"response_format": { "type": 'json_object' },
+      "messages": [
+            {
+                "role": "system",
+                "content": "You are an ai assistant for a task tracker. your classify user request. User can do: 'find issues' - a query to filter issues, 'update issues' - a query to filter some issues and set some values, 'use readme' - any question about use of the task tracker. Answer with one of these categorys without comments. if th promt seems does not matching any of the categorys, answer 'unknown'"
+            },
+           
+          {
+            "role": "user",
+            "content": input
+        }],
+       
+      "temperature": 0.4//Number(openaiConfig.temperature)
+    });
+
+    let config:any = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: openaiConfig.url + 'chat/completions',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'Authorization': 'Bearer ' + openaiConfig.key
+      },
+      data : data
+    };
+
+    
+    if(openaiConfig.proxy_host){
+      config.proxy = {
+        host: openaiConfig.proxy.split(':')[0],
+        port:  openaiConfig.proxy.split(':')[1]
+      }
+    }
+
+    try{
+      let response = await axios(config);
+
+      console.log('>>gptResponse0', response.data.choices[0].message.content);
+
+
+      //let gptResponse = JSON.parse(response.data.choices[0].message.content);
+      if(!response.data.choices[0].message.content) return {};
+      console.log('>>gptResponse', response.data.choices[0].message.content);
+      return {command: response.data.choices[0].message.content};
+    }
+    catch(err) {
+      console.log(err);
+      return {};
+    }
+  }
+
   private async ask(input: string, context: string = ''): Promise<any> {
 
     console.log('ask gpt openaiConfig', openaiConfig)
