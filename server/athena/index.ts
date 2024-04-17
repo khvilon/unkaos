@@ -43,10 +43,16 @@ const init = async function() {
       res.status(200).json(command);
       return;
     }
+    else if(userCommand == 'use_readme'){
+      let ans = await gpt.useReadme(userInput);
+      res.status(200).json(ans);
+      return;
+    }
 
     if (typeof req.headers.workspace === 'string') {
       workspace = req.headers.workspace;
     }
+    
 
     if(!workspace){
       res.status(400).json({ error: 'Need workspace' });
