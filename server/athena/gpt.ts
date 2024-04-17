@@ -283,7 +283,7 @@ export class Gpt {
   public async useReadme(input: string): Promise<any> {
     const readme = await axios({url:'https://raw.githubusercontent.com/khvilon/unkaos/master/README.md'});
 
-    let descr = readmeDescr + readme;
+    let descr = readmeDescr + readme.data;
 
     console.log('readme descr', descr)
 
