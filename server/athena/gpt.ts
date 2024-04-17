@@ -2,7 +2,9 @@
 
 import sql from './sql';
 import axios from 'axios';
-const HttpsProxyAgent = require('https-proxy-agent');
+// Destructure from the module if it exports as an object
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
 
 var openaiConfig: any = {}
 
@@ -281,10 +283,7 @@ export class Gpt {
     };
 
     if(proxy){
-      const proxyAgent = new HttpsProxyAgent({
-        host: proxy.split(':')[0],
-        port: parseInt(proxy.split(':')[1])
-      });
+      const proxyAgent = new HttpsProxyAgent(proxy);
       config.httpsAgent = proxyAgent;
     }
 
