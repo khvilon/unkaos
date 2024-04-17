@@ -240,6 +240,7 @@ export class Gpt {
       temperature = defaultTemperature;
     }
     
+    console.log('temperature>>', temperature)
     let data = JSON.stringify({
       "model": model,
       //"response_format": { "type": 'json_object' },
