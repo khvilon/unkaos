@@ -30,9 +30,9 @@ export default {
       issues: [],
       parent_relation_type_uuid: '73b0a22e-4632-453d-903b-09804093ef1b', 
       step0text: {
-        use_readme: 'Выполняется поиск в документации',
-        find_issues: 'Формируется запрос на поиск задач',
-        update_issues: 'Формируется запрос на обновление задач',
+        use_readme: 'Ищу информацию по запросу в документации',
+        find_issues: 'Формирую запрос на поиск задач',
+        update_issues: 'Формирую запрос на обновление задач',
       },
       techErrText: 'Возникли технические неполадки - не удалось обработать ваш запрос'
     };
@@ -125,7 +125,7 @@ export default {
     
       this.runMatrix()
       this.animationVisible = true;
-      this.gptResultHuman = '';
+      this.gptResultHuman = 'Классифицирую ваш запрос...';
       
       try {
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
@@ -140,7 +140,7 @@ export default {
 
           console.log('>>>gpt command', command, step0text);
 
-          this.gptResultHuman = step0text;
+          this.gptResultHuman = step0text + '...';
 
           nextTick(() => {this.send2(command)})
 
