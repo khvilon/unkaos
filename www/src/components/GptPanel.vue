@@ -119,10 +119,11 @@ export default {
       
       try {
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
-          const commandAns = await rest.run_gpt(this.userInput, 'classify')
-          let command = await commandAns.json()
-          console.log('>>>gpt command', command)
-          const response = await rest.run_gpt(this.userInput, command.command)
+          const commandAns = await rest.run_gpt(this.userInput, 'classify');
+          let command = await commandAns.json();
+          this.gptResultHuman = command;
+          console.log('>>>gpt command', command);
+          const response = await rest.run_gpt(this.userInput, command.command);
         
         /*await fetch(conf.base_url + 'gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
           method: 'GET',
