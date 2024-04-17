@@ -222,9 +222,26 @@ export class Gpt {
     
   }
 
-  private createRequestConfig(systemMessage: string, userMessage: string, temperature: number = 0.4){
+  private createRequestConfig(systemMessage: string, userMessage: string, isSecond: boolean = false){
+
+    isSecond = isSecond && openaiConfig.url2 && openaiConfig.key2 && openaiConfig.model2
+    let url = isSecond ? openaiConfig.url2 : openaiConfig.url;
+    let key = isSecond ? openaiConfig.key2 : openaiConfig.key;
+    let model = isSecond ? openaiConfig.model2 : openaiConfig.model;
+    let temperature = isSecond ? openaiConfig.temperature2 : openaiConfig.temperature;
+    let proxy = isSecond ? openaiConfig.proxy2 : openaiConfig.proxy;
+
+    const defaultTemperature = 0.4;
+    try{
+      temperature = Number(temperature);
+      if( isNaN(temperature)) temperature = defaultTemperature;
+    }
+    catch{
+      temperature = defaultTemperature;
+    }
+    
     let data = JSON.stringify({
-      "model": openaiConfig.model,
+      "model": model,
       //"response_format": { "type": 'json_object' },
       "messages": [
             {
@@ -243,18 +260,18 @@ export class Gpt {
     let config:any = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: openaiConfig.url + 'chat/completions',
+      url: url + 'chat/completions',
       headers: { 
         'Content-Type': 'application/json', 
-        'Authorization': 'Bearer ' + openaiConfig.key
+        'Authorization': 'Bearer ' + key
       },
       data : data
     };
 
-    if(openaiConfig.proxy_host){
+    if(proxy){
       config.proxy = {
-        host: openaiConfig.proxy.split(':')[0],
-        port:  openaiConfig.proxy.split(':')[1]
+        host: proxy.split(':')[0],
+        port: proxy.split(':')[1]
       }
     }
 
