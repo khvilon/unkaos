@@ -148,7 +148,7 @@ export class Gpt {
       "messages": [
             {
                 "role": "system",
-                "content": "You are an ai assistant for a task tracker. your classify user request. User can do: 'find issues' - a query to filter issues, 'update issues' - a query to filter some issues and set some values, 'use readme' - any question about use of the task tracker. Answer with one of these categorys without comments. if th promt seems does not matching any of the categorys, answer 'unknown'"
+                "content": "You are an ai assistant for a task tracker. your classify user request. User can do: 'find_issues' - a query to filter issues, 'update_issues' - a query to filter some issues and set some values, 'use_readme' - any question about use of the task tracker. Answer with one of these categorys without comments. if th promt seems does not matching any of the categorys, answer 'unknown'"
             },
            
           {
