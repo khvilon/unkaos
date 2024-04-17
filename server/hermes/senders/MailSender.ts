@@ -11,7 +11,7 @@ class MailSender {
   }
 
   async init(){
-    let ans = await sql`SELECT name, value FROM admin.config WHERE service = 'email'`
+    let ans = await sql`SELECT name, value FROM server.configs WHERE service = 'email'`
             
     let ans_dict = ans.reduce((obj: any, item: any) => {
       obj[item.name] = item.value;
@@ -29,17 +29,28 @@ class MailSender {
       from: ans_dict.from,
     };
 
+    if(!ans_dict.service || !ans_dict.user || !ans_dict.pass) return;
+
     this.transport = nodemailer.createTransport(emailConf.transport);
   }
 
   async send(address: string, title: string, body: string) {
+    if(!this.transport) {
+      console.log('email service not configured');
+      return;
+    }
+
+    // Определяем, содержит ли тело сообщения HTML-теги
+    const isHtml = /<\/?[a-z][\s\S]*>/i.test(body);
+  
     const message = {
       from: emailConf.from,
       to: address,
       subject: title,
-      text: body
+      text: isHtml ? "Для просмотра сообщения используйте почтовый клиент, поддерживающий HTML." : body,
+      html: isHtml ? body : null
     };
-
+  
     try {
       await this.transport.sendMail(message);
       console.log(`Email sent to ${address}`);

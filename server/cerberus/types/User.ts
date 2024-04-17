@@ -9,5 +9,6 @@ export default interface User {
   login: string,
   mail: string,
   telegram: string,
-  roles: Role[]
+  roles: Role[],
+  is_admin: boolean
 }

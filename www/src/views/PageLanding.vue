@@ -5,9 +5,27 @@ import dict from "../dict.ts";
 var landing_page = {};
 
 landing_page.methods = {
-  t: dict.get
+  t: dict.get,
+  init: async function(){
+    let masterV = await fetch(masterVUrl);
+    this.masterV = await masterV.json()
+    let devV = await fetch(devVUrl);
+    this.devV = await devV.json()
+  }
 };
 
+const masterVUrl = 'https://raw.githubusercontent.com/khvilon/unkaos/master/meta.json'
+const devVUrl = 'https://raw.githubusercontent.com/khvilon/unkaos/dev/meta.json'
+let masterV = {version:'', version_dt:''}
+let devV = {version:'', version_dt:''}
+
+landing_page.data = function () {
+  return { masterV,  devV};
+};
+
+landing_page.mounted = function(){
+      this.init()
+}
 
 export default landing_page;
 </script>
@@ -16,33 +34,56 @@ export default landing_page;
   <div class="landing-panel panel">
     <MainTop :name="t('трекер задач c открытым исходным кодом')"></MainTop>
     <div class="landing-down-panel">
-      <span class="landing-span">{{ 
-        t("Вы находитесь на главной странице системы Unkaos с открытым исходным кодом. Идеология данного трекера задач вдохновлена такими продуктами как Jira, Youtrack и другими.")
-      }}</span>
-      <span class="landing-span">{{ 
-        t("Исходный код доступен в ") 
-      }}
-      <a href="https://github.com/khvilon/unkaos">{{t("репозитории")}}</a>.
-      {{t(" Использование возможно как в общем облаке, так и с самостоятельной установкой локальной версии. Правила использования регламентируются ") }}
-      <a href="https://github.com/khvilon/unkaos/blob/master/LICENSE">{{t("стандартной лицензией")}}.</a>
+
+      <div class="panel landing-small-panel landing-small-panel-main">
+      <span class="landing-span">
+        {{t("Unkaos идеологически вдохновлен классическими продуктами, такими как Jira, Youtrack и другими.")}}
+      
+        <br><br>{{t("Функциональность включает канбан доски, учет времени, гибкую настройку статусной модели и полей, оповещение на почту и в меседжеры, ИИ интерпретатор команд и продолжает развиваться.")}}
+      
       </span>
+      <br>
       <span class="landing-span">{{ 
-        t("Для регистрации нового рабочего пространства пройдите на ") 
-      }}
-      <a href="/register">{{t("страницу регистрации")}}</a>.
-      {{t(" Для входа воспользуйтесь ссылкой, полученной на почту или обратитесь к администратору вашего рабочего пространства. Регистрировать новых пользователей в существующих рабочих пространствах могут только администраторы данных пространств.") }}
+        t("Начало работы") 
+      }}:</span><span class="landing-span">
+      <div class="landing-list">
+        <a href="/register"><i class='bx bx-cloud-upload'></i> {{t("Регистрация рабочего пространства в облаке")}}</a>
+        <a href="https://github.com/khvilon/unkaos"><i class='bx bx-server'></i> {{t("Репозиторий - установка одной командой")}}</a>
+        <a href="https://github.com/khvilon/unkaos/blob/master/README.md"><i class='bx bxs-book'></i> {{t("Документация")}}</a>
+        <a href="https://github.com/khvilon/unkaos/blob/master/LICENSE"><i class="bx bxs-certification"></i> {{t("Лицензия")}}</a>
+      </div></span>
+
+      </div>
+
+      <div class="landing-small-panel landing-small-panel-v">
+      <span class="landing-span">{{ t("Версии") }}</span>
+      <span class="landing-span">
+      {{t("Стабильная")}} <strong>{{ masterV ? masterV.version : '' }}</strong> ({{ masterV ? masterV.version_dt.split(' ')[0] : '' }})
+      <br></span>
+      <span class="landing-span">
+      {{t("Последняя") }} <strong>{{ devV ? devV.version : ''}} </strong> ({{ devV ? devV.version_dt.split(' ')[0] : '' }})
       </span>
+      </div>
+
+      <div class="landing-small-panel landing-small-panel-author">
+          
+        <span class="landing-span landing-span-last">
+            <a href="https://t.me/Khvilon"><i class='bx bxl-telegram' ></i>{{t("@Khvilon")}}</a>
+          </span>
+          <span class="landing-span landing-span-last">
+            <a href="mailto:n@khvilon.ru"><i class='bx bx-envelope' ></i>n@khvilon.ru</a> 
+          </span>
+          
+          <span class="landing-span landing-span-last">
+          {{ t("Николай Хвилон") }}
+        </span>
+      </div>
       
     </div>
 
-    <span class="landing-span landing-span-last">{{ 
-        t("Связаться с автором можно")}}<br> {{t("по почте ") }}
-        <a href="mailto:n@khvilon.ru">n@khvilon.ru</a> <br>{{ t("в телеграм ") 
-      }}<a href="https://t.me/Khvilon">{{t("@Khvilon")}}</a>
-      <br>{{ t("Николй Хвилон") }}
-      </span>
+    
 
-    <img class="landing-corner-bg-img" src="/login_microchip.png"/>
+    <img class="landing-corner-bg-img" src="/b3-1.jpg"/>
 
     <lang-select class="landing-lang-select"></lang-select>
 
@@ -60,6 +101,7 @@ export default landing_page;
 	display:flex;
 	flex-direction: column;
 	padding: 30px;
+  background-color: rgb(30, 30, 37) !important;
 }
 
 .landing-down-panel{
@@ -72,20 +114,18 @@ export default landing_page;
 	}
 
 .landing-span {
-  font-size: 15px;
-  left: 5vw;
-  height: 100%;
+  font-size: 14px;
+  font-weight: 100;
 }
 
 .landing-span *{
-  font-size: 15px;
+  font-size: 14px;
   text-decoration: auto;
 }
 
 .landing-span-last {
   text-align: end;
-  text-align: center;
-  height: auto;
+  margin-bottom: 6px;
 }
 
 .landing-lang-select{
@@ -99,8 +139,95 @@ export default landing_page;
 .landing-corner-bg-img{
   position: absolute;
   right: 0;
-  bottom: 0;
-  width: 50vw;
-  height: 50vw;
+  top: 0;
+  width: 100%;
+
 }
+
+.landing-small-panel{
+  background-color: var(--table-row-color);
+
+  z-index: 2;
+  
+  position: fixed;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 20px;
+
+  
+}
+.landing-panel span{
+  opacity: 0.9;
+}
+
+.landing-small-panel-main{
+  left: 50vw;
+  top: 50vh; 
+  height: 320px;
+  transform: translate(-50%, -50%);
+  width: 380px;
+
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(168, 186, 197, 0.1) inset;
+  background: rgba(21, 24, 26, 0.8) !important;
+  border-radius: 4px !important;
+  border-style: outset !important;
+  border-color: rgba(71, 81, 89, 0.5) !important;
+}
+
+
+.landing-small-panel-v{
+  left: 30px; 
+  bottom: 30px;
+  width: auto;
+  height: auto;
+  background: transparent !important;
+  border: none !important;
+  padding: 0;
+}
+
+.landing-small-panel-v span{
+  margin: 5px;
+}
+
+.landing-small-panel-author{
+  right: 30px;
+  bottom: 30px;
+  height: auto;
+  width: auto;
+  background: transparent !important;
+  border: none !important;
+  padding: 0;
+}
+
+.landing-small-panel-author i {
+  color: rgb(108, 146, 211);
+}
+
+
+
+.landing-list {
+  padding-left: 10px;
+  padding-top: 10px; 
+  display: flex;
+  flex-direction: column;
+}
+
+
+.landing-list a {
+  text-decoration: none; 
+  color: rgb(108, 146, 211);
+  margin-bottom: 6px;
+  font-weight: 300;
+}
+
+.landing-list i{
+  width: 22px;
+  height: 22px;
+  color: rgb(108, 146, 211);
+}
+
+
 </style>

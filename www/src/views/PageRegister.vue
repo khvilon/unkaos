@@ -81,12 +81,13 @@ export default {
 
 <template ref="issues">
   <div class="register-container">
-    <img class="register-corner-bg-img" src="/login_microchip.png"/>
+    <img class="register-corner-bg-img" src="/b3-1.jpg"/>
     <MainTop :name="t('создание рабочего пространства')"></MainTop>
 
   <div class="register-panel panel" :class="{ 'panel-register-process': uuid != undefined && uuid != '' }" @keyup.enter="register()" >
     <StringInput
       v-if="uuid == undefined || uuid == ''"
+      :keyup_enter="register_workspace_request"
       :label="t('Название рабочего пространства')"
       @update_parent_from_input="update_workspace"
       :value="workspace"
@@ -95,6 +96,7 @@ export default {
     />
     <StringInput
     v-if="uuid == undefined || uuid == ''"
+    :keyup_enter="register_workspace_request"
     :label="t('Электронная почта')"
       @update_parent_from_input="update_mail"
       :value="mail"
@@ -126,9 +128,10 @@ export default {
 @import "../css/palette.scss";
 
 .register-panel {
-  padding: 20px;
-  height: 200px;
-  width: 350px;
+  padding: 24px;
+  padding-top: 16px;
+  height: 212px;
+  width: 342px;
   position: fixed;
   left: calc(50vw);
   top: 50vh;
@@ -137,11 +140,13 @@ export default {
   display: flex;
   flex-direction: column;
 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 3px 4px rgba(168, 186, 197, 0.1) inset;
-  background: var(--table-row-color) !important;
-  border-radius: 2px !important;
-  border-style: none !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(168, 186, 197, 0.1) inset;
+  background: rgba(0, 0, 0, 0.6) !important;
+  border-radius: 4px !important;
+  border-style: outset !important;
+  border-color: rgba(71, 81, 89, 0.5) !important;
 }
+
 
 .mobile-view .register-panel {
   width: 250px;
@@ -150,7 +155,7 @@ export default {
 
 
 .register-panel > *:not(:last-child) {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .register-panel .btn {
   margin-bottom: 0;
@@ -160,6 +165,17 @@ export default {
   width: 100%;
   margin-top: 10px;
   height: $input-height;
+  background: rgba(30, 30, 33, 0.5);
+  border-color: rgba(168, 186, 197, 0.8);
+}
+
+.register-panel .btn Input:hover{
+  background: rgba(38, 38, 48, 0.5);
+}
+
+.register-panel .btn Input:active{
+  border-style: inset !important;
+  border-color: rgba(88, 106, 117, 0.5);
 }
 
 .register-err-label {
@@ -173,16 +189,15 @@ export default {
 .register-corner-bg-img{
   position: absolute;
   right: 0;
-  bottom: 0;
-  width: 50vw;
-  height: 50vw;
+  top: 0;
+  width: 100vw;
 }
 
 .register-container{
   width: 100%;
   height: 100%;
   position: fixed;
-  background-color: var(--panel-bg-color);
+  background-color:  rgb(30, 30, 37) !important;
   padding: 30px;
 }
 

@@ -57,6 +57,8 @@ store_helper.create_module = function (name) {
     state["filtered_" + name] = payload;
   };
   mutations["select_" + name] = function (state, uuid) {
+
+    console.log("selecteddddd", uuid)
     for (const i in state["filtered_" + name]) {
       if (state["filtered_" + name][i].uuid == uuid) {
         state["selected_" + name] = state["filtered_" + name][i];
@@ -83,6 +85,7 @@ store_helper.create_module = function (name) {
     state[name].push(data);
     state["filtered_" + name].push(data);
     this.commit("select_" + name, data.uuid);
+    console.log('>>>create')
   };
   mutations["update_" + name] = function (state) {
     const uuid = state["selected_" + name].uuid;
@@ -102,6 +105,7 @@ store_helper.create_module = function (name) {
         state["selected_" + name][i] = state["updated_" + name][i];
       } else delete state["updated_" + name][i];
     }
+    console.log('>>>update')
   };
   mutations["unselect_" + name] = function (state) {
     const new_instance = tools.obj_clone(state["instance_" + name]);
@@ -172,6 +176,10 @@ store_helper.create_module = function (name) {
     //body.created_at = Date()
     this.commit("create_" + name, state.state["selected_" + name]);
 
+    console.log('cccccreate', state.state['selected_' + name])
+
+    delete state.state["selected_" + name].created_at
+
     const ans = await rest.run_method(
       "create_" + name,
       state.state["selected_" + name]
@@ -188,7 +196,7 @@ store_helper.create_module = function (name) {
     //let body = state.state['updated_' + name]
     //body.uuid = state.state['selected_' + name].uuid
 
-    //console.log('uuuuupdate', state.state['selected_' + name])
+    console.log('uuuuupdate', state.state['selected_' + name])
 
     return await rest.run_method(
       "update_" + name,
@@ -202,6 +210,18 @@ store_helper.create_module = function (name) {
       state.state["selected_" + name].is_new;
     //console.log('is_new', is_new)
     state.state["selected_" + name].is_new = false;
+
+  if(name=='fields' && tools.isValidJSON('[' + state.state["selected_" + name].available_values + ']')){
+    let av = state.state["selected_" + name].available_values
+    if(av[0] != '[') av = '[' + av + ']'
+      let available_values = JSON.parse(av)
+      for(let i in available_values){
+        if(!available_values[i].uuid) available_values[i].uuid = tools.uuidv4();
+      }
+      state.state["selected_" + name].available_values = JSON.stringify(available_values, null, 4);
+    }
+
+    console.log('>>>save', name, state.state["selected_" + name])
     if (is_new) return this.dispatch("create_" + name);
     return this.dispatch("update_" + name);
   };

@@ -9,6 +9,7 @@ import cors from 'cors';
 import express from "express";
 import tools from "../tools";
 
+
 const app:any = express()
 const port = 3006
 
@@ -31,6 +32,7 @@ app.use(express.raw({limit: '150mb'}));
 app.use(express.urlencoded({limit: '150mb', extended: true}));
 
 const handleRequest = async function(req:any, res:any) {
+
     // console.log("request: ", req)
     let req_uuid = tools.uuidv4()
     dbLoger.writeLogIncoming(req_uuid,  req)
@@ -52,7 +54,7 @@ const handleRequest = async function(req:any, res:any) {
         }
     }
 
-    let ans = await crud.do(subdomain, method, table_name, params, req.headers.user_uuid)
+    let ans = await crud.do(subdomain, method, table_name, params, req.headers.user_uuid, req.headers.is_admin)
 
     if(ans.rows == undefined){
         res.status(ans.http_code != undefined ? ans.http_code : '400');
@@ -95,8 +97,6 @@ const init = async function() {
         res.send(ans)
     })
     listeners.push({"method": 'get',"func":'read_watcher'})
-
-    
 
     app.get('/read_listeners', async (req:any, res:any) => {   
         res.send(listeners)

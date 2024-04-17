@@ -17,9 +17,13 @@ export default {
   },
   methods: {
     hide(e) {
-      if (e.path[0].localName == "div") e.path[0].removeClass("alert_show");
-      else if (e.path[1].localName == "div")
-        e.path[1].classList.remove("alert_show");
+      console.log('!!!hide', e)
+      //if (e.target.localName == "div") e.target.removeClass("alert_show");
+      //else if (e.target.localName == "span") e.target.parentElement.classList.remove('alert_show');
+
+      for(let i in this.alerts){
+        if(this.alerts[i].type == 'error' && this.alerts[i].status == "show") this.alerts[i].status = "done";
+      }
     },
   },
   updated() {
@@ -60,7 +64,7 @@ export default {
       class="alert"
       @click="hide($event)"
     >
-      <img :src="icons[alert.type]" /><span>{{ alert.text }}</span>
+      <img v-show="alert.method.indexOf('read_')!= 0 || alert.type=='error'" :src="icons[alert.type]" /><span>{{ alert.text }}</span>
     </div>
   </div>
 </template>

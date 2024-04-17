@@ -5,6 +5,8 @@ import IssuesTable from "../gadgets/IssuesTable.vue";
 import IssuesTableConfig from "../gadgets/IssuesTableConfig.vue";
 import TimeReport from "../gadgets/TimeReport.vue";
 import TimeReportConfig from "../gadgets/TimeReportConfig.vue";
+import Burndown from "../gadgets/Burndown.vue";
+import BurndownConfig from "../gadgets/BurndownConfig.vue";
 
 
 import d from "../dict.ts";
@@ -61,6 +63,8 @@ let methods = {
       x: e.clientX,
       y: e.clientY,
     };
+
+    console.log('>>>>>>>start_resize')
 
     this.shadow_gadget.width = this.resize_data.gadget.width
     this.shadow_gadget.height = this.resize_data.gadget.height
@@ -153,21 +157,20 @@ let methods = {
       this.shadow_gadget.y0 += diff;
       this.shadow_gadget.height -= diff;
     }
-
-
-
-
   },
   save_gadget: function(e, gadget){
-    console.log('saving_gadget',e)
+    console.log('>>>>>>>>>>>t saving_gadget',e, gadget)
     gadget.config_open = false;
-    gadget.name = e.name
-    gadget.config = JSON.stringify(e.config)
-    console.log('save_gadget',gadget)
+    gadget.name = e.name;
+    let config = tools.clone_obj(e);
+    delete config.name;
+    gadget.config = JSON.stringify(config);
+    console.log('>>>>>>>>>>>t saved_gadget',gadget)
     rest.run_method('upsert_gadgets', gadget)
   },
+
   new_gadget:  function(type){
-    if(type.code != 'TimeReport') return
+    if(type.code != 'TimeReport' && type.code != 'Burndown' && type.code != 'IssuesTable') return
 
     let gadget = {
       uuid: tools.uuidv4(),
@@ -178,7 +181,8 @@ let methods = {
       y0: this.max_y,
       type_uuid: type.uuid,
       type: [type],
-      name:  type.name
+      name:  type.name,
+      config: {}
     }
 
     //console.log('new_gadget', gadget)
@@ -355,6 +359,8 @@ mod.components = {
   IssuesTableConfig,
   TimeReport,
   TimeReportConfig,
+  Burndown,
+  BurndownConfig,
 };
 
 export default mod;
@@ -367,16 +373,21 @@ export default mod;
     <div v-if="gadget_types_modal_visible" class = gadget-types-modal-container>
       <div class="modal-bg" @mousedown.self="gadget_types_modal_visible=false">
         <div class="panel modal gadget-types-modal">
+          <Transition name="element_fade">
           <div class="gadget-types-cells">
+            
             <div
             v-for="(gadget_type) in gadget_types"
             @click="new_gadget(gadget_type)"
             class="gadget-types-cell"
-            :class="{'gadget-types-cell-disabled' : gadget_type.code != 'TimeReport'}"
+            :class="{'gadget-types-cell-disabled' : gadget_type.code != 'TimeReport' && gadget_type.code != 'Burndown' && gadget_type.code != 'IssuesTable'}"
             >
+          
             <span>{{ gadget_type.name }}</span>
             </div>
+          
           </div>
+        </Transition>
           <KButton name="Отменить" @click="gadget_types_modal_visible=false" />
         </div>
       </div>
@@ -450,13 +461,15 @@ export default mod;
           <div class="gadget-head">
             <span>{{ gadget.name }}</span>
             <i
-              class="bx bx-dots-horizontal-rounded gadget-btn"
-              @click="gadget.config_open = !gadget.config_open"
-            ></i>
-            <i
+              v-show="gadget.config_open"
               class="bx bx-trash gadget-btn"
               @click="delete_gadget(gadget)"
             ></i>
+            <i
+              class="bx bx-dots-horizontal-rounded gadget-btn"
+              @click="gadget.config_open = !gadget.config_open"
+            ></i>
+            
           </div>
           <div class="gadget-body">
             <component
@@ -468,7 +481,7 @@ export default mod;
             <component
               v-show="gadget.config_open"
               v-bind:is="gadget.type[0].code + 'Config'"
-              :name="gadget.name"
+              :title="gadget.name"
               :config="gadget.config ? JSON.parse(gadget.config) : {}"
               @cancel="gadget.config_open=false"
               @ok="save_gadget($event, gadget)"
@@ -550,7 +563,8 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   flex-direction: column;
   height: calc(100vh - $top-menu-height);
 
-  background: var(--input-bg-color);
+ // background: var(--input-bg-color);
+ background: transparent;
 
   overflow: scroll;
 }
@@ -563,8 +577,12 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   padding: 0px 20px 10px 0px;
 }
 
+.dashboard-name-input input{
+  font-size: 18px !important;
+}
+
 .gadgets {
-  padding: 10px 10px 10px 10px;
+  padding: 0px 10px 10px 10px;
   width: 100%;
   height: calc(v-bind(total_height) * 1px);
   min-height: calc(v-bind(total_height) * 1px);
@@ -580,6 +598,8 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   flex-direction: column;
   position: absolute;
   padding: 5px;
+  padding-top: 0px;
+  padding-bottom: 10px;
 }
 
 .shadow-gadget-container{
@@ -607,6 +627,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   align-items: center;
 
   border-style: var(--border-style);
+  border-style: groove;
   border-color: var(--border-color);
 
   border-top-left-radius: var(--border-radius);
@@ -618,11 +639,13 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   border-left-width: var(--border-width);
   border-right-width: var(--border-width);
   border-bottom-width: 0px;
+  border: none;
 }
 
 .gadget-head span {
   padding-left: 10px;
   width: 100%;
+  font-weight: 400;
 }
 
 .gadget-body {
@@ -640,10 +663,12 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   border-bottom-left-radius: var(--border-radius);
   border-bottom-right-radius: var(--border-radius);
 
+  border-style: groove;
   border-top-width: var(--border-width);
   border-left-width: var(--border-width);
   border-right-width: var(--border-width);
   border-bottom-width: var(--border-width);
+  border: none;
 }
 
 .gadget-body::-webkit-scrollbar {
@@ -661,6 +686,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   margin-left: calc(-1 * v-bind(virtual_border_width) / 2 * 1px);
   width: 0px;
   height: 0px;
+
 }
 
 .gadget-border {
@@ -692,7 +718,7 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
 .gadget-btn {
   height: 22px;
   width: 22px;
-  font-size: 15px;
+  font-size: 16px;
   border-radius: var(--border-radius);
   margin-left: 10px;
   color: var(--text-color);
@@ -707,7 +733,12 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
   margin-right: 1px;
 
   text-align: center;
+  border: none;
+  background: transparent;
   //padding-top: 4px;
+}
+.gadget-btn:hover{
+  background-color: var(--button-color);
 }
 
 .delete-dashboard-btn:hover{
@@ -754,6 +785,10 @@ $hu: calc((100vw - $main-menu-width - 2 * $gadget-padding) / v-bind(h_units));
 
 .gadget-types-modal .btn input{
   width: 340px;
+  height: $input-height;
+  width: 100%;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 

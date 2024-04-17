@@ -2,11 +2,11 @@
 import MainMenu from "./components/MainMenu.vue";
 import Profile from "./components/Profile.vue";
 import KAlerter from "./components/KAlerter.vue";
+import HexagonLoader from "./components/HexagonLoader.vue";
 
-import palette from "./palette.ts";
 import dict from "./dict.ts";
-import tools from "./tools.ts";
 import cache from "./cache.ts";
+import rest from "./rest.ts";
 
 import { useYandexMetrika } from 'yandex-metrika-vue3'
 
@@ -46,6 +46,8 @@ export default {
 
     this.$store.state["common"]["is_mobile"] = this.is_mobile() || this.in_iframe();
     this.$store.state["common"]["in_iframe"] = this.in_iframe();
+
+    this.get_configs();
 
     console.log(
       "this.$store.state[common][is_mobile]",
@@ -101,6 +103,23 @@ export default {
     },
   },
   methods: {
+    get_configs: async function () {
+
+      if(!this.$store.state["common"].workspace){
+        setTimeout(this.get_configs, 100);
+        return;
+      }
+
+      if(window.location.href.endsWith('/login')) return;
+
+      let configs = await rest.run_method('read_configs', {service: 'workspace_use'})
+      console.log('aaapp', configs)
+
+      for(let i in configs){
+        if(configs[i].name == 'sprints') this.$store.state['common'].use_sprints = (configs[i].value == 'true')
+        else if(configs[i].name == 'time_tracking') this.$store.state['common'].use_time_tracking = (configs[i].value == 'true')
+      }
+    },
     is_mobile: function () {
       return window.innerHeight > window.innerWidth;
     },
@@ -123,11 +142,13 @@ export default {
     MainMenu,
     Profile,
     KAlerter,
+    HexagonLoader
   },
 };
 </script>
 
 <template>
+  <div class="main-container">
   <div
     id="router-view-container"
     v-bind:class="{
@@ -142,20 +163,24 @@ export default {
         <component :is="Component" class="rv-container"></component>
       </transition>
     </router-view>
+    <GptPanel
+          v-if="!$store.state['common']['is_mobile']"
+    />
   </div>
+  
 
   <Transition name="loading_fade" mode="out-in">
     <div
       v-show="
         Object.values($store.state['alerts']).some(
           (o) =>
-            (o.type == 'loading' || o.type == 'ok') &&
+            (o.type == 'loading') &&
             (o.status == 'show' || o.status == 'new')
         )
       "
-      class="loading-background"
-    >
-      <div class="loading-bar"></div>
+      class="loading-background"      
+    >  
+      <HexagonLoader  class="loading-bar"/>
     </div>
   </Transition>
   <MainMenu
@@ -164,6 +189,7 @@ export default {
   />
   <Profile v-if="$store.state['common']['is_in_workspace'] && $store.state['common'] && !$store.state['common']['in_iframe']" />
   <KAlerter />
+  </div>
 </template>
 
 <style lang="scss">
@@ -173,15 +199,36 @@ export default {
 
 //$font-family:'Poppins', sans-serif;
 body {
-  background-color: var(--body-bg-color);
+ // background-color: var(--body-bg-color);
   transition: all 0.5s ease;
   overflow: hidden;
   padding: 0px;
   margin: 0px;
+
+  //background-color: var(--body-bg-color);
+  transition: all 0 ease !important;
+  background: 'https://sopranoclub.ru/images/150-fonov-i-oboev-s-serdechkami/file56005.jpeg';
+  //black;
+  
+}
+
+.main-container{
+  background: var(--body-bg-color);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  //background-image: url('');
+}
+
+.table_card_buttons .btn .btn_input {
+  width: 100% !important;
 }
 
 html {
   font-size: $font-size;
+  
 }
 
 * {
@@ -195,6 +242,7 @@ html {
   box-sizing: border-box;
   transition: all 0.2s ease;
   opacity: 1;
+  font-weight: 300;
 
   // font-family: 'Poppins', sans-serif;
 }
@@ -226,6 +274,7 @@ html {
   left: $main-menu-width;
   width: calc(100vw - $main-menu-width);
   height: 100vh;
+ // background-image: url('');
 }
 
 .mobile-view {
@@ -275,14 +324,14 @@ input {
 
 .element_fade-enter-active,
 .element_fade-leave-active {
-  transition: opacity 0.1s;
+  transition: opacity 0.4s;
 }
 
 .loading_fade-enter-active {
   transition: opacity 4s ease;
 }
 .loading_fade-leave-active {
-  transition: opacity 0.5s;
+  transition: opacity 0.02s;
 }
 
 .element_fade-enter-from,
@@ -316,7 +365,6 @@ input {
   z-index: 0;
 }
 
-$loading-bar-width: 200vw;
 
 .loading-background {
   // display: none;
@@ -332,31 +380,21 @@ $loading-bar-width: 200vw;
 }
 
 .loading-bar {
-  position: absolute !important;
-  //height: 100%;
-  width: 100% !important;
 
-  height: 100vh !important;
-  top: -100vh;
+  position: fixed;
+  left: calc(50vw);
+  top: 50vh;
+  transform: translate(-50%, -50%);
+  scale: 0.6;
   z-index: 11 !important;
   //width: $loading-bar-width;
   //left:-$loading-bar-width;
   //background: linear-gradient(0.25turn, rgba(200,200,200,0.0), rgba(0,0,0,0.8), rgba(200,200,200,0.0));
   //animation: background 3s infinite ease-in-out;
-  background: linear-gradient(
-    rgba(200, 200, 200, 0),
-    var(--loading-bar-color),
-    rgba(200, 200, 200, 0)
-  ) !important;
-  animation: background 1.5s infinite alternate ease-in-out !important;
+  
 }
 
-@keyframes background {
-  100% {
-    //    left:calc(100%);
-    top: 90vh;
-  }
-}
+
 
 .ktable {
   width: 100%;
@@ -438,14 +476,6 @@ $loading-bar-width: 200vw;
   background: rgba(0,0,0,0);
 }
 
-.table_card_footer_btn {
-  width: 45%;
-
-  input {
-    width: 100% !important;
-  }
-}
-
 .change-password .btn_input {
   width: 100% !important;
 }
@@ -465,7 +495,9 @@ $loading-bar-width: 200vw;
     cursor: pointer;
 	
     text-align: center;
-	padding-top: 4px;
+	  padding-top: 4px;
+    background: transparent;
+    border-color: var(--text-color);
   }
 
 .login-panel .btn_input {
@@ -497,5 +529,27 @@ $loading-bar-width: 200vw;
 .issue-top-button:hover {
   background: var(--icon-hover-bg-color);
 }
+
+.input .label{
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+
+.error-field input{
+	border-color: var(--err-color);
+}
+
+.error-field .vs__dropdown-toggle{
+	border-color: var(--err-color) !important;
+}
+.error-field .v-select input{
+	border-color: transparent;
+}
+
+.maintop-title svg{
+  z-index: 1;
+}
+
+
 
 </style>

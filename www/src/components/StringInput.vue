@@ -7,7 +7,7 @@ export default {
     },
     label: {
       type: String,
-      default: "label",
+      default: "",
     },
     value: {
       type: String,
@@ -28,6 +28,10 @@ export default {
     placeholder: {
       type: String,
       default: ""
+    },
+    keyup_enter: {
+      type: Function,
+      default: ()=>{}
     }
   },
 
@@ -36,6 +40,9 @@ export default {
   methods: {
     blur:function() {
       this.$emit("updated", this.value);
+    },
+    doBlur() {
+      this.$refs.inputField.blur();
     },
   },
 
@@ -80,11 +87,13 @@ export default {
 </script>
 
 <template>
-  <div class="string">
-    <div class="label">{{ label }}</div>
+  <div class="string input">
+    <div class="label" v-if="label != ''">{{ label }}</div>
     <input
+      ref="inputField"
       class="string-input"
       v-model="value"
+      @keyup.enter="keyup_enter(); doBlur()"
       :type="type"
       :disabled="disabled"
       :placeholder="placeholder"
@@ -107,7 +116,6 @@ export default {
 
 .string-input {
   font-size: 14px;
-  font-weight: 400;
   border-radius: var(--border-radius);
   transition: all 0.5s ease;
   background: var(--input-bg-color);
@@ -116,5 +124,6 @@ export default {
 
 .string-input:disabled {
   background: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 </style>

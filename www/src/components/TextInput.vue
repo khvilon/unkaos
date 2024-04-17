@@ -47,13 +47,18 @@ export default {
   emits: ["update_parent_from_input", "input_focus"],
 
   methods: {
-    resize() {
-      if(!this.resize) return
+    resize2() {
+      /*if(!this.resize) return
       console.log("resizing");
       if (this.$refs.text_input == undefined) return;
       this.$refs.text_input.style.height = `${
         this.$refs.text_input_shadow.scrollHeight + 10
-      }px`;
+      }px`;*/
+
+
+      let element = this.$refs["text_input"];
+      element.style.height = "66px";
+      element.style.height = element.scrollHeight + "px";
     },
     getCaretIndex(element) {
       let position = 0;
@@ -97,8 +102,10 @@ export default {
   },
   mounted() {
     this.val = this.value;
+    let me = this;
+    console.log('me.resize2',me.resize2)
     nextTick(() => {
-      this.resize();
+      me.resize2();
     })
   },
   /*computed: {
@@ -121,8 +128,9 @@ export default {
     val: function (val, oldVal) {
       //console.log(val, oldVal, this.id, this.parent_name);
       this.$emit("update_parent_from_input", val);
+      let me = this;
       nextTick(() => {
-        this.resize();
+        me.resize2();
       })
       if (this.parent_name == undefined || this.parent_name == "") return;
       this.$store.commit("id_push_update_" + this.parent_name, {
@@ -137,15 +145,8 @@ export default {
 </script>
 
 <template>
-  <div class="text">
+  <div class="text input">
     <div class="label">{{ label }}</div>
-    <textarea
-      ref="text_input_shadow"
-      class="text-input text-input-shadow"
-      :type="type"
-      v-model="value"
-    ></textarea>
-
     <textarea
       ref="text_input"
       @focus="$emit('input_focus', true)"
@@ -170,18 +171,22 @@ export default {
   color: var(--text-color);
   padding: 4px 10px 4px 10px;
   resize: none;
+  
+  transition: none;
+  overflow: hidden;
+  outline: none;
+
 }
 
 .text-input {
   width: 100%;
   font-size: 14px;
-  font-weight: 400;
   background: var(--input-bg-color);
   border-color: var(--border-color);
   border-style: var(--border-style);
   border-width: var(--border-width);
   border-radius: var(--border-radius);
-  overflow: clip;
+  //overflow: clip;
 }
 
 .text-input-shadow {
@@ -199,6 +204,7 @@ export default {
 
 .text-input:disabled {
   background: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 
 .text-input::-webkit-scrollbar {

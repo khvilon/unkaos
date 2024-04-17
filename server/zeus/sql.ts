@@ -17,7 +17,6 @@ try {
   };
 }
 
-
 console.log('dbConf', dbConf)
 
 var sql:any = {}
@@ -51,6 +50,13 @@ sql.init = async function(){
 }
 
 sql.query = async function(subdomain:string, query_arr:any, params_arr:any){
+
+    if(workspaceSqls[subdomain] == undefined){
+        let workspace = await sql.admin`SELECT * FROM admin.workspaces WHERE name = ${subdomain}`
+        if(!workspace[0]) return null
+        addWorkspaceSql(workspace[0].name, workspace[0].pass)
+    }
+
     if(workspaceSqls[subdomain] == undefined) return null
 
     if(!Array.isArray(query_arr)){

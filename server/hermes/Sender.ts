@@ -2,7 +2,7 @@ import MailSender from './senders/MailSender';
 import DiscordMessage from './senders/DiscordMessage';
 import TelegramMessage from './senders/TelegramMessage';
 import UserData from './UsersData';
-
+import {sql} from "./Sql";
 
 class Sender {
   private email;
@@ -15,6 +15,21 @@ class Sender {
     this.email = new MailSender();
     this.discord = new DiscordMessage(this.userData);
     this.telegram = new TelegramMessage(this.userData);
+
+    sql.subscribe('*', this.updateSender.bind(this), this.handleSubscribeConnect)
+  }
+
+  private handleSubscribeConnect(){
+    console.log('subscribe sql configs connected!')
+  }
+
+  private async updateSender(row:any, { command, relation, key, old }: any){
+    console.log('updateSender', command, relation, key, old)
+    if(relation.table != 'configs' || relation.schema != 'server') return
+    console.log('updating sender conf', row)
+    if(row.service == 'email' ) this.email = new MailSender();
+    if(row.service == 'discord' ) this.discord = new DiscordMessage(this.userData);
+    if(row.service == 'telegram' ) this.telegram.init(this.userData);
   }
 
   private isUUID(str: string): boolean {

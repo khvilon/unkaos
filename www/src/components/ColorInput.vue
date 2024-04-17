@@ -71,7 +71,7 @@ export default {
 </script>
 
 <template>
-  <div class="color">
+  <div class="color input">
     <div class="label">{{ label }}</div>
     <input
       class="color-input"
@@ -114,6 +114,7 @@ export default {
 
 .color-input:disabled {
   background: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 
 

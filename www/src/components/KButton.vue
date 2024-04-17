@@ -21,10 +21,19 @@ export default {
       type: Boolean,
       default: false,
     },
+
+    stop: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["button_ans"],
   methods: {
     async click(btn) {
+      if(btn.stop){
+        this.$emit("button_ans", false);
+        return;
+      } 
       if (this.func != undefined && this.func != "") {
         let ans = await this.$store.dispatch(this.func);
         //console.log('btn aaans', ans)
@@ -68,9 +77,9 @@ export default {
   color: var(--text-color);
   background-color: var(--button-color);
   border-width: 1px;
-  border-color: var(--text-color);
+  border-color: var(--border-color);
   border-style: solid;
-  font-size: 15px;
+  font-size: 14px;
   border-radius: var(--border-radius);
   border-style: outset;
   cursor: pointer;
@@ -79,6 +88,7 @@ export default {
 .btn .disabled-btn {
   cursor: not-allowed;
   background-color: var(--input-bg-color-disabled);
+  color: var(--disabled-text-color);
 }
 
 .btn i {

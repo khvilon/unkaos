@@ -35,29 +35,18 @@ let items = [
             level: 1
           },*/
         {
-          link: "/projects",
-          name: "Проекты",
-          icon: "bx-briefcase-alt-2",
-          level: 1,
-        },
-        {
           link: "/configs",
           name: "Настройки",
           icon: "bx-cog",
           level: 1,
-        },
-        {
-          link: "/configs/sprints",
-          name: "Спринты",
-          icon: "bx-timer",
-          level: 2,
-          admin_only: true,
+          server: true
         },
         {
           link: "/configs/users",
           name: "Пользователи",
           icon: "bx-user",
           level: 2,
+          server: true
         },
         {
           link: "/configs/roles",
@@ -65,6 +54,19 @@ let items = [
           icon: "bx-group",
           level: 2,
           admin_only: true,
+        },
+        {
+          link: "/configs/projects",
+          name: "Проекты",
+          icon: "bx-briefcase-alt-2",
+          level: 2,
+        },
+        {
+          link: "/configs/sprints",
+          name: "Спринты",
+          icon: "bx-timer",
+          level: 2,
+          admin_only: true
         },
         {
           link: "/configs/fields",
@@ -93,14 +95,14 @@ let items = [
           icon: "bx-category-alt",
           level: 2,
           admin_only: true,
-        },
+        },/*
         {
           link: "/configs/automations",
           name: "Автоматизации",
           icon: "bx-bot",
           level: 2,
           admin_only: true,
-        },
+        },*/
       ]
 
     for(let i in items){
@@ -122,6 +124,7 @@ export default {
       default: () => items,
     },
   },
+
   data() {
     return {
       is_opened: false,
@@ -133,13 +136,16 @@ export default {
       select_opacity: 0,
       is_in_login_form: false,
       common: this.$store.state["common"],
+      
       environment: "",
     };
   },
   methods: {
     move_hover(e) {
+      console.log('mooooved', e)
       if (this.$store.state["common"]["is_mobile"]) return;
       if (cache.getObject("lock_main_menu") !== true) this.is_opened = true;
+      console.log('mooooved2', e)
       this.hover_opacity = 1;
       this.hover_offset_x = e.target.offsetLeft;
       this.hover_offset_y = e.target.offsetTop;
@@ -147,12 +153,17 @@ export default {
     hide_hover(e) {
       this.hover_opacity = 0;
     },
-    move_select(e) {
-      this.select_opacity = 1;
-      this.select_offset_x = e.target.offsetLeft;
-      this.select_offset_y = e.target.offsetTop;
-      this.exit_menu();
-      //[{type: 'loading'}, {type: 'ok'}, {type: 'error', text: 'Это очень страшная ошибка!'}]
+    moveSelected(to){
+      this.$nextTick(() => {
+        // Найти активный элемент меню
+        const activeElement = this.$el.querySelector('.router-link-active .main-menu-element-bg');
+        if (!activeElement) {this.select_opacity=0; return;}
+        this.select_offset_x = activeElement.offsetLeft;
+        this.select_offset_y = activeElement.offsetTop;
+        this.exit_menu();
+        if(!this.select_opacity) setTimeout(()=>{this.select_opacity = 0.8}, 300)
+        return;        
+      });
     },
     exit_menu(e) {
       if (e != undefined && e.x < 210) return; //todo magic number to variable
@@ -164,6 +175,10 @@ export default {
       for(let i in items){
         items[i].link = '/' + newWorkspace + items[i].link;
       }
+    },
+    // Наблюдение за изменением маршрута
+    '$route.path'(to, from) {
+      this.moveSelected(to);
     }
   },
   mounted() {
@@ -177,6 +192,44 @@ export default {
         return "";
       }
     },
+    filteredMenuItems() {
+      let filteredMenuItems
+      if(this.$store.state['common'].workspace == 'server') filteredMenuItems = this.menuItems.filter((mi)=>mi.server);
+      else filteredMenuItems = this.menuItems.filter((mi) => !mi.admin_only || !this.$store.state['common']['is_mobile']);
+      if(!this.$store.state['common'].use_sprints) filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/sprints'));
+
+      let user = cache.getObject('profile')
+
+      console.log('rrr!!!', user)
+
+      if(this.$store.state['common'].is_admin) return filteredMenuItems;
+
+      let permissions = [];
+      for(let role of user.roles){
+        if(!role.permissions) continue;
+        for(let permission of role.permissions){
+          if(!permissions.includes(permission.code)) permissions.push(permission.code)
+        }
+      }
+
+      console.log('perm!!!', permissions)
+      if(!permissions.includes('workflow_CRU') && !permissions.includes('workflow_RD')) {
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/workflows'));
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/issue_types'));
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/issue_statuses'));
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/fields'));
+      }
+      if(!permissions.includes('projects_CU') && !permissions.includes('projects_D')) {
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/projects'));
+      }
+      if(!permissions.includes('users_and_roles_CUD')) {
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/roles'));
+      }
+      if(!permissions.includes('sprints_CUD')) {
+        filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/sprints'));
+      }
+      return filteredMenuItems;
+    }
   },
 };
 </script>
@@ -217,17 +270,15 @@ export default {
       ></div>
       <div
         class="main-menu-element"
-        v-for="(menuItem, index) in menuItems.filter(
-          (mi) => !mi.admin_only || !$store.state['common']['is_mobile']
-        )"
+        v-for="(menuItem, index) in filteredMenuItems"
         :key="index"
       >
-        <router-link :to="menuItem.link">
+        <router-link :to="menuItem.link" v-slot="{ isActive }">
           <div
             class="main-menu-element-bg"
             @mouseenter="move_hover($event)"
             @mouseout="hide_hover($event)"
-            @click="move_select($event)"
+            :class="{ 'selected-item': isActive }"
           ></div>
           <div :class="'main-menu-link main-menu-element-' + menuItem.level">
             <i class="bx" :class="menuItem.icon || 'bx-square-rounded'"></i>
@@ -256,6 +307,7 @@ $main-menu-element-font-size: 16px;
 $main-menu-selection-offset: 10px;
 $logo-icon-size: 32px;
 
+
 .menu-logo {
   width: $logo-size;
   margin: 0 10px 0 10px;
@@ -269,13 +321,13 @@ $logo-icon-size: 32px;
   top: 0px;
   height: 100vh;
   width: $main-menu-width;
-  z-index: 100;
 
   min-height: $min-win-height;
 
   transition-property: all !important;
   transition-duration: $main-menu-open-time !important;
-  z-index: 3;
+  z-index: 10;
+
 
   margin: 1px;
 }

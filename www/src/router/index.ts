@@ -28,6 +28,7 @@ import rest from "../rest";
 import ws from "../ws";
 
 let routes = [
+  
   { path: "/", component: PageLanding, name: "Unkaos" },
   { path: "/login", component: PageLogin, name: "Вход" },
   { path: "/dashboards", component: PageDashboards, name: "Дашборды" },
@@ -38,10 +39,11 @@ let routes = [
     component: PageNotifications,
     name: "Оповещения",
   },
-  { path: "/projects", component: PageProjects, name: "Проекты" },
+ 
   { path: "/favourites", component: PageFavourites, name: "Избранное" },
   { path: "/configs/sprints", component: PageSprints, name: "Спринты" },
   { path: "/configs/roles", component: PageRoles, name: "Роли" },
+  { path: "/configs/projects", component: PageProjects, name: "Проекты" },
   {
     path: "/configs/issue_types",
     component: PageIssueTypes,
@@ -63,7 +65,7 @@ let routes = [
   { path: "/configs", component: PageConfigs, name: "Настройки" },
   { path: "/issue/:id", component: PageIssue, props: true, name: "Задача " },
   { path: "/board/:uuid", component: PageBoard, props: true, name: "Доска " },
-  { path: "/issue/", component: PageIssue, name: "Новая задача" },
+  { path: "/issue/", component: PageIssue, props: true, name: "Новая задача" },
   { path: "/board/", component: PageBoard, name: "Новая доска" },
   {
     path: "/dashboard/:uuid",
@@ -71,9 +73,9 @@ let routes = [
     props: true,
     name: "Дашборд ",
   },
-  
-  { path: "/register/:uuid", component: PageRegister, props: true, name: "Задача " },
-  { path: "/register/", component: PageRegister, name: "Новая задача" },
+  { path: "/register/", component: PageRegister, name: "Регистрация рабочего пространства" },
+  { path: "/register/:uuid", component: PageRegister, props: true, name: "Подтверждение регистрации " },
+
   { path: "/dashboard/", component: PageDashboard, name: "Новый дашборд" },
   
   
@@ -117,7 +119,7 @@ router.beforeEach((to, from, next) => {
     next('/oboz' + to.path);
   }
   else if(!to.params.workspace && to.path != '/' &&  !isRegister){
-    next('/');
+    //next('/');
   }
   else next();
 });

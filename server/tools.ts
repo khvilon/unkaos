@@ -3,6 +3,47 @@ var tools:any = {}
 
 import './string.extensions';
 
+tools.translitMapEnToRu = {
+  'a': 'а', 'b': 'б', 'v': 'в', 'g': 'г', 'd': 'д', 'e': 'е',
+        'zh': 'ж', 'z': 'з', 'i': 'и', 'j': 'й', 'k': 'к',
+        'l': 'л', 'm': 'м', 'n': 'н', 'o': 'о', 'p': 'п', 'r': 'р',
+        's': 'с', 't': 'т', 'u': 'у', 'f': 'ф', 'h': 'х', 'c': 'ц',
+        'ch': 'ч', 'sh': 'ш', 'shch': 'щ', 'y': 'ы', 'yu': 'ю',
+        'ya': 'я', 'x': 'кс', 'w': 'в', 'q': 'к'
+};
+
+tools.translitMapRuToEn = {
+  'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
+  'ж': 'j', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+  'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+  'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sh',
+  'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+};
+
+tools.transliterateEnToRu = function(text: string){ return tools.transliterate(text, tools.translitMapEnToRu);}
+tools.transliterateRuToEn = function(text: string){ return tools.transliterate(text, tools.translitMapRuToEn);}
+tools.transliterate = function(text: string, translitMap: any){
+  let result = '';
+
+   
+  for (let i = 0; i < text.length; i++) {
+      let dblChar = text[i] + (text[i + 1] || '');
+      let singleChar = text[i].toLowerCase();
+
+      if (translitMap[dblChar] !== undefined) {
+          result += translitMap[dblChar];
+          i++; // Skip the next character as it was part of a double mapping
+      } else if (translitMap[singleChar] !== undefined) {
+          result += translitMap[singleChar];
+      } else {
+          // If no transliteration is found, keep the character as is
+          result += text[i];
+      }
+  }
+
+  return result;
+}
+
 tools.obj_length = function(obj:any){
     return Object.keys(obj).length
 }

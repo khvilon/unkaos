@@ -12,16 +12,33 @@ import fs from 'fs/promises';
 const app:any = express();
 const port = 5001;
 
-app.use(cors());
+
 app.use(express.json({limit: '1mb'}));
 app.use(express.raw({limit: '1mb'}));
 app.use(express.urlencoded({limit: '1mb', extended: true}));
+
+
+app.use(cors({origin: '*'}));
+
+let generatePassword = function(): string {
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const length = 8;
+    let password = '';
+
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * charset.length);
+        password += charset[randomIndex];
+    }
+
+    return password;
+}
 
 let readWorkspaceRequest = async function(uuid: String){
     let ans = await sql`SELECT 
         workspace,
         email,
         status,
+        pass,
         created_at,
         updated_at,
         deleted_at
@@ -47,23 +64,23 @@ let checkWorkspaceExists = async function(workspace: String){
 }
 
 const sqlPath = '../db/';
-let execModifSqlFile = async function(file: string, name: string, workspace: string){
-    let sqlFileContent = await fs.readFile(sqlPath + file, 'utf-8');
-    let sqlFileContentStr = sqlFileContent.replaceAll(name, workspace);
+let execModifSqlFile = async function(file: string, name: string, workspace: string, email: string, pass: string){
+    let sqlFileContent = await fs.readFile(file, 'utf-8');
+    let sqlFileContentStr = sqlFileContent.replaceAll(name, workspace).replaceAll('root@unkaos.org', email).replaceAll('rootpass', pass);
     await sql.unsafe(sqlFileContentStr);
 }
 
-let createWorkspace = async function(workspace: string){
+let createWorkspace = async function(workspace: string, email: string, pass: string){
     
-    await execModifSqlFile('-public.sql', 'public', workspace)
-    await execModifSqlFile('-workspace.sql', 'test', workspace)
+    await execModifSqlFile('../db/-public.sql', 'public', workspace, email, pass)
+    await execModifSqlFile('../db/-workspace.sql', 'server', workspace, email, pass)
     
     let files = await fs.readdir(sqlPath)
 
     files = files.filter(file=>file.endsWith('_m.sql')).sort()
 
     for(let i = 0; i < files.length; i++){
-        await execModifSqlFile(files[i], 'public', workspace)
+        await execModifSqlFile(sqlPath + files[i], 'public', workspace, email, pass)
     }
 }
 
@@ -78,9 +95,12 @@ const init = async function() {
 
         let exists = await checkWorkspaceExists(workspace)
 
+        let pass = generatePassword()
+
         if(!exists){
             
-            ans = await sql`INSERT INTO admin.workspace_requests(uuid, workspace, email) VALUES (${uuid}, ${workspace}, ${email})`
+            ans = await sql`INSERT INTO admin.workspace_requests(uuid, workspace, email, pass) 
+            VALUES (${uuid}, ${workspace}, ${email}, ${pass})`
             if(!ans){
                 res.send({ status: -1 });
                 return
@@ -91,21 +111,29 @@ const init = async function() {
             return
         }
 
-        res.send({ status: 0 });
 
         const hermes_answer = await axios({
             method: "post",
             url: "http://hermes:5009/send",
             data: {
-            transport: "email",
-            recipient: email,
-            title: "Unkaos - " + workspace,
-            body: `Для подтверждения почты пройдите по ссылке: 
-            https://${process.env.DOMAIN}/register/${uuid}`
+                transport: "email",
+                recipient: email,
+                title: "Подтверждение регистрации в Unkaos - " + workspace,
+                body: `
+                    <html>
+                    <body>
+                        <p>Здравствуйте,</p>
+                        <p>Благодарим вас за регистрацию в Unkaos. Для завершения регистрации, пожалуйста, подтвердите свой адрес электронной почты.</p>
+                        <p><a href='https://${process.env.DOMAIN}/register/${uuid}'>Нажмите здесь, чтобы активировать вашу учетную запись</a></p>
+                        <p>Ваш временный пароль для входа: <strong>${pass}</strong></p>
+                        <p>После входа в систему рекомендуем вам изменить этот временный пароль.</p>
+                        <p>С уважением,<br/>Команда Unkaos</p>
+                    </body>
+                    </html>`
             }
         })
 
-        if(hermes_answer && hermes_answer.status == 200) res.send({ status: 2 });
+        if(hermes_answer && hermes_answer.status == 200) res.send({ status: 0 });
         else res.send({ status: -3 });
     })
 
@@ -128,7 +156,7 @@ const init = async function() {
             return;
         }
 
-        await createWorkspace(ans.workspace)
+        await createWorkspace(ans.workspace, ans.email, ans.pass)
         await sql`UPDATE admin.workspace_requests SET status = 2 WHERE uuid = ${uuid}`
         
         res.send({ status: 2, workspace: ans.workspace });

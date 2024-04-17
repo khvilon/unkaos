@@ -3,8 +3,10 @@ import tools from "../tools.ts";
 //"'/issue/'+get_json_val(row, collumn.id)"
 
 export default {
+  emits: ["row_selected", "order", "scroll_update"],
   methods: {
     sort(collumn) {
+      if(collumn.not_sortable) return;
       for (let i in this.collumns) {
         if (this.collumns[i].id == collumn.id) {
           if (this.collumns[i].asc) {
@@ -19,6 +21,7 @@ export default {
         }
       }
       this.$store.dispatch("sort_" + this.name, collumn.id);
+      this.$emit("order", collumn);
     },
     scroll_handler(e) {
       let bottom = e.target.getBoundingClientRect().bottom;
@@ -34,6 +37,7 @@ export default {
     select_row(row) {
       let uuid = row.uuid; //event.path[1].getAttribute('uuid');
       this.$store.commit("select_" + this.name, uuid);
+      this.$emit("row_selected", uuid);
       //console.log("sel", this.name)
     },
     get_row_by_uuid(uuid) {
@@ -158,6 +162,7 @@ export default {
             v-for="(collumn, index) in collumns"
             :key="index"
             @click="sort(collumn)"
+            v-bind:class="{ 'sortable-row': !collumn.not_sortable }"
           >
             <label>{{ collumn.name }}</label>
             <label class="sort_arrow" v-bind:class="{ sorted_asc: collumn.asc }"
@@ -336,5 +341,9 @@ td:last-child {
   margin-right: 10px;
   position: relative;
   top: 5px;
+}
+
+.sortable-row label{
+  cursor: pointer;
 }
 </style>

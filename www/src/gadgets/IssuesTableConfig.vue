@@ -1,103 +1,87 @@
 <script>
 import page_helper from "../page_helper.ts";
 
-export default {
-  /*  data()
+import { gadgetConfigMixin } from './gadgetConfigMixin';
+
+let methods = {
+	
+}
+
+const data =
+{
+	curr_sprint_num: 0,
+	query: '',
+	encoded_query: '',
+	issues_table_issues: [],	
+	inputs: [
+
+		{
+			id: '',
+			dictionary: 'issue_statuses',
+			type: 'User',
+		},
+		{
+			id: 'issue_tags',
+			dictionary: 'issue_tags',
+			type: 'Tag',
+		},
+		{
+			id: '',
+			dictionary: 'fields',
+			type: 'Select',
+		},
+		{
+			id: '',
+			dictionary: 'users',
+			type: 'User',
+		},
+		{
+			id: '',
+			dictionary: 'projects'
+		},
+		{
+			id: '',
+			dictionary: 'issue_types'
+		},      
     {
-        return {name}
-    },*/
-  props: {
-    name: {
-      type: String,
-      default: "",
-    },
+      label: "sprints",
+      id: "",
+      dictionary: "sprints",
+    }
+	]
+}
 
-    collumns: {
-      type: Array,
-      default: () => [],
-    },
+const mod = await page_helper.create_module(data, methods)
 
-    //! Styles
-  },
-};
+mod.mixins = [gadgetConfigMixin];
+
+export default mod
+
 </script>
 
-<template ref="config" v-if="config">
-  <div class="panel gadget-config">
-    <div class="gadget-config-fields">
-      <StringInput label="Название" :value="name"> </StringInput>
-      <IssuesSearchInput
-        label="Запрос"
-        class="issue-search-input"
-        @update_parent_from_input="update_search_query"
-        :fields="fields"
-        @search_issues="get_issues"
-        :projects="projects"
-        :issue_statuses="issue_statuses"
-        :issue_types="issue_types"
-        :users="users"
-        :sprints="sprints"
-        :parent_query="search_query"
-      >
-      </IssuesSearchInput>
-
-      <SelectInput label="Столбцы"> </SelectInput>
-    </div>
-
-    <div class="gadget-edit-mode-btn-container">
-      <KButton class="save-gadget-config-btn" name="Сохранить" />
-      <KButton class="cancel-gadget-config-btn" name="Отменить" />
-    </div>
-  </div>
+<template>
+  <GadgetConfig 
+    @gadget_ok="handleOk" 
+    @gadget_cancel="handleCancel" 
+    @gadget_title_updated="titleUpdated" 
+    :config="config" 
+    :title="title">
+    <IssuesSearchInput
+      class="gadget-config-field"
+      label="Фильтр задач"
+      @update_parent_from_input="(val)=>{currentConfig.query=val.trim()}"
+      :fields="fields"
+      @search_issues="(val)=>{currentConfig.encoded_query=val}"
+      :projects="projects"
+      :issue_statuses="issue_statuses"
+      :tags="issue_tags"
+      :issue_types="issue_types"
+      :users="users"
+      :sprints="sprints"
+      :parent_query="currentConfig.query"
+    >
+    </IssuesSearchInput>
+	
+	
+  </GadgetConfig>
 </template>
-
-<style lang="scss">
-@import "../css/global.scss";
-
-.gadget-config {
-  width: 100%;
-  height: 100%;
-  border: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-}
-
-.gadget-config-fields {
-  width: 100%;
-  height: 100%;
-}
-
-.gadget-config-fields .string {
-  padding-left: 0px;
-  padding-right: 0px;
-  padding-top: 0px;
-}
-
-.gadget-edit-mode-btn-container {
-  width: 100%;
-  height: 30px;
-  display: flex;
-}
-
-.gadget-edit-mode-btn-container .btn {
-  width: 50%;
-}
-.gadget-edit-mode-btn-container .btn .btn_input {
-  height: 100%;
-  width: 100%;
-}
-
-.gadget-config .issue-search-input {
-  width: 100%;
-}
-
-.save-gadget-config-btn {
-  padding-right: 10px;
-}
-
-.cancel-gadget-config-btn {
-  padding-left: 10px;
-}
-</style>

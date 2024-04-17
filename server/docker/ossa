@@ -3,6 +3,8 @@ FROM node:18-bullseye-slim
 COPY ./server /app
 WORKDIR /app/ossa
 RUN yarn install
+RUN yarn add memcached
+RUN yarn add @types/memcached -D
 RUN yarn build
 
 USER node

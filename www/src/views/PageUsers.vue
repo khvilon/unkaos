@@ -40,16 +40,19 @@ const data = {
       label: "ФИО",
       id: "name",
       type: "String",
+      required: true
     },
     {
       label: "Логин",
       id: "login",
       type: "String",
+      required: true
     },
     {
       label: "Адрес почты",
       id: "mail",
       type: "String",
+      required: true
     },
     {
       label: "Телеграм",
@@ -80,12 +83,9 @@ const data = {
   ],
 };
 
-const mod = await page_helper.create_module(data);
 
-mod.methods.is_this_user = function () {
-  let user = cache.getObject("profile");
-  return this.selected_users.uuid == user.uuid;
-};
+
+const mod = await page_helper.create_module(data);
 
 mod.methods.update_password = function () {
   if (
@@ -101,9 +101,7 @@ mod.methods.update_password = function () {
 };
 
 mod.methods.change_password = function () {
-  if (this.selected_users == undefined || this.selected_users.uuid == undefined)
-    return;
-  rest.run_method("update_password_rand", { user: this.selected_users });
+  if (this.users_selected) rest.run_method("update_password_rand", { user: this.selected_users });
 };
 
 mod.methods.change_pass_var = function (val) {
@@ -112,10 +110,22 @@ mod.methods.change_pass_var = function (val) {
 };
 
 mod.methods.saved = function (users) {
-  if(!this.is_this_user()) return
-
-  cache.setObject("profile", users[0]);
+  this.try_done = !users
+  if(this.is_this_user2) cache.setObject("profile", users[0]);
+  this.update_password()
 };
+
+mod.computed.is_this_user2=function(){
+  if(!this.users_selected) return false
+  let user = cache.getObject("profile");
+  return this.selected_users.uuid == user.uuid;
+};
+
+mod.computed.filteredInputs=function(){
+  console.log('filteredInputs', this.users_selected)
+  return this.users_selected ? this.inputs : this.inputs.filter((f)=>f.id != 'created_at' && f.id != 'active' )
+};
+
 
 export default mod;
 </script>
@@ -141,41 +151,45 @@ export default mod;
         </Transition>
       </div>
       <div class="table_card panel">
-        <component
-          v-bind:is="input.type + 'Input'"
-          v-for="(input, index) in inputs"
-          :label="input.label"
-          :key="index"
-          :id="input.id"
-          :value="selected_users[input.id]"
-          :parent_name="'users'"
-          :disabled="input.disabled"
-        ></component>
-        <div class="change-pass-div" v-if="is_this_user()">
-          <StringInput
-            label="Пароль"
-            @update_parent_from_input="change_pass_var"
-          >
-          </StringInput>
-          <KButton :name="'Изменить'" @click="update_password" />
+        <div class="table_card_fields">
+          <component 
+            v-bind:is="input.type + 'Input'"
+            v-for="(input, index) in filteredInputs"
+            :label="input.label"
+            :key="index"
+            :id="input.id"
+            :value="selected_users[input.id]"
+            :parent_name="'users'"
+            :disabled="input.disabled"
+            :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
+          ></component>
+          <StringInput v-if="is_this_user2"
+              label="Пароль"
+              @update_parent_from_input="change_pass_var"
+            >
+            </StringInput>
+          
         </div>
-        <KButton
-          class="change-password"
-          :name="'Сбросить пароль'"
-          @click="change_password()"
-        />
-        <div class="table_card_footer">
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Сохранить'"
-            :func="'save_users'"
-            @button_ans="saved"
+        <div class="table_card_buttons">
+          <KButton v-if="users_selected && !is_this_user2"
+            class="change-password"
+            :name="'Сбросить пароль'"
+            @click="change_password()"
           />
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Удалить'"
-            :func="'delete_users'"
-          />
+          <div class="table_card_footer">
+            <KButton
+              class="table_card_footer_btn"
+              :name="'Сохранить'"
+              :func="'save_users'"
+              @button_ans="saved"
+              :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid)"
+            />
+            <KButton  v-if="users_selected"
+              class="table_card_footer_btn"
+              :name="'Удалить'"
+              :func="'delete_users'"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -187,19 +201,7 @@ export default mod;
   $table-panel-width: 75%
 );
 
-.change-pass-div {
-  display: flex;
-  flex-direction: row;
-}
 
-.change-pass-div .btn {
-  padding-top: 32px;
-  padding-right: 20px;
-  //width: 100px;
-}
 
-.change-password {
-  width: 100%;
-}
 
 </style>

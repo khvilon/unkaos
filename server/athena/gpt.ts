@@ -1,25 +1,9 @@
 
-import { Configuration, OpenAIApi } from 'openai';
 
-let openaiConf;
+import sql from './sql';
+import axios from 'axios';
 
-try {
-  const { openaiConfig } = require('./conf');
-  openaiConf = openaiConfig;
-} catch (error) {
-  openaiConf = {
-    key: process.env.OPENAI_KEY
-  };
-}
-
-const key = openaiConf.key
-
-console.log(key)
-
-const configuration = new Configuration({
-  apiKey: key,
-});
-const openai = new OpenAIApi(configuration);
+var openaiConfig: any = {}
 
 const commandAnswerSchemma =
 `{
@@ -91,9 +75,9 @@ const commandAnswerSchemma =
 `
 
 const unkaosDescr = `
-A user inputs a natural language command request in a task tracker. 
-Your task is to parse the input, identify the requested action and any necessary parameters for the action, 
-and convert it into a valid JSON that adheres to the following schema: ${commandAnswerSchemma}
+you are NLP for a task tracker, 
+answer schema: ${commandAnswerSchemma}
+answer only a valid JSON, no other text.
 
 Note that verbs resembling a status applied to issues indicate setting the status to that value and do not affect the filter query. 
 For example, to close an issue means just to change its status to a status like 'closed' without filtering, 
@@ -127,28 +111,81 @@ Other conditions can be used as usual.
 dont use ' for attributes values, always use "
 
 Do not translate any values. Ignore unuseful information like emotions and use only the relevant information.
+If you update or create issues, 'set' cant be void.
 
 Available issue attributes are 'sprint', 'status', 'project', 'type'. 
 The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Available issue fields are:
 `
 
-//const model = 'gpt-3.5-turbo'
-const model = 'gpt-4'
-
 export class Gpt {
 
-  private async ask(input: string, context: string = '', temper=0.1): Promise<string> {
-    const completion = await openai.createChatCompletion({
-      model: model,
-      messages: [{role: "system", content: context},{role: "user", content: input}],
-      temperature: temper,
+  constructor() {
+    sql.subscribe('*', this.updateConfig.bind(this), this.handleSubscribeConnect)
+  }
+
+  private handleSubscribeConnect(){
+    console.log('subscribe sql configs connected!')
+  }
+
+  private async updateConfig(row:any, { command, relation, key, old }: any){
+    if(relation.table == 'configs' || relation.schema == 'server') this.init()
+  }
+
+  public async init() { 
+    const ans = await sql`SELECT name, value FROM server.configs WHERE service = 'openai'`;
+
+    for(let i in ans){
+      openaiConfig[ans[i].name] = ans[i].value
+    }    
+  }
+
+  private async ask(input: string, context: string = ''): Promise<any> {
+
+    console.log('ask gpt openaiConfig', openaiConfig)
+
+    let data = JSON.stringify({
+      "model": openaiConfig.model,
+      //"response_format": { "type": 'json_object' },
+      "messages": [
+            {
+                "role": "system",
+                "content": context
+            },
+           
+          {
+            "role": "user",
+            "content": input
+        }],
+       
+      "temperature": 0.4//Number(openaiConfig.temperature)
     });
 
-    console.log(context)
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: openaiConfig.url + 'chat/completions',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'Authorization': 'Bearer ' + openaiConfig.key
+      },
+      data : data
+    };
 
-    const gptResponse = completion.data.choices[0].message?.content ?  completion.data.choices[0].message?.content : ''
+    try{
+      let response = await axios(config);
 
-    return gptResponse
+      console.log('>>gptResponse0', response.data.choices[0].message.content);
+
+
+      let gptResponse = JSON.parse(response.data.choices[0].message.content.replace('```json', '').replace('```', ''));
+      if(!gptResponse) return {};
+      console.log('>>gptResponse', JSON.stringify(gptResponse), null, 4);
+      return gptResponse;
+    }
+    catch(err) {
+      console.log(err);
+      return {};
+    }
   }
 
 
@@ -160,17 +197,7 @@ export class Gpt {
     const context = `${unkaosDescr}.
     ${fieldsStr}.`
 
-
-    const parsedCommandStr = await this.ask(input, context)
-
-    let parsedCommand: any
-  
-    try {
-      parsedCommand = JSON.parse(parsedCommandStr);
-    } catch (error) {
-      console.log("Error gpt JSON", parsedCommandStr)
-      parsedCommand = {}
-    }
+    const parsedCommand = await this.ask(input, context)
 
     return parsedCommand
 

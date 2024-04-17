@@ -22,16 +22,27 @@ export default {
   },
   watch: {
     value: function (val, oldVal) {
-      console.log("change_val", val, oldVal, this.id, this.parent_name);
+      console.log("change_val", val, oldVal, this.id, this.parent_name, this.options);
 
-      this.$emit("updated", val);
+      if(val && oldVal && val.toString && oldVal.toString && val.toString() === oldVal.toString()) return;
 
-      for(let i = 0; i < this.options.length; i++){
+      if(!val){
+        this.$emit("updated", null);
+        this.$emit("updated_full_user", null);
+      }
+      else if(val.uuid){
+        this.$emit("updated", val.uuid);
+        this.$emit("updated_full_user", val);
+      }
+      else{
+        this.$emit("updated", val);
+        for(let i = 0; i < this.options.length; i++){
         if(this.options[i].uuid && this.options[i].uuid == val){
           this.$emit("updated_full_user", this.options[i]);
           break
         }
         this.$emit("updated_full_user", null);
+      }
       }
 
       if (this.parent_name == undefined || this.parent_name == "") return;
@@ -123,13 +134,19 @@ export default {
       type: Boolean,
       default: false,
     },
+    multiple: {
+      type: Boolean,
+      default: false,
+    },
+
+    
   },
 
 };
 </script>
 
 <template>
-  <div class="user-input">
+  <div class="user-input input">
     <div class="label">{{ label }}</div>
 
     <v-select
@@ -141,6 +158,7 @@ export default {
       :reduce="(user) => user.uuid"
       @open="is_open=true"
       @close="is_open=false"
+      :multiple="multiple"
     >
       <template v-if="is_open" #option="{ name, active, avatar }">
         <img :src="avatar ?? default_avatar" />{{ name
@@ -223,6 +241,7 @@ export default {
 .vs--disabled .vs__search,
 .vs--disabled .vs__selected {
   background-color: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 
 .vs--disabled .vs__clear,

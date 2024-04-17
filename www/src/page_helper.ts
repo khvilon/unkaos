@@ -32,15 +32,17 @@ const register_store_module_if_not_exists = async function (name, params) {
   if (!store.getters["get_" + name]) {
     const store_module = store_helper.create_module(name);
     store.registerModule(name, store_module);
+
+    if (name == "issue" && params == undefined) return;
+
+    if (name == "issues") return;
+
+    if ((name == "board" || name == "dashboard") && params == undefined) return;
+
+    await store.dispatch("get_" + name, params);
   }
 
-  if (name == "issue" && params == undefined) return;
-
-  if (name == "issues") return;
-
-  if ((name == "board" || name == "dashboard") && params == undefined) return;
-
-  await store.dispatch("get_" + name, params);
+  
 
   //console.log('meeeeeeeeeeeee.$store.state[name]', name, JSON.stringify(store.getters['get_' + name]))
 };
@@ -57,24 +59,31 @@ const register_computed = async function (computed, name) {
     return this.$store.state[name]["selected_" + name];
   };
 
+  computed[name + "_selected"]  = function () {
+    if (this.$store.state[name] == undefined) return [];
+    console.log("is_selected", this["selected_" + name])
+    return this.$store.state[name]["selected_" + name] != undefined && this.$store.state[name]["selected_" + name].uuid && this["selected_" + name].created_at
+  };
+
   return computed;
 };
 
 page_helper.create_module = async function (data, methods) {
-  //data[data.name] = {}
-  //data[data.name]['selected_' + data.name] = {}
 
   data.visible = false;
   data.loaded = false;
+  data.try_done = false;
 
   data.url_params = tools.get_uri_params(window.location.href);
 
   if (data.buttons == undefined) data.buttons = [];
 
-  data.buttons.push({
-    name: "Создать",
-    func: "unselect_" + data.name,
-  });
+  if(data.name){
+    data.buttons.push({
+      name: "Создать",
+      func: "unselect_" + data.name
+    });
+  }
 
   data.search_collumns = [];
   for (const i in data.collumns) {
@@ -87,7 +96,7 @@ page_helper.create_module = async function (data, methods) {
       return this.$store.state["common"]["loading"];
     },
   };
-  computed = await register_computed(computed, data.name);
+  if(data.name) computed = await register_computed(computed, data.name);
 
   for (const i in data.inputs) {
     if (data.inputs[i].dictionary == undefined) continue;
@@ -126,7 +135,8 @@ page_helper.create_module = async function (data, methods) {
       params = { uuid: this.uuid };
     }
 
-    await register_store_module_if_not_exists(this.name, params);
+    
+    if(this.name) await register_store_module_if_not_exists(this.name, params);
 
     for (const i in this.inputs) {
       if (this.inputs[i].dictionary == undefined) continue;
@@ -252,12 +262,14 @@ page_helper.create_module = async function (data, methods) {
       this.$store.state[this.name][this.name] = [instance];
     }
 
-    //console.log('ttt', this.$store.state[this.name][this.name])
-    this.$store.state[this.name]["selected_" + this.name] = instance;
+    if(this.name){
+      //console.log('ttt', this.$store.state[this.name][this.name])
+      this.$store.state[this.name]["selected_" + this.name] = instance;
 
-    //console.log("this.$store.state[this.name]['selected_' + this.name]", this.$store.state[this.name]['selected_' + this.name])
-    this.$store.state[this.name]["instance_" + this.name] =
-      tools.obj_clone(instance);
+      //console.log("this.$store.state[this.name]['selected_' + this.name]", this.$store.state[this.name]['selected_' + this.name])
+      this.$store.state[this.name]["instance_" + this.name] =
+        tools.obj_clone(instance);
+    }
 
     this.inputs_dict = {};
     for (const i in this.inputs) {
@@ -272,6 +284,8 @@ page_helper.create_module = async function (data, methods) {
       this.inputs_dict[this.inputs[i].id] = this.inputs[i];
       //this[this.inputs[i].dictionary] = this.$store.state[this.inputs[i].dictionary]
     }
+
+    
 
     //console.log('cr', this.$store.state[this.name])
 
@@ -295,6 +309,16 @@ page_helper.create_module = async function (data, methods) {
       //console.log('selilili', this[this.name][0].uuid)
       this.$store.commit("select_" + this.name, this[this.name][0].uuid);
     }
+  };
+
+  methods.is_input_valid = function (input) {
+    if(!this.$store.state[this.name] || !this.$store.state[this.name]["selected_" + this.name]) return false
+
+    let val = this.$store.state[this.name]["selected_" + this.name][input.id]
+    let is_valid = val != undefined && val != null && val != ''
+
+    console.log("is_input_valid", input.id, val, is_valid)
+    return is_valid
   };
 
   return {

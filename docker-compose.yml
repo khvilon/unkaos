@@ -6,9 +6,8 @@ services:
       context: .
       dockerfile: server/docker/ossa
     restart: always
-    container_name: unkaos-ossa
     ports:
-     - '3004:3004'
+     - '3004'
     environment:
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
@@ -17,15 +16,15 @@ services:
       - DB_DATABASE=${DB_DATABASE}
     depends_on:
       - postgres
+      - memcached
 
   cerberus:
     build:
       context: .
       dockerfile: server/docker/cerberus
     restart: always
-    container_name: unkaos-cerberus
     ports:
-      - '3005:3005'
+      - '3005'
     environment:
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
@@ -41,9 +40,8 @@ services:
       context: .
       dockerfile: server/docker/zeus
     restart: always
-    container_name: unkaos-zeus
     ports:
-      - '3006:3006'
+      - '3006'
     environment:
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
@@ -52,15 +50,15 @@ services:
       - DB_DATABASE=${DB_DATABASE}
     depends_on:
       - postgres
+      - ossa
   
   eileithyia:
     build:
       context: .
       dockerfile: server/docker/eileithyia
     restart: always
-    container_name: unkaos-eileithyia
     ports:
-      - '5001:5001'
+      - '5001'
     environment:
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
@@ -76,9 +74,8 @@ services:
       context: .
       dockerfile: server/docker/gateway
     restart: always
-    container_name: unkaos-gateway
     ports:
-      - '3001:3001'
+      - '3001'
     environment:
       - ZEUS_URL=${ZEUS_URL}
       - CERBERUS_URL=${CERBERUS_URL}
@@ -94,9 +91,8 @@ services:
       context: .
       dockerfile: server/docker/hermes
     restart: always
-    container_name: unkaos-hermes
     ports:
-      - '5009:5009'
+      - '5009'
     environment:
       - BASE_URL="https://${DOMAIN}/"
       - HERMES_PORT=${HERMES_PORT}
@@ -105,15 +101,6 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_DATABASE=${DB_DATABASE}
-      - DISCORD_TOKEN=${DISCORD_TOKEN}
-      - EMAIL_SERVICE=${EMAIL_SERVICE}
-      - EMAIL_USER=${EMAIL_USER}
-      - EMAIL_PASS=${EMAIL_PASS}
-      - EMAIL_FROM=${EMAIL_FROM}
-      - SLACK_TOKEN=${SLACK_TOKEN}
-      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
-      - WHATSAPP_CODE=${WHATSAPP_CODE}
-      - WHATSAPP_PHONE=${WHATSAPP_PHONE}
     depends_on:
       - postgres
 
@@ -122,11 +109,9 @@ services:
       context: .
       dockerfile: server/docker/athena
     restart: always
-    container_name: unkaos-athena
     ports:
-      - '5010:5010'
+      - '5010'
     environment:
-      - OPENAI_KEY=${OPENAI_KEY}
       - ATHENA_PORT=${ATHENA_PORT}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
@@ -136,6 +121,17 @@ services:
     depends_on:
       - postgres
 
+  memcached:
+    image: memcached:latest
+    ports:
+      - "11211:11211"
+    command:
+      - memcached
+      - -v # Increase verbosity
+    depends_on:
+      - postgres
+
+      
   nginx:
     build:
       context: .

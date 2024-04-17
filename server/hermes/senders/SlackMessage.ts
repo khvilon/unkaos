@@ -12,7 +12,7 @@ class SlackMessage {
   }
 
   async init(){
-    const ans = await sql`SELECT value FROM admin.config WHERE service = 'slack' AND name = 'token'`;
+    const ans = await sql`SELECT value FROM server.configs WHERE service = 'slack' AND name = 'token'`;
     slackConf = { token: ans[0].value };
     this.webClient = new WebClient(slackConf.token);
   }

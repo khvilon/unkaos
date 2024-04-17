@@ -3,6 +3,8 @@ import tools from "./tools";
 import conf from "./conf";
 import cache from "./cache";
 
+const adminRoleUUID = '556972a6-0370-4f00-aca2-73a477e48999'
+
 export default class rest {
 
   static workspace: string = "public"; // Default value
@@ -35,8 +37,8 @@ export default class rest {
     if (resp.status != 200) return null;
     const data = await resp.json();
     
-    cache.setString("user_token", data.user_token)
-    cache.setObject("profile", data.profile)
+    cache.setString("user_token", data.user_token);
+    cache.setObject("profile", data.profile);
     return data;
   }
 
@@ -61,11 +63,13 @@ export default class rest {
   }
 
   static async run_gpt(input: string): Promise<any> {
+    //return null;//todo
     let user = cache.getObject("profile");
 
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
         return fetch(conf.base_url + 'gpt?userInput=' + input  + '&userUuid=' + user.uuid, {
           method: 'GET',
+          headers: {workspace: this.workspace}
         });
   }
 
@@ -77,6 +81,7 @@ export default class rest {
       type: "loading",
       status: "new",
       start: new Date(),
+      method: method
     };
     method = method.replace("create", "upsert").replace("update", "upsert");
     rest.headers.set("token", cache.getString("user_token"));
@@ -108,14 +113,24 @@ export default class rest {
         options.body = JSON.stringify(body);
       }
     }
-    const resp = await fetch(conf.base_url + method, {
-      body: options.body,
-      headers: options.headers,
-      method: options.method,
-    });
-    if (resp.status == 401) window.location.href = "/login";
+    let resp;
+    try {
+      resp = await fetch(conf.base_url + method, {
+        body: options.body,
+        headers: options.headers,
+        method: options.method,
+      });
+    }
+    catch(err){
+      console.log('>>>rest err', err)
+      store.state["alerts"][alert_id].text =  "Не удалось выполнить запрос к серверу >>";
+      store.state["alerts"][alert_id].type = "error";
+      return null;
+    }
+    if (resp.status == 401 && !window.location.href.endsWith('/login')) window.location.href = '/' + rest.workspace + '/login';
     //console.log('resp.status', resp  )
     if (resp.status != 200) {
+      console.log('>>>rest err', resp)
       store.state["alerts"][alert_id].text = resp.statusText + " >>";
       store.state["alerts"][alert_id].type = "error";
       return null;
@@ -124,6 +139,13 @@ export default class rest {
     const data = await resp.json();
     if (data[1] != undefined) return data[1].rows;
     store.state["alerts"][alert_id].type = "ok";
+
+    if(method == 'read_users'){
+      let user_uuid = cache.getObject("profile").uuid;
+      let user = data.rows.find((u:any)=>u.uuid==user_uuid)
+      if(user) cache.setObject("profile", user);
+    }
+
     return data.rows;
   }
 }
