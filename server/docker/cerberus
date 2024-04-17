@@ -1,5 +1,7 @@
 FROM node:18-bullseye-slim
 
+RUN npm install -g npm@10.3.0
+
 COPY ./server /app
 WORKDIR /app/cerberus
 RUN yarn install

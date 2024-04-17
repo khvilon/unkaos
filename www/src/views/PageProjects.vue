@@ -17,6 +17,11 @@ const data = {
       search: true,
     },
     {
+      name: "База знаний",
+      id: "is_knowledge_base",
+      type: "boolean",
+    },
+    {
       name: "Владелец",
       id: "owner_uuid",
       type: "user",
@@ -42,6 +47,11 @@ const data = {
       label: "Описание",
       id: "description",
       type: "Text",
+    },
+    {
+      label: "Является базой знаний",
+      id: "is_knowledge_base",
+      type: "Boolean",
     },
     {
       label: "Аватар",
@@ -88,28 +98,32 @@ export default mod;
         />
       </div>
       <div class="table_card panel">
-        <component
-          v-bind:is="input.type + 'Input'"
-          v-for="(input, index) in inputs"
-          :label="input.label"
-          :key="index"
-          :id="input.id"
-          :value="get_json_val(selected_projects, input.id)"
-          :parent_name="'projects'"
-          :disabled="input.disabled"
-          :clearable="input.clearable"
-        ></component>
-        <div class="table_card_footer">
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Сохранить'"
-            :func="'save_projects'"
-          />
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Удалить'"
-            :func="'delete_projects'"
-          />
+        <div class="table_card_fields">
+          <component
+            v-bind:is="input.type + 'Input'"
+            v-for="(input, index) in inputs"
+            :label="input.label"
+            :key="index"
+            :id="input.id"
+            :value="get_json_val(selected_projects, input.id)"
+            :parent_name="'projects'"
+            :disabled="input.disabled"
+            :clearable="input.clearable"
+          ></component>
+        </div>
+        <div class="table_card_buttons">
+          <div class="table_card_footer">
+            <KButton
+              class="table_card_footer_btn"
+              :name="'Сохранить'"
+              :func="'save_projects'"
+            />
+            <KButton v-if="projects_selected"
+              class="table_card_footer_btn"
+              :name="'Удалить'"
+              :func="'delete_projects'"
+            />
+          </div>
         </div>
       </div>
     </div>

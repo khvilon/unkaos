@@ -3,11 +3,11 @@ export default {
   props: {
     width: {
       type: Number,
-      default: 35
+      default: 20
     },
     height: {
       type: Number,
-      default: 35
+      default: 20
     },
     enabled: {
       type: Boolean,
@@ -45,6 +45,8 @@ export default {
 
 <style lang="scss">
 @import "../css/global.scss";
+
+
 
 .icon-watcher *{
   color: var(--on-button-icon-color);

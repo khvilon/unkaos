@@ -13,8 +13,12 @@ class TelegramMessage {
   }
 
   async init(userData: UserData) {
-    const ans = await sql`SELECT value FROM admin.config WHERE service = 'telegram' AND name = 'token'`;
+    const ans = await sql`SELECT value FROM server.configs WHERE service = 'telegram' AND name = 'token'`;
     telegramConf = { token: ans[0].value };
+
+    if(!telegramConf.token) return;
+
+    await this.stopBot();
 
     this.bot = new TelegramBot(telegramConf.token, { polling: true });
     let me = this
@@ -31,10 +35,24 @@ class TelegramMessage {
       me.bot.sendMessage(telegramId, username + ', ' + ans);
     });
 
-    console.log('telegram bot up')
+    console.log('telegram bot up', telegramConf.token)
+  }
+
+  async stopBot() {
+    console.log('stopBot');
+    if (this.bot) {
+      await this.bot.stopPolling();
+      console.log('Stopped existing bot instance');
+      this.bot = null;
+    }
   }
 
   async send(userId: string, title: string, body: string) {
+
+    if(!this.bot){
+      console.log('cant send telegram - not configured');
+      return;
+    }
 
     console.log('userId', userId)
     try{ 

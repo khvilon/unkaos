@@ -13,13 +13,21 @@ $table-card-width: calc(100% - $table-panel-width);
   display: flex;
   width: $table-panel-width;
   height: calc(100vh - $top-menu-height);
+  
+  background: transparent;
 }
 
+
+
 .table_card {
-  height: calc(100vh - $top-menu-height);
-  padding: 10px 20px 10px 20px;
+  height: calc(100vh - $top-menu-height - 20px);
+  padding: 10px 14px 20px 20px;
   width: $table-card-width;
-  display: inline-block;
+  margin-right: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .table_card > *:not(:last-child) {
@@ -29,12 +37,47 @@ $table-card-width: calc(100% - $table-panel-width);
 .table_card_footer {
   display: flex;
   justify-content: space-between;
+  gap: 20px;
+
 }
 
 .table_card_footer_btn {
-  width: 45%;
-
-  input {
-    width: 100%;
-  }
+  width: 100%;
+  display: flex;
+  
 }
+
+.table_card_fields{
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+
+
+.table_card_fields::-webkit-scrollbar {
+  //display: none;
+}
+
+.table_card_fields .input{
+  margin-bottom: 15px;
+  
+}
+
+.table_card_buttons{
+  display: flex;
+  flex-direction: column;
+
+  
+}
+
+.table_card_buttons .btn{
+  height: $input-height;
+}
+
+.table_card_buttons > *:not(:last-child){
+  margin-bottom: 15px;
+}
+

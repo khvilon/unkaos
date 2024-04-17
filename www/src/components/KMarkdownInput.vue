@@ -235,6 +235,11 @@ export default {
       let valLength = this.val.substring(startPos, endPos).length
       this.wrapSelectionBySymbols('[','](https://)',valLength + 3, -1)
     },
+    mdImplant() {
+      let { startPos, endPos } = this.getSelectionVars()
+      let valLength = this.val.substring(startPos, endPos).length
+      this.wrapSelectionBySymbols(' !implant(',')',valLength + 3, -1)
+    },
     mdListUl() {
       this.leftPadSelectedLinesBySymbols('- ')
     },
@@ -365,6 +370,7 @@ export default {
         <div class="markdown-input-button bx bx-list-check"      @mousedown.prevent @click="mdListCheck"     title="Чеклист"></div>
         <div class="markdown-input-button-separator"></div>
         <div class="markdown-input-button bx bx-table"           @mousedown.prevent @click="mdTable"         title="Таблица"></div>
+        <div class="markdown-input-button bx bx-link-external"            @mousedown.prevent @click="mdImplant"       title="Описание из другой задачи" ></div>
         <div class="markdown-input-button bx bx-image"
              @click.self="toggleImgSelect"
              title="Изображение"

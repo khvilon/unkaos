@@ -1,32 +1,77 @@
 #!/bin/bash
 
+# Detect OS and set package manager commands
+OS_ID=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
+OS_ID="${OS_ID//\"/}" # Remove quotes from the string
+
 cd /var/app/unkaos
 
-#load env variables
+# Load environment variables
 if [ -f .env ]; then
   source .env
 fi
 
 # Configuration
-CHECK_INTERVAL=5000
-ALLOWED_UPDATE_FROM="00:00"
-ALLOWED_UPDATE_TO="23:59"
-AUTO_UPDATE="true"
-META_FILE_URL="https://raw.githubusercontent.com/khvilon/unkaos/dev/meta.json"
+BRANCH=${1:-master}
+META_FILE_BASE_URL="https://raw.githubusercontent.com/khvilon/unkaos"
+META_FILE_URL="$META_FILE_BASE_URL/$BRANCH/meta.json"
 YML_PATH="/var/docker-compose.yml"
 MIGRATIONS_DIR="server/db/"
 
-#Check if autoupdate is on and the time is aloud for update========================================================================
+# Fetch configurations
+CONFIGS=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name, value FROM server.configs WHERE service = 'autoupdate'" | grep -E 'from|allow|to')
+
+# Process and assign values to variables
+while IFS='|' read -r name value; do
+    # Trim whitespace from name and value
+    name=$(echo "$name" | xargs)
+    value=$(echo "$value" | xargs)
+
+    case $name in
+        "from")
+            ALLOWED_UPDATE_FROM="$value"
+            ;;
+        "to")
+            ALLOWED_UPDATE_TO="$value"
+            ;;
+        "allow")
+            AUTO_UPDATE="$value"
+            ;;
+    esac
+done <<< "$CONFIGS"
+
+# Echo variables for verification
+echo "ALLOWED_UPDATE_FROM: $ALLOWED_UPDATE_FROM"
+echo "ALLOWED_UPDATE_TO: $ALLOWED_UPDATE_TO"
+echo "AUTO_UPDATE: $AUTO_UPDATE"
+
+
+
+# Function to check if update time is allowed
 is_time_allowed() {
-  CURRENT_TIME=$(date +"%H:%M")
-  if [[ "$CURRENT_TIME" > "$ALLOWED_UPDATE_FROM" && "$CURRENT_TIME" < "$ALLOWED_UPDATE_TO" ]]; then
-    return 0
+  # Get the current hour
+  CURRENT_HOUR=$(date +"%H")
+
+  # Convert the current hour to an integer
+  CURRENT_HOUR=$(printf "%d" "$CURRENT_HOUR")
+
+  # Check if update is allowed based on the time range
+  if [[ "$ALLOWED_UPDATE_FROM" -le "$ALLOWED_UPDATE_TO" ]]; then
+    # Time range does not span midnight
+    if [[ "$CURRENT_HOUR" -ge "$ALLOWED_UPDATE_FROM" && "$CURRENT_HOUR" -lt "$ALLOWED_UPDATE_TO" ]]; then
+      return 0
+    fi
   else
-    return 1
+    # Time range spans midnight
+    if [[ "$CURRENT_HOUR" -ge "$ALLOWED_UPDATE_FROM" || "$CURRENT_HOUR" -lt "$ALLOWED_UPDATE_TO" ]]; then
+      return 0
+    fi
   fi
+
+  return 1
 }
 
-# Check if time is allowed
+
 is_time_allowed
 TIME_ALLOWED=$?
 
@@ -34,10 +79,8 @@ if [[ "$AUTO_UPDATE" != "true" || $TIME_ALLOWED -ne 0 ]]; then
   echo "Exiting due to AUTO_UPDATE being false or update time not allowed."
   exit 0
 fi
-#</>Check if autoupdate is on and the time is aloud for update=====================================================================
 
-
-#Check if autoupdate needed or the version is up to date===========================================================================
+# Function to compare versions
 compare_versions() {
   local ver1="$1"
   local ver2="$2"
@@ -66,74 +109,105 @@ normalize_version() {
 CURRENT_VERSION=$(grep -o '"version": "[^"]*' /var/app/unkaos/meta.json | grep -o '[0-9].*')
 
 TIMESTAMP=$(date +%s)
-wget --header="Cache-Control: no-cache" -O - "$META_FILE_URL?$TIMESTAMP" > temp_meta.json
+curl -H "Cache-Control: no-cache" "$META_FILE_URL?$TIMESTAMP" -o temp_meta.json
 NEW_VERSION=$(grep -o '"version": "[^"]*' temp_meta.json | grep -o '[0-9].*')
 rm temp_meta.json
 
 compare_versions "$CURRENT_VERSION" "$NEW_VERSION"
-  version_compare_current_result=$?
+version_compare_current_result=$?
+
+echo "Your current version: $CURRENT_VERSION"
+echo "Last version available: $NEW_VERSION"
 
 if [[ $version_compare_current_result -gt 0 ]]; then
   echo "Your version is up to date."
   exit 0
 fi
-#</>Check if autoupdate needed or the version is up to date========================================================================
 
-#perform update====================================================================================================================
-echo "New version $NEW_VERSION available."
+echo "New version available! Updating..."
 
+# Enable maintenance mode in Nginx
+docker-compose exec nginx sh -c 'touch /etc/nginx/conf.d/maintenance.flag'  
+docker-compose exec nginx nginx -s reload
+
+docker image prune -f
+
+# Switch to the correct branch before pulling updates
 git stash
+if [ "$BRANCH" == "dev" ]; then
+  git checkout dev
+else
+  git checkout master
+fi
 git pull
 git stash pop -q
-#Perform DB migration if needed for all workplaces-----------------------------------------------------
 
-# Get a list of workspaces names
+# DB migration logic
 WORKSPACES=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name FROM admin.workspaces" | tail -n +3 | grep -v '^(.*row)')
 
-# Get a list of migration files matching the pattern
 migration_files=$(find "$MIGRATIONS_DIR" -type f -name 'z[0-9]*_m.sql' | sort -V)
 
-# Iterate over migration files and filter by version
 for file in $migration_files; do
-  # Extract version from the filename
   version=$(basename "$file" | awk -F'[z._]' '{printf "%d.%d.%d\n", $2, $3, $4}')
 
-
-
-  # Compare the version with current and new versions
   compare_versions "$version" "$CURRENT_VERSION"
   version_compare_result=$?
 
   compare_versions "$version" "$NEW_VERSION"
   version_compare_new_result=$?
 
-  echo "try $file $version_compare_result $version_compare_new_result"
   if [ $version_compare_result -eq 2 ] && [ $version_compare_new_result -lt 2 ]; then
     echo "Found migration file: $file"
     
-    # Execute the content of $file
-    echo "Executing migration file: $file"
     cat "$file" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
     
-    # Execute for each workspace with 'public' replaced by workspace name
     for workspace in $WORKSPACES; do
-      echo "Executing migration for workspace $workspace"
-
-      # Replace 'public' in the SQL content with the workspace name to get modified_sql
       modified_sql=$(cat "$file" | sed "s/\bpublic\b/$workspace/g")
-      
-      # Execute the modified SQL for the workspace
       echo "$modified_sql" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
     done
   fi
 done
-#</>Perform DB migration if needed for all warkplaces--------------------------------------------------
-docker-compose down
-docker-compose up -d --build
-#</>perform update=================================================================================================================
 
-# Main Script
-echo "Autoupdate conf: $AUTO_UPDATE, $ALLOWED_UPDATE_FROM-$ALLOWED_UPDATE_TO, $CHECK_INTERVAL"
+CPU_CORES=$(nproc)
+if [ "$CPU_CORES" -gt 1 ]; then
+    CPU_CORES=$((CPU_CORES - 1))
+else
+    CPU_CORES=1
+fi
 
-echo "Current Version: $CURRENT_VERSION"
+CPU_CORES=1
+
+docker-compose down ossa cerberus zeus gateway hermes eileithyia athena postgres
+docker-compose up -d  eileithyia athena postgres
+
+case $OS_ID in
+    ubuntu|debian|raspbian)
+        docker-compose up --build -d \
+        --scale ossa=$CPU_CORES \
+        --scale cerberus=$CPU_CORES \
+        --scale zeus=$CPU_CORES \
+        --scale gateway=$CPU_CORES \
+        --scale hermes=$CPU_CORES
+        ;;
+    centos)
+        docker compose up -d --build \
+        --scale ossa=$CPU_CORES \
+        --scale cerberus=$CPU_CORES \
+        --scale zeus=$CPU_CORES \
+        --scale gateway=$CPU_CORES \
+        --scale hermes=$CPU_CORES
+        ;;
+    *)
+        echo "Unsupported OS: $OS_ID"
+        ;;
+esac
+
+# Disable maintenance mode in Nginx
+docker-compose exec nginx sh -c 'rm /etc/nginx/conf.d/maintenance.flag'
+docker-compose exec nginx nginx -s reload
+
+# Main Script Output
+echo "Autoupdate conf: $AUTO_UPDATE, $ALLOWED_UPDATE_FROM-$ALLOWED_UPDATE_TO"
+echo "Your old version: $CURRENT_VERSION"
+echo "Your new version: $NEW_VERSION"
 echo "Current Time: $CURRENT_TIME"

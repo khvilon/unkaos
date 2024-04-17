@@ -36,7 +36,7 @@ methods: {
 </script>
 
 <template>
-  <div class="langselect">
+  <div class="langselect input">
     <SelectInput
         :label="label"
         :values="langs"

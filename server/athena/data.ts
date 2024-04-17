@@ -31,7 +31,6 @@ export class Data {
   public async updateLogAthena(uuid: string, athenaAns: string){
     await sql`UPDATE ${sql(this.workspace + '.gpt_logs')} SET athena_answer = ${athenaAns} WHERE uuid = ${uuid}`
   }
-  
 
   public async getFields(workspace: string): Promise<Array<object>> {
     const fields = await sql`SELECT f.name, f.available_values, ft.code AS type, f.uuid FROM  ${sql(
@@ -110,6 +109,22 @@ export class Data {
         return i;
       }
     }
+
+    let trValue = tools.transliterateRuToEn(value);
+    if(trValue === value) trValue = tools.transliterateEnToRu(value);
+
+    for (let i = 0; i < values.length; i++) {
+      if (this.isMatching(trValue, values[i])){
+        return i;
+      }
+    }
+
+    for (let i = 0; i < values.length; i++) {
+      if (this.isMatching(value, values[i]), 0.8) {
+        return i;
+      }
+    }
+    
     return -1;
   }
 

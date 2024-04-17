@@ -8,7 +8,7 @@ export default {
     },
     label: {
       type: String,
-      default: "label",
+      default: "",
     },
     value: {
       type: Boolean,
@@ -39,8 +39,8 @@ export default {
 </script>
 
 <template>
-  <label class="boolean">
-    <div class="label">{{ label }}</div>
+  <label class="boolean input">
+    <div class="label" v-if="label != ''">{{ label }}</div>
     <input type="checkbox" v-model="value" :disabled="disabled" style="display: none"/>
     <span class="boolean-input" v-bind:class="{ disabled: disabled }"> </span>
   </label>
@@ -57,6 +57,7 @@ export default {
 
 .boolean {
   display: block;
+  width: $input-height;
 }
 
 .boolean-input {
@@ -65,11 +66,13 @@ export default {
   border-radius: var(--border-radius);
   transition: all 0.5s ease;
   background: var(--input-bg-color);
-  display: inline-block;
+  display: block;
   text-align: center;
   border-color: var(--border-color);
   border-width: var(--border-width);
   border-style: var(--border-style);
+  position: relative;
+  cursor: pointer;
 }
 
 [type="checkbox"] {
@@ -82,11 +85,18 @@ export default {
 }
 
 .boolean-input:after {
+  // Стили для псевдоэлемента, отображающего галочку
   content: "\2714";
-  display: none;
+  position: absolute; // Позиционирование галочки независимо от других элементов
+  top: 50%; // Центрирование по вертикали
+  left: 50%; // Центрирование по горизонтали
+  transform: translate(-50%, -50%); // Точное центрирование галочки
+  display: none; // Изначально скрыта
+  font-size: 18px; // Размер галочки
 }
 
 .boolean .disabled {
   background: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 </style>

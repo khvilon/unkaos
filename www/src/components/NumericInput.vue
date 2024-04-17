@@ -78,7 +78,7 @@ export default {
 </script>
 
 <template>
-  <div class="numeric">
+  <div class="numeric input">
     <div class="label">{{ label }}</div>
     <input
       type="number"
@@ -104,7 +104,6 @@ export default {
 
 .numeric-input {
   font-size: 14px;
-  font-weight: 400;
   border-radius: var(--border-radius);
   transition: all 0.5s ease;
   background: var(--input-bg-color);
@@ -113,6 +112,7 @@ export default {
 
 .numeric-input:disabled {
   background: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 
 input[type="number"] {

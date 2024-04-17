@@ -158,7 +158,7 @@ let methods = {
 		this.filters = filters//my_filters.concat(public_filters);
 
 		//console.log('sselected_board4')
-		if(this.board[0].query == '') return
+		//if(this.board[0].query == '') return
 		if(this.board[0].query[this.board[0].query.length-1] == ' ') this.board[0].query = this.board[0].query.trimEnd()
 		else this.board[0].query += ' '
 	},
@@ -268,7 +268,7 @@ let methods = {
 			}
 		}
 
-		if(this.selected_board.use_sprint_filter){
+		if(this.selected_board.use_sprint_filter && this.$store.state['common'].use_sprints){
 			let sprint_uuid = this.sprints[this.curr_sprint_num].uuid
 			if(!this.conf.sprints) this.conf.sprints = {}
 			this.conf.sprints[sprint_uuid] = { swimlanes: swimlanes }
@@ -391,7 +391,7 @@ let methods = {
 		
 
 
-			if(this.selected_board.use_sprint_filter){
+			if(this.selected_board.use_sprint_filter && this.$store.state['common'].use_sprints){
 				let sprint_uuid = this.sprints[this.curr_sprint_num].uuid
 				
 				if (this.conf && this.conf.sprints && this.conf.sprints[sprint_uuid] && this.conf.sprints[sprint_uuid].swimlanes[x]){
@@ -421,7 +421,7 @@ let methods = {
 			let is_in_columns = this.boards_columns.map((obj) => obj.uuid).indexOf(this.boards_issues[i].status_uuid) > -1
 
 			if (is_in_columns &&
-				(!this.selected_board.use_sprint_filter || this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num].uuid)) {
+				(!(this.selected_board.use_sprint_filter && this.$store.state['common'].use_sprints) || this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num].uuid)) {
 				//console.log(this.boards_issues[i].sprint_uuid == this.sprints[this.curr_sprint_num], this.boards_issues[i].sprint_uuid, this.sprints[this.curr_sprint_num])
 				if (this.swimlanes[x].filtered_issues[status_uuid] == undefined) this.swimlanes[x].filtered_issues[status_uuid] = []
 
@@ -496,17 +496,18 @@ let methods = {
 	get_issues: async function (query) ///added other things on mount
 	{
 		let options = {}
-		if (query != undefined && query != '') {
-			options.query = query
+		//if (query != undefined && query != '') {
+			options.query = query.trim();
 			this.encoded_query = query
-		}
+		/*}
 		else if (this.encoded_query != undefined && this.encoded_query != '') {
 			options.query = this.encoded_query
 		}
-		else return
+		else return*/
 
-		let query_str = '(' + decodeURIComponent(atob(options.query)).split('order by')[0] + ')'
-		if (this.selected_board.use_sprint_filter) {
+		let query_str = decodeURIComponent(atob(options.query)).split('order by')[0]
+		if(query_str != '') query_str = '(' + query_str + ')'
+		if (this.selected_board.use_sprint_filter && this.$store.state['common'].use_sprints) {
 			query_str += " and attr#sprint_uuid#='" + this.sprints[this.curr_sprint_num].uuid + "'#"
 		}
 
@@ -515,11 +516,15 @@ let methods = {
 			query_str += ' and (' + active_filters[i].converted_query + ')'
 		}
 
+	
+
 		console.log('options.query', query_str)
 		options.query = btoa(encodeURIComponent(query_str))
 
+		console.log('>>>>>>>>>>>>>>>>>>>>get_issues2' , options, '#')
 
-		this.boards_issues = await rest.run_method('read_issues', options)
+		if(options.query) this.boards_issues = await rest.run_method('read_issues', options)
+		else this.boards_issues = await rest.run_method('read_issues')
 
 		this.make_swimlanes()
 	},
@@ -766,14 +771,16 @@ let methods = {
 		return val
 	},
 	get_card_color(issue) {
-		let p = this.get_field_value(issue, { uuid: 'b6ddb33f-eea9-40c0-b1c2-d9ab983026a1' })
-
-		if (p == 'Minor') return 'green'
-		else if (p == 'Normal') return 'yellow'
-		else if (p == 'Major') return 'orange'
-		else if (p == 'Critical') return 'pink'
-		else if (p == 'Show-stopper') return 'red'
-		else return 'gray'
+		const defaultColor = 'gray';
+		const colorFieldUUID = this.selected_board.color_field_uuid;
+		if(!colorFieldUUID) return defaultColor;
+		const colorField = this.fields.filter((f)=>f.uuid == colorFieldUUID)[0]
+		if(!colorField || !tools.isValidJSON(colorField.available_values)) return defaultColor;	
+		const colorFieldValueUUID = this.get_field_value(issue, colorField)
+		if(!colorFieldValueUUID) return defaultColor;
+		const colorFieldValue = JSON.parse(colorField.available_values).filter((av)=>av.uuid==colorFieldValueUUID);
+		if(!colorFieldValue || !colorFieldValue[0] || !colorFieldValue[0].color) return defaultColor;
+		return colorFieldValue[0].color;	
 	},
 	delete_board() {
 		this.$store.dispatch('delete_board')
@@ -934,7 +941,7 @@ let methods = {
 			}
 		}
 
-		if (this.selected_board.use_sprint_filter) issue.sprint_uuid = this.sprints[this.curr_sprint_num].uuid
+		if (this.selected_board.use_sprint_filter && this.$store.state['common'].use_sprints) issue.sprint_uuid = this.sprints[this.curr_sprint_num].uuid
 
 		for (let i in issue.values) {
 			issue.values[i].issue_uuid = issue.uuid;
@@ -977,9 +984,8 @@ let methods = {
 
 		//console.log(created_issue)
 	},
-	field_updated: async function (e, field) {
-		console.log("field_updated", e, field);
-
+	field_updated: async function (e, field, issue) {
+		console.log(">>>field_updated", e, field, issue);
 	},
 
 	start_add_filter: function () {
@@ -1037,9 +1043,11 @@ const data =
 	parent_relation_type_uuid: "73b0a22e-4632-453d-903b-09804093ef1b",
 	instance:
 	{
-		name: '',
+		name: 'Название',
 		boards_columns: [],
 		boards_fields: [],
+		use_sprint_filter: false,
+		query: ''
 	},
 	statuses_ends_dict: {},
 	conf: {},
@@ -1112,6 +1120,11 @@ const data =
 	inputs: [
 		{
 			id: 'estimate_uuid',
+			dictionary: 'fields',
+			type: 'Select',
+		},
+		{
+			id: 'color_field_uuid',
 			dictionary: 'fields',
 			type: 'Select',
 		},
@@ -1190,6 +1203,9 @@ mod.computed.board_query_info = function () {
 
 mod.computed.boards_columns = function () {
 	if (this.selected_board == undefined || this.selected_board.boards_columns == undefined) return []
+	console.log('boards_columns', this.column_values, this.selected_board.boards_columns)
+
+	
 	return this.selected_board.boards_columns.map((v) => v.status[0])
 }
 
@@ -1221,19 +1237,21 @@ mod.computed.display_description = function () {
 }
 
 mod.computed.available_values = function (field_uuid) {
-	//		console.log('get_available_values', field_uuid)
 	let av = {}
 
 	for (let i in this.fields) {
-		if (this.fields[i].available_values == undefined) {
+		if (!this.fields[i].available_values) {
 			av[this.fields[i].uuid] = []
-			continue;
 		}
-		let available_values = this.fields[i].available_values
+		else if(tools.isValidJSON(this.fields[i].available_values)){
+			av[this.fields[i].uuid] = JSON.parse(this.fields[i].available_values)
+		}
+		else{
+			let available_values = this.fields[i].available_values
 			.split(",")
 			.map((v) => v.replace("\n", "").replace("\r", "").trim());
-		av[this.fields[i].uuid] = available_values;
-
+			av[this.fields[i].uuid] = available_values;
+		}
 	}
 	return av
 }
@@ -1257,6 +1275,16 @@ mod.computed.total_sum = function () {
 
 mod.computed.active_filters = function(){
 	return this.filters.filter((f) => f.is_active)
+}
+
+mod.computed.colored_fields = function(){
+	return this.fields.filter((f) => {
+		if(f.type[0].code != 'Select' || !f.available_values) return false
+		if(!tools.isValidJSON(f.available_values)) return false;
+		let av = JSON.parse(f.available_values)
+		if(av && av[0] && av[0].color) return true;
+		return false;
+	});
 }
 
 
@@ -1291,7 +1319,7 @@ export default mod
 				</StringInput>
 
 
-				<div v-if="board != undefined && selected_board != undefined && selected_board.use_sprint_filter && sprints.length > 0"
+				<div v-if="board != undefined && selected_board != undefined && selected_board.use_sprint_filter && this.$store.state['common'].use_sprints && sprints.length > 0"
 					class="board-sprint-filter">
 					<span class='board-sprint-filter-btn' @click="update_sprint_num(curr_sprint_num - 1)">❮</span>
 					<SelectInput class="board-sprint-filter-string" label=''
@@ -1430,19 +1458,29 @@ export default mod
 												v-if="f.fields != undefined && f.fields[0] != undefined && f.fields[0].name != 'Описание'">
 												{{ f.fields[0].name }}: </label>
 											<component
-												v-if="false && f.fields != undefined && f.fields[0] != undefined && f.fields[0].name != 'Описание'"
+												v-if="true && f.fields != undefined && f.fields[0] != undefined && f.fields[0].name != 'Описание'"
 												v-bind:is="f.fields[0].type[0].code + 'Input'"
-												:value="get_field_value(issue, f.fields[0])" label=""
+												:value="get_field_value(issue, f.fields[0])" 
+												label=""
 												:key="issue.uuid + '_' + i_index + '_' + f_index"
-												:disabled="f.fields[0].name == 'Автор'"
-												:values="available_values[f.fields_uuid]" class="board-card-field-input"
-												@updated="field_updated($event, f.fields[0])"></component>
+												:disabled="true || f.fields[0].name == 'Автор'"
+												:values="available_values[f.fields_uuid]" 
+												class="board-card-field-input"
+												@updated="function(val){field_updated(val, f.fields[0], issue)}"
+												:parameters="{ reduce: obj => obj.uuid }"
+											>
+											</component>
 											<StringInput
-												v-if="swimlane.expanded && f.fields != undefined && f.fields[0] != undefined && f.fields[0].name != 'Описание'"
-												:value="get_field_value(issue, f.fields[0], true)" label=""
-												:key="issue.uuid + '_' + i_index + '_' + f_index" :disabled="true"
-												:values="available_values[f.fields_uuid]" class="board-card-field-input"
-												@updated="field_updated($event, f.fields[0])"></StringInput>
+												v-if="false && f.fields && f.fields[0] && f.fields[0].name != 'Описание'"
+												:value="get_field_value(issue, f.fields[0], true)" 
+												label=""
+												:key="issue.uuid + '_' + i_index + '_' + f_index" 
+												:disabled="true"
+												:values="available_values[f.fields_uuid]" 
+												class="board-card-field-input"
+												@updated="field_updated($event, f.fields[0])"
+											>
+											</StringInput>
 										</div>
 									</div>
 
@@ -1470,49 +1508,70 @@ export default mod
 
 
 			<div class="modal-bg" v-show="configs_open">
-				<div class="panel modal board-config">
+				<div class="panel modal board-config table_card">
+					
+					<div class="table_card_fields">
+						<IssuesSearchInput v-if="board != undefined && 
+						selected_board && (!(selected_board.use_sprint_filter && $store.state['common'].use_sprints) || sprints[curr_sprint_num])" label="Запрос" class='board-issue-search-input'
+							:parent_name="'board'" @update_parent_from_input="update_search_query" :fields="fields"
+							@search_issues="get_issues" :projects="projects" :issue_statuses="issue_statuses"
+							:tags="issue_tags" :issue_types="issue_types" :users="users" :sprints="sprints"
+							:disabled="!configs_open" id='query' :parent_query="selected_board.query">
 
-					<IssuesSearchInput v-if="board != undefined && 
-					selected_board && (!selected_board.use_sprint_filter || sprints[curr_sprint_num])" label="Запрос" class='board-issue-search-input'
-						:parent_name="'board'" @update_parent_from_input="update_search_query" :fields="fields"
-						@search_issues="get_issues" :projects="projects" :issue_statuses="issue_statuses"
-						:tags="issue_tags" :issue_types="issue_types" :users="users" :sprints="sprints"
-						:disabled="!configs_open" id='query' :parent_query="selected_board.query">
+						</IssuesSearchInput>
 
-					</IssuesSearchInput>
+						<SelectInput v-if="inputs_dict != undefined && selected_board != undefined" label='Статусы'
+							id='boards_columns' :parent_name="'board'" clearable="false"
+							:value="get_json_val(selected_board, 'boards_columns')" :values="column_values"
+							:parameters="{ multiple: true, reduce: obj => obj }" @update_parent_from_input="make_swimlanes"></SelectInput>
 
-					<SelectInput v-if="inputs_dict != undefined && selected_board != undefined" label='Статусы'
-						id='boards_columns' :parent_name="'board'" clearable="false"
-						:value="get_json_val(selected_board, 'boards_columns')" :values="column_values"
-						:parameters="{ multiple: true }" @update_parent_from_input="make_swimlanes"></SelectInput>
+						<SelectInput v-if="inputs_dict != undefined" label='Группировать по' clearable="true"
+							:value="swimlanes_value" :values="swimlanes_values" :parameters="{ reduce: obj => obj.uuid }"
+							@update_parent_from_input="swimlanes_updated"></SelectInput>
 
-					<SelectInput v-if="inputs_dict != undefined" label='Группировать по' clearable="true"
-						:value="swimlanes_value" :values="swimlanes_values" :parameters="{ reduce: obj => obj.uuid }"
-						@update_parent_from_input="swimlanes_updated"></SelectInput>
+						<SelectInput v-if="inputs_dict != undefined" 
+						label='Суммируемое поле' id='estimate_uuid'
+							:parent_name="'board'" clearable="false" :value="get_json_val(selected_board, 'estimate_uuid')"
+							:values="inputs_dict['estimate_uuid'].values.filter((v) => v.type[0].code == 'Numeric')"
+							:parameters="inputs_dict['estimate_uuid']" @update_parent_from_input="make_swimlanes">
+						</SelectInput>
 
-					<SelectInput v-if="inputs_dict != undefined" label='Суммируемое поле' id='estimate_uuid'
-						:parent_name="'board'" clearable="false" :value="get_json_val(selected_board, 'estimate_uuid')"
-						:values="inputs_dict['estimate_uuid'].values.filter((v) => v.type[0].code == 'Numeric')"
-						:parameters="inputs_dict['estimate_uuid']" @update_parent_from_input="make_swimlanes">
-					</SelectInput>
+						<SelectInput v-if="inputs_dict != undefined && selected_board != undefined" label='Поля карточки'
+							id='boards_fields' :parent_name="'board'" clearable="false"
+							:value="get_json_val(selected_board, 'boards_fields')" :values="fields_values"
+							:parameters="{ multiple: true }"></SelectInput>
 
-					<SelectInput v-if="inputs_dict != undefined && selected_board != undefined" label='Поля карточки'
-						id='boards_fields' :parent_name="'board'" clearable="false"
-						:value="get_json_val(selected_board, 'boards_fields')" :values="fields_values"
-						:parameters="{ multiple: true }"></SelectInput>
+						<BooleanInput 
+						v-show = "$store.state['common'].use_sprints"
+						label='Использовать фильтр по спринтам' id='use_sprint_filter'
+							:value="get_json_val(selected_board, 'use_sprint_filter')" :parent_name="'board'"
+							@update_parent_from_input="make_swimlanes"></BooleanInput>
 
-					<BooleanInput label='Использовать фильтр по спринтам' id='use_sprint_filter'
-						:value="get_json_val(selected_board, 'use_sprint_filter')" :parent_name="'board'"
-						@update_parent_from_input="make_swimlanes"></BooleanInput>
+						<SelectInput label='Поле цвета' 
+							id='color_field_uuid'
+							:parent_name="'board'" 
+							clearable="false" 
+							:values="colored_fields"
+							multiple: false
+							:value="get_json_val(selected_board, 'color_field_uuid')"
+						>
+						</SelectInput>
+					</div>
 
-					<SelectInput label='Поле цвета (функция в разработке)' id='fields' disabled="true"
-						:parent_name="'board'" clearable="false" :values="[]" multiple: false></SelectInput>
-
-
-					<div class="table_card_footer">
-						<KButton name="Сохранить" class="table_card_footer_btn" :func="'save_board'"
-							@click="configs_open = false" />
-						<KButton name="Отменить" class="table_card_footer_btn" @click="configs_open = false" />
+					<div class="table_card_buttons">
+						<div class="table_card_footer">
+							<KButton
+							class="table_card_footer_btn"
+							:name="'Сохранить'"
+							:func="'save_board'"
+							@click="configs_open = false"
+							/>
+							<KButton 
+							class="table_card_footer_btn"
+							:name="'Отменить'"
+							@click="configs_open = false"
+							/>
+						</div>
 					</div>
 
 				</div>
@@ -1521,10 +1580,7 @@ export default mod
 
 		</div>
 
-		<GptPanel
-          v-if="!loading && id !== '' && !$store.state['common']['is_mobile']"
-          :context="boards_issues"
-        />
+		
 
 
 	</div>
@@ -1539,6 +1595,7 @@ $cards_field_left: 20px;
 #boards_table_panel,
 #boards_card {
 	height: calc(100vh - $top-menu-height);
+	
 }
 
 #boards_table_panel {
@@ -1562,7 +1619,10 @@ $cards_field_left: 20px;
 	display: flex;
 	flex-direction: column;
 	height: calc(100vh - $top-menu-height);
-	overflow: scroll;
+	background: transparent;
+
+	overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 #board_down_panel::-webkit-scrollbar {
@@ -1571,25 +1631,20 @@ $cards_field_left: 20px;
 
 .board-config {
 	padding: 20px;
+	transform: translateX(-50%);
+    left: 50%;
+    position: relative;
+    margin-top: 10px !important;
+}
+
+.board-config .label {
+	text-wrap: nowrap;
 }
 
 .board-config>*:not(:last-child) {
 	margin-bottom: 10px;
 }
 
-.table_card_footer {
-	margin-top: 20px;
-	display: flex;
-	justify-content: space-between;
-}
-
-.table_card_footer_btn {
-	width: 45%;
-
-	input {
-		width: 100%;
-	}
-}
 
 
 .status-board-collumn {
@@ -1608,14 +1663,13 @@ $cards_field_left: 20px;
 }
 
 .issue-board-cards-container {
-	background: var(--disabled-bg-color);
+	background: var(--group-bg-color);
 	border-radius: var(--border-radius);
 	border-color: var(--disabled-bg-color);
-	border-width: 5px;
-	border-style: solid;
+	border-style: none;
 	overflow: scroll;
 	height: 100%;
-
+	margin: 5px;
 	display: flex;
 	flex-direction: column;
 	overflow: visible;
@@ -1846,8 +1900,6 @@ $cards_field_left: 20px;
 	display: flex;
 	overflow: hidden;
 	margin-left: $cards_field_left;
-	overflow: visible;
-	padding-bottom: 30px;
 }
 
 .swimlane-body-closed * {
@@ -1902,6 +1954,8 @@ $cards_field_left: 20px;
 	max-height: 0px !important;
 	min-height: 0px !important;
 	font-size: 11px !important;
+	margin: 0px !important;
+	padding: 0px !important;
 }
 
 .board-card-field-input {
@@ -2144,4 +2198,13 @@ $cards_field_left: 20px;
 .filters-row .filter:hover {
 	box-shadow: var(--text-color) 0px 0px 3px;
 }
+</style>
+
+<style lang="scss" scoped>
+@use 'css/table-page' with (
+  $table-panel-width: 20%
+);
+
+
+
 </style>

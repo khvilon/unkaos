@@ -80,6 +80,7 @@ ALTER TABLE ONLY public.boards_filters
 
 CREATE TABLE public.configs (
     uuid uuid NOT NULL,
+    service text NOT NULL,
     name text NOT NULL,
     value text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -87,7 +88,7 @@ CREATE TABLE public.configs (
     deleted_at timestamp with time zone
 );
 ALTER TABLE ONLY public.configs
-    ADD CONSTRAINT configs_pkey PRIMARY KEY (uuid);
+    ADD CONSTRAINT configs_pkey PRIMARY KEY (uuid);    
 
 CREATE TABLE public.dashboards (
     uuid uuid NOT NULL,
@@ -223,6 +224,7 @@ CREATE TABLE public.issue_actions (
     author_uuid uuid NOT NULL,
     value text,
     type_uuid uuid DEFAULT 'f53d8ecc-c26e-4909-a070-5c33e6f7a196'::uuid NOT NULL,
+    archived_at timestamp without time zone,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
@@ -297,9 +299,9 @@ ALTER TABLE ONLY public.issue_types_to_fields
 CREATE TABLE public.issues (
     uuid uuid NOT NULL,
     type_uuid uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone,
+    deleted_at timestamp without time zone,
     num bigint,
     project_uuid uuid,
     status_uuid uuid,
@@ -413,40 +415,39 @@ CREATE TABLE public.old_issues_num (
 ALTER TABLE ONLY public.old_issues_num
     ADD CONSTRAINT old_issues_num_pkey PRIMARY KEY (uuid);
 
-CREATE TABLE public.permition_targets (
+
+CREATE TABLE public.permissions (
     uuid uuid NOT NULL,
+    code text NOT NULL,
     name text NOT NULL,
-    table_name text
-);
-ALTER TABLE ONLY public.permition_targets
-    ADD CONSTRAINT permition_targets_pkey PRIMARY KEY (uuid);
-
-CREATE TABLE public.permitions (
-    uuid uuid NOT NULL,
-    role_uuid uuid NOT NULL,
-    target_uuid uuid NOT NULL,
-    permits boolean DEFAULT true NOT NULL,
+    targets jsonb NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY public.permitions
-    ADD CONSTRAINT permitions_pkey PRIMARY KEY (uuid);
+ALTER TABLE ONLY public.permissions
+    ADD CONSTRAINT permissions_pkey PRIMARY KEY (uuid);
 
+CREATE TABLE IF NOT EXISTS public.roles_to_permissions
+(
+    roles_uuid uuid NOT NULL,
+    permissions_uuid uuid NOT NULL
+);
 
-
-CREATE TABLE public.permitions_for_issues (
+CREATE TABLE public.projects_permissions
+(
     uuid uuid NOT NULL,
-    project_uuid uuid,
-    permits boolean DEFAULT true NOT NULL,
-    issue_uuid uuid,
-    role_uuid uuid NOT NULL,
+    projects_uuid uuid NOT NULL,
+    roles_uuid uuid,
+    users_uuid uuid,
+    allow text NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone
 );
-ALTER TABLE ONLY public.permitions_for_issues
-    ADD CONSTRAINT permitions_for_issues_pkey PRIMARY KEY (uuid);
+ALTER TABLE IF EXISTS public.projects_permissions
+       ADD CONSTRAINT projects_permissions_pkey PRIMARY KEY (uuid); 
+
 
 CREATE TABLE public.projects (
     uuid uuid NOT NULL,
@@ -461,8 +462,6 @@ CREATE TABLE public.projects (
 );
 ALTER TABLE ONLY public.projects
     ADD CONSTRAINT projects_pkey PRIMARY KEY (uuid);
-ALTER TABLE ONLY public.projects
-    ADD CONSTRAINT projects_uuid_key UNIQUE (short_name);
 
 CREATE TABLE public.relation_types (
     uuid uuid NOT NULL,
@@ -491,7 +490,6 @@ CREATE TABLE public.roles (
     uuid uuid NOT NULL,
     name text NOT NULL,
     is_custom boolean DEFAULT true NOT NULL,
-    permissions jsonb,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone  
@@ -655,9 +653,6 @@ ALTER TABLE ONLY public.field_values
 ALTER TABLE ONLY public.field_values
     ADD CONSTRAINT fk_field_values_to_issues FOREIGN KEY (issue_uuid) REFERENCES public.issues(uuid) NOT VALID;
 
-ALTER TABLE ONLY public.issue_types_to_fields
-    ADD CONSTRAINT fk_fields_to_issue_types FOREIGN KEY (fields_uuid) REFERENCES public.fields(uuid) NOT VALID;
-
 ALTER TABLE ONLY public.fields
     ADD CONSTRAINT fk_fields_to_type FOREIGN KEY (type_uuid) REFERENCES public.field_types(uuid) NOT VALID;
 
@@ -680,7 +675,16 @@ ALTER TABLE ONLY public.issue_tags
     ADD CONSTRAINT fk_issue_tags_to_author FOREIGN KEY (author_uuid) REFERENCES public.users(uuid) NOT VALID;
 
 ALTER TABLE ONLY public.issue_types_to_fields
+    ADD CONSTRAINT fk_fields_to_issue_types FOREIGN KEY (fields_uuid) REFERENCES public.fields(uuid) NOT VALID;
+
+ALTER TABLE ONLY public.issue_types_to_fields
     ADD CONSTRAINT fk_issue_types_to_fields FOREIGN KEY (issue_types_uuid) REFERENCES public.issue_types(uuid) NOT VALID;
+
+ALTER TABLE ONLY public.roles_to_permissions
+    ADD CONSTRAINT fk_roles_to_issue_permissions FOREIGN KEY (roles_uuid) REFERENCES public.roles(uuid) NOT VALID;
+
+ALTER TABLE ONLY public.roles_to_permissions
+    ADD CONSTRAINT fk_permissions_to_roles FOREIGN KEY (permissions_uuid) REFERENCES public.permissions(uuid) NOT VALID;
 
 ALTER TABLE ONLY public.issue_types
     ADD CONSTRAINT fk_issue_types_to_workflows FOREIGN KEY (workflow_uuid) REFERENCES public.workflows(uuid) NOT VALID;
@@ -700,17 +704,17 @@ ALTER TABLE ONLY public.logs_done
 ALTER TABLE ONLY public.old_issues_num
     ADD CONSTRAINT fk_old_issues_num_to_projects FOREIGN KEY (project_uuid) REFERENCES public.projects(uuid);
 
-ALTER TABLE ONLY public.permitions_for_issues
-    ADD CONSTRAINT fk_permitions_for_issues_to_roles FOREIGN KEY (role_uuid) REFERENCES public.roles(uuid) NOT VALID;
-
-ALTER TABLE ONLY public.permitions
-    ADD CONSTRAINT fk_permitions_to_permition_targets FOREIGN KEY (target_uuid) REFERENCES public.permition_targets(uuid) NOT VALID;
-
-ALTER TABLE ONLY public.permitions
-    ADD CONSTRAINT fk_permitions_to_roles FOREIGN KEY (role_uuid) REFERENCES public.roles(uuid) NOT VALID;
-
 ALTER TABLE ONLY public.projects
     ADD CONSTRAINT fk_projects_to_owner FOREIGN KEY (owner_uuid) REFERENCES public.users(uuid) ON DELETE RESTRICT NOT VALID;
+
+--ALTER TABLE ONLY public.projects_permissions
+--    ADD CONSTRAINT fk_projects_permissions_to_project FOREIGN KEY (projects_uuid) REFERENCES public.projects(uuid) ON DELETE RESTRICT NOT VALID;
+
+ALTER TABLE ONLY public.projects_permissions
+    ADD CONSTRAINT fk_roles_to_projects_permissions FOREIGN KEY (roles_uuid) REFERENCES public.roles(uuid) ON DELETE RESTRICT NOT VALID;
+
+--ALTER TABLE ONLY public.projects_permissions
+--    ADD CONSTRAINT fk_uaers_to_projects_permissions FOREIGN KEY (users_uuid) REFERENCES public.users(uuid) ON DELETE RESTRICT NOT VALID;
 
 ALTER TABLE ONLY public.relations
     ADD CONSTRAINT fk_relation_issue0_to_issues FOREIGN KEY (issue0_uuid) REFERENCES public.issues(uuid) NOT VALID;

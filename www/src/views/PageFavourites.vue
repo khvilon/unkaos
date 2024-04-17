@@ -75,6 +75,7 @@ export default mod;
   display: flex;
   flex-direction: column;
   height: calc(100vh - $top-menu-height);
+  background: transparent !important;
 }
 
 .favourites-container {

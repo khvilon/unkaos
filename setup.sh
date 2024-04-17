@@ -1,29 +1,5 @@
 #!/bin/bash
 
-# Function to generate a random 8-letter password
-generate_password() {
-    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1
-}
-
-# Function to validate the workspace name
-validate_workspace_name() {
-    local name=$1
-    if [[ -z $name ]]; then
-        echo "Workspace name cannot be empty."
-        return 1
-    elif [[ $name =~ [^a-zA-Z0-9_] ]]; then
-        echo "Workspace name can only contain letters, numbers, and underscores."
-        return 1
-    elif [[ ${#name} -ge 64 ]]; then
-        echo "Workspace name should be shorter than 64 characters."
-        return 1
-    elif [[ ! $name =~ ^[a-zA-Z_] ]]; then
-        echo "Workspace name should start with a letter or an underscore."
-        return 1
-    fi
-    return 0
-}
-
 # Detect OS and set package manager commands
 OS_ID=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
 OS_ID="${OS_ID//\"/}" # Remove quotes from the string
@@ -35,6 +11,8 @@ case $OS_ID in
         PKG_INSTALL="$PKG_MANAGER install -y"
         CERT_INSTALL="$PKG_INSTALL certbot"
         DOCKER_INSTALL="$PKG_INSTALL docker.io docker-compose"
+        DOCKER_COMPOSE="docker-compose"
+        PSQL="postgresql-client"
         ;;
     centos)
         PKG_MANAGER="yum"
@@ -42,6 +20,8 @@ case $OS_ID in
         PKG_INSTALL="$PKG_MANAGER install -y"
         CERT_INSTALL="$PKG_INSTALL epel-release && $PKG_MANAGER install certbot -y"
         DOCKER_INSTALL="$PKG_MANAGER install -y yum-utils && $PKG_MANAGER-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo && $PKG_MANAGER install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin"
+        DOCKER_COMPOSE="docker compose"
+        PSQL="postgresql"
         ;;
     *)
         echo "Unsupported OS: $OS_ID"
@@ -57,6 +37,9 @@ cd /var/app
 sudo $PKG_INSTALL git
 git clone -b dev https://github.com/khvilon/unkaos.git
 cd /var/app/unkaos
+
+source /tools.sh
+sudo $PKG_INSTALL $PSQL
 
 # 2. Set your env variables
 # Path to the .env file
@@ -103,21 +86,20 @@ done < $ENV_FILE
 echo "Updated .env file saved."
 
 # 3. Make a copy of the server/db/public.sql with the changed schema
-while true; do
-    read -p "Enter your first workspace name: " schema_name < /dev/tty
-    validate_workspace_name "$schema_name"
-    if [[ $? -eq 0 ]]; then
-        break
-    else
-        echo "Wrong workspace name format."
-    fi
-done
+#while true; do
+#    read -p "Enter your first workspace name: " schema_name < /dev/tty
+#    validate_workspace_name "$schema_name"
+#    if [[ $? -eq 0 ]]; then
+#        break
+#    else
+#        echo "Wrong workspace name format."
+#    fi
+#done
+
+schema_name="server"
 
 cp server/db/-public.sql server/db/0$schema_name.sql
 sed -i "s/\bpublic\b/$schema_name/g" server/db/0$schema_name.sql
-sed -i "s/\btest\b/$schema_name/g" server/db/-workspace.sql
-random_password=$(generate_password)
-sed -i "s/mypass/$random_password/g" server/db/-workspace.sql
 
 # migrations
 for file in server/db/*_m.sql; do
@@ -147,18 +129,21 @@ eval $DOCKER_INSTALL
 sudo systemctl start docker
 sudo systemctl enable docker
 
-case $OS_ID in
-    ubuntu|debian|raspbian)
-        docker-compose up -d
-        ;;
-    centos)
-        docker compose up -d
-        ;;
-    *)
-        echo "Unsupported OS: $OS_ID"
-        ;;
-esac
+# Get cpu count for scaling nodes
+CPU_CORES=$(nproc)
+if [ "$CPU_CORES" -gt 1 ]; then
+    CPU_CORES=$((CPU_CORES - 1))
+else
+    CPU_CORES=1
+fi
+CPU_CORES=1
 
+$DOCKER_COMPOSE up -d \
+--scale ossa=$CPU_CORES \
+--scale cerberus=$CPU_CORES \
+--scale zeus=$CPU_CORES \
+--scale gateway=$CPU_CORES \
+--scale hermes=$CPU_CORES
 
 # 6. Set up a Cron Job to run update.sh every 5 minutes
 (crontab -l ; echo "*/5 * * * * /bin/bash /var/app/unkaos/update.sh") | crontab -

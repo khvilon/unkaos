@@ -1,17 +1,30 @@
 <script>
+import page_helper from "../page_helper.ts";
 
 import d from "../dict.ts";
 import rest from "../rest";
 import tools from "../tools";
 
-export default {
-  data()
-  {
-    return {
-      time_entries: [],
-      name: 'users',
-      total_duration: 0,
-      collumns: [
+let methods = {
+
+
+  load_time_entries: async function () {
+    console.log('>>>load_time_entries')
+    let options = {date_from: this.config.date_from, date_to: this.config.date_to}
+    if(this.config.user && this.config.user.uuid) options.author_uuid = this.config.user.uuid, 
+    this.time_entries = await rest.run_method("read_time_report", options);
+
+    this.total_duration = 0
+    for(let i = 0; i < this.time_entries.length; i++){
+      this.total_duration += Number(this.time_entries[i].duration)
+    }
+  },
+  format_date: function(dt){return tools.format_date(dt)}
+};
+
+const data = {
+  time_entries: [],
+  collumns: [
         {
           name: 'Дата',
           id: "work_date",
@@ -39,52 +52,32 @@ export default {
           type: "dt",
         }
       ]
-    }
-  },
-  props: {
-    config: {
-      type: Object,
-      default: {date_from: '1970-01-01', date_to: new Date(), user:{}}
-    },
-  },
-  methods: {
-    load_time_entries: async function () {
-      let options = {date_from: this.config.date_from, date_to: this.config.date_to}
-      if(this.config.user && this.config.user.uuid) options.author_uuid = this.config.user.uuid, 
-    this.time_entries = await rest.run_method("read_time_report", options);
-
-      this.total_duration = 0
-      for(let i = 0; i < this.time_entries.length; i++){
-      this.total_duration += Number(this.time_entries[i].duration)
-    }
-  },
-    init(){
-      if(this.config == undefined){
-        setTimeout(this.init, 200)
-        return
-      }
-      
-    },
-    format_date(val){
-      return tools.format_date(val)
-    }
-  },
-  mounted() {
-    this.load_time_entries()
-  },
-  computed: {
-
-    conf_str: function () {
-      return JSON.stringify(this.config)
-    },
-  },
-  watch:{
-    conf_str: function(val, old_val){
-      this.load_time_entries()
-    }
-  }
-
 };
+
+const mod = await page_helper.create_module(data, methods);
+
+mod.props = {
+  config: {
+    type: Object,
+    default: {date_from: '1970-01-01', date_to: new Date(), user:{}}
+  }
+};
+
+mod.watch = {
+  config: {
+    deep: true,
+    handler: function(newVal, oldVal) {
+      
+      if(!newVal || !newVal.date_from || !newVal.date_to || !newVal.user) return;
+      if(oldVal && oldVal.toString() == newVal.toString() ) return;
+
+      this.load_time_entries();
+    },
+    immediate: true
+  }
+};
+
+export default mod;
 </script>
 
 
@@ -110,9 +103,8 @@ export default {
   </div>
 </template>
 
+
 <style lang="scss">
-@import "../css/palette.scss";
-@import "../css/global.scss";
 
 .gadget_issues_table_panel {
   height: auto;

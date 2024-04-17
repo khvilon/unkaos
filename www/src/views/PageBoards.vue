@@ -60,6 +60,9 @@ const data = {
       route: "/board",
     },
   ],
+  instance: {
+    name: 'Название',
+  },
 };
 
 const mod = await page_helper.create_module(data, methods);
@@ -103,6 +106,7 @@ $card-width: 400px;
 #boards_table_panel,
 #boards_card {
   height: calc(100vh - $top-menu-height);
+  background: transparent;
 }
 
 #boards_table_panel {

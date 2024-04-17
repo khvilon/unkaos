@@ -1,0 +1,1 @@
+ALTER TABLE public.issues ADD COLUMN resolved_at TIMESTAMP WITHOUT TIME ZONE;

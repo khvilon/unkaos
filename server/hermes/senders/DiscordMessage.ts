@@ -2,6 +2,8 @@ const { Client, GatewayIntentBits, Partials } = require('discord.js');
 import UserData from '../UsersData';
 import {sql} from "../Sql";
 
+const conf_retry_period = 10 * 1000
+
 let discordConf: any;
 
 class DiscordMessage {
@@ -12,8 +14,10 @@ class DiscordMessage {
     }
 
     async init(userData: UserData) {    
-      const ans = await sql`SELECT value FROM admin.config WHERE service = 'discord' AND name = 'token'`;
+      const ans = await sql`SELECT value FROM server.configs WHERE service = 'discord' AND name = 'token'`;
       discordConf = { token: ans[0].value };
+
+      if(!discordConf.token) return;
        
       this.client = new Client({intents: [
         GatewayIntentBits.Guilds,
@@ -32,8 +36,6 @@ class DiscordMessage {
          // console.log('mmm', message)
             if (!message.author.username) return;
             
-            
-
             const username = message.author.username;
             const discordId = message.author.id;
             let added = await userData.setDiscordId(username, discordId);
@@ -43,8 +45,12 @@ class DiscordMessage {
         });
 
         try{
-          this.client.login(discordConf.token);
-          console.log('discord bot up');
+          let botUp = this.client.login(discordConf.token);
+          if(botUp) console.log('discord bot up');
+          else {
+            console.log('unable discord bot up');
+            this.client = null;
+          } 
         }
         catch(err)
         {
@@ -54,6 +60,10 @@ class DiscordMessage {
     }
 
     async send(userId: string, title: string, body: string) {
+        if(!this.client){
+          console.log('cant send discord - not configured');
+          return;
+        }
         try {
             let user =  await this.client.users.fetch(userId);
             if (!user) {

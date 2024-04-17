@@ -35,7 +35,7 @@ private static  draw_matrix(ctx: any,screensaver_canvas: any, drops: any, shown:
 	ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
 	ctx.fillRect(0, 0, screensaver_canvas.width, screensaver_canvas.height);
 	
-	ctx.fillStyle = "#0F0"; //green text
+	ctx.fillStyle = "rgb(108, 146, 211)"//"#0F0"; //green text
 	ctx.fontSize = matrix_font_size + "px";
 	//looping over drops
 	for(var i = 0; i < drops.length; i++)

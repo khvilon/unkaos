@@ -1,12 +1,12 @@
 const postgres = require('postgres') 
 
-let dbConf: any;
+let athenaDbConf: any;
 
 try {
   const dbConfFile = require('../db_conf.json');
-  dbConf = dbConfFile;
+  athenaDbConf = dbConfFile;
 } catch (error) {
-  dbConf = {
+  athenaDbConf = {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     user: process.env.DB_USER,
@@ -15,6 +15,7 @@ try {
   };
 }
 
-const sql = postgres(dbConf)
+athenaDbConf.publications = 'hermes_publication'
+const sql = postgres(athenaDbConf)
 
 export default sql

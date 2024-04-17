@@ -49,7 +49,7 @@ async function init() {
         cerberus_ans = await axios({
           method: "get",
           url: conf.cerberusUrl + "/check_session",
-          headers: { token: req.headers.token, subdomain: req.headers.subdomain },
+          headers: { token: req.headers.token, subdomain: req.headers.subdomain,  request_function: req.headers.request_function},
           validateStatus: function (status) {
             return true; // Разрешить, только если код состояния меньше 500
           },
@@ -87,7 +87,8 @@ async function init() {
         url: conf.zeusUrl + req.url,
         headers: {
           subdomain: req.headers.subdomain,
-          user_uuid: user_uuid
+          user_uuid: user_uuid,
+          is_admin: cerberus_ans.data.is_admin
         },
       });
       res.status(zeus_ans.status);
@@ -115,22 +116,35 @@ async function init() {
     }
   });
 
-  app.post("/upsert_password_rand", async (req: any, res: any) => {
-    console.log('upsert_password_rand', req.body)
+
+  let upsert_password = async function(req: any, res: any, rand: boolean = true){
+    const request = req.url.split('/')[1]
+    console.log(request, req.body)
+
+    req.headers.request_function = request;
+
     try {
       const cerberus_ans = await axios({
         method: "post",
-        url: conf.cerberusUrl + "/upsert_password_rand",
+        url: conf.cerberusUrl + "/" + request,
         headers: req.headers,
         data: req.body
       })
       res.status(cerberus_ans.status);
       res.send(cerberus_ans.data);
     } catch (error : any) {
-      console.log('/upsert_password_rand error: '+JSON.stringify(error))
+      console.log(request + ' error: '+JSON.stringify(error))
       res.status(error?.response?.status ?? 500)
       res.send( {message: error?.response?.data?.message ?? 'Internal Server Error' })
     }
+  }
+
+  app.post("/upsert_password_rand", async (req: any, res: any) => {
+    upsert_password(req, res)
+  });
+
+  app.post("/upsert_password", async (req: any, res: any) => {
+    upsert_password(req, res, false)
   });
 
   app.get("/gpt", async (req: any, res: any) => {
@@ -139,7 +153,7 @@ async function init() {
       method: 'get',
       url: conf.athenaUrl + req.url,
       headers: {
-        subdomain: req.headers.subdomain,
+        workspace: req.headers.workspace,
         user_uuid: '-',
       },
     });

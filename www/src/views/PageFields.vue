@@ -15,11 +15,6 @@ const data = {
       id: "type.0.name",
     },
     {
-      name: "Пользовательское",
-      id: "is_custom",
-      type: "boolean",
-    },
-    {
       name: "Зарегистрирован",
       id: "created_at",
       type: "date",
@@ -30,6 +25,7 @@ const data = {
       label: "Название",
       id: "name",
       type: "String",
+      required: true
     },
     {
       label: "Тип",
@@ -38,12 +34,7 @@ const data = {
       type: "Select",
       clearable: false,
       disabled: false,
-    },
-    {
-      label: "Пользовательское",
-      id: "is_custom",
-      type: "Boolean",
-      disabled: true,
+      required: true
     },
     {
       label: "Зарегистрировано",
@@ -58,6 +49,10 @@ const data = {
 };
 
 const mod = await page_helper.create_module(data);
+
+mod.methods.updateSelectVal = function(){
+  console.log('>>>>>>upd')
+}
 
 export default mod;
 </script>
@@ -77,79 +72,87 @@ export default mod;
             <KTable
               v-if="!loading"
               :collumns="collumns"
-              :table-data="fields"
+              :table-data="fields.filter((f)=>f.is_custom)"
               :name="'fields'"
             />
           </Transition>
         </div>
         <div class="table_card panel">
-          <component
-            v-bind:is="input.type + 'Input'"
-            v-for="(input, index) in inputs"
-            :label="input.label"
-            :key="index"
-            :id="input.id"
-            :value="get_json_val(selected_fields, input.id)"
-            :parent_name="'fields'"
-            :disabled="
-              input.disabled ||
-              (input.id == 'type_uuid' &&
-                !get_json_val(selected_fields, 'is_custom'))
-            "
-            :parameters="input"
-            :values="input.values"
-          ></component>
-          <NumericInput
-            v-if="
-              selected_fields.type != undefined &&
-              selected_fields.type[0].code == 'Numeric'
-            "
-            label="Минимальное значение"
-            id="min_value"
-            :value="get_json_val(selected_fields, 'min_value') || 'NULL'"
-            :parent_name="'fields'"
-          ></NumericInput>
-          <NumericInput
-            v-if="
-              selected_fields.type != undefined &&
-              selected_fields.type[0].code == 'Numeric'
-            "
-            label="Максимальное значение"
-            id="max_value"
-            :value="get_json_val(selected_fields, 'max_value') || 'NULL'"
-            :parent_name="'fields'"
-          ></NumericInput>
-          <NumericInput
-            v-if="
-              selected_fields.type != undefined &&
-              selected_fields.type[0].code == 'Numeric'
-            "
-            label="Знаков после запятой"
-            id="presision"
-            :value="get_json_val(selected_fields, 'presision') || 'NULL'"
-            :parent_name="'fields'"
-          ></NumericInput>
-          <TextInput
-            v-if="
-              selected_fields.type != undefined &&
-              selected_fields.type[0].code == 'Select'
-            "
-            label="Список значений"
-            id="available_values"
-            :value="get_json_val(selected_fields, 'available_values')"
-            :parent_name="'fields'"
-          ></TextInput>
-          <div class="table_card_footer">
-            <KButton
-              class="table_card_footer_btn"
-              :name="'Сохранить'"
-              :func="'save_fields'"
-            />
-            <KButton
-              class="table_card_footer_btn"
-              :name="'Удалить'"
-              :func="'delete_fields'"
-            />
+          <div class="table_card_fields">
+            <component
+              v-bind:is="input.type + 'Input'"
+              v-for="(input, index) in inputs"
+              :label="input.label"
+              :key="index"
+              :id="input.id"
+              :value="get_json_val(selected_fields, input.id)"
+              :parent_name="'fields'"
+              :disabled="
+                input.disabled ||
+                ((input.id == 'type_uuid' || input.id == 'name') &&
+                  !get_json_val(selected_fields, 'is_custom'))
+              "
+              :parameters="input"
+              :values="input.values"
+              :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
+            ></component>
+            <NumericInput
+              v-if="
+                selected_fields.type != undefined &&
+                selected_fields.type[0].code == 'Numeric'
+              "
+              label="Минимальное значение"
+              id="min_value"
+              :value="get_json_val(selected_fields, 'min_value') || 'NULL'"
+              :parent_name="'fields'"
+            ></NumericInput>
+            <NumericInput
+              v-if="
+                selected_fields.type != undefined &&
+                selected_fields.type[0].code == 'Numeric'
+              "
+              label="Максимальное значение"
+              id="max_value"
+              :value="get_json_val(selected_fields, 'max_value') || 'NULL'"
+              :parent_name="'fields'"
+            ></NumericInput>
+            <NumericInput
+              v-if="
+                selected_fields.type != undefined &&
+                selected_fields.type[0].code == 'Numeric'
+              "
+              label="Знаков после запятой"
+              id="presision"
+              :value="get_json_val(selected_fields, 'presision') || 'NULL'"
+              :parent_name="'fields'"
+            ></NumericInput>
+            <TextInput
+              v-if="
+                selected_fields.type != undefined &&
+                selected_fields.type[0].code == 'Select'
+              "
+              label="Список значений"
+              id="available_values"
+              :value="get_json_val(selected_fields, 'available_values')"
+              :parent_name="'fields'"
+            ></TextInput>
+          </div>
+          <div class="table_card_buttons">
+            <div class="table_card_footer">
+              <KButton 
+                class="table_card_footer_btn"
+                :name="'Сохранить'"
+                @click="updateSelectVal"
+                :func="'save_fields'"
+                @button_ans="function(ans){try_done = !ans}"
+                :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid)"
+              />
+              <KButton v-if="fields_selected"
+                class="table_card_footer_btn"
+                :name="'Удалить'"
+                :func="'delete_fields'"
+              />
+            </div>
           </div>
         </div>
       </div>

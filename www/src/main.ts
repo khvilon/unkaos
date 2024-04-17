@@ -59,8 +59,63 @@ import KAvatar from "@/components/KAvatar.vue";
 import MainTop from "@/components/MainTop.vue";
 import LangSelect from "@/components/LangSelect.vue";
 
+import CheckboxListInput from "./components/CheckboxListInput.vue";
+
+import GadgetConfig from "./gadgets/GadgetConfig.vue";
+
+
+
+import VueChartkick from 'vue-chartkick'
+import Highcharts from 'highcharts'
+
+// Russian locale settings for Highcharts
+Highcharts.setOptions({
+  lang: {
+      months: [
+          'Январь', 'Февраль', 'Март', 'Апрель',
+          'Май', 'Июнь', 'Июль', 'Август',
+          'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+      ],
+      weekdays: [
+          'Воскресенье', 'Понедельник', 'Вторник', 'Среда',
+          'Четверг', 'Пятница', 'Суббота'
+      ],
+      shortMonths: [
+          'Янв', 'Фев', 'Мар', 'Апр',
+          'Май', 'Июн', 'Июл', 'Авг',
+          'Сен', 'Окт', 'Ноя', 'Дек'
+      ],
+      decimalPoint: ',',
+      thousandsSep: ' ',
+      rangeSelectorFrom: "С",
+      rangeSelectorTo: "По",
+      rangeSelectorZoom: "Период"
+      // Include other localization options as needed
+  }
+});
+
+/*
+VueChartkick.options = {
+  colors: ["green", "#666"],
+  lang: {
+    months: [
+        'Janvier', 'Février', 'Mars', 'Avril',
+        'Mai', 'Juin', 'Juillet', 'Août',
+        'Septembre', 'Octobre', 'Novembre', 'Décembre'
+    ],
+    weekdays: [
+        'Dimanche', 'Lundi', 'Mardi', 'Mercredi',
+        'Jeudi', 'Vendredi', 'Samedi'
+    ]
+}
+}*/
+
+
+
 const app = createApp(App);
 
+//app.use(VueChartkick);
+app.use(VueChartkick.use(Highcharts));
 app.use(router);
 app.use(store);
 
@@ -68,6 +123,7 @@ app.use(initYandexMetrika, {
   id: 93544300,
   router: router, // экземпляр Vue Router
 });
+
 
 
 app.component("v-select", vSelect);
@@ -113,6 +169,13 @@ app.component("GptPanel", GptPanel)
 app.component("KAvatar", KAvatar)
 app.component("MainTop", MainTop)
 app.component("LangSelect", LangSelect)
+app.component("CheckboxListInput", CheckboxListInput)
+
+app.component("GadgetConfig", GadgetConfig)
+
+
+
+
 
 
 

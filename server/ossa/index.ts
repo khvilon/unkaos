@@ -3,10 +3,11 @@ const port = 3004
 import { WebSocketServer, WebSocket } from 'ws';
 const wss = new WebSocketServer({ port: port });
 
-import axios from 'axios';
-import conf from './conf.json';
-
 import sql from "./sql";
+
+import cache from "./cache";
+
+
 
 class MonType{
     readonly type: string
@@ -66,6 +67,9 @@ const handleNotify = async function(row:any, { command, relation, key, old }: an
    // console.log('test_alert', row, command, relation, key, old)
    
 }
+
+let c = new cache();
+c.init();
 
 const handleSubscribeConnect = function(){ console.log('subscribe connected!') }
 sql.subscribe('*',handleNotify, handleSubscribeConnect)

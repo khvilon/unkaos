@@ -81,11 +81,11 @@ export default {
     border-bottom-width: 1px;*/
   height: $top-menu-height;
 
-  padding-top: 13px;
+  padding-top: 18px;
   padding-left: 0px;
+
+  background: none;
 }
-
-
 
 .topbar .btn .btn_input {
   width: 100px;
@@ -94,7 +94,6 @@ export default {
 
 .topbar input, .topbar .vs__dropdown-toggle {
   font-size: 15px;
-  font-weight: 400;
   border-radius: var(--border-radius);
   transition: all 0.5s ease;
   //background: var(--secondary-color);
@@ -112,7 +111,6 @@ export default {
 
 .topbar-label {
   font-size: 20px;
-  font-weight: 400;
   margin-top: 1px;
 
   /*     -webkit-text-stroke: thin;

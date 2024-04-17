@@ -23,16 +23,15 @@ export default {
 
   beforeCreate() {},
   watch: {
-    value: function (val, oldVal) {
-     
-        
-        this.val = val
-    
+    value: function (val, oldVal) {        
+        if(this.val != val) this.val = val
     },
     val: function (val, oldVal) {
-      //this.convert_values_to_uuids()
-
-      
+      if (typeof val === 'object' && typeof oldVal === 'object'){
+        if(JSON.stringify(val) === JSON.stringify(oldVal)) return
+      }
+      else if(oldVal != undefined && val != undefined && val.toString()==oldVal.toString()) return;
+      console.log('watch1')
       if(this.updated_at == undefined) 
       {
         this.updated_at = new Date()
@@ -47,6 +46,7 @@ export default {
           break;
         }
       }
+      
 
       console.log("vue_select", val, oldVal, this.id, val_obj);
       //   console.log('pname', this.parent_name)
@@ -70,7 +70,14 @@ export default {
       this.$emit("updated", val);
     },
   },
-  computed: {},
+  computed: {
+    reduce(){
+      console.log('>>>reduce', this.value, this.parameters)
+      if(this.values && this.values[0] && this.values[0].uuid && (!this.parameters || !this.parameters.reduce)) return ((obj) => obj.uuid)
+      console.log('>>>reduce2')
+      return this.parameters.reduce
+    }
+  },
   props: {
     name_path: {
       type: String,
@@ -196,13 +203,13 @@ export default {
 </script>
 
 <template>
-  <div class="select-input">
+  <div class="select-input input">
     <div class="label">{{ label }}</div>
 
     <v-select
       v-model="val"
       label="name"
-      :reduce="parameters.reduce"
+      :reduce="reduce"
       :multiple="parameters.multiple"
       :clearable="parameters.clearable"
       :disabled="disabled"
@@ -213,6 +220,7 @@ export default {
       :close-on-select="close_on_select"
       :createOption="create_option"
       @option:selected="value_selected"
+      :appendToBody="appendToBody"
     >
       
       <template v-if="taggable"
@@ -327,6 +335,7 @@ export default {
 .vs--disabled .vs__search,
 .vs--disabled .vs__selected {
   background-color: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 
 .vs--disabled .vs__clear,

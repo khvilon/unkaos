@@ -1,5 +1,6 @@
 <script>
 import page_helper from "../page_helper.ts";
+import tools from "../tools.ts";
 
 const data = {
   name: "issue_types",
@@ -20,6 +21,7 @@ const data = {
       label: "Название",
       id: "name",
       type: "String",
+      required: true
     },
     {
       label: "Воркфлоу",
@@ -27,6 +29,7 @@ const data = {
       dictionary: "workflows",
       type: "Select",
       clearable: false,
+      required: true
     },
     {
       label: "Поля",
@@ -43,9 +46,45 @@ const data = {
       disabled: true,
     },
   ],
+  customFields: [],
+  filteredCustomFields: []
+
 };
 
 const mod = await page_helper.create_module(data);
+
+mod.methods.filterCustomFieldsSelected = function(selectedFields) {
+  console.log('>>>filterCustomFieldsSelected', selectedFields)
+  let customUuids = this.customFields.map((f)=>f.uuid);
+  if(!selectedFields || !selectedFields.filter || !selectedFields.length) return [];
+  if(selectedFields[0].uuid) this.filteredCustomFields = selectedFields.filter((f)=>customUuids.includes(f.uuid));
+  else this.filteredCustomFields = selectedFields.filter((f)=>customUuids.includes(f));  
+};
+
+mod.methods.init = function () {
+    if(!this.fields || !this.fields.length) {
+      setTimeout(this.init, 200);
+      return;
+    }
+    this.customFields = tools.clone_obj(this.fields).filter((f)=>f.is_custom);
+    console.log('customFields',this.customFields)
+};
+
+mod.mounted = function () {
+  console.log("mounted configs!", this.configs);
+  this.init();
+};
+
+mod.watch = {
+  selected_issue_types: {
+      handler: function(val, oldVal) {
+        if(val.uuid == oldVal.uuid) return;
+        console.log('>>>>>>>>>>>>', 'changed!', val, oldVal)
+        this.filterCustomFieldsSelected(val.fields)
+      },
+      deep: true
+    }
+  }
 
 export default mod;
 </script>
@@ -67,30 +106,37 @@ export default mod;
         />
       </div>
       <div class="table_card panel">
-        <component
-          v-bind:is="input.type + 'Input'"
-          v-for="(input, index) in inputs"
-          :label="input.label"
-          :key="index"
-          :id="input.id"
-          :value="get_json_val(selected_issue_types, input.id)"
-          :parent_name="'issue_types'"
-          :disabled="input.disabled"
-          :clearable="input.clearable"
-          :values="input.values"
-          :parameters="input"
-        ></component>
-        <div class="table_card_footer">
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Сохранить'"
-            :func="'save_issue_types'"
-          />
-          <KButton
-            class="table_card_footer_btn"
-            :name="'Удалить'"
-            :func="'delete_issue_types'"
-          />
+        <div class="table_card_fields">
+          <component
+            v-bind:is="input.type + 'Input'"
+            v-for="(input, index) in inputs"
+            :label="input.label"
+            :key="index"
+            :id="input.id"
+            :value="(input.id != 'fields' || !this.selected_issue_types || !this.selected_issue_types.fields || !this.selected_issue_types.fields.length) ? get_json_val(selected_issue_types, input.id) : filteredCustomFields"
+            :parent_name="'issue_types'"
+            :disabled="input.disabled"
+            :clearable="input.clearable"
+            :values="input.id != 'fields' ? input.values : customFields"
+            :parameters="input"
+            :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
+          ></component>
+        </div>
+        <div class="table_card_buttons">
+          <div class="table_card_footer">
+            <KButton
+              class="table_card_footer_btn"
+              :name="'Сохранить'"
+              :func="'save_issue_types'"
+              @button_ans="function(ans){try_done = !ans}"
+              :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid)"
+            />
+            <KButton v-if="issue_types_selected"
+              class="table_card_footer_btn"
+              :name="'Удалить'"
+              :func="'delete_issue_types'"
+            />
+          </div>
         </div>
       </div>
     </div>

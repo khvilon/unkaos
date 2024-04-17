@@ -257,9 +257,16 @@ export default {
         return;
       }
 
+
+      
+
       if (this.value == undefined) return;
+
+
       if (!this.convert_query(this.value, true)){
 
+        return true;//todo
+        
         this.gpt_loader_visible = true
         let user = cache.getObject("profile");
 
@@ -525,6 +532,9 @@ export default {
     },
 
     convert_query(query, use_to_end) {
+
+      query = query.trim();
+      console.log('convert_query', '#'+query+'#')
       let waits_for_idx = 0;
 
       //query data
@@ -805,7 +815,6 @@ export default {
 
 .text-input {
   font-size: 14px;
-  font-weight: 400;
   transition: all 0.5s ease;
   background: var(--input-bg-color);
   width: 100%;
@@ -860,6 +869,7 @@ export default {
 
 .text-input:disabled {
   background: var(--disabled-bg-color);
+  color: var(--disabled-text-color);
 }
 
 .text-input::-webkit-scrollbar {

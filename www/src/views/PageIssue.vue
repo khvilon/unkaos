@@ -349,9 +349,14 @@ let methods = {
     for (let i in this.fields) {
       if (this.fields[i].uuid == field_uuid) {
         if (this.fields[i].available_values == undefined) return;
-        let available_values = this.fields[i].available_values
-          .split(",")
-          .map((v) => v.replace("\n", "").replace("\r", "").trim());
+        let available_values = this.fields[i].available_values;
+        if(tools.isValidJSON(available_values)){
+          available_values = JSON.parse(available_values)
+        }
+        else{
+          available_values = available_values.split(",").map((v) => v.replace("\n", "").replace("\r", "").trim());
+        }
+        
         return available_values;
       }
     }
@@ -470,6 +475,8 @@ let methods = {
         if (this.issue[0].values[i].name === "Автор")
           this.issue[0].values[i].value = cache.getObject("profile").uuid;
       }
+      if(!this.projects.some((p)=>p.uuid == this.issue[0].project_uuid)) this.issue[0].project_uuid = this.projects[0].uuid;
+      if(!this.issue_types.some((it)=>it.uuid == this.issue[0].type_uuid)) this.issue[0].type_uuid = this.issue_types[0].uuid;
       // console.log("ibiiit issue", this.issue[0]);
     }
 
@@ -478,10 +485,10 @@ let methods = {
     });
     this.watch = ans.length > 0;
 
-    await this.load_actions()
-    await this.load_attachments()
-    await this.load_tags()
-    await this.load_time_entries()
+    this.load_actions()
+    this.load_attachments()
+    this.load_tags()
+    this.load_time_entries()
 
     console.log('time_entries', this.time_entries)
     
@@ -1192,7 +1199,7 @@ export default mod;
         <div
             v-if="!loading && id !== ''"
             :class="{ 'issue-top-button-inactive': !edit_mode }"
-            class="issue-top-button bx bx-edit"
+            class="top-menu-icon-btn bx bx-edit"
             title="Редактировать задачу"
             @click="enter_edit_mode"
         >
@@ -1202,7 +1209,7 @@ export default mod;
       <Transition name="element_fade">
         <div
             v-if="!loading && id !== ''"
-            class="issue-top-button"
+            class="top-menu-icon-btn"
             title="Следить за задачей (функция в разработке)"
             @click="togle_watch"
         >
@@ -1211,20 +1218,20 @@ export default mod;
       </Transition>
 
       <Transition name="element_fade">
-        <div class="issue-top-button">
+      
           <a
             v-if="!loading && id != '' &&
             !$store.state['common']['is_mobile']"
-            class="issue-clone-button bx bx-duplicate "
+            class="issue-clone-button top-menu-icon-btn bx bx-duplicate "
             title="Клонировать задачу"
             :href="get_clone_url()"
           >
           </a>
-        </div>
+       
       </Transition>
 
       <Transition name="element_fade">
-        <div class="issue-top-button">
+        <div class="top-menu-icon-btn" v-if="!loading && id !== ''">
           <a
             v-if="!loading && id != '' &&
             !$store.state['common']['is_mobile']"
@@ -1398,7 +1405,7 @@ export default mod;
         </Transition>
         <Transition name="element_fade">
           <KTimeEntries
-            v-if="!loading && id != ''"
+            v-if="!loading && id != '' && $store.state['common'].use_time_tracking"
             label=""
             id="issue_time_entries"
             @new_time_entry="new_time_entry"
@@ -1446,12 +1453,7 @@ export default mod;
             v-if="!loading && !edit_mode && id != ''"
             v-model:actions="actions_with_time_entries"
             :images="images"
-        />
-
-        <GptPanel
-          v-if="!loading && id !== '' && !$store.state['common']['is_mobile']"
-          :context="issue"
-        />
+        />      
       </div>
       <div
         id="issue_card"
@@ -1598,6 +1600,7 @@ $code-width: 160px;
   height: $top-menu-height;
   display: flex;
   padding-left: 15px;
+  background: transparent;
 }
 
 .iframe-view #issue_top_panel{
@@ -1622,13 +1625,13 @@ $code-width: 160px;
 
 .make-child-btn {
   display: flex !important;
-  font-size: 27px !important;
+  font-size: 20px !important;
   border-radius: 50% !important;
   border-style: solid;
-  padding-top: 4px;
-  padding-left: 4px;
-  width: 32px !important;
-  height: 32px !important;
+  margin-top: 0px;
+  margin-left: 4px;
+  width: 20px !important;
+  height: 20px !important;
 }
 
 
@@ -1640,7 +1643,9 @@ $code-width: 160px;
 
 #issue_table_panel,
 #issue_card {
-  height: calc(100vh - $top-menu-height);
+  height: auto;
+  margin-right: 20px;
+  margin-bottom: 20px;
 }
 
 .issue-code {
@@ -1649,12 +1654,13 @@ $code-width: 160px;
 
 #issue_main_panel {
   padding: 10px 30px 10px 35px;
-  border-right: 5px solid var(--panel-bg-color);
+  border-right: 5px solid transparent;
   display: flex;
   flex-direction: column;
   width: $issue-workspace-width;
   overflow-y: auto;
   overflow-anchor: none;
+  background: transparent;
   //scrollbar-color: red;
 }
 
