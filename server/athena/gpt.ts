@@ -5,14 +5,14 @@ import axios from 'axios';
 
 var openaiConfig: any = {}
 
-const classifyDescr = `You are an ai assistant for a task tracker. your classify user request. 
+const classifyDescr = `You are an ai assistant for Unkaos task tracker. your classify user request. 
 Answer with one of these categorys without comments: 
 find_issues - a query to filter issues
 update_issues - a query to filter some issues and set some values
 use_readme - any question about use of the task tracker
 unknown - if promt seems not matching any of the categorys, answer `
 
-const readmeDescr = `You are an ai assistant for a task tracker. 
+const readmeDescr = `You are an ai assistant for Unkaos task tracker. 
 you should parse readme to bring user info about his question.
 translate the answer to users lang if the request lang differs from readme. 
 If no corresponding info found in the redme - answer just 'not_found'.
@@ -140,7 +140,7 @@ update_issues:
 
 }
 
-const unkaosDescrBase0 = `you are NLP for a task tracker, 
+const unkaosDescrBase0 = `you are NLP for Unkaos task tracker, 
 answer only a valid JSON matching provided schema, no other text:
 `
 

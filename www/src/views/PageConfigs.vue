@@ -127,7 +127,7 @@ const data = {
       is_server: true,
       groups:[
         {
-          label: 'Openai API',
+          label: 'Openai API для сложных запросов',
           fields: [{
               label: 'Ключ',
               type: 'String',
@@ -151,6 +151,46 @@ const data = {
               type: 'Numeric',
               service: 'openai',
               config: 'temperature'
+            },
+            {
+              label: 'Прокси сервер (если используется)',
+              type: 'String',
+              service: 'openai',
+              config: 'proxy'
+            }
+          ]
+        },
+        {
+          label: 'Openai API для остальных запросов (оставьте поля пустыми для использования общих настроек)',
+          fields: [{
+              label: 'Ключ',
+              type: 'String',
+              service: 'openai',
+              config: 'key2'
+            },
+            {
+              label: 'url',
+              type: 'String',
+              service: 'openai',
+              config: 'url2'
+            },
+            {
+              label: 'Модель',
+              type: 'String',
+              service: 'openai',
+              config: 'model2'
+            },
+            {
+              label: 'Температура',
+              type: 'Numeric',
+              service: 'openai',
+              config: 'temperature2'
+            },
+            {
+              label: 'Прокси сервер (если используется)',
+              type: 'String',
+              service: 'openai',
+              config: 'proxy2'
             }
           ]
         }

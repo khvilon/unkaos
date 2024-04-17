@@ -7,6 +7,7 @@ import cache from "../cache.ts";
 import conf from "../conf.ts";
 
 import { nextTick } from "vue";
+import KMarked from "./KMarked.vue";
 
 
 export default {
@@ -286,14 +287,15 @@ export default {
       <div class="panel" :class="['gpt-down-panel', animationVisible ? 'gradient-background' : '']"> 
         
         <div class="gpt-chat gradient-animation">
-          <TextInput 
+          <KMarked 
             class="fade-background"
-            :value="gptResultHuman" 
+            :val="gptResultHuman" 
             :disabled="true" 
             label=""
             :resize="false"
 
           />
+
          
           <i 
           :class="[gptResultHuman.length && gptResult && !actionDone ? 'active_icon' : '', actionDone ? 'bx-check-circle' : 'bx-play-circle']"
@@ -524,14 +526,13 @@ export default {
   position: relative;
 }
 
-.gpt-chat .text-input, .gpt-chat .text{
+.gpt-chat .text-input, .gpt-chat .text,.gpt-chat .marked-container{
   height: 100% !important;
   width: calc(100% - 100px);
   border:none;
   background: transparent !important;
+  padding: 20px;
 }
-
-
 
 .gpt-result-loader{
   width: 100%;
