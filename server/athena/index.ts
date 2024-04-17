@@ -38,6 +38,12 @@ const init = async function() {
     const userUuid = req.query.userUuid as string;
     let workspace:string = '';
 
+    if(userCommand == 'classify'){
+      let command = await gpt.classify(userInput);
+      res.status(200).json(command);
+      return;
+    }
+
     if (typeof req.headers.workspace === 'string') {
       workspace = req.headers.workspace;
     }
