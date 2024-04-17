@@ -17,14 +17,15 @@ export default {
   data() {
     return {
       userInput: '',
-      gptResultHuman: '',
+      gptResultHuman: `
+      Меня можно попросить найти задачи, изменить задачи, а также подскажу если есть вопросы по использованию Unkaos.`,
       gptResult: {},
       gptResultHumanData: {},
       panelVisible: false,
       animationVisible: false,
       actionDone: false,
       issues: [],
-      parent_relation_type_uuid: '73b0a22e-4632-453d-903b-09804093ef1b'
+      parent_relation_type_uuid: '73b0a22e-4632-453d-903b-09804093ef1b', 
     };
   },
   methods: {
@@ -259,7 +260,6 @@ export default {
             @keydown.enter.exact.prevent="()=>{if(gptResult) run(); else if(userInput.length) send()}" 
             @update_parent_from_input="(v)=>{gptResultHuman='';gptResult=undefined;actionDone=false;userInput=v}" 
             label=""
-           
           />
           <i 
           :class="[userInput.length && gptResultHuman.length == 0 && !animationVisible ? 'active_icon' : '']"
