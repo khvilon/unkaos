@@ -67,11 +67,18 @@ export default class rest {
     //return null;//todo
     let user = cache.getObject("profile");
 
+    try{
+
+    
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
         return fetch(conf.base_url + 'gpt?userInput=' + input  + '&userCommand=' + command  + '&userUuid=' + user.uuid, {
           method: 'GET',
           headers: {workspace: this.workspace}
         });
+    }
+    catch(err){
+      return {err: err}
+    }
   }
 
   static async run_method(method: string, body: any): Promise<any> {

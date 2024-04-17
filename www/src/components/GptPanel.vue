@@ -65,10 +65,16 @@ export default {
         }
       }
 
-      if(!this.issues.length) ans += '\r\n\r\nНе найдено задач, удовлетворяющих условиям'
-      else ans += '\r\n\r\nНайдено задач: ' + this.issues.length + '. '
+      if(!this.issues.length) {
+        ans += '\r\n\r\nНе найдено задач, удовлетворяющих условиям'
+        ans += (gptJson.command == 'find') ? '. Перейти?' : ' - выполнение невозможно.'
+      }
+      else {
+        ans += '\r\n\r\nНайдено задач: ' + this.issues.length + '. ';
+        ans += (gptJson.command == 'find') ? 'Перейти?' : 'Выполнить?'
+      }
       
-      ans += (gptJson.command == 'find') ? 'Перейти?' : 'Выполнить?'
+      
 
       return ans
     },
@@ -125,7 +131,7 @@ export default {
     
       this.runMatrix()
       this.animationVisible = true;
-      this.gptResultHuman = 'Классифицирую ваш запрос...';
+      this.gptResultHuman = 'Классифицирую запрос...';
       
       try {
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
@@ -244,7 +250,7 @@ export default {
     },
 
     async run() {
-      if(!this.gptResult) return
+      if(!(this.gptResultHuman && gptResult && !actionDone && (issues.length || gptResult.command == 'find'))) return;
       console.log('Running function with GPT answer:', this.gptResult);
       if(this.gptResult.command == 'update'){
         for(let i = 0; i < this.issues.length; i++){
@@ -287,18 +293,19 @@ export default {
       <div class="panel" :class="['gpt-down-panel', animationVisible ? 'gradient-background' : '']"> 
         
         <div class="gpt-chat gradient-animation">
-          <KMarked 
-            class="fade-background"
-            :val="gptResultHuman" 
-            :disabled="true" 
-            label=""
-            :resize="false"
+          <div class="gpt-chat-text">
+            <KMarked 
+              class="fade-background"
+              :val="gptResultHuman" 
+              :disabled="true" 
+              label=""
+              :resize="false"
 
-          />
-
+            />
+          </div>
          
           <i 
-          :class="[gptResultHuman.length && gptResult && !actionDone ? 'active_icon' : '', actionDone ? 'bx-check-circle' : 'bx-play-circle']"
+          :class="[gptResultHuman.length && gptResult && !actionDone && (issues.length || gptResult.command == 'find') ? 'active_icon' : '', actionDone ? 'bx-check-circle' : 'bx-play-circle']"
           @click="run" class='bx'></i> 
           <div class="gpt-avatar" >
             <div class="gpt-avatar-load" :class="{ 'gpt-avatar-0': !animationVisible, 'gpt-avatar-1': animationVisible }" ></div>
@@ -331,7 +338,7 @@ export default {
   z-index: 2;
   height: 100%;
   background: var(--loading-bg-color);
-  transition: all 0.4s ease-in-out;
+  transition: bottom 0.4s ease-in-out;
 }
 
 .gpt-panel-open{
@@ -410,6 +417,11 @@ export default {
   transition: all 0.4s ease-in-out;
   
   flex-direction: column;
+  opacity: 1;
+}
+
+.gpt-panel-closed .gpt-down-panel{
+  opacity: 0;
 }
 
 
@@ -526,12 +538,18 @@ export default {
   position: relative;
 }
 
-.gpt-chat .text-input, .gpt-chat .text,.gpt-chat .marked-container{
+.gpt-chat .text-input, .gpt-chat .text,.gpt-chat .gpt-chat-text{
   height: 100% !important;
-  width: calc(100% - 100px);
+  width: 100%;
   border:none;
   background: transparent !important;
   padding: 20px;
+  overflow: scroll;
+  position: absolute;
+}
+
+.gpt-chat-text .marked-container{
+  width: calc(100% - 100px);
 }
 
 .gpt-result-loader{
