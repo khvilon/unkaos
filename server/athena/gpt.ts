@@ -247,7 +247,7 @@ export class Gpt {
     }
     
     console.log('temperature>>', temperature)
-    let data = JSON.stringify({
+    let data: any = {
       "model": model,
       //"response_format": { "type": 'json_object' },
       "messages": [
@@ -262,7 +262,11 @@ export class Gpt {
         }],
        
       "temperature": temperature//Number(openaiConfig.temperature)
-    });
+    };
+
+    if(systemMessage.indexOf('JSON') > -1){
+      data.response_format = { "type": "json_object" };
+    }
 
     let config:any = {
       method: 'post',
@@ -272,7 +276,7 @@ export class Gpt {
         'Content-Type': 'application/json', 
         'Authorization': 'Bearer ' + key
       },
-      data : data
+      data : JSON.stringify(data)
     };
 
     if(proxy){
@@ -282,13 +286,16 @@ export class Gpt {
       }
     }
 
+
+    
+
     return config;
   }
 
   public async classify(input: string): Promise<any> {
     console.log('classify gpt', openaiConfig)
 
-    let config:any = this.createRequestConfig(classifyDescr, input, true)
+    let config:any = this.createRequestConfig(classifyDescr, input, false)
 
     try{
       let response = await axios(config);
@@ -331,7 +338,7 @@ export class Gpt {
 
     console.log('ask gpt openaiConfig', openaiConfig)
 
-    let config:any = this.createRequestConfig(context, input)
+    let config:any = this.createRequestConfig(context, input, false)
 
     try{
       let response = await axios(config);
