@@ -5,6 +5,18 @@ import axios from 'axios';
 
 var openaiConfig: any = {}
 
+const classifyDescr = `You are an ai assistant for a task tracker. your classify user request. 
+Answer with one of these categorys without comments: 
+'find_issues' - a query to filter issues
+'update_issues' - a query to filter some issues and set some values
+'use_readme' - any question about use of the task tracker
+'unknown' - if promt seems not matching any of the categorys, answer `
+
+const readmeDescr = `You are an ai assistant for a task tracker. you should parse readme to bring user info about his question.
+translate the answer to users lang if the request lang differs from readme. 
+If no corresponding info found in the redme - answer just 'not_found'.
+Erase any markdown from your answer. The radme: `
+
 const commandAnswerSchemma =
 `{
   "type": "object",
@@ -137,23 +149,23 @@ export class Gpt {
     for(let i in ans){
       openaiConfig[ans[i].name] = ans[i].value
     }    
+
+    
   }
 
-  public async classify(input: string, context: string = ''): Promise<any> {
-    console.log('classify gpt', openaiConfig)
-
+  private createRequestConfig(systemMessage: string, userMessage: string){
     let data = JSON.stringify({
       "model": openaiConfig.model,
       //"response_format": { "type": 'json_object' },
       "messages": [
             {
                 "role": "system",
-                "content": "You are an ai assistant for a task tracker. your classify user request. User can do: 'find_issues' - a query to filter issues, 'update_issues' - a query to filter some issues and set some values, 'use_readme' - any question about use of the task tracker. Answer with one of these categorys without comments. if th promt seems does not matching any of the categorys, answer 'unknown'"
+                "content": systemMessage
             },
            
           {
             "role": "user",
-            "content": input
+            "content": userMessage
         }],
        
       "temperature": 0.4//Number(openaiConfig.temperature)
@@ -170,7 +182,6 @@ export class Gpt {
       data : data
     };
 
-    
     if(openaiConfig.proxy_host){
       config.proxy = {
         host: openaiConfig.proxy.split(':')[0],
@@ -178,13 +189,18 @@ export class Gpt {
       }
     }
 
+    return config;
+  }
+
+  public async classify(input: string): Promise<any> {
+    console.log('classify gpt', openaiConfig)
+
+    let config:any = this.createRequestConfig(classifyDescr, input)
+
     try{
       let response = await axios(config);
 
       console.log('>>gptResponse0', response.data.choices[0].message.content);
-
-
-      //let gptResponse = JSON.parse(response.data.choices[0].message.content);
       if(!response.data.choices[0].message.content) return {};
       console.log('>>gptResponse', response.data.choices[0].message.content);
       return {command: response.data.choices[0].message.content};
@@ -195,37 +211,20 @@ export class Gpt {
     }
   }
 
+  public async useReadme(input: string): Promise<any> {
+    const readme = axios({url:'https://raw.githubusercontent.com/khvilon/unkaos/master/README.md'});
+
+    console.log('readme ', readme)
+
+    return {}
+
+  }
+
   private async ask(input: string, context: string = ''): Promise<any> {
 
     console.log('ask gpt openaiConfig', openaiConfig)
 
-    let data = JSON.stringify({
-      "model": openaiConfig.model,
-      //"response_format": { "type": 'json_object' },
-      "messages": [
-            {
-                "role": "system",
-                "content": context
-            },
-           
-          {
-            "role": "user",
-            "content": input
-        }],
-       
-      "temperature": 0.4//Number(openaiConfig.temperature)
-    });
-
-    let config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: openaiConfig.url + 'chat/completions',
-      headers: { 
-        'Content-Type': 'application/json', 
-        'Authorization': 'Bearer ' + openaiConfig.key
-      },
-      data : data
-    };
+    let config:any = this.createRequestConfig(context, input)
 
     try{
       let response = await axios(config);
