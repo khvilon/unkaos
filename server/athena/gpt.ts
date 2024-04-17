@@ -281,7 +281,7 @@ export class Gpt {
   public async classify(input: string): Promise<any> {
     console.log('classify gpt', openaiConfig)
 
-    let config:any = this.createRequestConfig(classifyDescr, input)
+    let config:any = this.createRequestConfig(classifyDescr, input, true)
 
     try{
       let response = await axios(config);
@@ -304,7 +304,7 @@ export class Gpt {
 
     console.log('readme descr', descr)
 
-    let config:any = this.createRequestConfig(descr, input, 0.2)
+    let config:any = this.createRequestConfig(descr, input, true)
 
     
 
