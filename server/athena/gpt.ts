@@ -212,12 +212,21 @@ export class Gpt {
   }
 
   public async useReadme(input: string): Promise<any> {
-    const readme = axios({url:'https://raw.githubusercontent.com/khvilon/unkaos/master/README.md'});
+    const readme = await axios({url:'https://raw.githubusercontent.com/khvilon/unkaos/master/README.md'});
+
+    let config:any = this.createRequestConfig(readmeDescr + readme, input)
 
     console.log('readme ', readme)
 
-    return {}
-
+    try{
+      let response = await axios(config);
+      console.log('>>gptResponse0', response.data.choices[0].message.content);
+      return {readme: response.data.choices[0].message.content};
+    }
+    catch(err) {
+      console.log(err);
+      return {};
+    }
   }
 
   private async ask(input: string, context: string = ''): Promise<any> {
