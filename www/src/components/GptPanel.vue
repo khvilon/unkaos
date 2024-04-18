@@ -40,6 +40,11 @@ export default {
   methods: {
     togglePanel() {
       this.panelVisible = !this.panelVisible;
+
+      if(this.panelVisible && !this.$store.state['common'].is_in_workspace){
+        this.gptResultHuman = `
+      Меня можно попросить найти или изменить задачи внутри рабочего пространства, а пока отвечу на вопросы по документации Unkaos!`
+      }
     },
     explain(gptJson){
       let ans = ''
@@ -167,6 +172,7 @@ export default {
     
         if (!response.ok) {
           this.gptResultHuman = `Не удалось формализовать запрос. Попробуйте переформулировать.`;
+          this.animationVisible = false;
           return;
         }
 
@@ -183,6 +189,11 @@ export default {
           else this.gptResultHuman = data.humanGpt;
         }
         else{
+          if(!this.$store.state['common'].is_in_workspace){
+            this.gptResultHuman = `Работа с задачами возможна только после входа в систему`;
+            this.animationVisible = false;
+            return;
+          }
           if(!this.gptResult.target) this.gptResult.target = 'global'
           await this.getIssues()
           this.gptResultHuman = this.explain(data.humanGpt);
@@ -283,7 +294,6 @@ export default {
     @keydown.esc.exact.prevent="panelVisible=false"
     class="gpt-panel"
     :class="[panelVisible ? 'gpt-panel-open' : 'gpt-panel-closed']"
-    @click.self="togglePanel"
   >
     <div @click="togglePanel" class="toggle-panel">
       <i class='bx bxs-brain toggle-icon'></i>
@@ -291,7 +301,7 @@ export default {
     </div>
   
       <div class="panel" :class="['gpt-down-panel', animationVisible ? 'gradient-background' : '']"> 
-        
+       
         <div class="gpt-chat gradient-animation">
           <div class="gpt-chat-text">
             <KMarked 
@@ -310,6 +320,7 @@ export default {
           <div class="gpt-avatar" >
             <div class="gpt-avatar-load" :class="{ 'gpt-avatar-0': !animationVisible, 'gpt-avatar-1': animationVisible }" ></div>
           </div>
+          
         </div>
         <div class=" gpt-request">
           <TextInput 
@@ -322,7 +333,7 @@ export default {
           @click="send" class='bx bxs-brain'
           ></i> 
         </div> 
-        
+        <i @click="togglePanel" class='gpt-close bx bxs-chevron-down'></i> 
       </div>
 
   </div>
@@ -433,6 +444,19 @@ export default {
  // bottom: -100vh;
 }
 
+
+.gpt-close{
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  color: var(--text-color) !important;
+  opacity: 1 !important;
+  cursor: pointer;
+  padding: 0 !important;
+  transform: translateX(-50%);
+  width:30px;
+}
 
 
 .gpt-avatar {

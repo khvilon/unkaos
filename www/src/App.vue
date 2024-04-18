@@ -164,7 +164,7 @@ export default {
       </transition>
     </router-view>
     <GptPanel
-          v-if="!$store.state['common']['is_mobile']"
+          v-if="!$store.state['common']['is_mobile'] && ($store.state['common']['is_in_workspace'] || $store.state['common'].is_on_landing)"
     />
   </div>
   
@@ -291,6 +291,7 @@ html {
 
 .no-menu-container {
   left: 0px !important;
+  width: 100vw !important;
 }
 
 .loading {
