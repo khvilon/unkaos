@@ -3,8 +3,6 @@ import tools from "./tools";
 import conf from "./conf";
 import cache from "./cache";
 
-const adminRoleUUID = '556972a6-0370-4f00-aca2-73a477e48999'
-
 export default class rest {
 
   static workspace: string = "public"; // Default value
@@ -22,7 +20,7 @@ export default class rest {
   ]);
 
   static headers: Headers = new Headers({
-    "content-type": "application/json",
+    "content-type": "application/json"
   });
 
   static async get_token(email: string, pass: string): Promise<string | null> {
