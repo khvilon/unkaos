@@ -34,12 +34,29 @@ const init = async function() {
   app.get('/gpt', async (req, res) => {
 
     const userInput = req.query.userInput as string;
+    const userCommand = req.query.userCommand as string;
     const userUuid = req.query.userUuid as string;
     let workspace:string = '';
+
+    if(userCommand == 'classify'){
+      let command = await gpt.classify(userInput);
+      res.status(200).json(command);
+      return;
+    }
+    else if(userCommand == 'use_readme'){
+      let ans = await gpt.useReadme(userInput);
+      res.status(200).json(ans);
+      return;
+    }
+    else if(userCommand != 'find_issues' && userCommand != 'update_issues'){
+      res.status(400).json({error:'unknwn command'});
+      return;
+    }
 
     if (typeof req.headers.workspace === 'string') {
       workspace = req.headers.workspace;
     }
+    
 
     if(!workspace){
       res.status(400).json({ error: 'Need workspace' });
@@ -52,7 +69,7 @@ const init = async function() {
     console.log('User request:', userInput + '\r\n');
 
     const data: any = await dataClass.get(workspace);
-    const parsedCommand = await gpt.parseUserCommand(userInput, data.field);
+    const parsedCommand = await gpt.parseUserCommand(userInput, userCommand, data.field);
 
     dataClass.updateLogGpt(logUuid, JSON.stringify(parsedCommand, null, 2))
 

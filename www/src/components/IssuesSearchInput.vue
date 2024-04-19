@@ -265,7 +265,7 @@ export default {
 
       if (!this.convert_query(this.value, true)){
 
-        return true;//todo
+    
         
         this.gpt_loader_visible = true
         let user = cache.getObject("profile");
@@ -274,9 +274,9 @@ export default {
         const signal = this.gpt_controller.signal;
 
         //const response = await fetch('http://localhost:3010/gpt?userInput=Найди задачи, у которых ' + this.value  + '&userUuid=' + user.uuid, {
-        
+          let response
         try{
-          const response = await fetch(conf.base_url + 'gpt?userInput=Найди задачи, у которых ' + this.value  + '&userUuid=' + user.uuid, {
+          response = await fetch(conf.base_url + 'gpt?userInput=' + this.value  + '&userUuid=' + user.uuid + '&userCommand=find_issues', {
           method: 'GET',
           signal
           });

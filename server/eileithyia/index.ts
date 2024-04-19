@@ -66,7 +66,10 @@ let checkWorkspaceExists = async function(workspace: String){
 const sqlPath = '../db/';
 let execModifSqlFile = async function(file: string, name: string, workspace: string, email: string, pass: string){
     let sqlFileContent = await fs.readFile(file, 'utf-8');
-    let sqlFileContentStr = sqlFileContent.replaceAll(name, workspace).replaceAll('root@unkaos.org', email).replaceAll('rootpass', pass);
+    let sqlFileContentStr = sqlFileContent.replaceAll(name + '.', workspace + '.')
+    .replaceAll(name + ' ', workspace + ' ').replaceAll(name + ';', workspace + ';')
+    .replaceAll(name + '_', workspace + '_').replaceAll(name + "'", workspace + "'")
+    .replaceAll('root@unkaos.org', email).replaceAll('rootpass', pass);
     await sql.unsafe(sqlFileContentStr);
 }
 

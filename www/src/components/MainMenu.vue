@@ -156,6 +156,7 @@ export default {
     moveSelected(to){
       this.$nextTick(() => {
         // Найти активный элемент меню
+        if(!this.$el.querySelector) return;
         const activeElement = this.$el.querySelector('.router-link-active .main-menu-element-bg');
         if (!activeElement) {this.select_opacity=0; return;}
         this.select_offset_x = activeElement.offsetLeft;

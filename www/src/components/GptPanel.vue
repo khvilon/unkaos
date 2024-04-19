@@ -6,6 +6,9 @@ import tools from "../tools.ts";
 import cache from "../cache.ts";
 import conf from "../conf.ts";
 
+import { nextTick } from "vue";
+import KMarked from "./KMarked.vue";
+
 
 export default {
   props: {
@@ -17,19 +20,31 @@ export default {
   data() {
     return {
       userInput: '',
-      gptResultHuman: '',
+      gptResultHuman: `
+      Меня можно попросить найти задачи, изменить задачи, а также подскажу если есть вопросы по использованию Unkaos.`,
       gptResult: {},
       gptResultHumanData: {},
       panelVisible: false,
       animationVisible: false,
       actionDone: false,
       issues: [],
-      parent_relation_type_uuid: '73b0a22e-4632-453d-903b-09804093ef1b'
+      parent_relation_type_uuid: '73b0a22e-4632-453d-903b-09804093ef1b', 
+      step0text: {
+        use_readme: 'Ищу информацию по запросу в документации',
+        find_issues: 'Формирую запрос на поиск задач',
+        update_issues: 'Формирую запрос на обновление задач',
+      },
+      techErrText: 'Возникли технические неполадки - не удалось обработать ваш запрос'
     };
   },
   methods: {
     togglePanel() {
       this.panelVisible = !this.panelVisible;
+
+      if(this.panelVisible && !this.$store.state['common'].is_in_workspace){
+        this.gptResultHuman = `
+      Меня можно попросить найти или изменить задачи внутри рабочего пространства, а пока отвечу на вопросы по документации Unkaos!`
+      }
     },
     explain(gptJson){
       let ans = ''
@@ -55,10 +70,16 @@ export default {
         }
       }
 
-      if(!this.issues.length) ans += '\r\n\r\nНе найдено задач, удовлетворяющих условиям'
-      else ans += '\r\n\r\nНайдено задач: ' + this.issues.length + '. '
+      if(!this.issues.length) {
+        ans += '\r\n\r\nНе найдено задач, удовлетворяющих условиям'
+        ans += (gptJson.command == 'find') ? '. Перейти?' : ' - выполнение невозможно.'
+      }
+      else {
+        ans += '\r\n\r\nНайдено задач: ' + this.issues.length + '. ';
+        ans += (gptJson.command == 'find') ? 'Перейти?' : 'Выполнить?'
+      }
       
-      ans += (gptJson.command == 'find') ? 'Перейти?' : 'Выполнить?'
+      
 
       return ans
     },
@@ -115,35 +136,80 @@ export default {
     
       this.runMatrix()
       this.animationVisible = true;
+      this.gptResultHuman = 'Классифицирую запрос...';
       
       try {
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
-        const response = await rest.run_gpt(this.userInput)
-        
-        /*await fetch(conf.base_url + 'gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
-          method: 'GET',
-        });*/
+          const commandAns = await rest.run_gpt(this.userInput, 'classify');
+          let command = (await commandAns.json()).command;
+          let step0text = this.step0text[command];
 
+          if(!step0text){
+            this.gptResultHuman = `Не удалось распознать требуемое действие. Попробуйте переформулировать.`
+            return;
+          }
+
+          console.log('>>>gpt command', command, step0text);
+
+          this.gptResultHuman = step0text + '...';
+
+          nextTick(() => {this.send2(command)})
+
+      } catch (error) {
+        console.error('Request error:', error);
+        this.gptResultHuman = techErrText;
+        this.animationVisible = false;
+      } 
+    },
+
+    async send2(command) {
+
+      try{
+
+      
+      const response = await rest.run_gpt(this.userInput, command);
+        
+    
         if (!response.ok) {
-          this.gptResultHuman = `Не удалось распознать требуемое действие`
-          throw new Error(`HTTP error! Status: ${response.status}`);
+          this.gptResultHuman = `Не удалось формализовать запрос. Попробуйте переформулировать.`;
+          this.animationVisible = false;
+          return;
         }
 
         const data = await response.json();
         
         this.gptResult= data.gpt;
         this.gptResultHumanData = data.humanGpt
-        await this.getIssues()
-        this.gptResultHuman = this.explain(data.humanGpt);
+
+        if(command == 'use_readme'){
+          if(data.humanGpt == 'not_found') this.gptResultHuman = `Не удалось найти информацию по интересующей вас теме.\r\n
+          Вы можете попробовать ознакомиться с документацией самостоятельно:\r\n
+          https://github.com/khvilon/unkaos/\r\n
+          Если ваша функция не реализована в системе, можете связаться с автором проекта по почте n@khvilon.ru`
+          else this.gptResultHuman = data.humanGpt;
+        }
+        else{
+          if(!this.$store.state['common'].is_in_workspace){
+            this.gptResultHuman = `Работа с задачами возможна только после входа в систему`;
+            this.animationVisible = false;
+            return;
+          }
+          if(!this.gptResult.target) this.gptResult.target = 'global'
+          await this.getIssues()
+          this.gptResultHuman = this.explain(data.humanGpt);
         
-        console.log('this.gptResult', this.gptResult)
-      } catch (error) {
+          console.log('this.gptResult', this.gptResult)
+        }
+      }catch (error) {
         console.error('Request error:', error);
-        this.result = 'Error: Unable to process your request';
+        this.result = this.techErrText;
       } finally {
         this.animationVisible = false;
       }
     },
+
+
+    
 
     async writeValue(issue, v){
 
@@ -195,7 +261,7 @@ export default {
     },
 
     async run() {
-      if(!this.gptResult) return
+      if(!(this.gptResultHuman && gptResult && !actionDone && (issues.length || gptResult.command == 'find'))) return;
       console.log('Running function with GPT answer:', this.gptResult);
       if(this.gptResult.command == 'update'){
         for(let i = 0; i < this.issues.length; i++){
@@ -228,7 +294,6 @@ export default {
     @keydown.esc.exact.prevent="panelVisible=false"
     class="gpt-panel"
     :class="[panelVisible ? 'gpt-panel-open' : 'gpt-panel-closed']"
-    @click.self="togglePanel"
   >
     <div @click="togglePanel" class="toggle-panel">
       <i class='bx bxs-brain toggle-icon'></i>
@@ -236,37 +301,39 @@ export default {
     </div>
   
       <div class="panel" :class="['gpt-down-panel', animationVisible ? 'gradient-background' : '']"> 
-        
+       
         <div class="gpt-chat gradient-animation">
-          <TextInput 
-            class="fade-background"
-            :value="gptResultHuman" 
-            :disabled="true" 
-            label=""
-            :resize="false"
-            :class="{ 'hidden-fade-background': animationVisible}"
-          />
+          <div class="gpt-chat-text">
+            <KMarked 
+              class="fade-background"
+              :val="gptResultHuman" 
+              :disabled="true" 
+              label=""
+              :resize="false"
+
+            />
+          </div>
          
           <i 
-          :class="[gptResultHuman.length && gptResult && !actionDone ? 'active_icon' : '', actionDone ? 'bx-check-circle' : 'bx-play-circle']"
+          :class="[gptResultHuman.length && gptResult && !actionDone && (issues.length || gptResult.command == 'find') ? 'active_icon' : '', actionDone ? 'bx-check-circle' : 'bx-play-circle']"
           @click="run" class='bx'></i> 
           <div class="gpt-avatar" >
             <div class="gpt-avatar-load" :class="{ 'gpt-avatar-0': !animationVisible, 'gpt-avatar-1': animationVisible }" ></div>
           </div>
+          
         </div>
         <div class=" gpt-request">
           <TextInput 
             @keydown.enter.exact.prevent="()=>{if(gptResult) run(); else if(userInput.length) send()}" 
             @update_parent_from_input="(v)=>{gptResultHuman='';gptResult=undefined;actionDone=false;userInput=v}" 
             label=""
-           
           />
           <i 
           :class="[userInput.length && gptResultHuman.length == 0 && !animationVisible ? 'active_icon' : '']"
           @click="send" class='bx bxs-brain'
           ></i> 
         </div> 
-        
+        <i @click="togglePanel" class='gpt-close bx bxs-chevron-down'></i> 
       </div>
 
   </div>
@@ -282,7 +349,7 @@ export default {
   z-index: 2;
   height: 100%;
   background: var(--loading-bg-color);
-  transition: all 0.4s ease-in-out;
+  transition: bottom 0.4s ease-in-out;
 }
 
 .gpt-panel-open{
@@ -361,6 +428,11 @@ export default {
   transition: all 0.4s ease-in-out;
   
   flex-direction: column;
+  opacity: 1;
+}
+
+.gpt-panel-closed .gpt-down-panel{
+  opacity: 0;
 }
 
 
@@ -372,6 +444,19 @@ export default {
  // bottom: -100vh;
 }
 
+
+.gpt-close{
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  color: var(--text-color) !important;
+  opacity: 1 !important;
+  cursor: pointer;
+  padding: 0 !important;
+  transform: translateX(-50%);
+  width:30px;
+}
 
 
 .gpt-avatar {
@@ -418,9 +503,6 @@ export default {
 }
 
 
-.hidden-fade-background textarea{
-  display: none !important;
-}
 
 @keyframes active_icon_blink {
   0% {
@@ -480,14 +562,19 @@ export default {
   position: relative;
 }
 
-.gpt-chat .text-input, .gpt-chat .text{
+.gpt-chat .text-input, .gpt-chat .text,.gpt-chat .gpt-chat-text{
   height: 100% !important;
-  width: calc(100% - 100px);
+  width: 100%;
   border:none;
   background: transparent !important;
+  padding: 20px;
+  overflow: scroll;
+  position: absolute;
 }
 
-
+.gpt-chat-text .marked-container{
+  width: calc(100% - 100px);
+}
 
 .gpt-result-loader{
   width: 100%;

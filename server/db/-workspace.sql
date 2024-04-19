@@ -66,8 +66,8 @@ CREATE INDEX ON server.relations USING btree (issue1_uuid);
 CREATE INDEX ON server.relations USING btree (type_uuid);
 CREATE INDEX ON server.relations USING btree (uuid);
 CREATE INDEX ON server.users USING btree (uuid);
-CREATE INDEX ON public.issue_tags_selected USING btree (issue_uuid);
-CREATE INDEX ON public.issue_tags_selected USING btree (issue_tags_uuid);
+CREATE INDEX ON server.issue_tags_selected USING btree (issue_uuid);
+CREATE INDEX ON server.issue_tags_selected USING btree (issue_tags_uuid);
 
 CREATE TRIGGER server_delete_col_field_values_rows AFTER UPDATE ON server.fields FOR EACH ROW WHEN (((old.deleted_at IS NULL) AND (new.deleted_at IS NOT NULL))) EXECUTE FUNCTION server.delete_col_field_values_rows();
 CREATE TRIGGER server_insert_into_field_values_rows AFTER INSERT ON server.issues FOR EACH ROW EXECUTE FUNCTION server.insert_into_field_values_rows();

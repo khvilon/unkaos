@@ -3,8 +3,6 @@ import tools from "./tools";
 import conf from "./conf";
 import cache from "./cache";
 
-const adminRoleUUID = '556972a6-0370-4f00-aca2-73a477e48999'
-
 export default class rest {
 
   static workspace: string = "public"; // Default value
@@ -22,7 +20,7 @@ export default class rest {
   ]);
 
   static headers: Headers = new Headers({
-    "content-type": "application/json",
+    "content-type": "application/json"
   });
 
   static async get_token(email: string, pass: string): Promise<string | null> {
@@ -62,15 +60,23 @@ export default class rest {
     return await resp.json();
   }
 
-  static async run_gpt(input: string): Promise<any> {
+
+  static async run_gpt(input: string, command: string): Promise<any> {
     //return null;//todo
     let user = cache.getObject("profile");
 
+    try{
+
+    
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
-        return fetch(conf.base_url + 'gpt?userInput=' + input  + '&userUuid=' + user.uuid, {
+        return fetch(conf.base_url + 'gpt?userInput=' + input  + '&userCommand=' + command  + '&userUuid=' + user.uuid, {
           method: 'GET',
           headers: {workspace: this.workspace}
         });
+    }
+    catch(err){
+      return {err: err}
+    }
   }
 
   static async run_method(method: string, body: any): Promise<any> {
