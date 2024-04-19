@@ -104,6 +104,8 @@ router.beforeEach((to, from, next) => {
   ws.setWorkspace(to.params.workspace)
   store.state["common"].workspace = to.params.workspace;
   store.state["common"].is_in_workspace = !to.path.contains("/login") && to.params.workspace;
+  if(to.path == '/') store.state["common"].is_on_landing = true;
+  else store.state["common"].is_on_landing = false;
 
   document.title = to.name;
   if (to.matched != undefined && to.matched[0] != undefined) {
