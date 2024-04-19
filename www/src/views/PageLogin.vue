@@ -139,6 +139,10 @@ export default login_page;
   margin-bottom: 12px;
 }
 
+.login-panel .btn {
+  margin-bottom: 0;
+}
+
 .login-panel .btn Input {
   width: 100%;
   margin-top: 10px;
