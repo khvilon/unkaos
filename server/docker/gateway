@@ -3,7 +3,6 @@ FROM node:16.19.0-bullseye-slim
 COPY ./server /app
 WORKDIR /app/gateway
 RUN yarn install
-RUN yarn build
 
 USER node
 

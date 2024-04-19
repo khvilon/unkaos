@@ -1,12 +1,11 @@
 FROM node:18-bullseye-slim
 
-RUN npm install -g npm@10.3.0
+RUN npm install -g npm@10.5.2
 
 COPY ./server /app
 WORKDIR /app/cerberus
 RUN yarn install
 RUN npm i --save-dev @types/express
-RUN yarn build
 
 USER node
 
