@@ -177,6 +177,8 @@ Log in with the credentials:
 
 Unkaos is built on a robust, scalable, and modern technology stack designed for efficiency and ease of use. At its core, Unkaos uses Vue.js 3 for the front end, providing a reactive and composable user interface. The back end is powered by Node.js, ensuring fast and scalable server-side logic. Data storage is managed by PostgreSQL, known for its reliability and powerful features.
 
+![Unkaos Logo](pictures/architecture.png)
+
 ### Key Components:
 
 - **Frontend**: Vue.js 3
