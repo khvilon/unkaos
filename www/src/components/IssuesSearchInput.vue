@@ -186,6 +186,7 @@ export default {
   watch: {
     parent_query: function (val, oldVal) {
       //  console.log('parent_query', val)
+      console.log('>>>>emit_query')
       if (val != this.value) {
         this.value = val;
         console.log('>>>>>>>parent_query')
@@ -251,6 +252,7 @@ export default {
       this.gpt_controller.abort();
     },
     async emit_query() {
+      
       //  console.log('this.fields.length * this.projects.length * this.issue_types.length', this.fields.length , this.projects.length , this.issue_types.length)
       if (this.fields.length * this.projects.length * this.issue_types.length == 0) {
         setTimeout(this.emit_query, 200);
@@ -258,10 +260,9 @@ export default {
       }
 
 
-      
-
       if (this.value == undefined) return;
 
+      
 
       if (!this.convert_query(this.value, true)){
 

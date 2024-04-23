@@ -24,7 +24,6 @@ let methods = {
     return arr;
   },
   get_issues: async function (query, offset) {
-
     this.$router.replace({});
     cache.setString("issues_query", this.search_query);
     cache.setString("issues_query_encoded", this.search_query_encoded);
@@ -36,7 +35,7 @@ let methods = {
 
     //options.tree_view = tree_view
 
-    console.log('>>>get_issues', query)
+    
 
     if(offset == undefined) {
       let ans = await rest.run_method("read_issues_count", options);
@@ -46,7 +45,7 @@ let methods = {
     }
 
     let issues = await rest.run_method("read_issues", options);
-    console.log('>>>get_issues0', issues)
+
 
     if (offset != undefined) {
       for (let i in issues) {
@@ -175,7 +174,7 @@ const data = {
   name: "issues",
   label: "Задачи",
   search_query: undefined,
-  search_query_encoded: "",
+  search_query_encoded: undefined,
   tree_view: true,
   favourite_uuid: '',
   collumns: [
@@ -291,6 +290,7 @@ mod.mounted = function () {
   } else {
     this.$nextTick(function () {
       this.search_query = cache.getString("issues_query")
+      if(this.search_query == '') this.search_query = ' '
     });
   }
 
