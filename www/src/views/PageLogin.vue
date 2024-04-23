@@ -139,6 +139,10 @@ export default login_page;
   margin-bottom: 12px;
 }
 
+.login-panel .btn {
+  margin-bottom: 0;
+}
+
 .login-panel .btn Input {
   width: 100%;
   margin-top: 10px;
@@ -157,7 +161,7 @@ export default login_page;
 }
 
 .wrong-pass-label {
-  color: rgb(124, 0, 0);
+  color: rgb(224, 0, 0);
   height: 20px;
   width: 100%;
   display: block;

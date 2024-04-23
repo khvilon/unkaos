@@ -91,7 +91,7 @@ Additionally, you can manage relations, tags, and time usage in the issue.
 
 #### Bulk Changes and Other AI Options
 
-There is a magic wand button located in the bottom right corner on the issue, issues list, and board pages. It opens a panel for AI requests. In the left field of this panel, you can enter a command in natural language, then press the 'brain' button to get an AI interpretation. Commands for issue search, creation, and updates are available. The right field will display a structured interpretation of your command. Exercise caution and verify it accurately reflects your request, especially for modification commands. Note that this feature allows you to make bulk changes in Unkaos, and it's crucial to ensure it's applied to the correct set of issues.
+There is a brain button located in the bottom center. It opens a panel for AI requests (ctrl + alt + a). You can enter a command in natural language, then press the 'brain' button or press enter to get an AI interpretation. Commands for issue search, creation, and updates are available. Also any answers on the readme can be obtained. Exercise caution and verify it accurately reflects your request for modification commands. Note that this feature allows you to make bulk changes in Unkaos, and it's crucial to ensure it's applied to the correct set of issues.
 
 ### Agile Boards
 
@@ -170,6 +170,12 @@ Log in with the credentials:
 
 ⚠️ **Important!!!** As a security measure, make sure to change the default password immediately after you sign in for the first time. You can do this through the 'User Settings' or 'Account' section within the Unkaos platform.
 
+At the server configs you need first of all to set the email data to activate workspace registration, password updates and notifications.
+
+Also it is of a big help for the user to ask the AI his requests. To make it run you need to configure the integration with GPT server like openai API. Any server with openai protocol can be used. Proxy available. Also you can add a second cheeper model for readme search. Note that the main model should be one of the strongest for today like openai GPT 4 turbo.
+
+Autoupdate at night hours is on by default, it will look for last stable version from the master branch of the repository. You can switch it off or change allowed hours.
+
 
 # 💻Developer Documentation
 
@@ -177,12 +183,26 @@ Log in with the credentials:
 
 Unkaos is built on a robust, scalable, and modern technology stack designed for efficiency and ease of use. At its core, Unkaos uses Vue.js 3 for the front end, providing a reactive and composable user interface. The back end is powered by Node.js, ensuring fast and scalable server-side logic. Data storage is managed by PostgreSQL, known for its reliability and powerful features.
 
-### Key Components:
+The database structure allows users to access their workspace data while securely isolating other workspaces—each workspace is represented by a schema in the PostgreSQL DB.
 
-- **Frontend**: Vue.js 3
-- **Backend**: Node.js
-- **Database**: PostgreSQL
-- **Real-Time Updates**: the Unkaos AI service can use any model over openai protocol
+![Unkaos Logo](pictures/architecture.png)
+
+### Key services:
+
+The first service reached by any request from a client is the Gateway. It does not have much functionality, it works like a proxy, checking user permissions in the Cerberus service and connecting to the required service in the local server network.
+
+The back-end services are named following Greek mythology:
+
+Zeus - the king of the Olympic gods, also known as the father of gods. Here, Zeus is the main and largest service, providing a full CRUD API for all objects in the DB. It has the opportunity to automatically set CRUD methods for new tables declared with their relations in the DB.
+
+Hermes - the messenger of the gods, in Unkaos is named the notification service used to send messages via email, Telegram, and Discord. The bots for Telegram and Discord need to be created manually, and then the token is saved in server configs by the server administrator.
+
+Athena - goddess of wisdom, represents the AI service. It gets user prompts, firstly via API integration with a GPT server it tries to classify the request, then it uses the GPT server with a second request depending on the result of the first one. It can be a prompt for help with readmes or a command to search or update issues.
+
+Ossa - a goddess associated with rumors, capturing every whisper of the earth and air. The corresponding task tracker service similarly gathers info about changes in the DB by publications and transfers it to shared memory for other services' use. It also provides a real-time update for the issue page through web sockets.
+
+Eileithyia - is the Greek goddess associated with childbirth. The Eileithyia service is responsible for performing new workspace registrations - its requests do not need authentication through Cerberus.
+
 
 ## Contributing
 
