@@ -91,7 +91,7 @@ Additionally, you can manage relations, tags, and time usage in the issue.
 
 #### Bulk Changes and Other AI Options
 
-There is a brain button located in the bottom center. It opens a panel for AI requests. You can enter a command in natural language, then press the 'brain' button or press enter to get an AI interpretation. Commands for issue search, creation, and updates are available. Also any answers on the readme can be obtained. Exercise caution and verify it accurately reflects your request for modification commands. Note that this feature allows you to make bulk changes in Unkaos, and it's crucial to ensure it's applied to the correct set of issues.
+There is a brain button located in the bottom center. It opens a panel for AI requests (ctrl + alt + a). You can enter a command in natural language, then press the 'brain' button or press enter to get an AI interpretation. Commands for issue search, creation, and updates are available. Also any answers on the readme can be obtained. Exercise caution and verify it accurately reflects your request for modification commands. Note that this feature allows you to make bulk changes in Unkaos, and it's crucial to ensure it's applied to the correct set of issues.
 
 ### Agile Boards
 

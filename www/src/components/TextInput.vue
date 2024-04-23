@@ -60,6 +60,10 @@ export default {
       element.style.height = "66px";
       element.style.height = element.scrollHeight + "px";
     },
+    focus(timeoutPassed){
+      if(timeoutPassed) this.$refs.text_input.focus();
+      else setTimeout(this.focus, 400, true);
+    },
     getCaretIndex(element) {
       let position = 0;
       const isSupported = typeof window.getSelection !== "undefined";
