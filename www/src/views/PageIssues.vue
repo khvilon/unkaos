@@ -29,11 +29,13 @@ let methods = {
     cache.setString("issues_query_encoded", this.search_query_encoded);
     let options = {};
     this.search_query_encoded = "";
-    if (query != undefined && query != "")
+    if (query != undefined)
       options.query = this.search_query_encoded = query;
     if (offset != undefined) options.offset = offset;
 
     //options.tree_view = tree_view
+
+    
 
     if(offset == undefined) {
       let ans = await rest.run_method("read_issues_count", options);
@@ -43,6 +45,7 @@ let methods = {
     }
 
     let issues = await rest.run_method("read_issues", options);
+
 
     if (offset != undefined) {
       for (let i in issues) {
@@ -83,6 +86,8 @@ let methods = {
         );
     }
 
+    this.favourite_uuid = this.get_favourite_uuid()
+
   },
   get_field_path_by_name: function (name) {
     if (this.issue == undefined || this.issue.length != 1) return {};
@@ -109,11 +114,14 @@ let methods = {
       uuid: this.favourite_uuid,
       type_uuid: this.favourite_issues_type_uuid,
       name: this.search_query,
-      link: "/issues?query=" + tools.encodeURIComponent(this.search_query),
+      link: '/' + this.$store.state['common'].workspace + "/issues?query=" + tools.encodeURIComponent(this.search_query),
     };
-
-
+    this.favourite_uuid = favourite.uuid;
     await rest.run_method("create_favourites", favourite);
+  },
+  remove_from_favourites: async function(){
+    await rest.run_method('delete_favourites', { uuid: this.favourite_uuid })
+		this.favourite_uuid = '';
   },
   get_table_data: function () {
     if(document.getElementById("issues_table") == undefined) return ''
@@ -142,7 +150,20 @@ let methods = {
     if(column.desc) query += ' desc';
     this.search_query = query;
     this.search_issues();
-  }
+  },
+  get_favourite_uuid: function() {
+		console.log('>>>get_favourite_uuid');
+		if (!this.favourites) return ''
+		let encoded_query = tools.encodeURIComponent(this.search_query)
+		for (let i = 0; i < this.favourites.length; i++) {
+			console.log('>>>get_favourite_uuid00', this.favourites[i].link);
+			if (this.favourites[i].link.indexOf(encoded_query) > -1) {
+				return this.favourites[i].uuid
+			}
+		}
+
+		return '';
+	}
 };
 
 const data = {
@@ -153,8 +174,9 @@ const data = {
   name: "issues",
   label: "Задачи",
   search_query: undefined,
-  search_query_encoded: "",
+  search_query_encoded: undefined,
   tree_view: true,
+  favourite_uuid: '',
   collumns: [
     {
       name: "",
@@ -244,6 +266,11 @@ const data = {
       id: "",
       dictionary: "issue_tags",
     },
+    {
+			label: 'favourites',
+			id: '',
+			dictionary: 'favourites'
+		},
   ],
 };
 
@@ -263,6 +290,7 @@ mod.mounted = function () {
   } else {
     this.$nextTick(function () {
       this.search_query = cache.getString("issues_query")
+      if(this.search_query == '') this.search_query = ' '
     });
   }
 
@@ -323,7 +351,8 @@ export default mod;
           class="bx top-menu-icon-btn"
           @click="tree_view = !tree_view"
         ></i>
-        <i class="bx bx-star top-menu-icon-btn" @click="add_to_favourites"> </i>
+        <i v-if="!loading && !favourite_uuid" class="bx bx-star top-menu-icon-btn" @click="add_to_favourites"> </i>
+        <i v-if="!loading && favourite_uuid" class="bx bxs-star top-menu-icon-btn" @click="remove_from_favourites"> </i>
         <i v-if="!loading" class="bx bxs-download top-menu-icon-btn"
         @click="get_excel"
         > </i>

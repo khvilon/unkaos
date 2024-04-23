@@ -166,6 +166,12 @@ export default {
 
       try{
 
+      if(!this.$store.state['common'].is_in_workspace && command != 'use_readme')
+      {
+          this.gptResultHuman = `Запросы такого типа доступны только внутри рабочего пространства. Здесь можно задать вопрос по документации`;
+          this.animationVisible = false;
+          return;
+        }
       
       const response = await rest.run_gpt(this.userInput, command);
         
@@ -260,6 +266,13 @@ export default {
       console.log('>>>2', v, issue)
     },
 
+    open(){
+      this.panelVisible = true;
+    },
+    close(){
+      this.panelVisible = false;
+    },
+
     async run() {
       if(!(this.gptResultHuman && gptResult && !actionDone && (issues.length || gptResult.command == 'find'))) return;
       console.log('Running function with GPT answer:', this.gptResult);
@@ -286,17 +299,24 @@ export default {
       this.actionDone = true
     },
   },
+  watch: {
+    panelVisible(newVal, oldVal) {
+      if(newVal && !oldVal) this.$refs.gptInput.focus();
+    }
+  }
 };
 </script>
 
 <template>
   <div 
+    
     @keydown.esc.exact.prevent="panelVisible=false"
     class="gpt-panel"
     :class="[panelVisible ? 'gpt-panel-open' : 'gpt-panel-closed']"
   >
     <div @click="togglePanel" class="toggle-panel">
-      <i class='bx bxs-brain toggle-icon'></i>
+      <i class='bx bxs-brain toggle-icon'
+      :class="[ $store.state['common'].is_on_landing ? 'active_icon' : '']"></i>
       
     </div>
   
@@ -327,6 +347,7 @@ export default {
             @keydown.enter.exact.prevent="()=>{if(gptResult) run(); else if(userInput.length) send()}" 
             @update_parent_from_input="(v)=>{gptResultHuman='';gptResult=undefined;actionDone=false;userInput=v}" 
             label=""
+            ref="gptInput"
           />
           <i 
           :class="[userInput.length && gptResultHuman.length == 0 && !animationVisible ? 'active_icon' : '']"
@@ -417,11 +438,9 @@ export default {
 .gpt-down-panel {
   //overflow: hidden;
   bottom: 0px;
-  width: calc(100% - 200px);
-  margin-left: 100px;
-  margin-right: 100px;
-  height: 80vh;
-  top: 10vh;
+  width: calc(100% - 100px);
+  margin: 50px;
+  height: calc(100% - 100px);
 
   position: relative;
   display: flex;
@@ -524,6 +543,22 @@ export default {
   }
 }
 
+@keyframes active_small_icon_blink {
+  0% {
+    text-shadow: -1px 0 transparent, 0 1px transparent, 1px 0 transparent, 0 -1px transparent;
+  }
+  80% {
+    text-shadow: -1px 0 rgb(188, 188, 188), 0 1px rgb(188, 188, 188), 1px 0 rgb(188, 188, 188), 0 -1px rgb(188, 188, 188);
+  }
+  85% {
+    //font-size: 20px;
+    text-shadow: -1px 0 rgb(188, 188, 188), 0 1px rgb(188, 188, 188), 1px 0 rgb(188, 188, 188), 0 -1px rgb(188, 188, 188);
+  }
+  100% {
+    text-shadow: -1px 0 transparent, 0 1px transparent, 1px 0 transparent, 0 -1px transparent;
+  }
+}
+
 .gpt-down-panel i{
   font-size: 30px;
   padding-bottom: 15px;
@@ -540,6 +575,11 @@ export default {
   animation: active_icon_blink 1.5s infinite ;
   cursor: pointer;
   opacity: 1;
+}
+
+.toggle-panel .active_icon{
+  color: rgb(128, 128, 128);
+  animation: active_small_icon_blink 3s infinite ;
 }
 
 

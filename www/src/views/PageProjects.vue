@@ -37,11 +37,13 @@ const data = {
       label: "Название",
       id: "name",
       type: "String",
+      required: true
     },
     {
       label: "Код",
       id: "short_name",
       type: "String",
+      required: true
     },
     {
       label: "Описание",
@@ -65,6 +67,7 @@ const data = {
       disabled: false,
       clearable: false,
       dictionary: "users",
+      required: true
     },
     {
       label: "Зарегистрирован",
@@ -98,7 +101,7 @@ export default mod;
         />
       </div>
       <div class="table_card panel">
-        <div class="table_card_fields">
+        <div class="table_card_fields" @keyup.enter="saveEnter()">
           <component
             v-bind:is="input.type + 'Input'"
             v-for="(input, index) in inputs"
@@ -109,14 +112,18 @@ export default mod;
             :parent_name="'projects'"
             :disabled="input.disabled"
             :clearable="input.clearable"
+            :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
           ></component>
         </div>
         <div class="table_card_buttons">
           <div class="table_card_footer">
             <KButton
+              ref="saveButton"
               class="table_card_footer_btn"
               :name="'Сохранить'"
               :func="'save_projects'"
+              @button_ans="function(ans){try_done = !ans}"
+              :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid)"
             />
             <KButton v-if="projects_selected"
               class="table_card_footer_btn"

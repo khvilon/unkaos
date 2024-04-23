@@ -31,11 +31,13 @@ let methods = {
 		this.configs_open = false
 		this.boards_issues = []
 		//check loaded
-		if (this.selected_board == undefined ||
+		if (this.selected_board == undefined || this.favourites == undefined ||
 			this.issue_statuses == undefined || this.inputs_dict == undefined || this.inputs_dict.boards_columns == undefined) {
 			setTimeout(this.init, 50)
 			return
 		}
+
+		
 
 
 		this.title
@@ -142,6 +144,8 @@ let methods = {
 		//if(this.board[0].query == '') return
 		if(this.board[0].query[this.board[0].query.length-1] == ' ') this.board[0].query = this.board[0].query.trimEnd()
 		else this.board[0].query += ' '
+
+		this.favourite_uuid = this.get_favourite_uuid()
 	},
 	get_root: function (issue) {
 		if (issue.parent_uuid == undefined || issue.parent_uuid == null) return issue
@@ -796,16 +800,16 @@ let methods = {
 			uuid: tools.uuidv4(),
 			type_uuid: this.favourite_board_type_uuid,
 			name: this.selected_board.name,
-			link: '/board/' + this.selected_board.uuid
+			link: '/' + this.$store.state['common'].workspace + '/board/' + this.selected_board.uuid
 		}
 		console.log('this.favourite_uuid0', favourite)
 
 		await rest.run_method('create_favourites', favourite)
-		rest.run_method('read_favourites')
+		this.favourite_uuid = favourite.uuid;
 	},
 	async delete_from_favourites() {
 		await rest.run_method('delete_favourites', { uuid: this.favourite_uuid })
-		rest.run_method('read_favourites')
+		this.favourite_uuid = '';
 	},
 	async edit_card_title(issue, e) {
 		let new_title = e.target.innerText
@@ -1016,6 +1020,20 @@ let methods = {
 				return
 			}
 		}
+	},
+	get_favourite_uuid: function() {
+		console.log('>>>get_favourite_uuid');
+		if (!this.favourites || !this.selected_board) return ''
+		console.log('>>>get_favourite_uuid0');
+		for (let i = 0; i < this.favourites.length; i++) {
+			console.log('>>>get_favourite_uuid00', this.favourites[i].link, this.selected_board.uuid);
+			if (this.favourites[i].link.indexOf(this.selected_board.uuid) > -1) {
+				//alert('get_favourite_uuid0 ' + this.favourite_uuid )
+				return this.favourites[i].uuid
+			}
+		}
+
+		return '';
 	}
 }
 
@@ -1034,7 +1052,6 @@ const data =
 	statuses_ends_dict: {},
 	conf: {},
 	favourite_board_type_uuid: '1b6832db-7d94-4423-80f2-10ed989af9f8',
-	favorite_uuid: undefined,
 	void_group_name: 'Без группы',
 	swimlanes: {},
 	moving_swimlane: null,
@@ -1044,6 +1061,7 @@ const data =
 	fields_values: [],
 	card_draginfo: {},
 	status_draginfo: {},
+	favourite_uuid: '',
 	name: 'board',
 	label: 'Доска',
 	search_query: '',
@@ -1270,30 +1288,10 @@ mod.computed.colored_fields = function(){
 }
 
 mod.computed.isInFavourite = function(){
-	return Boolean(this.favorite_uuid)
+	return Boolean(this.favourite_uuid)
 }
 
-mod.computed.favourite_uuid = function() {
 
-	this.favourites.toString()
-
-console.log('get_favourite_uuid0')
-if (!this.favourites || !this.selected_board || this.selected_board.is_new) return ''
-
-for (let i = 0; i < this.favourites.length; i++) {
-
-	//alert('get_favourite_uuid' + this.selected_board.uuid + this.favourites[i].link)
-	console.log('get_favourite_uuid', this.selected_board.uuid, this.favourites[i].link)
-
-	if (('/board/' + this.selected_board.uuid) == this.favourites[i].link) {
-
-
-		//alert('get_favourite_uuid0 ' + this.favourite_uuid )
-
-		return this.favourites[i].uuid
-	}
-}
-}
 
 
 mod.props = {
@@ -1350,10 +1348,10 @@ export default mod
 				<i class='bx bx-trash top-menu-icon-btn delete-board-btn' @click="delete_board()">
 				</i>
 				<i class='bx bx-star top-menu-icon-btn' @click="add_to_favourites"
-					v-if="!favourite_uuid">
+					v-if="!isInFavourite">
 				</i>
 				<i class='bx bxs-star top-menu-icon-btn' @click="delete_from_favourites"
-					v-if="favourite_uuid">
+					v-if="isInFavourite">
 				</i>
 
 

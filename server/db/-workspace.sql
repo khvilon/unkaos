@@ -135,10 +135,10 @@ INSERT INTO server.fields (uuid, name, type_uuid, is_custom) VALUES
 ('c96966ea-a591-47a9-992c-0a2f6443bc80', 'Название', '891b02c9-a559-44da-8840-6e93bf2d8d22', false),
 ('4a095ff5-c1c4-4349-9038-e3c35a2328b9', 'Описание', '9d8ddcc7-a4e8-4ea8-b3d0-e7c9686abc6f', false),
 ('733f669a-9584-4469-a41b-544e25b8d91a', 'Автор', 'd57da84f-ed1b-4596-9fb9-9d4c500af63d', false),
-('60d53a40-cda9-4cb2-a207-23f8236ee9a7', 'Spent time', 'c0c4036c-3dd2-4264-ba2e-ec7180a4d35c', true),
-('e85ccb15-c1d2-433b-bb45-473a9a36a02c', 'Assignee', 'd57da84f-ed1b-4596-9fb9-9d4c500af63d', true);
+('60d53a40-cda9-4cb2-a207-23f8236ee9a7', 'Затраченное время', 'c0c4036c-3dd2-4264-ba2e-ec7180a4d35c', false),
+('e85ccb15-c1d2-433b-bb45-473a9a36a02c', 'Ответственный', 'd57da84f-ed1b-4596-9fb9-9d4c500af63d', true);
 INSERT INTO server.fields (uuid, name, type_uuid, is_custom, available_values) VALUES 
-('b6ddb33f-eea9-40c0-b1c2-d9ab983026a1', 'Priority', '457da84d-2d1d-3595-6fba-4d4d674af63f', true, 
+('b6ddb33f-eea9-40c0-b1c2-d9ab983026a1', 'Приоритет', '457da84d-2d1d-3595-6fba-4d4d674af63f', true, 
 '[
     {
         "name": "Minor",

@@ -151,7 +151,7 @@ export default mod;
         </Transition>
       </div>
       <div class="table_card panel">
-        <div class="table_card_fields">
+        <div class="table_card_fields"  @keyup.enter="saveEnter()">
           <component 
             v-bind:is="input.type + 'Input'"
             v-for="(input, index) in filteredInputs"
@@ -178,6 +178,7 @@ export default mod;
           />
           <div class="table_card_footer">
             <KButton
+              ref="saveButton"
               class="table_card_footer_btn"
               :name="'Сохранить'"
               :func="'save_users'"

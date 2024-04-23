@@ -221,6 +221,8 @@ page_helper.create_module = async function (data, methods) {
 		store.state['common']['is_router_view_visible'] = true
 	  }*/
 
+    
+
   if (methods == undefined) methods = {};
   methods.get_json_val = tools.obj_attr_by_path;
 
@@ -320,6 +322,11 @@ page_helper.create_module = async function (data, methods) {
     console.log("is_input_valid", input.id, val, is_valid)
     return is_valid
   };
+
+  methods.saveEnter = function(){
+    if(!this.$refs.saveButton) return;
+    this.$refs.saveButton.click(this.$refs.saveButton);
+  }
 
   return {
     created,

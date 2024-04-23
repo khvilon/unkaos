@@ -59,6 +59,7 @@ export default mod;
               {{ favourite.name }}
             </a>
           </div>
+          <div v-if="!favourites.filter((f)=>f.type[0].name == type).length">Пока нет сохраненных</div>
         </div>
       </div>
     </div>

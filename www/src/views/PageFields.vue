@@ -50,9 +50,12 @@ const data = {
 
 const mod = await page_helper.create_module(data);
 
+
 mod.methods.updateSelectVal = function(){
   console.log('>>>>>>upd')
 }
+
+
 
 export default mod;
 </script>
@@ -78,7 +81,7 @@ export default mod;
           </Transition>
         </div>
         <div class="table_card panel">
-          <div class="table_card_fields">
+          <div class="table_card_fields" @keyup.enter="saveEnter()">
             <component
               v-bind:is="input.type + 'Input'"
               v-for="(input, index) in inputs"
@@ -140,6 +143,7 @@ export default mod;
           <div class="table_card_buttons">
             <div class="table_card_footer">
               <KButton 
+                ref="saveButton"
                 class="table_card_footer_btn"
                 :name="'Сохранить'"
                 @click="updateSelectVal"

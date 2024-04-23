@@ -36,8 +36,15 @@ export default {
     
   },
 
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.checkShortcut);
+  },
+
   mounted() {
     console.log("app mounted");
+
+    window.addEventListener('keydown', this.checkShortcut);
+
     cache.loadDefaultsIfNecessary()
     let htmlElement = document.documentElement;
     htmlElement.setAttribute("theme", cache.getString('theme'));
@@ -136,6 +143,18 @@ export default {
     show() {
       console.log("alerter", Object.values(this.$store.state["alerts"]));
     },
+    openGpt(){
+      console.log('openGpt')
+      this.$refs.gptPanel.open();
+    },
+    checkShortcut(event) {
+      // Check for 'Ctrl + Alt + G'
+      console.log('shortcut cheched', event)
+      if (event.ctrlKey && event.altKey && (event.key.toLowerCase() === 'a' || event.key.toLowerCase() === 'ф')) {
+        this.openGpt();
+        event.preventDefault(); // This prevents any default action triggered by this key combination
+      }
+    },
   },
 
   components: {
@@ -164,6 +183,7 @@ export default {
       </transition>
     </router-view>
     <GptPanel
+    ref="gptPanel"
           v-if="!$store.state['common']['is_mobile'] && ($store.state['common']['is_in_workspace'] || $store.state['common'].is_on_landing)"
     />
   </div>

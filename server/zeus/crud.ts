@@ -579,8 +579,7 @@ crud.make_query = {
 
     if (
       (table_name == "issues"  &&
-      params["query"] != undefined &&
-      params["query"] != "") || table_name == "issues_count")
+      params["query"] != undefined) || table_name == "issues_count")
      {
       let user_query:String = ' TRUE '
       if (params["query"]) user_query = decodeURIComponent(atob(params["query"]));

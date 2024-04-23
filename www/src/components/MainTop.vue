@@ -15,8 +15,8 @@
       <svg 
         version="1.0" 
         xmlns="http://www.w3.org/2000/svg"
-        width="278.000000pt" height="267.000000pt" 
-        viewBox="0 0 278.000000 267.000000"
+        width="288.000000pt" height="267.000000pt" 
+        viewBox="-10 0 278.000000 267.000000"
         preserveAspectRatio="xMidYMid meet"
       >
         <g class="honeypot0" transform="translate(0.000000,267.000000) scale(0.020000,-0.020000)">

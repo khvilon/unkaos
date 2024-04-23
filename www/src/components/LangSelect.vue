@@ -12,7 +12,8 @@
 
     data() {
     return {
-      langs: [{ name: "Русский", val: "ru" },{ name: "English", val: "en" }],
+      //langs: [{ name: "Русский", val: "ru" },{ name: "English", val: "en" }],
+      langs: [{ name: "Русский", val: "ru" }],
       lang: { name: "Русский", val: "ru" },
   };
 },
