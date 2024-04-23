@@ -417,11 +417,9 @@ export default {
 .gpt-down-panel {
   //overflow: hidden;
   bottom: 0px;
-  width: calc(100% - 200px);
-  margin-left: 100px;
-  margin-right: 100px;
-  height: 80vh;
-  top: 10vh;
+  width: calc(100% - 100px);
+  margin: 50px;
+  height: calc(100% - 100px);
 
   position: relative;
   display: flex;

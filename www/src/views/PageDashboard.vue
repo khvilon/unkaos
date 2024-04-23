@@ -159,18 +159,16 @@ let methods = {
     }
   },
   save_gadget: function(e, gadget){
-    console.log('>>>>>>>>>>>t saving_gadget',e, gadget)
     gadget.config_open = false;
     gadget.name = e.name;
     let config = tools.clone_obj(e);
     delete config.name;
     gadget.config = JSON.stringify(config);
-    console.log('>>>>>>>>>>>t saved_gadget',gadget)
     rest.run_method('upsert_gadgets', gadget)
   },
 
   new_gadget:  function(type){
-    if(type.code != 'TimeReport' && type.code != 'Burndown' && type.code != 'IssuesTable') return
+    if(type.code != 'TimeReport' && type.code != 'Burndown' && type.code != 'IssuesTable') return;
 
     let gadget = {
       uuid: tools.uuidv4(),
@@ -182,13 +180,13 @@ let methods = {
       type_uuid: type.uuid,
       type: [type],
       name:  type.name,
-      config: {}
-    }
+      config: '{}'
+    };
 
     //console.log('new_gadget', gadget)
-    this.gadgets.push(gadget)
+    this.gadgets.push(gadget);
 
-    rest.run_method('upsert_gadgets', gadget)
+    rest.run_method('upsert_gadgets', gadget);
 
     this.gadget_types_modal_visible = false;
   },

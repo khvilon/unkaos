@@ -161,7 +161,7 @@ export default login_page;
 }
 
 .wrong-pass-label {
-  color: rgb(124, 0, 0);
+  color: rgb(224, 0, 0);
   height: 20px;
   width: 100%;
   display: block;
