@@ -2,6 +2,7 @@
 import { nextTick } from "vue";
 import cache from "../cache.ts";
 import conf from "../conf.ts";
+import tools from "../tools.ts";
 
 export default {
   props: {
@@ -379,6 +380,7 @@ export default {
     },
 
     have_word_at(arr, word, idx) {
+      if(word.name) word = word.name;
       word = word.replaceAll(" ", " ");
       let word_in_text = arr.substr(idx, word.length).replaceAll(" ", " ");
       let found = word_in_text == word;
@@ -425,7 +427,8 @@ export default {
         if (this.vals_dict[field_type] != undefined) {
           this.suggestions = this.vals_dict[field_type].map((p) => p.name);
         } else if (field_type == "Select") {
-          this.suggestions = this.select_values;
+          if(this.select_values[0] && this.select_values[0].name) this.suggestions = this.select_values.map((p) => p.name);
+          else this.suggestions = this.select_values;
         }
       } else if (waits_for_idx == 3) {
         this.suggestions = this.logic_operators;
@@ -499,9 +502,13 @@ export default {
           found = true;
 
           if (qd.field_type == "Select") {
-            this.select_values = this.fields[j].available_values
-              .split(",")
-              .map((v) => v.replace("\n", "").trim());
+            if(tools.isValidJSON(this.fields[j].available_values)){
+              this.select_values  = JSON.parse(this.fields[j].available_values)
+            }
+            else{
+              this.select_values  = 
+              this.fields[j].available_values.split(",").map((v) => v.replace("\n", "").replace("\r", "").trim());
+            }
           }
 
           break;
@@ -621,7 +628,8 @@ export default {
           } else if (qd.field_type == "Select") {
             for (let j in this.select_values) {
               if (this.have_word_at(qd.query, this.select_values[j], qd.i)) {
-                qd.converted_query += "'" + this.select_values[j] + "'#";
+                if(this.select_values[j].uuid) qd.converted_query += "'" + this.select_values[j].uuid + "'#";
+                else qd.converted_query += "'" + this.select_values[j] + "'#";
                 qd.name = this.select_values[j];
                 found = true;
                 break;
