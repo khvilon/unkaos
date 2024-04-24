@@ -167,7 +167,8 @@ export default {
 </script>
 
 <template>
-  <div class="main-container">
+  <div class="main-container" 
+  v-bind:class="{'mobile': $store.state['common']['is_mobile']}">
   <div
     id="router-view-container"
     v-bind:class="{

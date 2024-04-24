@@ -244,6 +244,7 @@ page_helper.create_module = async function (data, methods) {
     let instance = {};
     if (this.instance !== undefined) instance = tools.obj_clone(this.instance);
     instance.uuid = tools.uuidv4();
+    if(this.$store.state["common"].is_mobile) instance.uuid = ''
     //instance.name = 'aaa'
     instance.is_new = true;
 
@@ -326,6 +327,11 @@ page_helper.create_module = async function (data, methods) {
   methods.saveEnter = function(){
     if(!this.$refs.saveButton) return;
     this.$refs.saveButton.click(this.$refs.saveButton);
+  }
+
+  methods.closeMobileTableCard = async function(){
+    await this.$store.dispatch("unselect_" + this.name);
+    this['selected_' + this.name].uuid = '';
   }
 
   return {

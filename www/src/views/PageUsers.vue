@@ -150,7 +150,13 @@ export default mod;
           />
         </Transition>
       </div>
-      <div class="table_card panel">
+      <div class="table_card panel" v-show="!$store.state['common']['is_mobile'] || selected_users.uuid">
+        <i
+          v-if="$store.state['common'] && $store.state['common']['is_mobile']"
+          class="bx bx-x table-card-close-button"
+          @click="closeMobileTableCard"
+        >
+        </i>
         <div class="table_card_fields"  @keyup.enter="saveEnter()">
           <component 
             v-bind:is="input.type + 'Input'"
@@ -201,8 +207,6 @@ export default mod;
 @use 'css/table-page' with (
   $table-panel-width: 75%
 );
-
-
 
 
 </style>
