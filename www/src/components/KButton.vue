@@ -34,6 +34,7 @@ export default {
         this.$emit("button_ans", false);
         return;
       } 
+      
       if (this.func != undefined && this.func != "") {
         let ans = await this.$store.dispatch(this.func);
         //console.log('btn aaans', ans)

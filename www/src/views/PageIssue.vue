@@ -1231,10 +1231,8 @@ export default mod;
       </Transition>
 
       <Transition name="element_fade">
-        <div class="top-menu-icon-btn" v-if="!loading && id !== ''">
+        <div class="top-menu-icon-btn" v-if="!loading && id !== '' && !$store.state['common']['is_mobile']">
           <a
-            v-if="!loading && id != '' &&
-            !$store.state['common']['is_mobile']"
             class="make-child-btn issue-top-button bx bx-subdirectory-right"
             title="Создать дочернюю задачу"
             :href="('/' + $store.state['common'].workspace + '/issue?t=' + new Date().getTime() + '&parent_uuid=' + issue[0].uuid)"
@@ -1250,7 +1248,7 @@ export default mod;
             class="watch"
             @click="card_open = !card_open"
         >
-          {{ card_open ? ">>>" : "<<<" }}
+          {{ card_open ? ">>" : "<<" }}
         </div>
       </Transition>
     </div>
@@ -1702,8 +1700,13 @@ $code-width: 160px;
 
 .mobile-view #issue_card {
   position: absolute;
-  width: 100vw;
-  left: 0px;
+  width: calc(100% - 20px);
+  left: 10px;
+  height: calc(100% - 80px);
+}
+
+.iframe-view #issue_card {
+  height: calc(100% - 20px);
 }
 
 .hidden-card {
@@ -1927,6 +1930,33 @@ $code-width: 160px;
   height: auto; /* Позволяем высоте меняться пропорционально ширине, чтобы не искажать картинку */
   max-width: 100%;
   max-height: 100%;
+}
+
+
+.mobile-view .issue-top-buttons .top-menu-icon-btn{
+  border: none;
+  scale: 2;
+  margin-left: 0;
+  margin-right: 30px;
+  font-size: 18px;
+}
+
+.iframe-view .issue-top-buttons .top-menu-icon-btn{
+  scale: 1.6;
+}
+
+.issue-top-buttons .watch{
+  right: 0;
+    position: absolute;
+    padding-right: 20px;
+    font-size: 30px;
+    top: 0;
+    padding-top: 8px;
+    font-weight: 600;
+}
+
+.iframe-view .issue-top-buttons .watch{
+  right: 50px;
 }
 
 

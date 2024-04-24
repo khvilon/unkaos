@@ -39,7 +39,8 @@ let items = [
           name: "Настройки",
           icon: "bx-cog",
           level: 1,
-          server: true
+          server: true,
+          hide_on_mobile: true
         },
         {
           link: "/configs/users",
@@ -60,6 +61,7 @@ let items = [
           name: "Проекты",
           icon: "bx-briefcase-alt-2",
           level: 2,
+          hide_on_mobile: true
         },
         {
           link: "/configs/sprints",
@@ -196,7 +198,7 @@ export default {
     filteredMenuItems() {
       let filteredMenuItems
       if(this.$store.state['common'].workspace == 'server') filteredMenuItems = this.menuItems.filter((mi)=>mi.server);
-      else filteredMenuItems = this.menuItems.filter((mi) => !mi.admin_only || !this.$store.state['common']['is_mobile']);
+      else filteredMenuItems = this.menuItems.filter((mi) => (!mi.admin_only && !mi.hide_on_mobile) || !this.$store.state['common']['is_mobile']);
       if(!this.$store.state['common'].use_sprints) filteredMenuItems = filteredMenuItems.filter((mi)=> !mi.link.endsWith('/sprints'));
 
       let user = cache.getObject('profile')
@@ -500,6 +502,20 @@ $logo-icon-size: 32px;
   100% {
     transform: perspective(500px) rotate3d(-1, 1, 0, 360deg);
   }
+}
+
+.mobile .main-menu-link{
+  top: -36px;
+}
+.mobile .main-menu-link i{
+  font-size: 30px;
+}
+
+.mobile .logo-details i{
+    font-size: 50px;
+    font-weight: 600;
+    padding-top: 4px;
+    margin-left: -10px;
 }
 
 /*

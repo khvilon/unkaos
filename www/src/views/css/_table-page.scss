@@ -17,6 +17,11 @@ $table-card-width: calc(100% - $table-panel-width);
   background: transparent;
 }
 
+.mobile-view .table_panel {
+  height: calc(100vh - $top-menu-height - $main-menu-width);
+  width: 100%;
+}
+
 
 
 .table_card {
@@ -28,6 +33,13 @@ $table-card-width: calc(100% - $table-panel-width);
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+}
+
+.mobile-view .table_card {
+  height: calc(100vh - $top-menu-height - 20px - $main-menu-width);
+  width: calc(100% - 40px);
+  margin-left: 20px;
+  position: absolute;
 }
 
 .table_card > *:not(:last-child) {
@@ -79,5 +91,12 @@ $table-card-width: calc(100% - $table-panel-width);
 
 .table_card_buttons > *:not(:last-child){
   margin-bottom: 15px;
+}
+
+.table-card-close-button{
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 30px;
 }
 
