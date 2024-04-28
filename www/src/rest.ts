@@ -60,6 +60,15 @@ export default class rest {
     return await resp.json();
   }
 
+  static async readme(): Promise<any> {
+    let options: RequestInit = {
+      method: 'GET',
+      headers: rest.headers
+    }
+    let resp = await fetch(conf.register_url + 'readme', options);
+    return await resp.json();
+  }
+
 
   static async run_gpt(input: string, command: string): Promise<any> {
     //return null;//todo

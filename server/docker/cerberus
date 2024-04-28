@@ -1,6 +1,6 @@
-FROM node:18-bullseye-slim
+FROM node:21-bookworm-slim
 
-RUN npm install -g npm@10.5.2
+RUN npm install -g npm@10.6.0
 
 COPY ./server /app
 WORKDIR /app/cerberus

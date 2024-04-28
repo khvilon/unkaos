@@ -165,6 +165,11 @@ const init = async function() {
         res.send({ status: 2, workspace: ans.workspace });
     })
 
+    app.get('/readme', async (req:any, res:any) => {  
+        let readmeContent = await fs.readFile('../../README.md', 'utf-8');
+        res.send({ readme: readmeContent });    
+    })
+
     app.listen(port, async () => {
         console.log(`Eileithyia running on port ${port}`)
     })
