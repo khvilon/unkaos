@@ -1,10 +1,10 @@
 <script>
 import Multiselect from "vue-multiselect";
-import store_helper from "../store_helper.ts";
-import tools from "../tools.ts";
+import store_helper from "../../store_helper.ts";
+import tools from "../../tools.ts";
 
 import "vue-select/dist/vue-select.css";
-import cache from "../cache";
+import cache from "../../cache";
 
 export default {
   components: {
@@ -176,7 +176,7 @@ export default {
 </template>
 
 <style lang="scss">
-@import "../css/global.scss";
+@import "../../css/global.scss";
 
 .user-input .vs__search::placeholder,
 .user-input .vs__dropdown-toggle,

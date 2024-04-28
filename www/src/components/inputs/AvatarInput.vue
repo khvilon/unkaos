@@ -1,5 +1,5 @@
 <script>
-import tools from "../tools.ts";
+import tools from "../../tools.ts";
 
 export default {
   props: {
@@ -58,7 +58,7 @@ export default {
 </template>
 
 <style scoped lang="scss">
-@import "../css/global.scss";
+@import "../../css/global.scss";
 
 .avatar .avatar-input {
   width: 35px;

@@ -166,7 +166,7 @@ export default {
 </template>
 
 <style lang="scss" scoped>
-@import "../css/global.scss";
+@import "../../css/global.scss";
 
 .text .text-input {
   width: 100%;

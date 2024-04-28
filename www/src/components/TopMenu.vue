@@ -1,12 +1,10 @@
 <script>
 import SearchInput from "./SearchInput.vue";
-import KButton from "./KButton.vue";
 
 export default {
   components: {
-    SearchInput,
-    KButton,
-  },
+    SearchInput
+    },
   /*  data()
     {
         return {name}
