@@ -104,7 +104,7 @@ export default {
 </template>
 
 <style lang="scss">
-@import "../css/global.scss";
+@import "../../css/global.scss";
 
 .tag-input{
   width: fit-content;

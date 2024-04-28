@@ -1,6 +1,6 @@
 <script>
 import BooleanInput from './BooleanInput.vue';
-import tools from '../tools';
+import tools from '../../tools';
 
 export default {
   components: { BooleanInput },
@@ -119,7 +119,7 @@ export default {
 </template>
 
 <style lang="scss">
-@import "../css/global.scss";
+@import "../../css/global.scss";
 .checkboxlist-input {
   width: 100%;
   height: fit-content;

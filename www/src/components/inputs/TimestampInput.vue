@@ -88,12 +88,12 @@ export default {
 </script>
 
 <template>
-  <div class="date input">
+  <div class="timestamp input">
     <div class="label">{{ label }}</div>
     <input
-      class="date-input"
+      class="timestamp-input"
       @input="print"
-      type="date"
+      type="datetime-local"
       :value="format(value)"
       :disabled="disabled"
       @blur="blur"
@@ -101,19 +101,19 @@ export default {
   </div>
 </template>
 <style scoped lang="scss">
-@import "../css/global.scss";
+@import "../../css/global.scss";
 
-.date .date-input {
+.timestamp .timestamp-input {
   width: 100%;
   height: $input-height;
   color: var(--text-color);
   padding: 0 10px 0 10px;
 }
 
-.date {
+.timestamp {
 }
 
-.date-input {
+.timestamp-input {
   font-size: 15px;
   border-radius: var(--border-radius);
   transition: all 0.5s ease;
@@ -121,7 +121,7 @@ export default {
   width: 100%;
 }
 
-.date-input:disabled {
+.timestamp-input:disabled {
   background: var(--disabled-bg-color);
   color: var(--disabled-text-color);
 }
