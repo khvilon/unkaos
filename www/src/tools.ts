@@ -160,10 +160,9 @@ export default class tools {
 
   static compare_obj(sort_name: string): (a: any, b: any) => number {
     return function (a, b) {
-      //console.log(a, b, sort_name)
-      let fa = a[sort_name]
+      let fa = tools.obj_attr_by_path(a, sort_name)
       if(fa.toLowerCase) fa = fa.toLowerCase()
-      let fb = b[sort_name]
+      let fb = tools.obj_attr_by_path(b, sort_name)
       if(fb.toLowerCase) fb = fb.toLowerCase()
       if (fa < fb) return -1;
       if (fa > fb) return 1;
@@ -173,8 +172,8 @@ export default class tools {
 
   static compare_obj_dt(sort_name: string): (a: any, b: any) => number {
     return function (a, b) {
-      const fa = new Date(a[sort_name]),
-        fb = new Date(b[sort_name]);
+      const fa = new Date(tools.obj_attr_by_path(a, sort_name)),
+        fb = new Date(tools.obj_attr_by_path(b, sort_name));
       if (fa < fb) return -1;
       if (fa > fb) return 1;
       return 0;
