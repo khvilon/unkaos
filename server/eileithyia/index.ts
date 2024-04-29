@@ -166,7 +166,7 @@ const init = async function() {
     })
 
     app.get('/readme', async (req:any, res:any) => {  
-        let readmeContent = await fs.readFile('../../README.md', 'utf-8');
+        let readmeContent = await fs.readFile('../README.md', 'utf-8');
         res.send({ readme: readmeContent });    
     })
 
