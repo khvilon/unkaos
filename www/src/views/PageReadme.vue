@@ -138,7 +138,7 @@ export default readme_page;
   width: calc(100% - 40px);
   overflow: scroll;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(168, 186, 197, 0.1) inset;
-  background: rgba(21, 24, 26, 0.8) !important;
+  //background: rgba(21, 24, 26, 0.8) !important;
   border-radius: 4px !important;
   border-style: outset !important;
   border-color: rgba(71, 81, 89, 0.5) !important;
@@ -147,7 +147,11 @@ export default readme_page;
 
 .readme-marked{
   position: relative;
+}
 
+.readme-marked img{
+  border: none;
+  outline: none;
 }
 
 .mobile-view .readme-small-panel-main{
