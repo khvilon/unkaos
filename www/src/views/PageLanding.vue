@@ -50,7 +50,7 @@ export default landing_page;
         <a href="/register"><i class='bx bx-cloud-upload'></i> {{t("Регистрация рабочего пространства в облаке")}}</a>
         <a href="https://github.com/khvilon/unkaos"><i class='bx bx-server'></i> {{t("Репозиторий - установка одной командой")}}</a>
         <a href="https://github.com/khvilon/unkaos/blob/master/README.md"><i class='bx bxs-book'></i> {{t("Документация")}}</a>
-        <a href="https://github.com/khvilon/unkaos/blob/master/LICENSE"><i class="bx bxs-certification"></i> {{t("Лицензия")}}</a>
+        <a href="/lisence"><i class="bx bxs-certification"></i> {{t("Лицензия")}}</a>
       </div></span>
 
       </div>
