@@ -7,3 +7,4 @@ RUN yarn build
  
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
+COPY ./README.md /usr/share/nginx/html/README.md
