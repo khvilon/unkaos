@@ -4,6 +4,7 @@ RUN npm install -g npm@10.6.0
 
 COPY ./server /app
 COPY ./README.md /app/README.md
+COPY ./LICENSE /app/LICENSE
 WORKDIR /app/eileithyia
 RUN yarn install
 

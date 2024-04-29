@@ -27,7 +27,6 @@ export default {
     update_workspace(val) {
       this.workspace_exists = false;
       this.workspace = val;
-      rest.readme();
     },
     update_mail(val) {
       this.mail = val;

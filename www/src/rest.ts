@@ -60,12 +60,12 @@ export default class rest {
     return await resp.json();
   }
 
-  static async readme(): Promise<any> {
+  static async readme(lang: string): Promise<any> {
     let options: RequestInit = {
       method: 'GET',
       headers: rest.headers
     }
-    let resp = await fetch(conf.register_url + 'readme', options);
+    let resp = await fetch(conf.register_url + 'readme?lang=' + lang, options);
     return await resp.json();
   }
 
