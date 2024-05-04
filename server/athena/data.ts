@@ -167,25 +167,26 @@ export class Data {
           human_value: "'" + value + "'",
         }
       }
+      if(forFilter && name == 'status' && value.toLocaleLowerCase() == 'решенные'){
+        return {
+          name:  'status_uuid',
+          value: "'Решенные'",
+          human_name: attributeHumanDictionary[name],
+          human_value: "'Решенные'",
+        }
+      }
 
       const values = this.data[name];
       let foundIndex = this.isMatchingIn(value, values.map((v: any) => v.name));
       if(name == 'project' && foundIndex == -1) foundIndex = this.isMatchingIn(value, values.map((v: any) => v.short_name));
   
+      
       if (foundIndex > -1) {
         return {
           name: forFilter ? 'attr#' + name + '_uuid#' : name+ '_uuid',
           value: forFilter ?  "'" + values[foundIndex].uuid + "'#" : values[foundIndex].uuid,
           human_name: attributeHumanDictionary[name],
           human_value: values[foundIndex].name,
-        }
-      }
-      else if(forFilter && name == 'status' && value.toLocaleLowerCase() == 'решенные'){
-        return {
-          name:  'status_uuid',
-          value: "'Решенные'",
-          human_name: attributeHumanDictionary[name],
-          human_value: "'Решенные'",
         }
       }
       else if(!forFilter && value.toLocaleLowerCase() == 'inherit'){
