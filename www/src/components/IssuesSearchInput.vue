@@ -3,6 +3,8 @@ import { nextTick } from "vue";
 import cache from "../cache.ts";
 import conf from "../conf.ts";
 import tools from "../tools.ts";
+import rest from "../rest.ts";
+
 
 export default {
   props: {
@@ -275,13 +277,16 @@ export default {
         this.gpt_controller = new AbortController();
         const signal = this.gpt_controller.signal;
 
+        let headers = new Headers({
+          "content-type": "application/json"
+        });
+
         //const response = await fetch('http://localhost:3010/gpt?userInput=Найди задачи, у которых ' + this.value  + '&userUuid=' + user.uuid, {
           let response
         try{
-          response = await fetch(conf.base_url + 'gpt?userInput=' + this.value  + '&userUuid=' + user.uuid + '&userCommand=find_issues', {
-          method: 'GET',
-          signal
-          });
+          response = await rest.run_gpt(this.value, 'find_issues', signal);
+
+          
         }
         catch (err) {
           if (err.name === 'AbortError') {

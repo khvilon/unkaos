@@ -150,8 +150,8 @@ export default readme_page;
 }
 
 .readme-marked img{
-  border: none;
-  outline: none;
+  border: none !important;
+  outline: none !important;
 }
 
 .mobile-view .readme-small-panel-main{
