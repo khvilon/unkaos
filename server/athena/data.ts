@@ -8,6 +8,8 @@ const attributeHumanDictionary: Record<string, string> = {
   project: 'Проект',
   type: 'Тип',
   author: 'Автор',
+  created_at: 'Создана',
+  updated_at: 'Изменена',
 };
 
 export class Data {
@@ -129,7 +131,7 @@ export class Data {
   }
 
   private async checkValue(name: string, value: string, forFilter: boolean = true) {
-    const validAttributes = ['sprint', 'status', 'project', 'type', 'author'];
+    const validAttributes = ['sprint', 'status', 'project', 'type', 'author', 'created_at', 'updated_at'];
     if(name.toLowerCase() == 'parent' && !forFilter){
 
  
@@ -175,6 +177,14 @@ export class Data {
           value: "'inherit'",
           human_name: attributeHumanDictionary[name],
           human_value: 'Как у текущей',
+        }
+      }
+      else if(forFilter && (value.toLocaleLowerCase() == 'created_at' || value.toLocaleLowerCase() == 'updated_at')){}
+        return {
+          name: 'attr#' + name,
+          value: "'" + value + "'",
+          human_name: attributeHumanDictionary[name],
+          human_value: "'" + value + "'",
         }
       }
       else return null
