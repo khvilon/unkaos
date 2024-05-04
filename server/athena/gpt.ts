@@ -200,7 +200,8 @@ the full number consists of the short project name, '-' and the numeric part.
 If the field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from the available values list.
 'set' cant be void.
 
-If the field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from the available values list.
+If the field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from the available values list. 
+The status attr also have for filter a pseudo value Решенные that can be used like one of the available values for it
 `
 }
 
