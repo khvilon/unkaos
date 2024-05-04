@@ -70,18 +70,19 @@ export default class rest {
   }
 
 
-  static async run_gpt(input: string, command: string): Promise<any> {
+  static async run_gpt(input: string, command: string, signal: any): Promise<any> {
     //return null;//todo
     let user = cache.getObject("profile");
 
-    try{
+    let options: any =  {
+      method: 'GET',
+      headers: {workspace: this.workspace}
+    }
+    if(signal) options.signal = signal;
 
-    
+    try{
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
-        return fetch(conf.base_url + 'gpt?userInput=' + input  + '&userCommand=' + command  + '&userUuid=' + user.uuid, {
-          method: 'GET',
-          headers: {workspace: this.workspace}
-        });
+        return fetch(conf.base_url + 'gpt?userInput=' + input  + '&userCommand=' + command  + '&userUuid=' + user.uuid, options);
     }
     catch(err){
       return {err: err}

@@ -371,5 +371,9 @@ a {
 }
 
 
+.marked-container ul, .marked-container ol {
+    padding-left: 2em !important;
+}
+
 
 </style>
