@@ -630,6 +630,10 @@ crud.make_query = {
         "!='(resolved)'",
         "!=ALL " + q_resolved_uuids
       );
+      user_query = user_query.replaceAll(
+        "='(resolved)'",
+        "=ANY " + q_resolved_uuids
+      );
 
       let fv_str = ''
       let fv_sel_str = ''
