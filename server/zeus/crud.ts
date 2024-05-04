@@ -657,6 +657,14 @@ crud.make_query = {
         user_query = user_query.replaceFrom("like'", " like '", start);  
       }
       
+      user_query = user_query.replaceAll(
+        'I.created_at=', 
+        'I.created_at::date='
+      );
+      user_query = user_query.replaceAll(
+        'I.updated_at=', 
+        'I.updated_at::date='
+      );
 
       user_query = user_query.replaceAll(
         "I.tags=",
