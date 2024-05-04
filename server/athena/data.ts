@@ -159,7 +159,7 @@ export class Data {
       
       name = name.toLocaleLowerCase()
 
-      if(forFilter && (value.toLocaleLowerCase() == 'created_at' || value.toLocaleLowerCase() == 'updated_at')){
+      if(name == 'created_at' || name == 'updated_at'){
         return {
           name: 'attr#' + name,
           value: "'" + value + "'",
