@@ -180,6 +180,14 @@ export class Data {
           human_value: values[foundIndex].name,
         }
       }
+      else if(forFilter && name == 'status' && value.toLocaleLowerCase() == 'решенные'){
+        return {
+          name:  'status_uuid',
+          value: "'Решенные'",
+          human_name: attributeHumanDictionary[name],
+          human_value: "'Решенные'",
+        }
+      }
       else if(!forFilter && value.toLocaleLowerCase() == 'inherit'){
         return {
           name: name+ '_uuid',
