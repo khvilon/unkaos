@@ -284,9 +284,7 @@ export default {
         //const response = await fetch('http://localhost:3010/gpt?userInput=Найди задачи, у которых ' + this.value  + '&userUuid=' + user.uuid, {
           let response
         try{
-          response = await rest.run_gpt(this.value, 'find_issues', signal);
-
-          
+          response = await rest.run_gpt('Найди задачи ' + this.value, 'find_issues', signal);          
         }
         catch (err) {
           if (err.name === 'AbortError') {
@@ -304,6 +302,8 @@ export default {
         }
 
         const data = await response.json();
+
+        console.log('data.humanGpt.filter', data.humanGpt.filter)
         
         if (!this.convert_query(data.humanGpt.filter, true)) return
         this.value = data.humanGpt.filter
