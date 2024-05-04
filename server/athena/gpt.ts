@@ -201,7 +201,8 @@ If the field or issue attribute has a list of available values, any values in 's
 'set' cant be void.
 
 If the field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from the available values list. 
-The status attr also have for filter a pseudo value Решенные that can be used like one of the available values for it
+The status attrшигеу also have for filter a value Решенные that can be used like one of the available values for it. 
+A resolved issue means that the status is Решенные
 `
 }
 
