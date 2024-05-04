@@ -162,7 +162,7 @@ export class Data {
       if(name == 'created_at' || name == 'updated_at'){
         return {
           name: 'attr#' + name,
-          value: "'" + value + "'",
+          value: "'" + value + "'#",
           human_name: attributeHumanDictionary[name],
           human_value: "'" + value + "'",
         }
@@ -170,9 +170,9 @@ export class Data {
       if(forFilter && name == 'status' && value.toLocaleLowerCase() == 'решенные'){
         return {
           name:  'status_uuid',
-          value: "'(resolved)'",
+          value: "'(resolved)'#",
           human_name: attributeHumanDictionary[name],
-          human_value: "'Решенные'",
+          human_value: "Решенные",
         }
       }
 
