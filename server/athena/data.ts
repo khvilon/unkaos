@@ -159,6 +159,15 @@ export class Data {
       
       name = name.toLocaleLowerCase()
 
+      if(forFilter && (value.toLocaleLowerCase() == 'created_at' || value.toLocaleLowerCase() == 'updated_at')){
+        return {
+          name: 'attr#' + name,
+          value: "'" + value + "'",
+          human_name: attributeHumanDictionary[name],
+          human_value: "'" + value + "'",
+        }
+      }
+
       const values = this.data[name];
       let foundIndex = this.isMatchingIn(value, values.map((v: any) => v.name));
       if(name == 'project' && foundIndex == -1) foundIndex = this.isMatchingIn(value, values.map((v: any) => v.short_name));
@@ -179,14 +188,7 @@ export class Data {
           human_value: 'Как у текущей',
         }
       }
-      else if(forFilter && (value.toLocaleLowerCase() == 'created_at' || value.toLocaleLowerCase() == 'updated_at')){
-        return {
-          name: 'attr#' + name,
-          value: "'" + value + "'",
-          human_name: attributeHumanDictionary[name],
-          human_value: "'" + value + "'",
-        }
-      }
+      
       else return null
     } else {
 
