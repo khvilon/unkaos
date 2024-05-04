@@ -179,7 +179,7 @@ export class Data {
           human_value: 'Как у текущей',
         }
       }
-      else if(forFilter && (value.toLocaleLowerCase() == 'created_at' || value.toLocaleLowerCase() == 'updated_at')){}
+      else if(forFilter && (value.toLocaleLowerCase() == 'created_at' || value.toLocaleLowerCase() == 'updated_at')){
         return {
           name: 'attr#' + name,
           value: "'" + value + "'",
