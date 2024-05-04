@@ -170,7 +170,7 @@ export class Data {
       if(forFilter && name == 'status' && value.toLocaleLowerCase() == 'решенные'){
         return {
           name:  'status_uuid',
-          value: "'Решенные'",
+          value: "'(resolved)'",
           human_name: attributeHumanDictionary[name],
           human_value: "'Решенные'",
         }
