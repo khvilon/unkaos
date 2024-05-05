@@ -1,13 +1,14 @@
 // https://docs.cypress.io/api/introduction/api.html
 
 
+
 function sendWorkspaceRegister(workspace: string, adminEmail: string) {
-  cy.visit('/');
-  cy.contains('a', 'Регистрация рабочего пространства');
+  cy.visit('https://unkaos.tech/');
+  cy.contains('a', 'Регистрация рабочего пространства').click();
   cy.get('.register-panel').should('be.visible');
   cy.get('input.string-input').eq(0).type(workspace);
   cy.get('input.string-input').eq(1).type(adminEmail);
-  cy.get('input.btn_input').click();
+  cy.get('.btn_input').should('be.visible').click();
 
   cy.contains('span.workspace-register-ok', 'Заявка зарегистрирована', { timeout: 10000 }).should('be.visible')
 }
@@ -24,6 +25,10 @@ function signOut() {
   cy.get('#profile-menu-exit').should('be.visible').click();
 }
 
+function navigateMainMenu(page: string) {
+  cy.get(`a[href*="/${page}"]`).click();
+}
+
 function changeUserField(email: string,fieldName: string, value: string) {
   cy.contains('span', email).click();
   cy.contains('.label', fieldName).siblings('input.string-input').clear().type(value);
@@ -38,9 +43,19 @@ function createUser(name: string, login: string, email: string) {
   cy.get('input[type="button"][value="Сохранить"]').click();
 }
 
-function navigateMainMenu(page: string) {
-  cy.get(`a[href*="/${page}"]`).click();
+function changeField(key: string,fieldName: string, value: string) {
+  cy.contains('span', key).click();
+  cy.contains('.label', fieldName).siblings('input.string-input').clear().type(value);
+  cy.get('input[type="button"][value="Сохранить"]').click();
 }
+
+function createProject(name: string, code: string, email: string) {
+  cy.get('input[type="button"][value="Создать"]').click();
+
+  cy.get('input[type="button"][value="Сохранить"]').click();
+}
+
+
 
 describe('Регресионный тест', () => {
   const startTime = new Date().getTime();
@@ -79,13 +94,16 @@ describe('Регресионный тест', () => {
 
   it('Основные функции системы', () => {
 
-    changeUserField(adminEmail, 'Пароль', newPass);
+    changeField(adminEmail, 'Пароль', newPass);
     signOut();
     signIn(adminEmail, newPass);
-    changeUserField(adminEmail, 'ФИО', adminName);
+    changeField(adminEmail, 'ФИО', adminName);
     createUser(userName, userLogin, usereMail);
 
     navigateMainMenu('projects');
+
+    changeField('BS', 'Название', 'Проект 1');
+   // createProject('Проект 1', userLogin, usereMail);
 
   })
 });
