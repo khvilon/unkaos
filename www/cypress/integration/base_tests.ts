@@ -2,7 +2,9 @@
 
 
 function sendWorkspaceRegister(workspace: string, adminEmail: string) {
-  cy.visit('https://unkaos.tech/register');
+  cy.visit('/');
+  cy.contains('a', 'Регистрация рабочего пространства');
+  cy.get('.register-panel').should('be.visible');
   cy.get('input.string-input').eq(0).type(workspace);
   cy.get('input.string-input').eq(1).type(adminEmail);
   cy.get('input.btn_input').click();
@@ -11,7 +13,7 @@ function sendWorkspaceRegister(workspace: string, adminEmail: string) {
 }
 
 function signIn(email: string, pass: string) {
-  cy.get('.login-panel', { timeout: 10000 })
+  cy.get('.login-panel', { timeout: 5000 }).should('be.visible');
   cy.get('input.string-input').eq(0).type(email);
   cy.get('input.string-input').eq(1).type(pass);
   cy.get('input.btn_input').click();
@@ -19,7 +21,7 @@ function signIn(email: string, pass: string) {
 
 function signOut() {
   cy.get('.profile-top img').click();
-  cy.get('#profile-menu-exit').click();
+  cy.get('#profile-menu-exit').should('be.visible').click();
 }
 
 function changeUserField(email: string,fieldName: string, value: string) {
@@ -36,7 +38,8 @@ function createUser(name: string, login: string, email: string) {
   cy.get('input[type="button"][value="Сохранить"]').click();
 }
 
-function navigateMainMenu(name: string, login: string, email: string) {
+function navigateMainMenu(page: string) {
+  cy.get(`a[href*="/${page}"]`).click();
 }
 
 describe('Регресионный тест', () => {
@@ -53,6 +56,8 @@ describe('Регресионный тест', () => {
   const userName =  'Сергей Петров'
 
   before(() => {
+    cy.viewport(1920, 1080);
+
     cy.getEmailFromTempMail().then((tempEmail: any) => {
       adminEmail = tempEmail;
 
@@ -78,9 +83,10 @@ describe('Регресионный тест', () => {
     signOut();
     signIn(adminEmail, newPass);
     changeUserField(adminEmail, 'ФИО', adminName);
-    //createUser(userName, userLogin, usereMail);
+    createUser(userName, userLogin, usereMail);
 
-    cy.get('a[href*="configs/projects"]').click();
+    navigateMainMenu('projects');
+
   })
 });
 
