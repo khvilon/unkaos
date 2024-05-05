@@ -98,6 +98,7 @@ mod.methods.update_password = function () {
     user: this.selected_users,
     password: this.new_pass,
   });
+  this.new_pass = '';
 };
 
 mod.methods.change_password = function () {
