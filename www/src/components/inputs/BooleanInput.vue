@@ -47,7 +47,7 @@ export default {
 </template>
 
 <style scoped lang="scss">
-@import "../css/global.scss";
+@import "../../css/global.scss";
 
 .boolean .boolean-input {
   width: $input-height;;

@@ -7,7 +7,7 @@ export default {
     },
     label: {
       type: String,
-      default: "",
+      default: "label",
     },
     value: {
       type: String,
@@ -25,30 +25,22 @@ export default {
       type: String,
       default: "text",
     },
-    placeholder: {
-      type: String,
-      default: ""
-    },
-    keyup_enter: {
-      type: Function,
-      default: ()=>{}
+    min: {
+      type: Number,
+      default: -Number.MAX_SAFE_INTEGER,
     }
   },
 
   emits: ["update_parent_from_input", "updated"],
-
   methods: {
-    blur:function() {
-      this.$emit("updated", this.value);
-    },
-    doBlur() {
-      this.$refs.inputField.blur();
+    blur() {
+      this.$emit("updated");
     },
   },
 
   watch: {
     value: function (val, oldVal) {
-      //console.log(val, oldVal, this.id, this.parent_name);
+      console.log(val, oldVal, this.id, this.parent_name);
 
       this.$emit("update_parent_from_input", val);
 
@@ -81,40 +73,36 @@ export default {
       //data[this.id] = val
       //this.$store.commit('push_update_' + this.parent_name, data)
     },
-    
   },
 };
 </script>
 
 <template>
-  <div class="string input">
-    <div class="label" v-if="label != ''">{{ label }}</div>
+  <div class="numeric input">
+    <div class="label">{{ label }}</div>
     <input
-      ref="inputField"
-      class="string-input"
+      type="number"
+      class="numeric-input"
       v-model="value"
-      @keyup.enter="keyup_enter(); doBlur()"
-      :type="type"
       :disabled="disabled"
-      :placeholder="placeholder"
       @blur="blur"
     />
   </div>
 </template>
 
 <style lang="scss">
-@import "../css/global.scss";
-.string .string-input {
+@import "../../css/global.scss";
+.numeric .numeric-input {
   width: 100%;
-  height: $input-height;
+  height: 30px;
   color: var(--text-color);
   padding: 0 10px 0 10px;
 }
 
-.string {
+.numeric {
 }
 
-.string-input {
+.numeric-input {
   font-size: 14px;
   border-radius: var(--border-radius);
   transition: all 0.5s ease;
@@ -122,8 +110,18 @@ export default {
   width: 100%;
 }
 
-.string-input:disabled {
+.numeric-input:disabled {
   background: var(--disabled-bg-color);
   color: var(--disabled-text-color);
+}
+
+input[type="number"] {
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
 }
 </style>

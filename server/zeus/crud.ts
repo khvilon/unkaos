@@ -630,6 +630,10 @@ crud.make_query = {
         "!='(resolved)'",
         "!=ALL " + q_resolved_uuids
       );
+      user_query = user_query.replaceAll(
+        "='(resolved)'",
+        "=ANY " + q_resolved_uuids
+      );
 
       let fv_str = ''
       let fv_sel_str = ''
@@ -657,6 +661,14 @@ crud.make_query = {
         user_query = user_query.replaceFrom("like'", " like '", start);  
       }
       
+      user_query = user_query.replaceAll(
+        'I.created_at=', 
+        'I.created_at::date='
+      );
+      user_query = user_query.replaceAll(
+        'I.updated_at=', 
+        'I.updated_at::date='
+      );
 
       user_query = user_query.replaceAll(
         "I.tags=",

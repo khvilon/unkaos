@@ -1,9 +1,7 @@
 <script>
 import Multiselect from "vue-multiselect";
-import store_helper from "../store_helper.ts";
-import tools from "../tools.ts";
+import tools from "../../tools.ts";
 
-import { nextTick } from "vue";
 
 import "vue-select/dist/vue-select.css";
 
@@ -252,7 +250,7 @@ export default {
 </template>
 
 <style lang="scss">
-@import "../css/global.scss";
+@import "../../css/global.scss";
 
 .select-input .vs__search::placeholder,
 .select-input .vs__dropdown-toggle,

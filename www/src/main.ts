@@ -13,14 +13,20 @@ import { initYandexMetrika } from 'yandex-metrika-vue3';
 
 import "vue-select/dist/vue-select.css";
 
-import StringInput from "./components/StringInput.vue";
-import NumericInput from "./components/NumericInput.vue";
-import TextInput from "./components/TextInput.vue";
-import BooleanInput from "./components/BooleanInput.vue";
-import AvatarInput from "./components/AvatarInput.vue";
-import DateInput from "./components/DateInput.vue";
-import SelectInput from "./components/SelectInput.vue";
-import UserInput from "./components/UserInput.vue";
+import StringInput from "./components/inputs/StringInput.vue";
+import NumericInput from "./components/inputs/NumericInput.vue";
+import TextInput from "./components/inputs/TextInput.vue";
+import BooleanInput from "./components/inputs/BooleanInput.vue";
+import AvatarInput from "./components/inputs/AvatarInput.vue";
+import DateInput from "./components/inputs/DateInput.vue";
+import TimeInput from "./components/inputs/TimeInput.vue";
+import TimestampInput from "./components/inputs/TimestampInput.vue";
+import SelectInput from "./components/inputs/SelectInput.vue";
+import UserInput from "./components/inputs/UserInput.vue";
+
+import TagInput from "./components/inputs/TagInput.vue";
+import ColorInput from "./components/inputs/ColorInput.vue";
+import CheckboxListInput from "./components/inputs/CheckboxListInput.vue";
 
 import KTable from "./components/KTable.vue";
 import KButton from "./components/KButton.vue";
@@ -45,8 +51,7 @@ import KBoardFilterModal from "./components/KBoardFilterModal.vue";
 import KMarked from "./components/KMarked.vue";
 import Comment from "./components/Comment.vue";
 import CommentList from "./components/CommentList.vue";
-import TagInput from "./components/TagInput.vue";
-import ColorInput from "./components/ColorInput.vue";
+
 
 import EditTagModal from "./components/EditTagModal.vue";
 import KMarkdownInput from "./components/KMarkdownInput.vue";
@@ -59,7 +64,7 @@ import KAvatar from "@/components/KAvatar.vue";
 import MainTop from "@/components/MainTop.vue";
 import LangSelect from "@/components/LangSelect.vue";
 
-import CheckboxListInput from "./components/CheckboxListInput.vue";
+
 
 import GadgetConfig from "./gadgets/GadgetConfig.vue";
 
@@ -134,6 +139,8 @@ app.component("TextInput", TextInput);
 app.component("BooleanInput", BooleanInput);
 app.component("AvatarInput", AvatarInput);
 app.component("DateInput", DateInput);
+app.component("TimeInput", TimeInput);
+app.component("TimestampInput", TimestampInput);
 app.component("SelectInput", SelectInput);
 app.component("UserInput", UserInput);
 

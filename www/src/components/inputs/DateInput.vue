@@ -13,7 +13,6 @@ export default {
       type: String,
       default: "",
     },
-    
     id: {
       type: String,
       default: "",
@@ -23,11 +22,11 @@ export default {
       default: "",
     },
   },
-  data() {
-    let d = {
-      curr_value: '#101010',
-    };
-    return d;
+  data()
+  {
+    return {
+      current_value: null,
+    }
   },
   emits: ["update_parent_from_input", "updated"],
   methods: {
@@ -35,32 +34,50 @@ export default {
       console.log(e.srcElement.value);
       let val = e.srcElement.value;
 
-      this.curr_value = e.srcElement.value
-      console.log("taaag0", this.value)
+      this.current_value = val
+      
+      this.$emit("update_parent_from_input", val);
 
-      if(this.parent_name == undefined) return
       this.$store.commit("id_push_update_" + this.parent_name, {
         id: this.id,
         val: val,
       });
     },
     format(val) {
-      var ctx = document.createElement('canvas').getContext('2d');
-        ctx.fillStyle = val;
-        return ctx.fillStyle;
+
+      
+
+      var options = {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      };
+
+      if (val == undefined || val == null || val == "") return "";
+      let date = new Date(val);
+
+      console.log(date.getFullYear);
+
+      if (date.getFullYear() == 1970) return "";
+
+      date = date.toISOString().split("T")[0];
+
+      //toLocaleString("ru", options)
+      if (date !== "Invalid Date") return date;
+      else return "";
     },
     blur() {
-      console.log("blur", this.curr_value)
-      this.$emit("updated", this.curr_value);
-    }
+      this.$emit("updated", this.current_value);
+    },
   },
   watch: {
     value: function (val, oldVal) {
+      console.log(val, oldVal, this.id, this.parent_name);
 
-      if(this.curr_value == val) return
-      this.curr_value = this.format(val)
+      //console.log('chch')
 
-      if(this.parent_name == undefined) return
+      //this.$emit("update_parent_from_input", val);
+
       this.$store.commit("id_push_update_" + this.parent_name, {
         id: this.id,
         val: val,
@@ -71,65 +88,41 @@ export default {
 </script>
 
 <template>
-  <div class="color input">
+  <div class="date input">
     <div class="label">{{ label }}</div>
     <input
-      class="color-input"
+      class="date-input"
       @input="print"
-      type="color"
-      :value="curr_value"
+      type="date"
+      :value="format(value)"
       :disabled="disabled"
       @blur="blur"
     />
   </div>
 </template>
 <style scoped lang="scss">
-@import "../css/global.scss";
+@import "../../css/global.scss";
 
-.color .color-input {
+.date .date-input {
   width: 100%;
   height: $input-height;
   color: var(--text-color);
   padding: 0 10px 0 10px;
 }
 
-.color {
+.date {
 }
 
-.color-input {
+.date-input {
   font-size: 15px;
-  font-weight: 400;
   border-radius: var(--border-radius);
   transition: all 0.5s ease;
   background: var(--input-bg-color);
- // width: 100%;
-
- margin: 5px;
-  width: 50px !important;
-    background: none;
-    border: none;
-
-    -webkit-appearance: none;
+  width: 100%;
 }
 
-.color-input:disabled {
+.date-input:disabled {
   background: var(--disabled-bg-color);
   color: var(--disabled-text-color);
-}
-
-
-
-input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;   
-  border-color: var(--border-color);
-  border-style: inset;
-  border-width: calc(var(--border-width) + 0);
-  border-radius: 50%;
-}
-
-input[type="color"]::-webkit-color-swatch {
-  border: none;  
-  border-radius: 50%;
-  
 }
 </style>

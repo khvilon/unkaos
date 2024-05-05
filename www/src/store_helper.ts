@@ -2,8 +2,6 @@
 import rest from "./rest.ts";
 import tools from "./tools.ts";
 
-const base_url = "http://localhost:3001/";
-
 const store_helper = {};
 
 store_helper.dict = {
@@ -127,15 +125,16 @@ store_helper.create_module = function (name) {
     state["filtered_" + name].splice(filtered_num, 1);
     this.commit("unselect_" + name);
   };
-  mutations["sort_" + name] = function (state, collumn) {
-    //console.log('lllll', collumn)
+  mutations["sort_" + name] = function (state, {collumn, type}) {
+    
     if (state["sorted_" + name].collumn == collumn)
       state["sorted_" + name].reverse = !state["sorted_" + name].reverse;
     else {
-      state["sorted_" + name].order = false;
+      state["sorted_" + name].reverse = false;
       state["sorted_" + name].collumn = collumn;
     }
-    state["filtered_" + name].sort(tools.compare_obj(collumn));
+    if(type!='date') state["filtered_" + name].sort(tools.compare_obj(collumn));
+    else state["filtered_" + name].sort(tools.compare_obj_dt(collumn));
     if (state["sorted_" + name].reverse) state["filtered_" + name].reverse();
   };
 
@@ -240,8 +239,9 @@ store_helper.create_module = function (name) {
   actions["unselect_" + name] = async function (state) {
     this.commit("unselect_" + name);
   };
-  actions["sort_" + name] = async function (state, collumn) {
-    this.commit("sort_" + name, collumn);
+  actions["sort_" + name] = async function (state, {collumn, type}) {
+    console.log('lllll0', collumn, type)
+    this.commit("sort_" + name, {collumn, type});
   };
 
   return {

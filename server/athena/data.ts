@@ -8,6 +8,8 @@ const attributeHumanDictionary: Record<string, string> = {
   project: 'Проект',
   type: 'Тип',
   author: 'Автор',
+  created_at: 'Создана',
+  updated_at: 'Изменена',
 };
 
 export class Data {
@@ -129,7 +131,7 @@ export class Data {
   }
 
   private async checkValue(name: string, value: string, forFilter: boolean = true) {
-    const validAttributes = ['sprint', 'status', 'project', 'type', 'author'];
+    const validAttributes = ['sprint', 'status', 'project', 'type', 'author', 'created_at', 'updated_at'];
     if(name.toLowerCase() == 'parent' && !forFilter){
 
  
@@ -157,10 +159,28 @@ export class Data {
       
       name = name.toLocaleLowerCase()
 
+      if(name == 'created_at' || name == 'updated_at'){
+        return {
+          name: 'attr#' + name,
+          value: "'" + value + "'#",
+          human_name: attributeHumanDictionary[name],
+          human_value: "'" + value + "'",
+        }
+      }
+      if(forFilter && name == 'status' && value.toLocaleLowerCase() == 'решенные'){
+        return {
+          name:  'status_uuid',
+          value: "'(resolved)'#",
+          human_name: attributeHumanDictionary[name],
+          human_value: "Решенные",
+        }
+      }
+
       const values = this.data[name];
       let foundIndex = this.isMatchingIn(value, values.map((v: any) => v.name));
       if(name == 'project' && foundIndex == -1) foundIndex = this.isMatchingIn(value, values.map((v: any) => v.short_name));
   
+      
       if (foundIndex > -1) {
         return {
           name: forFilter ? 'attr#' + name + '_uuid#' : name+ '_uuid',
@@ -177,6 +197,7 @@ export class Data {
           human_value: 'Как у текущей',
         }
       }
+      
       else return null
     } else {
 

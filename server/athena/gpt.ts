@@ -8,12 +8,12 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 
 var openaiConfig: any = {}
 
-const classifyDescr = `You are an ai assistant for Unkaos task tracker. your classify user request. 
-Answer with one of these categorys without comments: 
-find_issues - a query to filter issues
-update_issues - a query to filter some issues and set some values
-use_readme - any question about use of the task tracker
-unknown - if promt seems not matching any of the categorys, answer `
+const classifyDescr = `You are an AI assistant dedicated to handling requests for the Unkaos task tracker. Your job is to classify each user request accurately. Respond with only one of the following categories and do not include any additional comments:
+
+find_issues - Use this category for requests that are specifically asking to filter or search for specific issues.
+update_issues - Choose this category when the request involves modifying or updating one or more issues.
+use_readme - Select this when the request pertains to questions about how to use the task tracker or its features.
+unknown - Use this if the request does not clearly fit any of the above categories. `
 
 const readmeDescr = `You are an ai assistant for Unkaos task tracker. 
 you should parse readme to bring user info about his question.
@@ -153,15 +153,18 @@ do not use the 'filter' attribute at all. Be careful not to use any rule that wa
 and do not use quotes for field and attribute names in the filter query. 
 A field/attribute name can be only '=', '>', '<', or 'like' to its value. Logical conditions are only 'and', 'or'.
 When a prompt asks for issues about something, it means that either the field 'Название' or the field 'Описание' contains that. 
-Therefore, for this condition in the filter, use '(Название like ... or Описание like ...)', 
-taking into account that the operator for this expression is 'or', not 'and'. Make sure to enclose this expression in parenthesis. 
+Therefore, for this condition in the filter, use (Название like ... or Описание like ...), 
+taking into account that the operator for this expression is 'or', not 'and'. Make sure to enclose this expression in parenthesis, 
+use %val% for this like in sql. 
 Other conditions can be used as usual.
 
 dont use ' for attributes values, always use "
 
 Do not translate any values. Ignore unuseful information like emotions and use only the relevant information.
 
-Available issue attributes are 'sprint', 'status', 'project', 'type'. 
+for dates, use yyyy-mm-dd format.
+
+Available issue attributes are 'sprint', 'status', 'project', 'type', 'created_at', 'updated_at'. 
 The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Available issue fields are:
 `
 
@@ -197,7 +200,8 @@ the full number consists of the short project name, '-' and the numeric part.
 If the field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from the available values list.
 'set' cant be void.
 
-If the field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from the available values list.
+If the field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from the available values list. 
+The status attr also have for filter a value Решенные that can be used like one of the available values for it. 
 `
 }
 
@@ -335,6 +339,8 @@ export class Gpt {
 
 
     console.log('ask gpt openaiConfig', openaiConfig)
+
+    context += '. today is '+ new Date().toLocaleString() +'' + new Date().toLocaleTimeString();
 
     let config:any = this.createRequestConfig(context, input, false)
 

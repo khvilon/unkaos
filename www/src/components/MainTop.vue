@@ -90,6 +90,7 @@
     width: 100%;
     text-align: center;
     align-items: center;
+    position: relative;
     justify-content: center;
   }
 

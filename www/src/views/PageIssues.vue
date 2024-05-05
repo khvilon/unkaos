@@ -325,7 +325,12 @@ export default mod;
           max-height: calc(100% - 60px);
         "
       >
-        <span class="topbar-label">{{ label }}</span>
+        <span 
+          class="topbar-label"
+          v-if="!this.$store.state['common']['is_mobile']"
+        >
+          {{ label }}
+        </span>
 
         <IssuesSearchInput
           label=""
@@ -351,9 +356,9 @@ export default mod;
           class="bx top-menu-icon-btn"
           @click="tree_view = !tree_view"
         ></i>
-        <i v-if="!loading && !favourite_uuid" class="bx bx-star top-menu-icon-btn" @click="add_to_favourites"> </i>
-        <i v-if="!loading && favourite_uuid" class="bx bxs-star top-menu-icon-btn" @click="remove_from_favourites"> </i>
-        <i v-if="!loading" class="bx bxs-download top-menu-icon-btn"
+        <i v-if="!$store.state['common']['is_mobile'] && !loading && !favourite_uuid" class="bx bx-star top-menu-icon-btn" @click="add_to_favourites"> </i>
+        <i v-if="!$store.state['common']['is_mobile'] && !loading && favourite_uuid" class="bx bxs-star top-menu-icon-btn" @click="remove_from_favourites"> </i>
+        <i v-if="!$store.state['common']['is_mobile'] && !loading" class="bx bxs-download top-menu-icon-btn"
         @click="get_excel"
         > </i>
 

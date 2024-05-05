@@ -2,8 +2,7 @@
 import { marked } from "marked";
 import { nextTick } from "vue";
 import tools from "../tools.ts";
-import palette from "../css/palette.scss?type=style&index=0&lang=scss&module=1";
-import cache from "../cache.ts";
+
 
 export default {
   
@@ -338,4 +337,43 @@ a {
   user-select: text !important;
   font-size: 14px;
 }
+
+
+.marked-container h1, .marked-container h2, .marked-container h3, .marked-container h4  {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.marked-container h1, .marked-container h2 {
+  padding-bottom: .3em;
+  border-bottom: 1px solid var(--border-color, var(--border-color));
+}
+
+
+
+
+.marked-container h1 {   
+    font-size: 2em;  
+}
+
+.marked-container h2 {
+    font-size: 1.5em;
+}
+
+.marked-container h3 {
+    font-size: 1.25em;
+}
+
+.marked-container h4 {
+    font-size: 1em;
+}
+
+
+.marked-container ul, .marked-container ol {
+    padding-left: 2em !important;
+}
+
+
 </style>
