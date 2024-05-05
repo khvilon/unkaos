@@ -20,7 +20,7 @@ export default {
           this.collumns[i].asc = this.collumns[i].desc = false;
         }
       }
-      this.$store.dispatch("sort_" + this.name, collumn.id);
+      this.$store.dispatch("sort_" + this.name, {collumn: collumn.id, type: collumn.type});
       this.$emit("order", collumn);
     },
     scroll_handler(e) {

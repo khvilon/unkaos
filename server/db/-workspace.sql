@@ -124,7 +124,6 @@ INSERT INTO server.field_types (uuid, name, code) VALUES
 ('c001b93c-3676-4e1d-b52a-4e2008c62c45', 'Дата и время', 'Timestamp'),
 ('a842d209-0111-4b8a-8ba6-cba191c1f4a1', 'Булево', 'Boolean'),
 ('93d432ce-d64e-4b1d-a358-87fd5de9e3e4', 'Дата', 'Date'),
-('507278cc-a98e-4725-a248-7289dbbd4be1', 'Длительность', 'Duration'),
 ('891b02c9-a559-44da-8840-6e93bf2d8d22', 'Строка', 'String'),
 ('9d8ddcc7-a4e8-4ea8-b3d0-e7c9686abc6f', 'Текст', 'Text'),
 ('c0c4036c-3dd2-4264-ba2e-ec7180a4d35c', 'Числовое', 'Numeric'),

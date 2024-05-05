@@ -96,7 +96,12 @@ export default {
   <div class="profile" v-if="common.is_in_workspace" v-click-outside="close_menu">
     <div class="profile-top">
       <img @click="toggle_menu()" :src="get_avatar()"  />
-      <div class="profile-username">{{ user.name }}</div>
+      <div
+        v-if="!this.$store.state['common']['is_mobile']"
+        class="profile-username"
+      >
+        {{ user.name }}
+      </div>
       <div class="top-menu-icon-btn">
         <a
             class="bx new-issue-btn"
@@ -165,6 +170,12 @@ export default {
   height: 68px;
 }
 
+.mobile .profile{
+  height: 60px;
+  padding: 10px 14px;
+  z-index: 11;
+}
+
 .profile-username {
   padding: 5px;
   margin: 0 5px;
@@ -192,15 +203,18 @@ export default {
   //transform: scale(1);
 }
 
-
-
 .new-issue-btn{
   padding: 4px;
   padding-top: 0;
   margin-top:0;
   width: 30px !important;
-    height: 32px !important;
+  height: 32px !important;
+}
 
+.mobile .profile-top .top-menu-icon-btn{
+  margin-right: 10px;
+  border: none;
+  scale: 1.4;
 }
 
 .profile img {
@@ -220,6 +234,11 @@ export default {
   cursor: pointer;
   border-style: outset;
   border-width: 1px;
+}
+
+.mobile .profile img {
+  border-radius: $input-height;
+  scale: 1.2;
 }
 
 .profile-top {

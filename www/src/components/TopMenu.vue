@@ -1,12 +1,10 @@
 <script>
 import SearchInput from "./SearchInput.vue";
-import KButton from "./KButton.vue";
 
 export default {
   components: {
-    SearchInput,
-    KButton,
-  },
+    SearchInput
+    },
   /*  data()
     {
         return {name}
@@ -46,7 +44,12 @@ export default {
         max-height: calc(100% - 60px);
       "
     >
-      <span class="topbar-label">{{ label }}</span>
+      <span 
+        class="topbar-label"
+        v-if="!this.$store.state['common']['is_mobile']"
+      >
+        {{ label }}
+      </span>
       <SearchInput :name="name" :collumns="collumns" />
 
       <KButton

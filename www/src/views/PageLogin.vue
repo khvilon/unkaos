@@ -1,6 +1,6 @@
 <script>
 import KButton from "../components/KButton.vue";
-import StringInput from "../components/StringInput.vue";
+import StringInput from "../components/inputs/StringInput.vue";
 
 import dict from "../dict.ts";
 import rest from "../rest.ts";

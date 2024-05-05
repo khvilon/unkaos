@@ -1,6 +1,11 @@
-FROM node:16.19.0-bullseye-slim
+FROM node:21-bookworm-slim
+
+RUN npm install -g npm@10.6.0
 
 COPY ./server /app
+COPY ./README.md /app/README.md
+COPY ./README_RU.md /app/README_RU.md
+COPY ./LICENSE /app/LICENSE
 WORKDIR /app/eileithyia
 RUN yarn install
 

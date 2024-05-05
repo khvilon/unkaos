@@ -50,7 +50,7 @@ export default landing_page;
         <a href="/register"><i class='bx bx-cloud-upload'></i> {{t("Регистрация рабочего пространства в облаке")}}</a>
         <a href="https://github.com/khvilon/unkaos"><i class='bx bx-server'></i> {{t("Репозиторий - установка одной командой")}}</a>
         <a href="https://github.com/khvilon/unkaos/blob/master/README.md"><i class='bx bxs-book'></i> {{t("Документация")}}</a>
-        <a href="https://github.com/khvilon/unkaos/blob/master/LICENSE"><i class="bx bxs-certification"></i> {{t("Лицензия")}}</a>
+        <a href="/lisence"><i class="bx bxs-certification"></i> {{t("Лицензия")}}</a>
       </div></span>
 
       </div>
@@ -85,7 +85,7 @@ export default landing_page;
 
     <img class="landing-corner-bg-img" src="/b3-1.jpg"/>
 
-    <lang-select class="landing-lang-select"></lang-select>
+    <lang-select v-if="$store.state['common'] && !$store.state['common']['is_mobile']" class="landing-lang-select"></lang-select>
 
 
   </div>
@@ -141,7 +141,17 @@ export default landing_page;
   right: 0;
   top: 0;
   width: 100%;
+  z-index: 0;
+  }
 
+.mobile-view .landing-corner-bg-img{
+  transform:translateX(-52%);
+  width: auto; 
+  height: 120%; 
+  object-fit: cover; 
+  object-position: center; 
+  left: 0;
+  opacity: 0.4;
 }
 
 .landing-small-panel{
@@ -175,6 +185,12 @@ export default landing_page;
   border-radius: 4px !important;
   border-style: outset !important;
   border-color: rgba(71, 81, 89, 0.5) !important;
+}
+
+.mobile-view .landing-small-panel-main{
+  background: rgba(21, 24, 26, 0.4) !important;
+  border-color: rgba(71, 81, 89, 0.4) !important;
+  width: 95%;
 }
 
 

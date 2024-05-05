@@ -165,6 +165,14 @@ const init = async function() {
         res.send({ status: 2, workspace: ans.workspace });
     })
 
+    app.get('/readme', async (req:any, res:any) => {  
+        let lang = req.query.lang
+        let path = '../README.md';
+        if(lang == 'ru'){path = '../README_RU.md'}
+        let readmeContent = await fs.readFile(path, 'utf-8');
+        res.send({ readme: readmeContent });    
+    })
+
     app.listen(port, async () => {
         console.log(`Eileithyia running on port ${port}`)
     })
