@@ -80,15 +80,15 @@ export default {
 </script>
 
 <template ref="issues">
-  <div class="register-container">
-    <img class="register-corner-bg-img" src="/b3-1.jpg"/>
+  <div class="register-container out-of-workspace-container">
+    <img class="main-bg-img" src="/b3-1.jpg"/>
     <MainTop :name="t('создание рабочего пространства')"></MainTop>
 
   <div class="register-panel panel" :class="{ 'panel-register-process': uuid != undefined && uuid != '' }" @keyup.enter="register()" >
     <StringInput
       v-if="uuid == undefined || uuid == ''"
       :keyup_enter="register_workspace_request"
-      :label="t('Название рабочего пространства')"
+      :label="!$store.state['common']['is_mobile'] ? t('Название рабочего пространства') : t('Название пространства')"
       @update_parent_from_input="update_workspace"
       :value="workspace"
       :class="{'error-field': try_done && !workspace_is_valid}"
@@ -186,20 +186,6 @@ export default {
   text-align: center;
 }
 
-.register-corner-bg-img{
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100vw;
-}
-
-.register-container{
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  background-color:  rgb(30, 30, 37) !important;
-  padding: 30px;
-}
 
 .error-field input{
 	border-color: var(--err-color);
