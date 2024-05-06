@@ -1105,12 +1105,7 @@ crud.writeIssueHistory = function(query: any, pg_params: any, readed_data: any, 
   return [q, p]
 }
 
-crud.setIssueTypeReqFields = function(params: any){
-  for (const reqField of reqIssueTypesfields) {
-    if (!params.fields.includes(reqField)) params.fields.push(reqField);
-  }
-  return params;
-}
+
 
 
 
@@ -1137,7 +1132,6 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     if (readed_data.rows.length > 0) {
 
       if (table_name == "issues") [query, pg_params] = crud.writeIssueHistory(query, pg_params, readed_data, params, subdomain);
-      else if(table_name == "issue_types") params = crud.setIssueTypeReqFields(params);
 
       let old_uuids = crud.get_uuids(readed_data.rows[0]);
       let new_uuids = crud.get_uuids(params);
