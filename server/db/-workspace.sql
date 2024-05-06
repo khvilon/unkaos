@@ -131,10 +131,6 @@ INSERT INTO server.field_types (uuid, name, code) VALUES
 ('457da84d-2d1d-3595-6fba-4d4d674af63f', 'Значение из списка', 'Select');
 
 INSERT INTO server.fields (uuid, name, type_uuid, is_custom) VALUES 
-('60d53a40-cda9-4cb2-a207-23f8236ee9a7', 'Затраченное время', 'c0c4036c-3dd2-4264-ba2e-ec7180a4d35c', false),
-
-
-
 ('e85ccb15-c1d2-433b-bb45-473a9a36a02c', 'Ответственный', 'd57da84f-ed1b-4596-9fb9-9d4c500af63d', true);
 INSERT INTO server.fields (uuid, name, type_uuid, is_custom, available_values) VALUES 
 ('b6ddb33f-eea9-40c0-b1c2-d9ab983026a1', 'Приоритет', '457da84d-2d1d-3595-6fba-4d4d674af63f', true, 

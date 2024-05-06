@@ -1116,7 +1116,6 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
  
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
- 
 
   let readed_data: any;
   
@@ -1129,11 +1128,11 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     //current version of object to be changed
     let readed_data = await sql.query(subdomain, read_query, read_params);
 
-    if (readed_data.rows.length > 0) {
+   // if (readed_data.rows.length > 0) {
 
       if (table_name == "issues") [query, pg_params] = crud.writeIssueHistory(query, pg_params, readed_data, params, subdomain);
 
-      let old_uuids = crud.get_uuids(readed_data.rows[0]);
+      let old_uuids = (readed_data.rows.length > 0) ? crud.get_uuids(readed_data.rows[0]) : {};
       let new_uuids = crud.get_uuids(params);
       if(old_uuids != null && new_uuids != null){
 
@@ -1186,7 +1185,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
         pg_params = p;
       }
     }
-  }
+  //}
   }
 
   //check projects permissions for user
