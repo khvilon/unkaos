@@ -171,13 +171,16 @@ store_helper.create_module = function (name) {
 		}*/
 
     //console.log('body', body)
+    console.log('>>>scccccreate', state.state["selected_" + name])
 
     //body.created_at = Date()
     this.commit("create_" + name, state.state["selected_" + name]);
 
-    console.log('cccccreate', state.state['selected_' + name])
+    
 
     delete state.state["selected_" + name].created_at
+
+    console.log('>>>scccccreate', JSON.stringify(state.state['selected_' + name], null, 4))
 
     const ans = await rest.run_method(
       "create_" + name,
@@ -195,7 +198,7 @@ store_helper.create_module = function (name) {
     //let body = state.state['updated_' + name]
     //body.uuid = state.state['selected_' + name].uuid
 
-    console.log('uuuuupdate', state.state['selected_' + name])
+    console.log('>>>suuuuupdate', state.state['selected_' + name])
 
     return await rest.run_method(
       "update_" + name,
@@ -220,7 +223,7 @@ store_helper.create_module = function (name) {
       state.state["selected_" + name].available_values = JSON.stringify(available_values, null, 4);
     }
 
-    console.log('>>>save', name, state.state["selected_" + name])
+    console.log('>>>save', name,  state.state["selected_" + name])
     if (is_new) return this.dispatch("create_" + name);
     return this.dispatch("update_" + name);
   };
