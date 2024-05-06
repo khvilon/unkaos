@@ -90,6 +90,21 @@ export default {
       is_in_focus: false,
       attributes: [
         {
+          name: "Автор",
+          type: "User",
+          field: "author_uuid",
+        },
+        {
+          name: "Название",
+          type: "String",
+          field: "title",
+        },
+        {
+          name: "Описание",
+          type: "String",
+          field: "description",
+        },
+        {
           name: "Тип",
           type: "Type",
           field: "type_uuid",

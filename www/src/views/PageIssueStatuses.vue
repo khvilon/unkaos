@@ -56,6 +56,7 @@ const data = {
       disabled: true,
     },
   ],
+  instance: {is_start: false, is_end: false},
 };
 
 const mod = await page_helper.create_module(data);
