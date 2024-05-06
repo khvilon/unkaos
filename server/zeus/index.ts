@@ -46,13 +46,7 @@ const handleRequest = async function(req:any, res:any) {
 
     if((method!='read' || table_name == 'favourites') && method!='delete') params.author_uuid = req.headers.user_uuid;
 
-    if(params.values != undefined){
-        for(let i in params.values){
-            if(params.values[i].label == 'Автор' && params.values[i].value == ''){
-                params.values[i].value = req.headers.user_uuid
-            }
-        }
-    }
+    if(params.values != undefined && !params.author_uuid) params.author_uuid = req.headers.user_uuid
 
     let ans = await crud.do(subdomain, method, table_name, params, req.headers.user_uuid, req.headers.is_admin)
 
