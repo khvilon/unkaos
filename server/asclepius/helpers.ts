@@ -71,11 +71,12 @@ export async function navigateMainMenu(page: Page, menu: string) {
 }
 
 export async function changeField(page: Page, key: string, fieldName: string, value: string) {
-  await page.click(`span:has-text("${key}")`);
-  const field = page.locator(`.label:has-text("${fieldName}")`).sibling('input.string-input');
-  await field.fill(value);
-  await page.click('input[type="button"][value="Сохранить"]');
-}
+    await page.click(`span:has-text("${key}")`);
+    const field = page.locator(`.label:has-text("${fieldName}")`).locator('..').locator('input.string-input');
+    await field.waitFor({ state: 'visible' });
+    await field.fill(value);
+    await page.click('input[type="button"][value="Сохранить"]');
+  }
 
 export async function createUser(page: Page, name: string, login: string, email: string) {
   await page.click('input[type="button"][value="Создать"]');
