@@ -6,11 +6,11 @@ const app: any = express();
 const port = 3001;
 
 const restMethodDict : any = {
-  read: "GET",
-  create: "POST",
-  update: "PUT",
-  delete: "DELETE",
-  upsert: "POST"
+  read: "get",
+  create: "post",
+  update: "put",
+  delete: "delete",
+  upsert: "post"
 };
 
 
