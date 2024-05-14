@@ -155,13 +155,24 @@ answer only a valid JSON matching provided schema, no other text:
 `
 
 const unkaosDescrBase1 = 
-`The 'filter' is a JSON-based query to select issues to be changed. If no rules are specified, do not use the 'filter' attribute. Use only the rules provided, and format filter strings with single quotes, avoiding quotes for field and attribute names.
-Field names can be '=', '>', '<', or 'like'. Logical conditions are 'and' and 'or'. When a prompt asks for issues about something, it means either 'Название' or 'Описание' contains that value. Use the condition (Название like ... or Описание like ...), with 'or' as the operator. Enclose this expression in parentheses and use %val% for the like condition as in SQL.
-Do not use single quotes for attribute values; always use double quotes.
-Do not translate any values. Ignore irrelevant information like emotions and use only relevant information.
-Use yyyy-mm-dd format for dates.
-Available issue attributes are 'sprint', 'status', 'project', 'type', 'created_at', 'updated_at', 'title', 'description', 'author'. The 'num' attribute is a numeric ID and strictly an integer.
-Available issue fields are:
+`The 'filter' is a JSON-based query to select issues to be changed. If rules on selected issues are not specified, 
+do not use the 'filter' attribute at all. Be careful not to use any rule that was not strictly asked. Use single quotes for filter strings, 
+and do not use quotes for field and attribute names in the filter query. 
+A field/attribute name can be only '=', '>', '<', or 'like' to its value. Logical conditions are only 'and', 'or'.
+When a prompt asks for issues about something, it means that either the field 'Название' or the field 'Описание' contains that. 
+Therefore, for this condition in the filter, use (Название like ... or Описание like ...), 
+taking into account that the operator for this expression is 'or', not 'and'. Make sure to enclose this expression in parenthesis, 
+use %val% for this like in sql. 
+Other conditions can be used as usual.
+
+dont use ' for attributes values, always use "
+
+Do not translate any values. Ignore unuseful information like emotions and use only the relevant information.
+
+for dates, use yyyy-mm-dd format.
+
+Available issue attributes are 'sprint', 'status', 'project', 'type', 'created_at', 'updated_at', 'title', 'description', 'author'. 
+The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Available issue fields are:
 `
 
 
@@ -175,13 +186,29 @@ If the field or issue attribute has a list of available values, any values in 'f
 `,
 update_issues:
 `
-Parse the prompt for the update issues command.
-Verbs resembling a status change applied to issues indicate setting the status to that value and do not affect the filter query. For example, "close an issue" means to change its status to 'closed' without filtering, and "put aside" means to set the status to 'put aside'.
-Context issues are the current issues on the page. 'Target' refers to the issues to modify, which by default are the context issues. It can also refer to children of the current context issues. Actions on all issues of the tracker should use 'global' as the target value.
-The 'set' attribute should contain an array of objects, each with 'name' and 'value' attributes. The 'name' attribute indicates the field to set or update, and the 'value' attribute contains the new value. If the field accepts a limited set of values, 'value' must be one of those values or set to 'inherit' to copy from the context issues (current or all).
-Do not use 'parent...' value; use 'inherit' instead. The 'name' of a 'set' item can be 'parent' if the user wants to change the parent issue, in which case 'value' is the full number of the new parent. The full number consists of the short project name, a hyphen, and the numeric part.
-If a field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from this list. The 'set' attribute cannot be empty.
-The 'status' attribute for the filter can include the value 'Решенные', which can be used as one of the available values.
+you parse promt for update issues command.
+
+Note that verbs resembling a status applied to issues indicate setting the status to that value and do not affect the filter query. 
+For example, to close an issue means just to change its status to a status like 'closed' without filtering, 
+and to put aside means to set the status to 'put aside'.
+
+context issues are current issues on the page.
+'target' are issues to modify. by default it is the context issues. 
+it can be children of context current issues. 
+Asking to perform actions on all issues of the tracker should be represented by 'global' value for target.
+
+The 'set' attribute should contain an array of objects, each with a 'name' and 'value' attribute. 
+The 'name' attribute should indicate the name of the field that the user wants to set or update, 
+and the 'value' attribute should contain the new value for that field. If the field accepts a limited set of values, 
+the 'value' attribute must be one of the available values or set to 'inherit' to copy the value from the context issues (can be current or all).
+dont use 'parent...' value, use inherit instead.
+also the name of 'set' item can be 'parent' if the user want to change the parent issue, in this case the value is the full number of new parent.
+the full number consists of the short project name, '-' and the numeric part.
+If the field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from the available values list.
+'set' cant be void.
+
+If the field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from the available values list. 
+The status attr also have for filter a value Решенные that can be used like one of the available values for it. 
 `
 }
 
