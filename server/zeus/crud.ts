@@ -976,6 +976,7 @@ crud.get_query = function (method:string, table_name:string, params:any) {
 };
 
 crud.get_uuids = function (obj:any) {
+  
 
   console.log(">>>>>>>>>get_uuids", obj)
 
@@ -983,6 +984,7 @@ crud.get_uuids = function (obj:any) {
   let ans:any = {};
   if (obj.uuid !== undefined) ans[obj.uuid] = obj.table_name;
   for (let i in obj) {
+    console.log(">>>>>>>>>get_uuids2", obj[i])
     if (
       obj[i] === undefined ||
       obj[i] === null ||
@@ -991,9 +993,11 @@ crud.get_uuids = function (obj:any) {
     )
       continue;
 
+      
 
     //console.log('obj.table_name', obj, obj.table_name)
     let fk = data_model.model[obj.table_name]["fk"];
+    console.log(">>>>>>>>>get_uuids3", fk)
     if (fk !== undefined) {
  
 
