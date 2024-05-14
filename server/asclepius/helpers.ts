@@ -70,20 +70,19 @@ export async function navigateMainMenu(page: Page, menu: string) {
   await page.click(`a[href*="/${menu}"]`);
 }
 
-export async function changeField(page: Page, key: string, fieldName: string, value: string) {
-    await page.click(`span:has-text("${key}")`);
+export async function changeField(page: Page, fieldName: string, value: string, key: string = '') {
+    if(key) await page.click(`span:has-text("${key}")`, { timeout: 5000 });
     const field = page.locator(`.label:has-text("${fieldName}")`).locator('..').locator('input.string-input');
     await field.waitFor({ state: 'visible' });
     await field.fill(value);
-    await page.click('input[type="button"][value="Сохранить"]');
+    if(key) await page.click('input[type="button"][value="Сохранить"]');
   }
 
 export async function createUser(page: Page, name: string, login: string, email: string) {
   await page.click('input[type="button"][value="Создать"]');
-  changeField(Page, , "ФИО", name);
-  await page.fill('.label:has-text("ФИО") ~ input.string-input', name);
-  await page.fill('.label:has-text("Логин") ~ input.string-input', login);
-  await page.fill('.label:has-text("Адрес почты") ~ input.string-input', email);
+  await changeField(page, "ФИО", name);
+  await changeField(page, "Логин", login);
+  await changeField(page, "Адрес почты", email);
   await page.click('input[type="button"][value="Сохранить"]');
 }
 
