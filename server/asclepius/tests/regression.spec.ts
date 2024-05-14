@@ -13,7 +13,7 @@ test.describe('Регресионный тест', () => {
   let state = 0;
 
   test.beforeEach(async ({ page }) => {
-    await page.setViewportSize({ width: 1920, height: 1080 });
+   // await page.setViewportSize({ width: 1920, height: 1080 });
     if (!state) return;
     await page.goto(`/`);
     if (state == 1) await signIn(page, adminEmail, newPass);
@@ -33,8 +33,9 @@ test.describe('Регресионный тест', () => {
 
     await page.goto(link);
     await signIn(page, adminEmail, pass);
+    await changeField(page, 'ФИО', adminName, adminEmail);
+    await changeField(page, 'Пароль', newPass, adminEmail);
     await page.waitForSelector('.profile');
-    await changeField(page, adminEmail, 'Пароль', newPass);
     await signOut(page);
   });
 
