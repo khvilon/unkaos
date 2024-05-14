@@ -185,6 +185,13 @@ The 'status' attribute for the filter can include the value 'Решенные', 
 `
 }
 
+const request_types: any = {
+  classify: '2',
+  use_readme: '3',
+  find_issues: '',
+  update_issues: '',
+}
+
 export class Gpt {
 
   constructor() {
@@ -209,21 +216,19 @@ export class Gpt {
     
   }
 
-  private createRequestConfig(systemMessage: string, userMessage: string, isSecond: boolean = false){
+  private createRequestConfig(systemMessage: string, userMessage: string, tyoe: string){
+    let n = request_types[tyoe];
 
-    console.log('temperature00openaiConfig>>', openaiConfig)
-
-
-    isSecond = isSecond && openaiConfig.url2 && openaiConfig.key2 && openaiConfig.model2
-    let url = isSecond ? openaiConfig.url2 : openaiConfig.url;
-    let key = isSecond ? openaiConfig.key2 : openaiConfig.key;
-    let model = isSecond ? openaiConfig.model2 : openaiConfig.model;
-    let temperature = isSecond ? openaiConfig.temperature2 : openaiConfig.temperature;
-    let proxy = isSecond ? openaiConfig.proxy2 : openaiConfig.proxy;
+    if(n && (!openaiConfig['url' + n] || !openaiConfig['key' + n] || !openaiConfig['model' + n])) n = '';
+    let url = openaiConfig['url' + n];
+    let key = openaiConfig['key' + n];
+    let model = openaiConfig['model' + n];
+    let temperature = openaiConfig['temperature' + n];
+    let proxy = openaiConfig['proxy' + n];
 
     console.log('temperature000 model>>', model)
 
-    const defaultTemperature = isSecond ? 0.2 : 0.4;
+    const defaultTemperature =  0.4;
     console.log('temperature0>>', temperature)
     try{
       temperature = Number(temperature);
