@@ -45,6 +45,8 @@ echo "ALLOWED_UPDATE_FROM: $ALLOWED_UPDATE_FROM"
 echo "ALLOWED_UPDATE_TO: $ALLOWED_UPDATE_TO"
 echo "AUTO_UPDATE: $AUTO_UPDATE"
 
+
+
 # Function to check if update time is allowed
 is_time_allowed() {
   # Get the current hour
@@ -68,6 +70,7 @@ is_time_allowed() {
 
   return 1
 }
+
 
 is_time_allowed
 TIME_ALLOWED=$?
@@ -94,6 +97,13 @@ compare_versions() {
     fi
   done
   return 1
+}
+
+normalize_version() {
+  local version="$1"
+  local IFS=.
+  local ver_arr=($version)
+  printf "%02d.%03d.%05d\n" ${ver_arr[0]} ${ver_arr[1]} ${ver_arr[2]}
 }
 
 CURRENT_VERSION=$(grep -o '"version": "[^"]*' /var/app/unkaos/meta.json | grep -o '[0-9].*')
@@ -124,7 +134,11 @@ docker image prune -f
 
 # Switch to the correct branch before pulling updates
 git stash
-git checkout $BRANCH
+if [ "$BRANCH" == "dev" ]; then
+  git checkout dev
+else
+  git checkout master
+fi
 git pull
 git stash pop -q
 
@@ -154,24 +168,34 @@ for file in $migration_files; do
   fi
 done
 
-
 CPU_CORES=$(nproc)
 if [ "$CPU_CORES" -gt 1 ]; then
     CPU_CORES=$((CPU_CORES - 1))
 else
     CPU_CORES=1
 fi
+
 CPU_CORES=1
 
 docker-compose down ossa cerberus zeus gateway hermes eileithyia athena postgres
-docker-compose up -d eileithyia athena postgres
+docker-compose up -d  eileithyia athena postgres
 
 case $OS_ID in
-    ubuntu|debian|raspbian|centos|fedora|rhel)
+    ubuntu|debian|raspbian)
         docker-compose up --build -d \
+        --scale ossa=$CPU_CORES \
         --scale cerberus=$CPU_CORES \
         --scale zeus=$CPU_CORES \
-        --scale gateway=$CPU_CORES
+        --scale gateway=$CPU_CORES \
+        --scale hermes=$CPU_CORES
+        ;;
+    centos)
+        docker compose up -d --build \
+        --scale ossa=$CPU_CORES \
+        --scale cerberus=$CPU_CORES \
+        --scale zeus=$CPU_CORES \
+        --scale gateway=$CPU_CORES \
+        --scale hermes=$CPU_CORES
         ;;
     *)
         echo "Unsupported OS: $OS_ID"
