@@ -37,6 +37,11 @@ test.describe('Регресионный тест', () => {
     await changeField(page, adminEmail, 'Пароль', newPass);
     await signOut(page);
   });
+
+  test('Создание пользователя', async ({ page }) => {
+    await navigateMainMenu(page, 'workflows');
+    await createUser(page, userName, userLogin, userName);
+  });
 /*
   test('Создание воркфлоу', async ({ page }) => {
     await navigateMainMenu(page, 'workflows');

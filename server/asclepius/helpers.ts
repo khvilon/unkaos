@@ -80,6 +80,7 @@ export async function changeField(page: Page, key: string, fieldName: string, va
 
 export async function createUser(page: Page, name: string, login: string, email: string) {
   await page.click('input[type="button"][value="Создать"]');
+  changeField(Page, , "ФИО", name);
   await page.fill('.label:has-text("ФИО") ~ input.string-input', name);
   await page.fill('.label:has-text("Логин") ~ input.string-input', login);
   await page.fill('.label:has-text("Адрес почты") ~ input.string-input', email);
