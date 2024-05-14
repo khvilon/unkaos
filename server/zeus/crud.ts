@@ -1140,7 +1140,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
 
    // if (readed_data.rows.length > 0) {
 
-      if (table_name == "issues") [query, pg_params] = crud.writeIssueHistory(query, pg_params, readed_data, params, subdomain);
+      if (readed_data.rows.length > 0 && table_name == "issues") [query, pg_params] = crud.writeIssueHistory(query, pg_params, readed_data, params, subdomain);
 
       let old_uuids = (readed_data.rows.length > 0) ? crud.get_uuids(readed_data.rows[0]) : {};
       let new_uuids = crud.get_uuids(params); 
