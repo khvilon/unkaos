@@ -1133,8 +1133,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
       if (table_name == "issues") [query, pg_params] = crud.writeIssueHistory(query, pg_params, readed_data, params, subdomain);
 
       let old_uuids = (readed_data.rows.length > 0) ? crud.get_uuids(readed_data.rows[0]) : {};
-      let new_uuids = crud.get_uuids(params);
-      if(old_uuids != null && new_uuids != null){
+      let new_uuids = crud.get_uuids(params); 
 
       let del_query = "";
       for (let i in old_uuids) {
@@ -1184,7 +1183,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
         query = q;
         pg_params = p;
       }
-    }
+    
   //}
   }
 
