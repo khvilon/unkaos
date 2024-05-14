@@ -115,6 +115,7 @@ else
     CPU_CORES=1
 fi
 
+CPU_CORES=1
 $DOCKER_COMPOSE up -d \
 --scale cerberus=$CPU_CORES \
 --scale zeus=$CPU_CORES \

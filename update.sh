@@ -154,12 +154,14 @@ for file in $migration_files; do
   fi
 done
 
+
 CPU_CORES=$(nproc)
 if [ "$CPU_CORES" -gt 1 ]; then
     CPU_CORES=$((CPU_CORES - 1))
 else
     CPU_CORES=1
 fi
+CPU_CORES=1
 
 docker-compose down ossa cerberus zeus gateway hermes eileithyia athena postgres
 docker-compose up -d eileithyia athena postgres
