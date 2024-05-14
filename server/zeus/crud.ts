@@ -1134,6 +1134,9 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
 
       let old_uuids = (readed_data.rows.length > 0) ? crud.get_uuids(readed_data.rows[0]) : {};
       let new_uuids = crud.get_uuids(params); 
+      if(!new_uuids) new_uuids = {};
+
+      console.log('>>>>>>>new_uuids, old_uuids' , new_uuids, old_uuids);
 
       let del_query = "";
       for (let i in old_uuids) {
@@ -1174,7 +1177,6 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
           "', '" +
           params.uuid +
           "');";
-
       }
 
       if (del_query != ""){ //&& table_name != 'users') {
