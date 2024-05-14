@@ -1117,7 +1117,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
   else if (table_name == "board") table_name = "boards";
   //else if(table_name == 'dashboard') table_name = 'dashboards'
 
-  if(table_name == "issue_types") params.table_name = "issue_types";
+  
  
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
@@ -1126,6 +1126,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
   
 
   if (method != "read") {
+    if(table_name == "issue_types") params.table_name = "issue_types";
     let [read_query, read_params] = crud.make_query.read(table_name, {
       uuid: params.uuid,
     });
