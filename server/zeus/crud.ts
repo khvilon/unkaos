@@ -976,6 +976,9 @@ crud.get_query = function (method:string, table_name:string, params:any) {
 };
 
 crud.get_uuids = function (obj:any) {
+
+  console.log(">>>>>>>>>get_uuids", obj)
+
   if(!obj.table_name) return null
   let ans:any = {};
   if (obj.uuid !== undefined) ans[obj.uuid] = obj.table_name;
