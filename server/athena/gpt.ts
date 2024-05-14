@@ -216,8 +216,8 @@ export class Gpt {
     
   }
 
-  private createRequestConfig(systemMessage: string, userMessage: string, tyoe: string){
-    let n = request_types[tyoe];
+  private createRequestConfig(systemMessage: string, userMessage: string, type: string = 'find_issues'){
+    let n = request_types[type];
 
     if(n && (!openaiConfig['url' + n] || !openaiConfig['key' + n] || !openaiConfig['model' + n])) n = '';
     let url = openaiConfig['url' + n];
@@ -282,7 +282,7 @@ export class Gpt {
   public async classify(input: string): Promise<any> {
     console.log('classify gpt', openaiConfig)
 
-    let config:any = this.createRequestConfig(classifyDescr, input, false)
+    let config:any = this.createRequestConfig(classifyDescr, input, 'classify')
 
     try{
       let response = await axios(config);
@@ -305,7 +305,7 @@ export class Gpt {
 
     console.log('readme descr', descr)
 
-    let config:any = this.createRequestConfig(descr, input, true)
+    let config:any = this.createRequestConfig(descr, input, 'use_readme')
 
     
 
@@ -320,14 +320,12 @@ export class Gpt {
     }
   }
 
-  private async ask(input: string, context: string = ''): Promise<any> {
+  private async ask(input: string, context: string): Promise<any> {
 
 
     console.log('ask gpt openaiConfig', openaiConfig)
 
-    context += '. today is '+ new Date().toLocaleString() +'' + new Date().toLocaleTimeString();
-
-    let config:any = this.createRequestConfig(context, input, false)
+    let config:any = this.createRequestConfig(context, input)
 
     try{
       let response = await axios(config);
@@ -353,7 +351,9 @@ export class Gpt {
     const fieldsStr = JSON.stringify(fields.map((item: any)=>'"' + item.name + '"').join(', '))
 
     const context: string = 
-    unkaosDescrBase0 + commandAnswerSchemma[command] + unkaosDescr[command] + unkaosDescrBase1 + fieldsStr;
+    unkaosDescrBase0 + commandAnswerSchemma[command] + unkaosDescr[command] + 
+      unkaosDescrBase1 + fieldsStr 
+     '. today is '+ new Date().toLocaleString() +'' + new Date().toLocaleTimeString();
 
     const parsedCommand = await this.ask(input, context)
 
