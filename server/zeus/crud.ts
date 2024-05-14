@@ -983,20 +983,9 @@ crud.get_uuids = function (obj:any) {
   if(!obj.table_name) return null
   let ans:any = {};
   if (obj.uuid !== undefined) ans[obj.uuid] = obj.table_name;
-  for (let i in obj) {
-    console.log(">>>>>>>>>get_uuids2", obj[i])
-    if (
-      obj[i] === undefined ||
-      obj[i] === null ||
-      obj[i][0] === undefined ||
-      obj[i][0].uuid === undefined
-    )
-      continue;
 
-      
 
-    //console.log('obj.table_name', obj, obj.table_name)
-    let fk = data_model.model[obj.table_name]["fk"];
+  let fk = data_model.model[obj.table_name]["fk"];
     console.log(">>>>>>>>>get_uuids3", fk)
     if (fk !== undefined) {
  
@@ -1009,8 +998,19 @@ crud.get_uuids = function (obj:any) {
       }
     }
 
-    let fks = data_model.model[obj.table_name]["fks"];
- 
+  let fks = data_model.model[obj.table_name]["fks"];
+
+
+  for (let i in obj) {
+    console.log(">>>>>>>>>get_uuids2", obj[i])
+    if (
+      obj[i] === undefined ||
+      obj[i] === null ||
+      obj[i][0] === undefined ||
+      obj[i][0].uuid === undefined
+    )
+      continue;
+
 
     if (fks == undefined || !fks.includes(obj[i][0].table_name)) continue;
 
