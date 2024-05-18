@@ -160,9 +160,8 @@ do not use the 'filter' attribute at all. Be careful not to use any rule that wa
 and do not use quotes for field and attribute names in the filter query. 
 A field/attribute name can be only '=', '>', '<', or 'like' to its value. Logical conditions are only 'and', 'or'.
 When a prompt asks for issues about something, it means that either the field 'Название' or the field 'Описание' contains that. 
-Therefore, for this condition in the filter, use (Название like ... or Описание like ...), 
-taking into account that the operator for this expression is 'or', not 'and'. Make sure to enclose this expression in parenthesis, 
-use %val% for this like in sql. 
+Therefore, for this condition in the filter, use (Название like '%val%' or Описание like '%val%'), 
+taking into account that the operator for this expression is 'or', not 'and'. Make sure to enclose this expression in parenthesis.
 Other conditions can be used as usual.
 
 dont use ' for attributes values, always use "
