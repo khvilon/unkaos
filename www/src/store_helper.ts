@@ -60,6 +60,7 @@ store_helper.create_module = function (name) {
     for (const i in state["filtered_" + name]) {
       if (state["filtered_" + name][i].uuid == uuid) {
         state["selected_" + name] = state["filtered_" + name][i];
+        console.log("selecteddddd2",  state["selected_" + name] )
         state["filtered_" + name][i].selected = true;
         continue;
       } else state["filtered_" + name][i].selected = false;
@@ -145,8 +146,6 @@ store_helper.create_module = function (name) {
     //if(name == 'issue') params = {uuid: 'cf80f5b4-ba05-472e-80ea-4805ffc2f431'}
     //else params = undefined
     const data = await rest.run_method("read_" + name, params);
-
-    //console.log('got data', data)
 
     this.commit("get_" + name, data);
   };

@@ -335,14 +335,7 @@ let methods = {
     for (let i in this.fields) {
       if (this.fields[i].uuid == field_uuid) {
         if (this.fields[i].available_values == undefined) return;
-        let available_values = this.fields[i].available_values;
-        if(tools.isValidJSON(available_values)){
-          available_values = JSON.parse(available_values)
-        }
-        else{
-          available_values = available_values.split(",").map((v) => v.replace("\n", "").replace("\r", "").trim());
-        }
-        
+        let available_values = this.fields[i].available_values;      
         return available_values;
       }
     }

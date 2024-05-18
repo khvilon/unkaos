@@ -1,39 +1,7 @@
 #!/bin/bash
 
-# Detect OS and set package manager commands
-OS_ID=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
-OS_ID="${OS_ID//\"/}" # Remove quotes from the string
-
-case $OS_ID in
-    ubuntu|debian|raspbian)
-        PKG_MANAGER="apt"
-        PKG_UPDATE="sudo $PKG_MANAGER update -y"
-        PKG_INSTALL="sudo $PKG_MANAGER install -y"
-        CERT_INSTALL="$PKG_INSTALL certbot"
-        DOCKER_INSTALL="$PKG_INSTALL docker.io docker-compose"
-        DOCKER_COMPOSE="docker-compose"
-        PSQL="postgresql-client"
-        ;;
-    centos|fedora|rhel)
-        PKG_MANAGER="yum"
-        PKG_UPDATE="sudo $PKG_MANAGER update -y"
-        PKG_INSTALL="sudo $PKG_MANAGER install -y"
-        if [[ $OS_ID == "fedora" ]]; then
-            CERT_INSTALL="$PKG_INSTALL certbot"
-        else
-            CERT_INSTALL="$PKG_INSTALL epel-release && sudo $PKG_MANAGER install certbot -y"
-        fi
-        DOCKER_INSTALL="sudo $PKG_MANAGER install -y yum-utils && sudo $PKG_MANAGER-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo && sudo $PKG_MANAGER install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin"
-        DOCKER_COMPOSE="docker compose"
-        PSQL="postgresql"
-        ;;
-    *)
-        echo "Unsupported OS: $OS_ID"
-        exit 1
-        ;;
-esac
-
-cd /var/app/unkaos
+# Load OS setup
+source ./os_setup.sh
 
 # Load environment variables
 if [ -f .env ]; then
@@ -52,45 +20,32 @@ CONFIGS=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT
 
 # Process and assign values to variables
 while IFS='|' read -r name value; do
-    # Trim whitespace from name and value
     name=$(echo "$name" | xargs)
     value=$(echo "$value" | xargs)
-
     case $name in
-        "from")
-            ALLOWED_UPDATE_FROM="$value"
-            ;;
-        "to")
-            ALLOWED_UPDATE_TO="$value"
-            ;;
-        "allow")
-            AUTO_UPDATE="$value"
-            ;;
+        "from") ALLOWED_UPDATE_FROM="$value" ;;
+        "to") ALLOWED_UPDATE_TO="$value" ;;
+        "allow") AUTO_UPDATE="$value" ;;
     esac
 done <<< "$CONFIGS"
 
-# Echo variables for verification
 echo "ALLOWED_UPDATE_FROM: $ALLOWED_UPDATE_FROM"
 echo "ALLOWED_UPDATE_TO: $ALLOWED_UPDATE_TO"
 echo "AUTO_UPDATE: $AUTO_UPDATE"
 
 # Function to check if update time is allowed
 is_time_allowed() {
-  # Get the current hour
-  CURRENT_HOUR=$(date +"%H")
-
-  # Convert the current hour to an integer
+  local from="$1"
+  local to="$2"
+  local CURRENT_HOUR=$(date +"%H")
   CURRENT_HOUR=$(printf "%d" "$CURRENT_HOUR")
 
-  # Check if update is allowed based on the time range
-  if [[ "$ALLOWED_UPDATE_FROM" -le "$ALLOWED_UPDATE_TO" ]]; then
-    # Time range does not span midnight
-    if [[ "$CURRENT_HOUR" -ge "$ALLOWED_UPDATE_FROM" && "$CURRENT_HOUR" -lt "$ALLOWED_UPDATE_TO" ]]; then
+  if [[ "$from" -le "$to" ]]; then
+    if [[ "$CURRENT_HOUR" -ge "$from" && "$CURRENT_HOUR" -lt "$to" ]]; then
       return 0
     fi
   else
-    # Time range spans midnight
-    if [[ "$CURRENT_HOUR" -ge "$ALLOWED_UPDATE_FROM" || "$CURRENT_HOUR" -lt "$ALLOWED_UPDATE_TO" ]]; then
+    if [[ "$CURRENT_HOUR" -ge "$from" || "$CURRENT_HOUR" -lt "$to" ]]; then
       return 0
     fi
   fi
@@ -98,7 +53,7 @@ is_time_allowed() {
   return 1
 }
 
-is_time_allowed
+is_time_allowed "$ALLOWED_UPDATE_FROM" "$ALLOWED_UPDATE_TO"
 TIME_ALLOWED=$?
 
 if [[ "$AUTO_UPDATE" != "true" || $TIME_ALLOWED -ne 0 ]]; then
@@ -174,12 +129,21 @@ for file in $migration_files; do
 
   if [ $version_compare_result -eq 2 ] && [ $version_compare_new_result -lt 2 ]; then
     echo "Found migration file: $file"
-    
-    cat "$file" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
-    
+
+    # Run migration within a transaction
+    {
+      echo "BEGIN;"
+      cat "$file"
+      echo "COMMIT;"
+    } | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
+
     for workspace in $WORKSPACES; do
       modified_sql=$(cat "$file" | sed "s/\bpublic\b/$workspace/g")
-      echo "$modified_sql" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
+      {
+        echo "BEGIN;"
+        echo "$modified_sql"
+        echo "COMMIT;"
+      } | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
     done
   fi
 done
@@ -215,4 +179,4 @@ docker-compose exec nginx nginx -s reload
 echo "Autoupdate conf: $AUTO_UPDATE, $ALLOWED_UPDATE_FROM-$ALLOWED_UPDATE_TO"
 echo "Your old version: $CURRENT_VERSION"
 echo "Your new version: $NEW_VERSION"
-echo "Current Time: $CURRENT_TIME"
+echo "Current Time: $(date)"
