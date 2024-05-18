@@ -98,12 +98,11 @@ export default class Rest {
         res.send(user)
     } 
     else if (request == 'upsert_password') {
-      await Security.setUserPassword(workspace, req.body.user, req.body.password)
+      await Security.setUserPassword(workspace, user, req.body.password)
       res.send({})
     } 
     else if (request == 'upsert_password_rand') {
-      this.upsertPasswordRand(workspace, user, req, res);
-      res.send({})
+      this.upsertPasswordRand(workspace, req.body.user, req, res);
     } 
     else {
       res.status(501)
@@ -116,6 +115,7 @@ export default class Rest {
     if (!await this.checkHermesAvailable()) {
         res.status(503)
         res.send({message: "Service Temporarily Unavailable"})
+        return;
     }
 
     const password = await Security.setRandomPassword(workspace, user)
