@@ -229,7 +229,7 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
     {"allow": "R", "table": "issue_statuses"},
     {"allow": "R", "table": "issue_types"},
     {"allow": "R", "table": "issue_types_to_fields"},
-    {"allow": "R", "table": "issue_tags"},
+    {"allow": "CRU", "table": "issue_tags"},
 
     {"allow": "CRU", "table": "issues"},
     {"allow": "CRU", "table": "issue"},
@@ -237,11 +237,12 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
     {"allow": "R", "table": "issue_uuid"},
     {"allow": "R", "table": "old_issue_uuid"},
     {"allow": "R", "table": "formated_relations"},
-    {"allow": "R", "table": "watcher"},
+    {"allow": "CRU", "table": "watcher"},
     {"allow": "R", "table": "issue_formated_actions"},
-    {"allow": "R", "table": "attachments"},
-    {"allow": "R", "table": "time_entries"},
-    {"allow": "R", "table": "issue_tags_selected"}
+    {"allow": "CRU", "table": "attachments"},
+    {"allow": "CRU", "table": "time_entries"},
+    {"allow": "CRU", "table": "issue_tags_selected"},
+    {"allow": "CRU", "table": "issue_actions"}
 
 ]'),
 ('f47c6d41-60f9-4871-8d12-c1ee6682f2e0', 'configs_U', 'Управление настройками рабочего пространства', 
