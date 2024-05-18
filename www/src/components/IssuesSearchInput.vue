@@ -555,6 +555,10 @@ export default {
 
     convert_query(query, use_to_end) {
 
+      if(query.trim() == ''){
+        this.$emit("converted", '');
+        return true;
+      }
       //query = query.trim();
       console.log('convert_query', '#'+query+'#')
       let waits_for_idx = 0;
