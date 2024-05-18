@@ -1,8 +1,18 @@
 import axios from "axios";
 import cors from "cors";
 import express from "express";
+import tools from "../tools";
 const app: any = express();
 const port = 3001;
+
+const restMethodDict : any = {
+  read: "get",
+  create: "post",
+  update: "put",
+  delete: "delete",
+  upsert: "post"
+};
+
 
 let conf: any;
 try {
@@ -36,7 +46,7 @@ async function init() {
 
     console.log('func', func)
 
-    app[method]("/" + func, async (req: any, res: any) => {
+    const handler = async (req: any, res: any) => {
       //console.log(req)
 
       req.headers.request_function = func;
@@ -93,7 +103,14 @@ async function init() {
       });
       res.status(zeus_ans.status);
       res.send(zeus_ans.data);
-    });
+    };
+
+    app[method]("/" + func, handler);
+
+    const [oper, tableName] = tools.split2(func, '_')
+    if(!oper) continue;
+    const restMethod = restMethodDict[oper];
+    if(restMethod) app[restMethod]("/v2/" + tableName, handler);
   }
 
   app.get("/get_token", async (req: any, res: any) => {

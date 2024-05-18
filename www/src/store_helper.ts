@@ -60,6 +60,7 @@ store_helper.create_module = function (name) {
     for (const i in state["filtered_" + name]) {
       if (state["filtered_" + name][i].uuid == uuid) {
         state["selected_" + name] = state["filtered_" + name][i];
+        console.log("selecteddddd2",  state["selected_" + name] )
         state["filtered_" + name][i].selected = true;
         continue;
       } else state["filtered_" + name][i].selected = false;
@@ -146,8 +147,6 @@ store_helper.create_module = function (name) {
     //else params = undefined
     const data = await rest.run_method("read_" + name, params);
 
-    //console.log('got data', data)
-
     this.commit("get_" + name, data);
   };
   actions["filter_" + name] = async function (state, { val, collumns }) {
@@ -171,13 +170,16 @@ store_helper.create_module = function (name) {
 		}*/
 
     //console.log('body', body)
+    console.log('>>>scccccreate', state.state["selected_" + name])
 
     //body.created_at = Date()
     this.commit("create_" + name, state.state["selected_" + name]);
 
-    console.log('cccccreate', state.state['selected_' + name])
+    
 
     delete state.state["selected_" + name].created_at
+
+    console.log('>>>scccccreate', JSON.stringify(state.state['selected_' + name], null, 4))
 
     const ans = await rest.run_method(
       "create_" + name,
@@ -195,7 +197,7 @@ store_helper.create_module = function (name) {
     //let body = state.state['updated_' + name]
     //body.uuid = state.state['selected_' + name].uuid
 
-    console.log('uuuuupdate', state.state['selected_' + name])
+    console.log('>>>suuuuupdate', state.state['selected_' + name])
 
     return await rest.run_method(
       "update_" + name,
@@ -220,7 +222,7 @@ store_helper.create_module = function (name) {
       state.state["selected_" + name].available_values = JSON.stringify(available_values, null, 4);
     }
 
-    console.log('>>>save', name, state.state["selected_" + name])
+    console.log('>>>save', name,  state.state["selected_" + name])
     if (is_new) return this.dispatch("create_" + name);
     return this.dispatch("update_" + name);
   };

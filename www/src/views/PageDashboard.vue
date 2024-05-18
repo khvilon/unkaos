@@ -250,7 +250,7 @@ const data = {
     },
     {
       name: d.get("Автор"),
-      id: "values.Автор",
+      id: "author_uuid",
       type: "user",
     },
     {

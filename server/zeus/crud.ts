@@ -230,6 +230,7 @@ crud.load = async function () {
     T1.DELETED_AT,
     T1.RESOLVED_AT,
     T1.PROJECT_UUID,
+    T1.AUTHOR_UUID,
     T12.NAME AS PROJECT_NAME,
     T12.SHORT_NAME AS PROJECT_SHORT_NAME,
     CASE WHEN COUNT(T14) = 0 THEN '[]' ELSE JSONB_AGG(DISTINCT T14) END AS VALUES,
@@ -237,7 +238,8 @@ crud.load = async function () {
     T17.NAME AS STATUS_NAME,
     T1.SPRINT_UUID,
     T19.PARENT_UUID,
-    T20.NAME AS SPRINT_NAME
+    T20.NAME AS SPRINT_NAME,
+    T21.NAME AS AUTHOR_NAME
     FROM 
     FILTERED_ISSUES T1
     JOIN
@@ -285,7 +287,9 @@ crud.load = async function () {
     ON T1.UUID = T19.ISSUE1_UUID
     LEFT JOIN SPRINTS T20
     ON T20.UUID = T1.SPRINT_UUID
-    WHERE T1.DELETED_AT IS NULL $@1
+    LEFT JOIN USERS T21
+    ON T21.UUID = T1.AUTHOR_UUID
+    WHERE T1.DELETED_AT IS NULL$@1
     GROUP BY
     T1.UUID,
     T1.NUM,
@@ -299,12 +303,14 @@ crud.load = async function () {
     T1.DELETED_AT,
     T1.RESOLVED_AT,
     T1.PROJECT_UUID,
+    T1.AUTHOR_UUID,
     PROJECT_NAME,
     PROJECT_SHORT_NAME,
     T1.STATUS_UUID,
     T17.NAME,
     T19.PARENT_UUID,
     T20.NAME,
+    T21.NAME,
     T1.SPRINT_UUID,
     T11.WORKFLOW_UUID
     $@order
@@ -346,16 +352,12 @@ crud.load = async function () {
   crud.querys["short_issue_info"] = {};
   crud.querys["short_issue_info"]["read"] = 
     `SELECT 
-    I.UUID, P.SHORT_NAME || '-' || I.NUM || ' ' || FV.value AS name
+    I.UUID, P.SHORT_NAME || '-' || I.NUM || ' ' || I.TITLE AS name
     FROM ISSUES I
     JOIN PROJECTS P
     ON P.UUID = I.PROJECT_UUID 
-    JOIN FIELD_VALUES FV
-    ON FV.FIELD_UUID = '` +
-    name_field_uuid +
-    `' AND FV.ISSUE_UUID = I.UUID
     WHERE I.DELETED_AT IS NULL 
-    AND P.SHORT_NAME || '-' || I.NUM || ' ' || FV.value LIKE '%$@2%'
+    AND P.SHORT_NAME || '-' || I.NUM || ' ' || I.TITLE LIKE '%$@2%'
     LIMIT 20`;
 
   //used for imp.js
@@ -603,6 +605,7 @@ crud.make_query = {
 					ISS.STATUS_UUID,
 					ISS.SPRINT_UUID,
 					IT.TAGS,
+          ISS.AUTHOR_UUID,
 					ISSR.*
 				FROM ISSUES ISS
 				LEFT JOIN (
@@ -976,21 +979,17 @@ crud.get_query = function (method:string, table_name:string, params:any) {
 };
 
 crud.get_uuids = function (obj:any) {
+  
+
+  console.log(">>>>>>>>>get_uuids", obj)
+
   if(!obj.table_name) return null
   let ans:any = {};
   if (obj.uuid !== undefined) ans[obj.uuid] = obj.table_name;
-  for (let i in obj) {
-    if (
-      obj[i] === undefined ||
-      obj[i] === null ||
-      obj[i][0] === undefined ||
-      obj[i][0].uuid === undefined
-    )
-      continue;
 
 
-    //console.log('obj.table_name', obj, obj.table_name)
-    let fk = data_model.model[obj.table_name]["fk"];
+  let fk = data_model.model[obj.table_name]["fk"];
+    console.log(">>>>>>>>>get_uuids3", fk)
     if (fk !== undefined) {
  
 
@@ -1002,8 +1001,19 @@ crud.get_uuids = function (obj:any) {
       }
     }
 
-    let fks = data_model.model[obj.table_name]["fks"];
- 
+  let fks = data_model.model[obj.table_name]["fks"];
+
+
+  for (let i in obj) {
+    console.log(">>>>>>>>>get_uuids2", obj[i])
+    if (
+      obj[i] === undefined ||
+      obj[i] === null ||
+      obj[i][0] === undefined ||
+      obj[i][0].uuid === undefined
+    )
+      continue;
+
 
     if (fks == undefined || !fks.includes(obj[i][0].table_name)) continue;
 
@@ -1105,12 +1115,7 @@ crud.writeIssueHistory = function(query: any, pg_params: any, readed_data: any, 
   return [q, p]
 }
 
-crud.setIssueTypeReqFields = function(params: any){
-  for (const reqField of reqIssueTypesfields) {
-    if (!params.fields.includes(reqField)) params.fields.push(reqField);
-  }
-  return params;
-}
+
 
 
 
@@ -1118,15 +1123,17 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
   if (table_name == "issue") table_name = "issues";
   else if (table_name == "board") table_name = "boards";
   //else if(table_name == 'dashboard') table_name = 'dashboards'
+
+  
  
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
- 
 
   let readed_data: any;
   
 
   if (method != "read") {
+    if(table_name == "issue_types") params.table_name = "issue_types";
     let [read_query, read_params] = crud.make_query.read(table_name, {
       uuid: params.uuid,
     });
@@ -1134,14 +1141,15 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     //current version of object to be changed
     let readed_data = await sql.query(subdomain, read_query, read_params);
 
-    if (readed_data.rows.length > 0) {
+   // if (readed_data.rows.length > 0) {
 
-      if (table_name == "issues") [query, pg_params] = crud.writeIssueHistory(query, pg_params, readed_data, params, subdomain);
-      else if(table_name == "issue_types") params = crud.setIssueTypeReqFields(params);
+      if (readed_data.rows.length > 0 && table_name == "issues") [query, pg_params] = crud.writeIssueHistory(query, pg_params, readed_data, params, subdomain);
 
-      let old_uuids = crud.get_uuids(readed_data.rows[0]);
-      let new_uuids = crud.get_uuids(params);
-      if(old_uuids != null && new_uuids != null){
+      let old_uuids = (readed_data.rows.length > 0) ? crud.get_uuids(readed_data.rows[0]) : {};
+      let new_uuids = crud.get_uuids(params); 
+      if(!new_uuids) new_uuids = {};
+
+      console.log('>>>>>>>new_uuids, old_uuids' , new_uuids, old_uuids);
 
       let del_query = "";
       for (let i in old_uuids) {
@@ -1182,7 +1190,6 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
           "', '" +
           params.uuid +
           "');";
-
       }
 
       if (del_query != ""){ //&& table_name != 'users') {
@@ -1191,8 +1198,8 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
         query = q;
         pg_params = p;
       }
-    }
-  }
+    
+  //}
   }
 
   //check projects permissions for user

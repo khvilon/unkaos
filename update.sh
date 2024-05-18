@@ -1,10 +1,7 @@
 #!/bin/bash
 
-# Detect OS and set package manager commands
-OS_ID=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
-OS_ID="${OS_ID//\"/}" # Remove quotes from the string
-
-cd /var/app/unkaos
+# Load OS setup
+source ./os_setup.sh
 
 # Load environment variables
 if [ -f .env ]; then
@@ -23,47 +20,32 @@ CONFIGS=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT
 
 # Process and assign values to variables
 while IFS='|' read -r name value; do
-    # Trim whitespace from name and value
     name=$(echo "$name" | xargs)
     value=$(echo "$value" | xargs)
-
     case $name in
-        "from")
-            ALLOWED_UPDATE_FROM="$value"
-            ;;
-        "to")
-            ALLOWED_UPDATE_TO="$value"
-            ;;
-        "allow")
-            AUTO_UPDATE="$value"
-            ;;
+        "from") ALLOWED_UPDATE_FROM="$value" ;;
+        "to") ALLOWED_UPDATE_TO="$value" ;;
+        "allow") AUTO_UPDATE="$value" ;;
     esac
 done <<< "$CONFIGS"
 
-# Echo variables for verification
 echo "ALLOWED_UPDATE_FROM: $ALLOWED_UPDATE_FROM"
 echo "ALLOWED_UPDATE_TO: $ALLOWED_UPDATE_TO"
 echo "AUTO_UPDATE: $AUTO_UPDATE"
 
-
-
 # Function to check if update time is allowed
 is_time_allowed() {
-  # Get the current hour
-  CURRENT_HOUR=$(date +"%H")
-
-  # Convert the current hour to an integer
+  local from="$1"
+  local to="$2"
+  local CURRENT_HOUR=$(date +"%H")
   CURRENT_HOUR=$(printf "%d" "$CURRENT_HOUR")
 
-  # Check if update is allowed based on the time range
-  if [[ "$ALLOWED_UPDATE_FROM" -le "$ALLOWED_UPDATE_TO" ]]; then
-    # Time range does not span midnight
-    if [[ "$CURRENT_HOUR" -ge "$ALLOWED_UPDATE_FROM" && "$CURRENT_HOUR" -lt "$ALLOWED_UPDATE_TO" ]]; then
+  if [[ "$from" -le "$to" ]]; then
+    if [[ "$CURRENT_HOUR" -ge "$from" && "$CURRENT_HOUR" -lt "$to" ]]; then
       return 0
     fi
   else
-    # Time range spans midnight
-    if [[ "$CURRENT_HOUR" -ge "$ALLOWED_UPDATE_FROM" || "$CURRENT_HOUR" -lt "$ALLOWED_UPDATE_TO" ]]; then
+    if [[ "$CURRENT_HOUR" -ge "$from" || "$CURRENT_HOUR" -lt "$to" ]]; then
       return 0
     fi
   fi
@@ -71,8 +53,7 @@ is_time_allowed() {
   return 1
 }
 
-
-is_time_allowed
+is_time_allowed "$ALLOWED_UPDATE_FROM" "$ALLOWED_UPDATE_TO"
 TIME_ALLOWED=$?
 
 if [[ "$AUTO_UPDATE" != "true" || $TIME_ALLOWED -ne 0 ]]; then
@@ -97,13 +78,6 @@ compare_versions() {
     fi
   done
   return 1
-}
-
-normalize_version() {
-  local version="$1"
-  local IFS=.
-  local ver_arr=($version)
-  printf "%02d.%03d.%05d\n" ${ver_arr[0]} ${ver_arr[1]} ${ver_arr[2]}
 }
 
 CURRENT_VERSION=$(grep -o '"version": "[^"]*' /var/app/unkaos/meta.json | grep -o '[0-9].*')
@@ -134,16 +108,13 @@ docker image prune -f
 
 # Switch to the correct branch before pulling updates
 git stash
-if [ "$BRANCH" == "dev" ]; then
-  git checkout dev
-else
-  git checkout master
-fi
+git checkout $BRANCH
 git pull
 git stash pop -q
 
 # DB migration logic
-WORKSPACES=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w -c "SELECT name FROM admin.workspaces" | tail -n +3 | grep -v '^(.*row)')
+WORKSPACES=$(PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -t -c "SELECT name FROM admin.workspaces" | xargs)
+echo "Workspaces: $WORKSPACES"
 
 migration_files=$(find "$MIGRATIONS_DIR" -type f -name 'z[0-9]*_m.sql' | sort -V)
 
@@ -158,12 +129,21 @@ for file in $migration_files; do
 
   if [ $version_compare_result -eq 2 ] && [ $version_compare_new_result -lt 2 ]; then
     echo "Found migration file: $file"
-    
-    cat "$file" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
-    
+
+    # Run migration within a transaction
+    {
+      echo "BEGIN;"
+      cat "$file"
+      echo "COMMIT;"
+    } | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
+
     for workspace in $WORKSPACES; do
       modified_sql=$(cat "$file" | sed "s/\bpublic\b/$workspace/g")
-      echo "$modified_sql" | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
+      {
+        echo "BEGIN;"
+        echo "$modified_sql"
+        echo "COMMIT;"
+      } | PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DOMAIN" -p "$DB_PORT" -d "$DB_DATABASE" -w
     done
   fi
 done
@@ -174,28 +154,17 @@ if [ "$CPU_CORES" -gt 1 ]; then
 else
     CPU_CORES=1
 fi
-
 CPU_CORES=1
 
 docker-compose down ossa cerberus zeus gateway hermes eileithyia athena postgres
-docker-compose up -d  eileithyia athena postgres
+docker-compose up -d eileithyia athena postgres
 
 case $OS_ID in
-    ubuntu|debian|raspbian)
+    ubuntu|debian|raspbian|centos|fedora|rhel)
         docker-compose up --build -d \
-        --scale ossa=$CPU_CORES \
         --scale cerberus=$CPU_CORES \
         --scale zeus=$CPU_CORES \
-        --scale gateway=$CPU_CORES \
-        --scale hermes=$CPU_CORES
-        ;;
-    centos)
-        docker compose up -d --build \
-        --scale ossa=$CPU_CORES \
-        --scale cerberus=$CPU_CORES \
-        --scale zeus=$CPU_CORES \
-        --scale gateway=$CPU_CORES \
-        --scale hermes=$CPU_CORES
+        --scale gateway=$CPU_CORES
         ;;
     *)
         echo "Unsupported OS: $OS_ID"
@@ -210,4 +179,4 @@ docker-compose exec nginx nginx -s reload
 echo "Autoupdate conf: $AUTO_UPDATE, $ALLOWED_UPDATE_FROM-$ALLOWED_UPDATE_TO"
 echo "Your old version: $CURRENT_VERSION"
 echo "Your new version: $NEW_VERSION"
-echo "Current Time: $CURRENT_TIME"
+echo "Current Time: $(date)"

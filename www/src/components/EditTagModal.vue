@@ -8,7 +8,11 @@ export default {
     tag: {
       type: Object,
       default: {},
-    }
+    },
+    isIssueTag: {
+      type: Boolean,
+      default: true,
+    },
   },
 
   data() {
@@ -32,7 +36,7 @@ export default {
       this.tag.color = this.color
       this.tag.text_color = this.text_color
       console.log(this.tag)
-      await rest.run_method("update_issue_tags", this.tag);
+      if(this.isIssueTag) await rest.run_method("update_issue_tags", this.tag);
       this.$emit("tag_edited", this.tag);
       this.close()
     },
@@ -54,7 +58,7 @@ export default {
 </script>
 <template>
   
-    <div class="panel modal edit-tag-modal">
+    <div class="panel modal edit-tag-modal" :class="{'non-issue-tag-modal': !isIssueTag}">
       <ColorInput
         label="Цвет заливки"
         :value="tag.color"
@@ -72,7 +76,7 @@ export default {
 
       <div class="btn-container">
         <KButton
-          name="Сохранить"
+          :name="isIssueTag ? 'Сохранить' : 'Применить'"
           id="create-tag-btn"
           @click="save_tag()"
         />
@@ -102,6 +106,12 @@ export default {
   top: $top-menu-height;
 }
 
+.non-issue-tag-modal{
+  left:  50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .edit-tag-modal > *:not(:last-child) {
   margin-bottom: 10px;
 }
@@ -121,6 +131,7 @@ export default {
 
 .edit-tag-modal .btn {
   width: 100%;
+  height: $input-height;
 }
 .edit-tag-modal #create-tag-btn {
   padding-right: 20px;

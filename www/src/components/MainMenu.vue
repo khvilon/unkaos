@@ -377,11 +377,17 @@ $logo-icon-size: 32px;
 }
 
 .sidebar .main-menu-list {
-  height: calc(100% - $logo-field-size);
+  height: calc(100vh - $logo-field-size);
   position: absolute;
   top: $logo-field-size;
   left: 0px;
   width: 100%;
+  overflow-y: scroll;
+  min-height: 0;
+}
+
+.sidebar .main-menu-list::-webkit-scrollbar {
+  display: none;
 }
 
 .mobile-sidebar .main-menu-list {

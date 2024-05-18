@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 
+
 import PageUsers from "../views/PageUsers.vue";
 import PageFields from "../views/PageFields.vue";
 import PageProjects from "../views/PageProjects.vue";
@@ -21,13 +22,14 @@ import PageSprints from "../views/PageSprints.vue";
 import PageFavourites from "../views/PageFavourites.vue";
 import PageAutomations from "../views/PageAutomations.vue";
 import PageRegister from "../views/PageRegister.vue";
-import PageLisence from "../views/PageLisence.vue";
+import PageLicense from "../views/PageLicense.vue";
 import PageReadme from "../views/PageReadme.vue";
 
 
 import store from "../stores";
 import rest from "../rest";
 import ws from "../ws";
+import cache from "../cache";
 
 let routes = [
   
@@ -78,7 +80,7 @@ let routes = [
   { path: "/register/", component: PageRegister, name: "Регистрация рабочего пространства" },
   { path: "/register/:uuid", component: PageRegister, props: true, name: "Подтверждение регистрации " },
   { path: "/readme/", component: PageReadme, name: "Документация" },
-  { path: "/lisence/", component: PageLisence, name: "Лицензия" },
+  { path: "/license/", component: PageLicense, name: "Лицензия" },
 
   { path: "/dashboard/", component: PageDashboard, name: "Новый дашборд" },
 
@@ -94,7 +96,7 @@ let routes = [
 
 for(let i in routes){
   if(routes[i].path == '/' || routes[i].path == '/register/:uuid' || routes[i].path == '/register/'
-  || routes[i].path == '/readme/'  || routes[i].path == '/lisence/'
+  || routes[i].path == '/readme/'  || routes[i].path == '/license/'
   ) continue
   routes[i].path = '/:workspace' + routes[i].path
 }
@@ -112,6 +114,12 @@ router.beforeEach((to, from, next) => {
   ws.setWorkspace(to.params.workspace)
   store.state["common"].workspace = to.params.workspace;
   store.state["common"].is_in_workspace = !to.path.contains("/login") && to.params.workspace;
+
+  let htmlElement = document.documentElement;
+  if(store.state["common"].is_in_workspace) htmlElement.setAttribute("theme", cache.getString('theme'));
+  else htmlElement.setAttribute("theme", "dark");
+
+
   if(to.path == '/') store.state["common"].is_on_landing = true;
   else store.state["common"].is_on_landing = false;
 
@@ -124,7 +132,7 @@ router.beforeEach((to, from, next) => {
 
   let isRegister = (to.matched != undefined && to.matched[0] != undefined && 
   (to.matched[0].path == "/register/:uuid" || to.matched[0].path == "/register/"
-  || to.matched[0].path == "/readme/"  || to.matched[0].path == "/lisence/"
+  || to.matched[0].path == "/readme/"  || to.matched[0].path == "/license/"
   ))
   
   if(window.location.host.indexOf('unkaos.oboz.tech')  > -1 && to.path.indexOf('/oboz') < 0 && to.path != '/'){

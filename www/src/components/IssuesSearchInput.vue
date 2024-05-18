@@ -90,6 +90,21 @@ export default {
       is_in_focus: false,
       attributes: [
         {
+          name: "Автор",
+          type: "User",
+          field: "author_uuid",
+        },
+        {
+          name: "Название",
+          type: "String",
+          field: "title",
+        },
+        {
+          name: "Описание",
+          type: "String",
+          field: "description",
+        },
+        {
           name: "Тип",
           type: "Type",
           field: "type_uuid",
@@ -507,13 +522,7 @@ export default {
           found = true;
 
           if (qd.field_type == "Select") {
-            if(tools.isValidJSON(this.fields[j].available_values)){
-              this.select_values  = JSON.parse(this.fields[j].available_values)
-            }
-            else{
-              this.select_values  = 
-              this.fields[j].available_values.split(",").map((v) => v.replace("\n", "").replace("\r", "").trim());
-            }
+              this.select_values  = this.fields[j].available_values
           }
 
           break;
@@ -546,7 +555,7 @@ export default {
 
     convert_query(query, use_to_end) {
 
-      query = query.trim();
+      //query = query.trim();
       console.log('convert_query', '#'+query+'#')
       let waits_for_idx = 0;
 
@@ -635,7 +644,7 @@ export default {
               if (this.have_word_at(qd.query, this.select_values[j], qd.i)) {
                 if(this.select_values[j].uuid) qd.converted_query += "'" + this.select_values[j].uuid + "'#";
                 else qd.converted_query += "'" + this.select_values[j] + "'#";
-                qd.name = this.select_values[j];
+                qd.name = this.select_values[j].name;
                 found = true;
                 break;
               }
@@ -699,7 +708,7 @@ export default {
         }
 
         if (found) {
-          console.log("found", qd, qd.query.length);
+          console.log("found", qd.i, qd.name, qd, qd.query.length);
           this.color_text(
             qd.i,
             qd.i + qd.name.length,
@@ -730,13 +739,16 @@ export default {
 
       this.converted_query = qd.converted_query;
 
+
+      console.log('convert_query10', '#'+qd.i+'#', qd )
+
       let query_valid =
         (qd.i == qd.query.length &&
           qd.query.length > 0 &&
           waits_for_idx >= 3) ||
         qd.query.length == 0;
 
-      //console.log('convvvvvvvvvvv query', query_valid, qd)
+      console.log('convert_query10', query_valid, qd)
 
       this.$emit("converted", query_valid ? this.converted_query : '');
 

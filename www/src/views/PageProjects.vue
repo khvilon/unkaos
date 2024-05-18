@@ -76,6 +76,7 @@ const data = {
       disabled: true,
     },
   ],
+  instance: {is_knowledge_base: false},
 };
 
 const mod = await page_helper.create_module(data);

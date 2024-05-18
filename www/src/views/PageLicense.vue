@@ -67,7 +67,9 @@ export default lisence_page;
 
     
 
-    <img class="lisence-corner-bg-img" src="/b3-1.jpg"/>
+    
+    <img class="main-bg-img" src="/b3-1.webp"/>
+    <img class="main-bg-img" src="/b3-1.png"/>
 
 
   </div>
@@ -114,25 +116,6 @@ export default lisence_page;
   right: 30px;
   top: 30px;
   width: 200px;
-}
-
-
-.lisence-corner-bg-img{
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100%;
-  z-index: 0;
-  }
-
-.mobile-view .lisence-corner-bg-img{
-  transform:translateX(-52%);
-  width: auto; 
-  height: 120%; 
-  object-fit: cover; 
-  object-position: center; 
-  left: 0;
-  opacity: 0.4;
 }
 
 .lisence-small-panel{

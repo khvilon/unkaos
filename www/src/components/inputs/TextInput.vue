@@ -41,7 +41,7 @@ export default {
     resize: {
       type: Boolean,
       default: true,
-    },
+    }
   },
 
   emits: ["update_parent_from_input", "input_focus"],
@@ -126,11 +126,14 @@ export default {
     },*/
     value: function (val, oldVal) {
       if (this.val == val) return;
+      console.log('>>>texinputval', val)
       this.val = val;
     },
 
     val: function (val, oldVal) {
       //console.log(val, oldVal, this.id, this.parent_name);
+      if(typeof val == 'object') val = JSON.stringify(val);
+      console.log('>>>texinputval2', val)
       this.$emit("update_parent_from_input", val);
       let me = this;
       nextTick(() => {

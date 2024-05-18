@@ -193,9 +193,8 @@ const data = {
     },
     {
       name: d.get("Название"),
-      id: "values.Название",
+      id: "title",
       search: true,
-      not_sortable: true
     },
     {
       name: "Тип",
@@ -211,7 +210,7 @@ const data = {
     },
     {
       name: d.get("Автор"),
-      id: "values.Автор",
+      id: "author_uuid",
       type: "user",
       not_sortable: true
     },

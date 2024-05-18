@@ -129,16 +129,18 @@ export default mod;
               :value="get_json_val(selected_fields, 'presision') || 'NULL'"
               :parent_name="'fields'"
             ></NumericInput>
-            <TextInput
+            <TagInput
               v-if="
                 selected_fields.type != undefined &&
                 selected_fields.type[0].code == 'Select'
               "
               label="Список значений"
               id="available_values"
-              :value="get_json_val(selected_fields, 'available_values')"
+              :value="get_json_val(selected_fields, 'available_values') || []"
+              :values="[]"
               :parent_name="'fields'"
-            ></TextInput>
+              :isIssueTag="false"
+            ></TagInput>
           </div>
           <div class="table_card_buttons">
             <div class="table_card_footer">

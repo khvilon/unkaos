@@ -56,6 +56,8 @@ const register_computed = async function (computed, name) {
   };
   computed["selected_" + name] = function () {
     if (this.$store.state[name] == undefined) return [];
+
+    console.log('>>selected', this.$store.state[name]["selected_" + name].available_values)
     return this.$store.state[name]["selected_" + name];
   };
 

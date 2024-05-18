@@ -6,8 +6,8 @@ const data = {
   name: "issue_types",
   label: "Типы задач",
   instance: {
-    fields: [],
-  },
+    "fields": []
+},
   collumns: [
     {
       name: "Название",
@@ -34,6 +34,7 @@ const data = {
     {
       label: "Поля",
       id: "fields",
+      dictionary: "fields",
       type: "Select",
       clearable: false,
       dictionary: "fields",
@@ -113,11 +114,11 @@ export default mod;
             :label="input.label"
             :key="index"
             :id="input.id"
-            :value="(input.id != 'fields' || !this.selected_issue_types || !this.selected_issue_types.fields || !this.selected_issue_types.fields.length) ? get_json_val(selected_issue_types, input.id) : filteredCustomFields"
+            :value="get_json_val(selected_issue_types, input.id)"
             :parent_name="'issue_types'"
             :disabled="input.disabled"
             :clearable="input.clearable"
-            :values="input.id != 'fields' ? input.values : customFields"
+            :values="input.values"
             :parameters="input"
             :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
           ></component>

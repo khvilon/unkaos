@@ -16,7 +16,7 @@
         version="1.0" 
         xmlns="http://www.w3.org/2000/svg"
         width="288.000000pt" height="267.000000pt" 
-        viewBox="-10 0 278.000000 267.000000"
+        viewBox="-10 40 278.000000 208.000000"
         preserveAspectRatio="xMidYMid meet"
       >
         <g class="honeypot0" transform="translate(0.000000,267.000000) scale(0.020000,-0.020000)">
@@ -103,6 +103,7 @@
   .maintop-title svg{
     width:50px;
     height: 50px;
+    transform: scale(0.86);
   }
 
   .maintop-title g{

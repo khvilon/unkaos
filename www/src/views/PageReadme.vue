@@ -8,6 +8,7 @@ var readme_page = {};
 readme_page.methods = {
   t: dict.get,
   init: async function(){
+    if(this.readme) return;
     this.readme = (await rest.readme('ru')).readme;
   }
 };
@@ -29,6 +30,8 @@ export default readme_page;
     <div class="readme-down-panel">
 
       <div class="panel readme-small-panel readme-small-panel-main">
+        
+
       <KMarked 
               class="readme-marked"
               :val="readme" 
@@ -38,16 +41,17 @@ export default readme_page;
 
             />
       <br>
+
+
       
       </div>
 
       
       
     </div>
-
-    
-
-    <img class="readme-corner-bg-img" src="/b3-1.jpg"/>
+ 
+    <img class="main-bg-img" src="/b3-1.webp"/>
+    <img class="main-bg-img" src="/b3-1.png"/>
 
    
   </div>
@@ -91,25 +95,6 @@ export default readme_page;
 }
 
 
-
-
-.readme-corner-bg-img{
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100%;
-  z-index: 0;
-  }
-
-.mobile-view .readme-corner-bg-img{
-  transform:translateX(-52%);
-  width: auto; 
-  height: 120%; 
-  object-fit: cover; 
-  object-position: center; 
-  left: 0;
-  opacity: 0.4;
-}
 
 .readme-small-panel{
   background-color: var(--table-row-color);
