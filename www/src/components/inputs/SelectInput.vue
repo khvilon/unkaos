@@ -67,7 +67,7 @@ export default {
   computed: {
     reduce(){
       console.log('>>>reduce', this.value, this.parameters)
-      if(this.values && this.values[0] && this.values[0].uuid && (!this.parameters || !this.parameters.reduce)) return ((obj) => obj.uuid)
+     // if(this.values && this.values[0] && this.values[0].uuid && (!this.parameters || !this.parameters.reduce)) return ((obj) => obj.uuid)
       console.log('>>>reduce2')
       return this.parameters.reduce
     }

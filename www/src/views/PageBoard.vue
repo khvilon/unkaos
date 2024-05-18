@@ -1209,18 +1209,8 @@ mod.computed.available_values = function (field_uuid) {
 	let av = {}
 
 	for (let i in this.fields) {
-		if (!this.fields[i].available_values) {
-			av[this.fields[i].uuid] = []
-		}
-		else if(tools.isValidJSON(this.fields[i].available_values)){
-			av[this.fields[i].uuid] = JSON.parse(this.fields[i].available_values)
-		}
-		else{
-			let available_values = this.fields[i].available_values
-			.split(",")
-			.map((v) => v.replace("\n", "").replace("\r", "").trim());
-			av[this.fields[i].uuid] = available_values;
-		}
+		if (!this.fields[i].available_values) av[this.fields[i].uuid] = []
+		else av[this.fields[i].uuid] = this.fields[i].available_values
 	}
 	return av
 }
@@ -1522,9 +1512,10 @@ export default mod
 						<SelectInput label='Поле цвета' 
 							id='color_field_uuid'
 							:parent_name="'board'" 
-							clearable="false" 
+							:clearable="true" 
 							:values="colored_fields"
 							multiple: false
+							:parameters="{reduce: (obj) => obj.uuid}"
 							:value="get_json_val(selected_board, 'color_field_uuid')"
 						>
 						</SelectInput>

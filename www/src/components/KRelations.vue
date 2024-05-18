@@ -27,22 +27,7 @@ export default {
     },
     formated_relations: {
       type: Array,
-      default: [
-        {
-          uuid: "aaa",
-          id: "OR-3",
-          issue_name: "Захватить вселенную",
-          type_name: "Связана с",
-          issue_resolved: false,
-        },
-        {
-          uuid: "bbb",
-          id: "OR-2",
-          issue_name: "Выпить пива",
-          type_name: "Дублирует",
-          issue_resolved: true,
-        },
-      ],
+      default: [],
     },
   },
   methods: {

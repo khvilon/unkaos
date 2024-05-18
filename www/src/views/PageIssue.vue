@@ -1504,6 +1504,7 @@ export default mod;
               :parent_name="'issue'"
               :disabled="input.disabled"
               :values="get_available_values(input.field_uuid)"
+              :parameters="{reduce: (obj) => obj.uuid}"
               @updated="field_updated"
             ></component>
             
