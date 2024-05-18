@@ -14,9 +14,14 @@ class Setting {
 export default class cache {
 
   static profile_listener_callback: any
+  static workspace: string = "server";
 
   static set_profile_listener(callback: any){
     this.profile_listener_callback = callback
+  }
+
+  static setWorkspace(sub: string) {
+    this.workspace = sub;
   }
 
   static defaultSettings: Array<Setting> = [
@@ -54,18 +59,18 @@ export default class cache {
 
   // Write object to localStorage as JSON string
   static setObject(settingName: string, object: any) {
-    localStorage.setItem(settingName, JSON.stringify(object))
+    localStorage.setItem(this.workspace + '#->#' + settingName, JSON.stringify(object))
     if(this.profile_listener_callback) this.profile_listener_callback(object)
   }
 
   // Write string to localStorage
   static setString(settingName: string, string: string) {
-    localStorage.setItem(settingName, string)
+    localStorage.setItem(this.workspace + '#->#' + settingName, string)
   }
 
   // Get value from localStorage or return and save default value if none is set.
   private static get(settingName: string, asObject: boolean) : any {
-    const storageValue = localStorage.getItem(settingName)
+    const storageValue = localStorage.getItem(this.workspace + '#->#' + settingName)
     if (storageValue !== null) {
       if (asObject) {
         return JSON.parse(storageValue)
@@ -77,10 +82,10 @@ export default class cache {
       const defaultSetting = this.defaultSettings.find( (setting)=> setting.name == settingName)
       if (defaultSetting !== undefined) {
         if (asObject) {
-          localStorage.setItem(settingName, defaultSetting.default_val)
+          localStorage.setItem(this.workspace + '#->#' + settingName, defaultSetting.default_val)
           return JSON.parse(defaultSetting.default_val)
         } else {
-          localStorage.setItem(settingName, defaultSetting.default_val)
+          localStorage.setItem(this.workspace + '#->#' + settingName, defaultSetting.default_val)
           return defaultSetting
         }
       }
