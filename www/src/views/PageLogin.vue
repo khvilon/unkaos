@@ -100,7 +100,7 @@ export default login_page;
       >{{t('Неправильный логин или пароль')}}</span
     >
   </div>
-  <img class="main-bg-img" src="/b3-1.jpg"/>
+  <img class="main-bg-img" src="/b3-1.webp"/>
   </div>
 </template>
 
