@@ -97,7 +97,7 @@ export default landing_page;
 
     
 
-    <img class="main-bg-img" src="/b3-1.jpg"/>
+    <img class="main-bg-img" src="/b3-1.webp"/>
 
     <lang-select v-if="$store.state['common'] && !$store.state['common']['is_mobile']" class="landing-lang-select"></lang-select>
 

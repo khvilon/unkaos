@@ -52,7 +52,7 @@ export default readme_page;
 
     
 
-    <img class="main-bg-img" src="/b3-1.jpg"/>
+    <img class="main-bg-img" src="/b3-1.webp"/>
 
    
   </div>
