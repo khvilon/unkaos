@@ -8,19 +8,26 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 
 var openaiConfig: any = {}
 
-const classifyDescr = `You are an AI assistant dedicated to handling requests for the Unkaos task tracker. Your job is to classify each user request accurately. Respond with only one of the following categories and do not include any additional comments:
+const classifyDescr = `You are an AI assistant for the Unkaos task tracker. 
+Classify each user request into one of the following categories without any additional comments:
+find_issues: Requests to filter or search for specific issues.
+update_issues: Requests to modify or update issues.
+use_readme: Questions about using the task tracker, its features, or the assistant.
+unknown: Requests that do not fit any of the above categories.
+ `
 
-find_issues - Use this category for requests that are specifically asking to filter or search for specific issues.
-update_issues - Choose this category when the request involves modifying or updating one or more issues.
-use_readme - Select this when the request pertains to questions about how to use the task tracker or its features.
-unknown - Use this if the request does not clearly fit any of the above categories. `
 
-const readmeDescr = `You are an ai assistant for Unkaos task tracker. 
-you should parse readme to bring user info about his question.
-translate the answer to users lang if the request lang differs from readme. 
-If no corresponding info found in the redme - answer just 'not_found'.
-Give full answer. 
-Give only info from redme, dont invent any. dont provide any info not from the radme: `
+const readmeDescr = `You are an AI assistant for the Unkaos task tracker. Follow these steps:
+
+1. Parse the README to find information related to the user's question.
+2. Translate the answer to the user's language if needed.
+3. If the question is about your AI abilities, explain that you can search or update issues, or provide answers from the documentation.
+4. Provide a full answer.
+5. If no valid answer is found, respond with "not_found".
+6. Do not invent any facts; use only information from the README (summarization is allowed).
+
+Ensure clarity and completeness in your responses.
+The readme:`
 
 
 const commandAnswerSchemma :any= {
@@ -164,7 +171,7 @@ Do not translate any values. Ignore unuseful information like emotions and use o
 
 for dates, use yyyy-mm-dd format.
 
-Available issue attributes are 'sprint', 'status', 'project', 'type', 'created_at', 'updated_at'. 
+Available issue attributes are 'sprint', 'status', 'project', 'type', 'created_at', 'updated_at', 'title', 'description', 'author'. 
 The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Available issue fields are:
 `
 
@@ -205,6 +212,13 @@ The status attr also have for filter a value Решенные that can be used l
 `
 }
 
+const request_types: any = {
+  classify: '2',
+  use_readme: '3',
+  find_issues: '',
+  update_issues: '',
+}
+
 export class Gpt {
 
   constructor() {
@@ -229,21 +243,19 @@ export class Gpt {
     
   }
 
-  private createRequestConfig(systemMessage: string, userMessage: string, isSecond: boolean = false){
+  private createRequestConfig(systemMessage: string, userMessage: string, type: string = 'find_issues'){
+    let n = request_types[type];
 
-    console.log('temperature00openaiConfig>>', openaiConfig)
-
-
-    isSecond = isSecond && openaiConfig.url2 && openaiConfig.key2 && openaiConfig.model2
-    let url = isSecond ? openaiConfig.url2 : openaiConfig.url;
-    let key = isSecond ? openaiConfig.key2 : openaiConfig.key;
-    let model = isSecond ? openaiConfig.model2 : openaiConfig.model;
-    let temperature = isSecond ? openaiConfig.temperature2 : openaiConfig.temperature;
-    let proxy = isSecond ? openaiConfig.proxy2 : openaiConfig.proxy;
+    if(n && (!openaiConfig['url' + n] || !openaiConfig['key' + n] || !openaiConfig['model' + n])) n = '';
+    let url = openaiConfig['url' + n];
+    let key = openaiConfig['key' + n];
+    let model = openaiConfig['model' + n];
+    let temperature = openaiConfig['temperature' + n];
+    let proxy = openaiConfig['proxy' + n];
 
     console.log('temperature000 model>>', model)
 
-    const defaultTemperature = isSecond ? 0.2 : 0.4;
+    const defaultTemperature =  0.4;
     console.log('temperature0>>', temperature)
     try{
       temperature = Number(temperature);
@@ -297,7 +309,7 @@ export class Gpt {
   public async classify(input: string): Promise<any> {
     console.log('classify gpt', openaiConfig)
 
-    let config:any = this.createRequestConfig(classifyDescr, input, false)
+    let config:any = this.createRequestConfig(classifyDescr, input, 'classify')
 
     try{
       let response = await axios(config);
@@ -320,7 +332,7 @@ export class Gpt {
 
     console.log('readme descr', descr)
 
-    let config:any = this.createRequestConfig(descr, input, true)
+    let config:any = this.createRequestConfig(descr, input, 'use_readme')
 
     
 
@@ -335,14 +347,12 @@ export class Gpt {
     }
   }
 
-  private async ask(input: string, context: string = ''): Promise<any> {
+  private async ask(input: string, context: string): Promise<any> {
 
 
     console.log('ask gpt openaiConfig', openaiConfig)
 
-    context += '. today is '+ new Date().toLocaleString() +'' + new Date().toLocaleTimeString();
-
-    let config:any = this.createRequestConfig(context, input, false)
+    let config:any = this.createRequestConfig(context, input)
 
     try{
       let response = await axios(config);
@@ -368,7 +378,9 @@ export class Gpt {
     const fieldsStr = JSON.stringify(fields.map((item: any)=>'"' + item.name + '"').join(', '))
 
     const context: string = 
-    unkaosDescrBase0 + commandAnswerSchemma[command] + unkaosDescr[command] + unkaosDescrBase1 + fieldsStr;
+    unkaosDescrBase0 + commandAnswerSchemma[command] + unkaosDescr[command] + 
+      unkaosDescrBase1 + fieldsStr 
+     '. today is '+ new Date().toLocaleString() +'' + new Date().toLocaleTimeString();
 
     const parsedCommand = await this.ask(input, context)
 

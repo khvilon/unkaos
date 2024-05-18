@@ -4,17 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "playwright": "^1.44.0"
+  },
   "devDependencies": {
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^20.12.8",
-    "cypress": "^13.8.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "@playwright/test": "^1.44.0"
   }
 }

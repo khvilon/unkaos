@@ -58,32 +58,18 @@ let methods = {
       }
     }
   },
-  get_fields_exclude_names: function (names) {
-    console.log("get_fields_exclude_names", names);
+  get_issue_fields: function () {
     let fields = [];
     if (this.issue == undefined || this.issue.length != 1) return {};
     for (let i in this.issue[0].values) {
-      let match = false;
-      for (let j in names) {
-        if (this.issue[0].values[i].label == names[j]) {
-          match = true;
-          continue;
-        }
+      this.issue[0].values[i].idx = i; 
+      if (this.issue[0].values[i].uuid == null) {
+        this.issue[0].values[i].uuid = tools.uuidv4();
       }
-
-      //	console.log('get_fields_exclude_names1', this.issue[0].values[i].label, match)
-      this.issue[0].values[i].idx = i;
-      if (!match) {
-        if (this.issue[0].values[i].uuid == null) {
-          this.issue[0].values[i].uuid = tools.uuidv4();
-          //this.$store.commit('id_push_update_' + issue, {id: 'values.' + i + '.uuid', val:this.issue[0].values[i].uuid})
-        }
-        fields.push(this.issue[0].values[i]);
-      }
+      fields.push(this.issue[0].values[i]); 
     }
 
     fields = fields.sort(tools.compare_obj("label"));
-    //	console.log('get_fields_exclude_names2', fields)
     return fields;
   },
 
@@ -349,14 +335,7 @@ let methods = {
     for (let i in this.fields) {
       if (this.fields[i].uuid == field_uuid) {
         if (this.fields[i].available_values == undefined) return;
-        let available_values = this.fields[i].available_values;
-        if(tools.isValidJSON(available_values)){
-          available_values = JSON.parse(available_values)
-        }
-        else{
-          available_values = available_values.split(",").map((v) => v.replace("\n", "").replace("\r", "").trim());
-        }
-        
+        let available_values = this.fields[i].available_values;      
         return available_values;
       }
     }
@@ -413,10 +392,6 @@ let methods = {
 
       let cloned_field_value = this.url_params[field_uuid];
 
-      //if(!full && (issue_type.fields[i].name == 'Описание' || issue_type.fields[i].name == 'Название')) cloned_field_value = ''
-      if (issue_type.fields[i].name == "Автор")
-        cloned_field_value = this.get_field_by_name("Автор").value;
-
       if (cloned_field_value == undefined) continue;
 
       //cloned_field_value = (decodeURIComponent(atob(cloned_field_value)))
@@ -471,13 +446,11 @@ let methods = {
       // console.log("ibiiit issue", this.issue[0]);
       for (let i in this.issue[0].values) {
         this.issue[0].values[i].issue_uuid = this.issue[0].uuid;
-        this.issue[0].values[i].uuid = tools.uuidv4();
-        if (this.issue[0].values[i].name === "Автор")
-          this.issue[0].values[i].value = cache.getObject("profile").uuid;
+        this.issue[0].values[i].uuid = tools.uuidv4();  
       }
+      this.issue[0].author_uuid = cache.getObject("profile").uuid;
       if(!this.projects.some((p)=>p.uuid == this.issue[0].project_uuid)) this.issue[0].project_uuid = this.projects[0].uuid;
       if(!this.issue_types.some((it)=>it.uuid == this.issue[0].type_uuid)) this.issue[0].type_uuid = this.issue_types[0].uuid;
-      // console.log("ibiiit issue", this.issue[0]);
     }
 
     let ans = await rest.run_method("read_watcher", {
@@ -498,22 +471,18 @@ let methods = {
 
     let issues_drafts = cache.getObject('issues_drafts')
    // console.log('>>>>>>>>>>>>>>issues_drafts', issues_drafts, issues_drafts[this.issue[0].uuid].description)
-    if(issues_drafts[this.issue[0].uuid] && 
-      this.get_field_by_name("Описание").value != issues_drafts[this.issue[0].uuid].description){
-      this.saved_descr = this.get_field_by_name("Описание").value;
-      this.saved_name = this.get_field_by_name("Название").value;
-      this.saved_project_uuid = this.issue[0].project_uuid
-      this.current_description = issues_drafts[this.issue[0].uuid].description
-      this.get_field_by_name('Описание').value = issues_drafts[this.issue[0].uuid].description
+    if(issues_drafts[this.issue[0].uuid] && this.issue[0].description != issues_drafts[this.issue[0].uuid].description){
+      this.saved_descr = this.issue[0].description;
+      this.saved_name = this.issue[0].title;
+      this.saved_project_uuid = this.issue[0].project_uuid;
+      this.issue[0].description = issues_drafts[this.issue[0].uuid].description
       this.issue[0].updated_at = issues_drafts[this.issue[0].uuid].updated_at
       this.edit_mode = true;
     }
-    else this.current_description = this.get_field_by_name("Описание").value;
+    
+    this.current_description = issues_drafts[this.issue[0].uuid].description
 
     this.scrollToElementByUrl()
-
-    // ans = await rest.run_method("read_time_report", 
-    //{author_uuid: '9965cb94-17dc-46c4-ac1e-823857289e98', date_from:'2023-01-02', date_to:'2023-01-13'});
 
     console.log('this.url_params', this.url_params)
     if(uri_params.parent_uuid != undefined)
@@ -593,22 +562,15 @@ let methods = {
     this.freeze_save = true
     const freeze_timeout = 1000//ms
     setTimeout(()=>{this.freeze_save=false}, freeze_timeout)
-    let my_description = this.get_field_by_name('Описание').value
+    let my_description = this.issue[0].description;
     await this.update_data({uuid: this.issue[0].uuid})
-    console.log('wswsws', this.get_field_by_name('Описание').value, this.saved_descr, this.current_description, my_description)
     if(!this.edit_mode || this.saved_descr == my_description){
-      console.log('wswswsws1')
-      this.current_description = this.get_field_by_name('Описание').value
-      this.saved_descr = this.get_field_by_name('Описание').value
-    } 
-    else if (this.saved_descr != this.get_field_by_name('Описание').value) {
-      console.log('wswswsws2')
-      this.saved_descr = this.get_field_by_name('Описание').value
-      this.get_field_by_name('Описание').value = my_description
-      this.must_reload = true
+      this.current_description = this.issue[0].description;
+      this.saved_descr = this.issue[0].description;
     }
     else {
-      this.get_field_by_name('Описание').value = my_description
+      if (this.saved_descr != this.issue[0].description) this.saved_descr = this.issue[0].description
+      this.issue[0].description = my_description
       this.must_reload = true
     }
   },
@@ -655,15 +617,15 @@ let methods = {
       this.cancel_edit_mode();
       return;
     }
-    this.saved_descr = this.get_field_by_name("Описание").value;
-    this.saved_name = this.get_field_by_name("Название").value;
+    this.saved_descr = this.issue[0].description;
+    this.saved_name = this.issue[0].title;
     this.saved_project_uuid = this.issue[0].project_uuid
     this.current_description = this.saved_descr;
     this.edit_mode = true;
   },
   cancel_edit_mode: function () {
-    this.get_field_by_name("Описание").value = this.saved_descr;
-    this.get_field_by_name("Название").value = this.saved_name;
+    this.issue[0].description.value = this.saved_descr;
+    this.issue[0].title = this.saved_name;
     this.issue[0].project_uuid = this.saved_project_uuid
     this.current_description = this.saved_descr;
     this.clear_issue_draft()
@@ -965,35 +927,6 @@ const data = {
   current_description_with_implants: '',
   implants_images: [],
   instance: {
-    values: [
-      {
-        type: "Text",
-        uuid: "",
-        label: "Описание",
-        value: "",
-        field_uuid: "4a095ff5-c1c4-4349-9038-e3c35a2328b9",
-        issue_uuid: "",
-        table_name: "field_values",
-      },
-      {
-        type: "String",
-        uuid: "",
-        label: "Название",
-        value: "",
-        field_uuid: "c96966ea-a591-47a9-992c-0a2f6443bc80",
-        issue_uuid: "",
-        table_name: "field_values",
-      },
-      {
-        type: "User",
-        uuid: "",
-        label: "Автор",
-        value: "",
-        field_uuid: "733f669a-9584-4469-a41b-544e25b8d91a",
-        issue_uuid: "",
-        table_name: "field_values",
-      },
-    ],
   },
 };
 
@@ -1007,7 +940,7 @@ mod.props = {
 };
 
 mod.computed.title = function () {
-  const name = this.get_field_by_name("Название").value;
+  const name = this.issue[0].title;
   if (
     this.id !== undefined &&
     this.id !== "" &&
@@ -1274,14 +1207,13 @@ export default mod;
           <div class="issue-author-container"
             :v-if="
               !loading &&
-              id !== '' &&
-              get_field_by_name('Автор').value !== undefined
+              id !== ''
             "
           >
             <UserInput
               label=""
               v-if="!loading && id != ''"
-              :value="get_field_by_name('Автор').value"
+              :value="issue[0].author_uuid"
               :disabled="true"
               class="issue-author-input"
             >
@@ -1304,10 +1236,10 @@ export default mod;
             <StringInput
               v-if="!loading && (edit_mode || id == '')"
               label="Название"
-              :value="get_field_by_name('Название').value"
+              :value="this.issue[0].title"
               class="issue-name-input"
               :class="{ 'issue-name-input-full': id != '' }"
-              :id="'values.' + get_field_by_name('Название').idx + '.value'"
+              id="title"
               parent_name="issue"
             >
             </StringInput>
@@ -1315,7 +1247,7 @@ export default mod;
               class="issue-title-span"
               v-if="!loading && !edit_mode && id != ''"
             >
-              {{ get_field_by_name("Название").value }}
+              {{ this.issue[0].title }}
             </span>
 
             <SelectInput
@@ -1344,8 +1276,8 @@ export default mod;
             transition="element_fade"
             v-if="!loading && (edit_mode || id === '')"
             :attachments="attachments"
-            :value="get_field_by_name('Описание').value"
-            :id="'values.' + get_field_by_name('Описание').idx + '.value'"
+            :value="issue[0].description"
+            id="description"
             @update_parent_from_input="edit_current_description"
             @paste="pasted"
             @attachment_added="add_attachment"
@@ -1564,11 +1496,7 @@ export default mod;
 
             <component
               v-bind:is="input.type + 'Input'"
-              v-for="(input, index) in get_fields_exclude_names([
-                'Название',
-                'Описание',
-                'Автор',
-              ])"
+              v-for="(input, index) in get_issue_fields()"
               :label="input.label"
               :key="index"
               :id="'values.' + input.idx + '.value'"
@@ -1576,6 +1504,7 @@ export default mod;
               :parent_name="'issue'"
               :disabled="input.disabled"
               :values="get_available_values(input.field_uuid)"
+              :parameters="{reduce: (obj) => obj.uuid}"
               @updated="field_updated"
             ></component>
             

@@ -46,8 +46,7 @@ export default {
     window.addEventListener('keydown', this.checkShortcut);
 
     cache.loadDefaultsIfNecessary()
-    let htmlElement = document.documentElement;
-    htmlElement.setAttribute("theme", cache.getString('theme'));
+    
     dict.set_lang(cache.getString('lang'));
     
 
@@ -574,6 +573,34 @@ input {
   z-index: 1;
 }
 
+
+.main-bg-img{
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 100%;
+  z-index: 0;
+  }
+
+.mobile-view .main-bg-img{
+  transform:translateX(-52%);
+  width: auto; 
+  height: 120%; 
+  object-fit: cover; 
+  object-position: center; 
+  left: 0;
+  opacity: 0.4;
+}
+
+.out-of-workspace-container{
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color:  rgb(30, 30, 37) !important;
+  padding: 30px;
+}
 
 
 </style>

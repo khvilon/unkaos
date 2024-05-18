@@ -76,7 +76,7 @@ export default login_page;
 </script>
 
 <template ref="issues">
-  <div class="login-container">
+  <div class="login-container out-of-workspace-container">
 
     <MainTop :name="t('вход в систему')"></MainTop>
 
@@ -100,7 +100,9 @@ export default login_page;
       >{{t('Неправильный логин или пароль')}}</span
     >
   </div>
-  <img class="login-corner-bg-img" src="/b3-1.jpg"/>
+  
+  <img class="main-bg-img" src="/b3-1.webp"/>
+  <img class="main-bg-img" src="/b3-1.png"/>
   </div>
 </template>
 
@@ -168,20 +170,6 @@ export default login_page;
   text-align: center;
 }
 
-.login-corner-bg-img{
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100vw;
-}
-
-.login-container{
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  background-color: rgb(30, 30, 37);
-  padding: 30px;
-}
 
 
 

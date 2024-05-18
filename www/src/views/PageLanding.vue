@@ -37,9 +37,16 @@ export default landing_page;
 
       <div class="panel landing-small-panel landing-small-panel-main">
       <span class="landing-span">
-        {{t("Unkaos идеологически вдохновлен классическими продуктами, такими как Jira, Youtrack и другими.")}}
+        <span 
+          v-if="!$store.state['common']['is_mobile']"
+          class="landing-span"
+        >
+          {{t("Unkaos идеологически вдохновлен классическими продуктами, такими как Jira, Youtrack и другими.")}}
       
-        <br><br>{{t("Функциональность включает канбан доски, учет времени, гибкую настройку статусной модели и полей, оповещение на почту и в меседжеры, ИИ интерпретатор команд и продолжает развиваться.")}}
+        <br><br>
+        </span>
+        
+        {{t("Функциональность включает канбан доски, учет времени, гибкую настройку статусной модели и полей, оповещение на почту и в меседжеры, ИИ интерпретатор команд и продолжает развиваться.")}}
       
       </span>
       <br>
@@ -47,10 +54,14 @@ export default landing_page;
         t("Начало работы") 
       }}:</span><span class="landing-span">
       <div class="landing-list">
-        <a href="/register"><i class='bx bx-cloud-upload'></i> {{t("Регистрация рабочего пространства в облаке")}}</a>
-        <a href="https://github.com/khvilon/unkaos"><i class='bx bx-server'></i> {{t("Репозиторий - установка одной командой")}}</a>
-        <a href="https://github.com/khvilon/unkaos/blob/master/README.md"><i class='bx bxs-book'></i> {{t("Документация")}}</a>
-        <a href="/lisence"><i class="bx bxs-certification"></i> {{t("Лицензия")}}</a>
+        <a href="/register"><i class='bx bx-cloud-upload'></i> 
+          {{!$store.state['common']['is_mobile'] ? t("Регистрация рабочего пространства в облаке") : t("Регистрация пространства в облаке")}}
+        </a>
+        <a href="https://github.com/khvilon/unkaos"><i class='bx bx-server'></i>
+          {{!$store.state['common']['is_mobile'] ? t("Репозиторий - установка одной командой") : t("Репозиторий, установка на сервер")}}
+        </a>
+        <a href="/readme"><i class='bx bxs-book'></i> {{t("Документация")}}</a>
+        <a href="/license"><i class="bx bxs-certification"></i> {{t("Лицензия")}}</a>
       </div></span>
 
       </div>
@@ -58,10 +69,10 @@ export default landing_page;
       <div class="landing-small-panel landing-small-panel-v">
       <span class="landing-span">{{ t("Версии") }}</span>
       <span class="landing-span">
-      {{t("Стабильная")}} <strong>{{ masterV ? masterV.version : '' }}</strong> ({{ masterV ? masterV.version_dt.split(' ')[0] : '' }})
+      {{t("Стабильная")}} <strong>{{ masterV ? masterV.version : '' }}</strong> {{ masterV && !$store.state['common']['is_mobile'] ? '('+masterV.version_dt.split(' ')[0]+')' : '' }}
       <br></span>
       <span class="landing-span">
-      {{t("Последняя") }} <strong>{{ devV ? devV.version : ''}} </strong> ({{ devV ? devV.version_dt.split(' ')[0] : '' }})
+      {{t("Последняя") }} <strong>{{ devV ? devV.version : ''}} </strong> {{ devV && !$store.state['common']['is_mobile']  ? '('+devV.version_dt.split(' ')[0]+')' : '' }}
       </span>
       </div>
 
@@ -74,8 +85,11 @@ export default landing_page;
             <a href="mailto:n@khvilon.ru"><i class='bx bx-envelope' ></i>n@khvilon.ru</a> 
           </span>
           
-          <span class="landing-span landing-span-last">
-          {{ t("Николай Хвилон") }}
+          <span 
+            v-if="!$store.state['common']['is_mobile']"
+            class="landing-span landing-span-last"
+          >
+            {{ t("Николай Хвилон") }}
         </span>
       </div>
       
@@ -83,7 +97,8 @@ export default landing_page;
 
     
 
-    <img class="landing-corner-bg-img" src="/b3-1.jpg"/>
+    <img class="main-bg-img" src="/b3-1.webp"/>
+    <img class="main-bg-img" src="/b3-1.png"/>
 
     <lang-select v-if="$store.state['common'] && !$store.state['common']['is_mobile']" class="landing-lang-select"></lang-select>
 
@@ -135,25 +150,6 @@ export default landing_page;
   width: 200px;
 }
 
-
-.landing-corner-bg-img{
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100%;
-  z-index: 0;
-  }
-
-.mobile-view .landing-corner-bg-img{
-  transform:translateX(-52%);
-  width: auto; 
-  height: 120%; 
-  object-fit: cover; 
-  object-position: center; 
-  left: 0;
-  opacity: 0.4;
-}
-
 .landing-small-panel{
   background-color: var(--table-row-color);
 
@@ -190,6 +186,7 @@ export default landing_page;
 .mobile-view .landing-small-panel-main{
   background: rgba(21, 24, 26, 0.4) !important;
   border-color: rgba(71, 81, 89, 0.4) !important;
+  height: auto;
   width: 95%;
 }
 
@@ -202,6 +199,14 @@ export default landing_page;
   background: transparent !important;
   border: none !important;
   padding: 0;
+}
+
+.mobile-view .landing-small-panel-v{
+  bottom: 4px;
+}
+
+.mobile-view .landing-small-panel-v span{
+  margin: 2px;
 }
 
 .landing-small-panel-v span{
@@ -222,7 +227,13 @@ export default landing_page;
   color: rgb(108, 146, 211);
 }
 
+.mobile-view .landing-small-panel-author{
+  bottom: 2px;
+}
 
+.mobile-view .landing-small-panel-author span{
+  margin: 2px;
+}
 
 .landing-list {
   padding-left: 10px;

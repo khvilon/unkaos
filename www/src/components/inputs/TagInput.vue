@@ -53,6 +53,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    isIssueTag: {
+      type: Boolean,
+      default: true,
+    }
   },
   methods: {
     tag_clicked: function(tag)
@@ -76,19 +80,27 @@ export default {
       console.log(tag)
     },
   },
+  computed: {
+    computedDropdownShouldOpen() {
+        return !this.isIssueTag ? (noDrop, open, mutableLoading) => false : undefined;
+      }
+  }
 };
 </script>
 
 <template>
   <SelectInput
     :taggable="true"
-    :parameters="{ multiple: true, reduce: (obj) => obj.uuid}"
+    :parameters="{ multiple: true, reduce: this.isIssueTag ? (obj) => obj.uuid : undefined}"
     :value="value"
     :values="values"
     class="tag-input"
     @tag_clicked="tag_clicked"
     @value_selected="tag_selected"
     @value_deselected="tag_deselected"
+    :dropdownShouldOpen="computedDropdownShouldOpen"
+    
+
   >
   </SelectInput>
 
@@ -97,6 +109,7 @@ export default {
         @close_edit_tag_modal="modal_visible = false"
         :tag="edited_tag"
         @tag_edited="tag_edited"
+        :isIssueTag="isIssueTag"
          >
     
 

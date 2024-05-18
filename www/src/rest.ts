@@ -131,6 +131,7 @@ export default class rest {
     }
     let resp;
     try {
+      //resp = await fetch(conf.base_url + 'v2/' + method_array[1], {
       resp = await fetch(conf.base_url + method, {
         body: options.body,
         headers: options.headers,

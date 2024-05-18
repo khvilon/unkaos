@@ -760,10 +760,10 @@ let methods = {
 		const colorFieldUUID = this.selected_board.color_field_uuid;
 		if(!colorFieldUUID) return defaultColor;
 		const colorField = this.fields.filter((f)=>f.uuid == colorFieldUUID)[0]
-		if(!colorField || !tools.isValidJSON(colorField.available_values)) return defaultColor;	
+		if(!colorField) return defaultColor;	
 		const colorFieldValueUUID = this.get_field_value(issue, colorField)
 		if(!colorFieldValueUUID) return defaultColor;
-		const colorFieldValue = JSON.parse(colorField.available_values).filter((av)=>av.uuid==colorFieldValueUUID);
+		const colorFieldValue = colorField.available_values.filter((av)=>av.uuid==colorFieldValueUUID);
 		if(!colorFieldValue || !colorFieldValue[0] || !colorFieldValue[0].color) return defaultColor;
 		return colorFieldValue[0].color;	
 	},
@@ -879,49 +879,18 @@ let methods = {
 		const name = 'Задача с доски'
 
 		let issue = {
-
 			uuid: tools.uuidv4(),
 			project_uuid: project_uuid,
 			status_uuid: status_uuid,
 			type_uuid: type_uuid,
-			values: [
-				{
-					type: "Text",
-					uuid: "",
-					label: "Описание",
-					value: "",
-					field_uuid: "4a095ff5-c1c4-4349-9038-e3c35a2328b9",
-					issue_uuid: "",
-					table_name: "field_values",
-				},
-				{
-					type: "String",
-					uuid: "",
-					label: "Название",
-					value: name,
-					field_uuid: "c96966ea-a591-47a9-992c-0a2f6443bc80",
-					issue_uuid: "",
-					table_name: "field_values",
-				},
-				{
-					type: "User",
-					uuid: "",
-					label: "Автор",
-					value: author_uuid,
-					field_uuid: "733f669a-9584-4469-a41b-544e25b8d91a",
-					issue_uuid: "",
-					table_name: "field_values",
-				},
-			],
-
+			description: '',
+			title: name,
+			author_uuid: author_uuid
 		}
 
 
 		for (let i in ch.values) {
-			if (query_fields.includes(ch.values[i].field_uuid) &&
-				(ch.values[i].label != 'Описание' &&
-					ch.values[i].label != 'Название' &&
-					ch.values[i].label != 'Автор')) {
+			if (query_fields.includes(ch.values[i].field_uuid)) {
 				let new_value = tools.obj_clone(ch.values[i])
 				issue.values.push(new_value)
 			}
@@ -1103,7 +1072,7 @@ const data =
 		},
 		{
 			name: d.get('Автор'),
-			id: "values.Автор",
+			id: "author_uuid",
 			type: 'user'
 		},
 		{
@@ -1230,7 +1199,7 @@ mod.computed.swimlanes_value = function () {
 mod.computed.display_description = function () {
 	if (this.selected_board == undefined || this.selected_board.boards_fields == undefined) return false
 	for (let i in this.selected_board.boards_fields) {
-		if (this.selected_board.boards_fields[i].name == 'Описание') return true
+		if (this.selected_board.boards_fields[i].name == 'Описание') return true//todo!!! 
 	}
 	return false
 
@@ -1240,18 +1209,8 @@ mod.computed.available_values = function (field_uuid) {
 	let av = {}
 
 	for (let i in this.fields) {
-		if (!this.fields[i].available_values) {
-			av[this.fields[i].uuid] = []
-		}
-		else if(tools.isValidJSON(this.fields[i].available_values)){
-			av[this.fields[i].uuid] = JSON.parse(this.fields[i].available_values)
-		}
-		else{
-			let available_values = this.fields[i].available_values
-			.split(",")
-			.map((v) => v.replace("\n", "").replace("\r", "").trim());
-			av[this.fields[i].uuid] = available_values;
-		}
+		if (!this.fields[i].available_values) av[this.fields[i].uuid] = []
+		else av[this.fields[i].uuid] = this.fields[i].available_values
 	}
 	return av
 }
@@ -1280,9 +1239,9 @@ mod.computed.active_filters = function(){
 mod.computed.colored_fields = function(){
 	return this.fields.filter((f) => {
 		if(f.type[0].code != 'Select' || !f.available_values) return false
-		if(!tools.isValidJSON(f.available_values)) return false;
-		let av = JSON.parse(f.available_values)
-		if(av && av[0] && av[0].color) return true;
+		//if(!tools.isValidJSON(f.available_values)) return false;
+		//let av = JSON.parse(f.available_values)
+		if(f.available_values[0] && f.available_values[0].color) return true;
 		return false;
 	});
 }
@@ -1450,10 +1409,7 @@ export default mod
 											}}</label>
 									</div>
 									<label class="issue-card-description" v-if="display_description">
-										{{
-											get_field_by_name(issue, 'Описание').value != undefined ?
-												get_field_by_name(issue, 'Описание').value.substring(0, 100) : ''
-										}}
+										{{ issue.description ? issue.description.substring(0, 100) : ''}}
 									</label>
 									<div class="issue-board-card-footer"
 										v-show="swimlane.expanded || selected_board.no_swimlanes">
@@ -1461,15 +1417,15 @@ export default mod
 										<div class="board-card-field"
 											v-for="(f, f_index) in selected_board.boards_fields">
 											<label class="board-card-field-title"
-												v-if="f.fields != undefined && f.fields[0] != undefined && f.fields[0].name != 'Описание'">
+												v-if="f.fields != undefined && f.fields[0] != undefined">
 												{{ f.fields[0].name }}: </label>
 											<component
-												v-if="true && f.fields != undefined && f.fields[0] != undefined && f.fields[0].name != 'Описание'"
+												v-if="true && f.fields != undefined && f.fields[0] != undefined"
 												v-bind:is="f.fields[0].type[0].code + 'Input'"
 												:value="get_field_value(issue, f.fields[0])" 
 												label=""
 												:key="issue.uuid + '_' + i_index + '_' + f_index"
-												:disabled="true || f.fields[0].name == 'Автор'"
+												:disabled="true"
 												:values="available_values[f.fields_uuid]" 
 												class="board-card-field-input"
 												@updated="function(val){field_updated(val, f.fields[0], issue)}"
@@ -1477,7 +1433,7 @@ export default mod
 											>
 											</component>
 											<StringInput
-												v-if="false && f.fields && f.fields[0] && f.fields[0].name != 'Описание'"
+												v-if="false && f.fields && f.fields[0]"
 												:value="get_field_value(issue, f.fields[0], true)" 
 												label=""
 												:key="issue.uuid + '_' + i_index + '_' + f_index" 
@@ -1556,9 +1512,10 @@ export default mod
 						<SelectInput label='Поле цвета' 
 							id='color_field_uuid'
 							:parent_name="'board'" 
-							clearable="false" 
+							:clearable="true" 
 							:values="colored_fields"
 							multiple: false
+							:parameters="{reduce: (obj) => obj.uuid}"
 							:value="get_json_val(selected_board, 'color_field_uuid')"
 						>
 						</SelectInput>
