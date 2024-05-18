@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load OS setup
-source ./os_setup.sh
+source ./os.sh
 
 # Load environment variables
 if [ -f .env ]; then
