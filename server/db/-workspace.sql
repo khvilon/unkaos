@@ -215,6 +215,7 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
     {"allow": "R", "table": "dashboard"},
     {"allow": "R", "table": "board"},
     {"allow": "R", "table": "boards_filters"},
+    {"allow": "R", "table": "gadgets"},
 
     {"allow": "R", "table": "field_types"},
     {"allow": "R", "table": "gadget_types"},
