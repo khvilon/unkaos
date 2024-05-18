@@ -760,10 +760,10 @@ let methods = {
 		const colorFieldUUID = this.selected_board.color_field_uuid;
 		if(!colorFieldUUID) return defaultColor;
 		const colorField = this.fields.filter((f)=>f.uuid == colorFieldUUID)[0]
-		if(!colorField || !tools.isValidJSON(colorField.available_values)) return defaultColor;	
+		if(!colorField) return defaultColor;	
 		const colorFieldValueUUID = this.get_field_value(issue, colorField)
 		if(!colorFieldValueUUID) return defaultColor;
-		const colorFieldValue = JSON.parse(colorField.available_values).filter((av)=>av.uuid==colorFieldValueUUID);
+		const colorFieldValue = colorField.available_values.filter((av)=>av.uuid==colorFieldValueUUID);
 		if(!colorFieldValue || !colorFieldValue[0] || !colorFieldValue[0].color) return defaultColor;
 		return colorFieldValue[0].color;	
 	},
@@ -1249,9 +1249,9 @@ mod.computed.active_filters = function(){
 mod.computed.colored_fields = function(){
 	return this.fields.filter((f) => {
 		if(f.type[0].code != 'Select' || !f.available_values) return false
-		if(!tools.isValidJSON(f.available_values)) return false;
-		let av = JSON.parse(f.available_values)
-		if(av && av[0] && av[0].color) return true;
+		//if(!tools.isValidJSON(f.available_values)) return false;
+		//let av = JSON.parse(f.available_values)
+		if(f.available_values[0] && f.available_values[0].color) return true;
 		return false;
 	});
 }

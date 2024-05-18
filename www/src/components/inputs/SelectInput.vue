@@ -1,14 +1,10 @@
 <script>
-import Multiselect from "vue-multiselect";
 import tools from "../../tools.ts";
 
 
 import "vue-select/dist/vue-select.css";
 
 export default {
-  components: {
-    Multiselect,
-  }, 
 
   data() {
     let d = {
@@ -122,6 +118,12 @@ export default {
       default: false,
     },
     multiselect: {},
+    dropdownShouldOpen: {
+        type: Function,
+        default({noDrop, open, mutableLoading}) {
+          return noDrop ? false : open && !mutableLoading;
+        }
+    }
   },
   mounted() {
     console.log('mounted', this.value)
@@ -206,7 +208,7 @@ export default {
 
     <v-select
       v-model="val"
-      label="name"
+      :label="'name'"
       :reduce="reduce"
       :multiple="parameters.multiple"
       :clearable="parameters.clearable"
@@ -219,6 +221,7 @@ export default {
       :createOption="create_option"
       @option:selected="value_selected"
       :appendToBody="appendToBody"
+      :dropdownShouldOpen="dropdownShouldOpen"
     >
       
       <template v-if="taggable"
