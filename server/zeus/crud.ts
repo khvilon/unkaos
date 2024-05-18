@@ -609,6 +609,7 @@ crud.make_query = {
 					ISS.STATUS_UUID,
 					ISS.SPRINT_UUID,
 					IT.TAGS,
+          ISS.AUTHOR_UUID,
 					ISSR.*
 				FROM ISSUES ISS
 				LEFT JOIN (
