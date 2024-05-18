@@ -241,9 +241,7 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
     {"allow": "R", "table": "issue_formated_actions"},
     {"allow": "R", "table": "attachments"},
     {"allow": "R", "table": "time_entries"},
-    {"allow": "R", "table": "issue_tags_selected"},
-
-    {"allow": "CU", "table": "issues"}
+    {"allow": "R", "table": "issue_tags_selected"}
 
 ]'),
 ('f47c6d41-60f9-4871-8d12-c1ee6682f2e0', 'configs_U', 'Управление настройками рабочего пространства', 
