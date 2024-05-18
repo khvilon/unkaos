@@ -1139,7 +1139,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
     });
 
     //current version of object to be changed
-    let readed_data = await sql.query(subdomain, read_query, read_params);
+    readed_data = await sql.query(subdomain, read_query, read_params);
 
    // if (readed_data.rows.length > 0) {
 
