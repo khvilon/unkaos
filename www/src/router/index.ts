@@ -112,6 +112,7 @@ router.beforeEach((to, from, next) => {
   console.log("beforeEach>>>>>>>>>>>>>>>>>",to.params.workspace, window.location.host, to);
   rest.setWorkspace(to.params.workspace)
   ws.setWorkspace(to.params.workspace)
+  cache.setWorkspace(to.params.workspace)
   store.state["common"].workspace = to.params.workspace;
   store.state["common"].is_in_workspace = !to.path.contains("/login") && to.params.workspace;
 
