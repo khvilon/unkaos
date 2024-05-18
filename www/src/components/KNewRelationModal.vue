@@ -11,7 +11,7 @@ export default {
     },
     issue0_uuid: {
       type: String,
-      default: "aa",
+      default: "",
     },
   },
 
