@@ -113,6 +113,7 @@ export default class Data {
           let request: string = method + '_' + targets[j].table;
           let key = permissions[i].user_uuid + '.' + request;
           workspace.permissions.set(key, true);
+          if(method == 'update') workspace.permissions.set(permissions[i].user_uuid + '.upsert_' + targets[j].table, true);
           console.log('permissions key created', key);
           if(request == 'update_users') workspace.permissions.set(permissions[i].user_uuid + '.upsert_password_rand', true)
         }
