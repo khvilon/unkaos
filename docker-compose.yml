@@ -155,6 +155,7 @@ services:
      - WS_URL="wss://${DOMAIN}:3003/"
      - DOMAIN=${DOMAIN}
      - domain=${DOMAIN}
+     - DOCKER_BUILDKIT=1
     depends_on:
       - gateway
     healthcheck:

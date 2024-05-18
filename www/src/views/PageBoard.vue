@@ -118,10 +118,15 @@ let methods = {
 			this.fields_values.push(col)
 		}
 
+		
+	
+
 
 		for (let i in this.selected_board.boards_fields) {
 			this.selected_board.boards_fields[i].name = this.selected_board.boards_fields[i].fields[0].name
 		}
+
+		
 
 
 		let my_uuid = cache.getObject("profile").uuid
@@ -813,14 +818,8 @@ let methods = {
 	},
 	async edit_card_title(issue, e) {
 		let new_title = e.target.innerText
-		for (let i in issue.values) {
-			if (issue.values[i].label == "Название") {
-				issue.values[i].value = new_title
-			}
-		}
-
+		issue.title = new_title
 		await rest.run_method('update_issue', issue)
-
 	},
 	get_children_by_status(swimlane, status) {
 		let ch
@@ -1020,6 +1019,7 @@ const data =
 	},
 	statuses_ends_dict: {},
 	conf: {},
+	description_uuid: '6888bcee-d354-4f96-921e-b79801b85f67',
 	favourite_board_type_uuid: '1b6832db-7d94-4423-80f2-10ed989af9f8',
 	void_group_name: 'Без группы',
 	swimlanes: {},
@@ -1197,6 +1197,7 @@ mod.computed.swimlanes_value = function () {
 
 
 mod.computed.display_description = function () {
+	return true;
 	if (this.selected_board == undefined || this.selected_board.boards_fields == undefined) return false
 	for (let i in this.selected_board.boards_fields) {
 		if (this.selected_board.boards_fields[i].name == 'Описание') return true//todo!!! 
@@ -1404,8 +1405,7 @@ export default mod
 										</div>
 										<label contenteditable="true" @blur="edit_card_title(issue, $event)"
 											:class="{ 'resolved-issue': statuses_ends_dict[issue.status_uuid] }">{{
-												get_field_by_name(issue,
-																						'Название').value
+												issue.title
 											}}</label>
 									</div>
 									<label class="issue-card-description" v-if="display_description">
@@ -1499,7 +1499,7 @@ export default mod
 						</SelectInput>
 
 						<SelectInput v-if="inputs_dict != undefined && selected_board != undefined" label='Поля карточки'
-							id='boards_fields' :parent_name="'board'" clearable="false"
+							id='boards_fields' :parent_name="'board'" :clearable="true"
 							:value="get_json_val(selected_board, 'boards_fields')" :values="fields_values"
 							:parameters="{ multiple: true }"></SelectInput>
 
