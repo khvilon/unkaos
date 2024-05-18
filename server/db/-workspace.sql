@@ -229,7 +229,7 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
     {"allow": "R", "table": "issue_statuses"},
     {"allow": "R", "table": "issue_types"},
     {"allow": "R", "table": "issue_types_to_fields"},
-    {"allow": "CRU", "table": "issue_tags"},
+    {"allow": "CRUD", "table": "issue_tags"},
 
     {"allow": "CRU", "table": "issues"},
     {"allow": "CRU", "table": "issue"},
@@ -237,11 +237,11 @@ INSERT INTO server.permissions (uuid, code, name, targets) VALUES
     {"allow": "R", "table": "issue_uuid"},
     {"allow": "R", "table": "old_issue_uuid"},
     {"allow": "R", "table": "formated_relations"},
-    {"allow": "CRU", "table": "watcher"},
+    {"allow": "CRUD", "table": "watcher"},
     {"allow": "R", "table": "issue_formated_actions"},
-    {"allow": "CRU", "table": "attachments"},
-    {"allow": "CRU", "table": "time_entries"},
-    {"allow": "CRU", "table": "issue_tags_selected"},
+    {"allow": "CRUD", "table": "attachments"},
+    {"allow": "CRUD", "table": "time_entries"},
+    {"allow": "CRUD", "table": "issue_tags_selected"},
     {"allow": "CRU", "table": "issue_actions"}
 
 ]'),
