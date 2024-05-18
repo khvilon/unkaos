@@ -46,8 +46,7 @@ export default {
     window.addEventListener('keydown', this.checkShortcut);
 
     cache.loadDefaultsIfNecessary()
-    let htmlElement = document.documentElement;
-    htmlElement.setAttribute("theme", cache.getString('theme'));
+    
     dict.set_lang(cache.getString('lang'));
     
 

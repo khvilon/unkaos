@@ -49,9 +49,6 @@ export default readme_page;
       
       
     </div>
-
-    
-
  
     <img class="main-bg-img" src="/b3-1.webp"/>
     <img class="main-bg-img" src="/b3-1.png"/>
