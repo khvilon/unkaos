@@ -352,16 +352,12 @@ crud.load = async function () {
   crud.querys["short_issue_info"] = {};
   crud.querys["short_issue_info"]["read"] = 
     `SELECT 
-    I.UUID, P.SHORT_NAME || '-' || I.NUM || ' ' || FV.value AS name
+    I.UUID, P.SHORT_NAME || '-' || I.NUM || ' ' || I.TITLE AS name
     FROM ISSUES I
     JOIN PROJECTS P
     ON P.UUID = I.PROJECT_UUID 
-    JOIN FIELD_VALUES FV
-    ON FV.FIELD_UUID = '` +
-    name_field_uuid +
-    `' AND FV.ISSUE_UUID = I.UUID
     WHERE I.DELETED_AT IS NULL 
-    AND P.SHORT_NAME || '-' || I.NUM || ' ' || FV.value LIKE '%$@2%'
+    AND P.SHORT_NAME || '-' || I.NUM || ' ' || I.TITLE LIKE '%$@2%'
     LIMIT 20`;
 
   //used for imp.js
