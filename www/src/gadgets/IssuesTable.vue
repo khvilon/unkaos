@@ -31,9 +31,13 @@ let methods = {
 
 		if(options.query) this.loaded_issues = await rest.run_method('read_issues', options);
 		else this.loaded_issues = await rest.run_method('read_issues');
+
+    console.log('>>>>>bconfwatchIT22', this.loaded_issues)
   
 
     this.loaded_issues = await rest.run_method("read_issues", options);
+
+    console.log('>>>>>bconfwatchIT23', this.loaded_issues, options)
 
   },
   get_field_path_by_name: function (name) {
@@ -186,8 +190,7 @@ mod.watch = {
       if(oldVal && oldVal.toString() == newVal.toString() ) return;
       console.log('>>>>>bconfwatchIT', newVal, oldVal)
       //this.setChartOptions();
-      if(!oldVal || !oldVal.encoded_query) this.get_issues(newVal.encoded_query);
-      else if(oldVal.encoded_query != newVal.encoded_query) this.get_issues(newVal.encoded_query);
+      if(!oldVal || !oldVal.encoded_query || oldVal.encoded_query != newVal.encoded_query) this.get_issues(newVal.encoded_query);
       //else this.calcChart();
     },
     immediate: true
@@ -216,7 +219,7 @@ export default mod;
           class="issue-search-input"
           @update_parent_from_input="update_search_query"
           :fields="fields"
-          @search_issues="get_issues"
+          @search_issues="()=>{}"
           :projects="projects"
           :issue_statuses="issue_statuses"
           :issue_types="issue_types"

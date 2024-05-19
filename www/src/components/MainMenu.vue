@@ -363,7 +363,7 @@ $logo-icon-size: 32px;
 }
 
 .sidebar .logo-details .logo_name {
-  font-size: 35px;
+  font-size: 0px;
   font-weight: 400;
 
   //transform: translateX(-50%);
@@ -374,6 +374,7 @@ $logo-icon-size: 32px;
 
 .sidebar.open .logo-details .logo_name {
   opacity: 1;
+  font-size: 35px;
 }
 
 .sidebar .main-menu-list {

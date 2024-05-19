@@ -147,7 +147,7 @@ export default {
 
 <template>
   <div class="user-input input">
-    <div class="label">{{ label }}</div>
+    <div class="label" v-if="label">{{ label }}</div>
 
     <v-select
       v-model="value"

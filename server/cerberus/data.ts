@@ -155,6 +155,7 @@ export default class Data {
         let method: string = this.CRUD[crud[l]];
         let request: string = method + '_' + targets[j].table;
         workspace.permissions.set(request, true);
+        if(method == 'update') workspace.permissions.set('upsert_' + targets[j].table, true);
         console.log('common permissions key created', request);
       }
     }

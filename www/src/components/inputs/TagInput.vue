@@ -137,16 +137,22 @@ export default {
   background: none;
   cursor: pointer;
   border: none;
+  
 }
 
 .tag-input .vs__search {
   margin: 0;
+  margin-bottom: 10px;
+}
+
+.tag-input .vs__actions{
+  margin-bottom: 14px;
 }
 
 .tag-input .select-input-selected {
   margin-right: 5px !important;
   height: 23px;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 
 .tag-input .vs__selected-options {

@@ -167,7 +167,7 @@ let methods = {
     rest.run_method('upsert_gadgets', gadget)
   },
 
-  new_gadget:  function(type){
+  new_gadget:  async function(type){
     if(type.code != 'TimeReport' && type.code != 'Burndown' && type.code != 'IssuesTable') return;
 
     let gadget = {
@@ -184,11 +184,15 @@ let methods = {
     };
 
     //console.log('new_gadget', gadget)
-    this.gadgets.push(gadget);
-
-    rest.run_method('upsert_gadgets', gadget);
+    
 
     this.gadget_types_modal_visible = false;
+
+    gadget = (await rest.run_method('upsert_gadgets', gadget))[0];
+
+    this.gadgets.push(gadget);
+
+    
   },
   delete_gadget: function(gadget){
     this.gadgets = this.gadgets.filter((g)=>g.uuid != gadget.uuid)

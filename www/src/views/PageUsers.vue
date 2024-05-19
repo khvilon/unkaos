@@ -85,6 +85,8 @@ const data = {
 
 
 
+
+
 const mod = await page_helper.create_module(data);
 
 mod.methods.update_password = function () {
@@ -120,6 +122,20 @@ mod.computed.is_this_user2=function(){
   if(!this.users_selected) return false
   let user = cache.getObject("profile");
   return this.selected_users.uuid == user.uuid;
+};
+
+mod.computed.allow_edit=function(){
+  if(!this.users_selected) return false
+  if(this.$store.state['common'].is_admin) return true;
+  let user = cache.getObject("profile");
+
+  for(let role of user.roles){
+    if(!role.permissions) continue;
+    for(let permission of role.permissions){
+      if(permission.code == 'users_and_roles_CUD') return true;
+    }
+  }
+  return false;
 };
 
 mod.computed.filteredInputs=function(){
@@ -167,7 +183,7 @@ export default mod;
             :id="input.id"
             :value="selected_users[input.id]"
             :parent_name="'users'"
-            :disabled="input.disabled"
+            :disabled="input.disabled || (!allow_edit && !is_this_user2)"
             :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
           ></component>
           <StringInput v-if="is_this_user2"
@@ -177,7 +193,7 @@ export default mod;
             </StringInput>
           
         </div>
-        <div class="table_card_buttons">
+        <div class="table_card_buttons" v-if="allow_edit || is_this_user2">
           <KButton v-if="users_selected && !is_this_user2"
             class="change-password"
             :name="'Сбросить пароль'"

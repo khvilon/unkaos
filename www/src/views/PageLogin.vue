@@ -4,6 +4,7 @@ import StringInput from "../components/inputs/StringInput.vue";
 
 import dict from "../dict.ts";
 import rest from "../rest.ts";
+import cache from "../cache";
 
 var login_page = {};
 let user_name = "";
@@ -28,16 +29,14 @@ login_page.methods = {
   },
 
   goBack() {
-    const previousUrl = window.document.referrer || null;
-    const currentHost = window.location.host;
+    const previousUrl = cache.getString('location_before_login');
+    cache.setString('location_before_login', '');
 
     if (previousUrl) {
-      const previousHost = (new URL(previousUrl)).host;
-      if (previousHost === currentHost) {
-        if(previousUrl.indexOf('/register') > 0) this.$router.push('/' + this.$store.state['common'].workspace + "/configs/users");
-        else this.$router.go(-1);
-      }
-      else this.$router.push('/' + this.$store.state['common'].workspace + "/issues");
+      const parsedUrl = new URL(previousUrl);
+      const path = parsedUrl.pathname;
+      if(previousUrl.indexOf('/register') > 0) this.$router.push('/' + this.$store.state['common'].workspace + "/configs/users");
+      else this.$router.push(path);
     }
     else this.$router.push('/' + this.$store.state['common'].workspace + "/issues");
   },
