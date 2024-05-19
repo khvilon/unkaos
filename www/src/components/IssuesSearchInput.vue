@@ -64,6 +64,10 @@ export default {
       type: Number,
       default: 8,
     },
+    searchOnParentUpdate: {
+      type: Boolean,
+      default: true,
+    }
   },
 
   /*
@@ -204,6 +208,7 @@ export default {
   watch: {
     parent_query: function (val, oldVal) {
       //  console.log('parent_query', val)
+      if(!this.searchOnParentUpdate) return;
       console.log('>>>>emit_query')
       if (val != this.value) {
         this.value = val;
