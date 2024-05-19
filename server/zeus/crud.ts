@@ -1056,7 +1056,7 @@ crud.updateQueryWithProjectsPermissionsFilter = async function(subdomain: string
     else{
       if(table_name == "projects" && !projects_uuids_array.includes(params.uuid)) return false;
       //TODO - add filtering projects
-      if(table_name == "issues"  && !projects_uuids_array.includes(readed_data.rows[0].project_uuid)) return false;
+      if(table_name == "issues"  && !projects_uuids_array.includes(params.project_uuid)) return false;
     }
 
     return query;
