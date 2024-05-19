@@ -300,6 +300,20 @@ mod.mounted = function () {
   this.init();
 };
 
+mod.computed.allow_edit=function(){
+  
+  if(this.$store.state['common'].is_admin) return true;
+  let user = cache.getObject("profile");
+
+  for(let role of user.roles){
+    if(!role.permissions) continue;
+    for(let permission of role.permissions){
+      if(permission.code == 'configs_U') return true;
+    }
+  }
+  return false;
+};
+
 export default mod;
 
 
@@ -364,11 +378,12 @@ export default mod;
                 :label="input.label"
                 :key="iindex"
                 :value="getValue(input.service, input.config)"
+                :disabled="!allow_edit"
                 @update_parent_from_input="(val) => updateValue(input.service, input.config, val)" 
               ></component>
             </div>
         </div>
-        <div class="table_card_buttons">
+        <div class="table_card_buttons" v-if="allow_edit">
             <div class="table_card_footer">
             <k-button 
             name="Сохранить"
