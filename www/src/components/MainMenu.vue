@@ -163,6 +163,7 @@ export default {
         if (!activeElement) {this.select_opacity=0; return;}
         this.select_offset_x = activeElement.offsetLeft;
         this.select_offset_y = activeElement.offsetTop;
+        if(this.$store.state["common"]["is_mobile"]) this.select_offset_x += 4;
         this.exit_menu();
         if(!this.select_opacity) setTimeout(()=>{this.select_opacity = 0.8}, 300)
         return;        
@@ -257,6 +258,7 @@ export default {
     <div class="main-menu-list">
       <div
         class="main-menu-element-bg-hover"
+        v-show="!$store.state.common.is_mobile"
         :style="{
           opacity: hover_opacity,
           top: hover_offset_y + 'px',
@@ -395,6 +397,7 @@ $logo-icon-size: 32px;
   display: flex;
   top: 6px;
   left: 40px;
+  height: $main-menu-width;
 }
 
 .main-menu-element {
