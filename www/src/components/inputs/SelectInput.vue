@@ -40,7 +40,6 @@ export default {
           break;
         }
       }
-      
 
       console.log("vue_select", val, oldVal, this.id, val_obj);
       //   console.log('pname', this.parent_name)
@@ -204,7 +203,7 @@ export default {
 
 <template>
   <div class="select-input input">
-    <div class="label">{{ label }}</div>
+    <div class="label" v-if="label">{{ label }}</div>
 
     <v-select
       v-model="val"
