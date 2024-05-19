@@ -64,6 +64,10 @@ export default {
       type: Number,
       default: 8,
     },
+    searchOnParentUpdate: {
+      type: Boolean,
+      default: true,
+    }
   },
 
   /*
@@ -204,6 +208,7 @@ export default {
   watch: {
     parent_query: function (val, oldVal) {
       //  console.log('parent_query', val)
+      if(!this.searchOnParentUpdate) return;
       console.log('>>>>emit_query')
       if (val != this.value) {
         this.value = val;
@@ -555,6 +560,10 @@ export default {
 
     convert_query(query, use_to_end) {
 
+      if(query.trim() == ''){
+        this.$emit("converted", '');
+        return true;
+      }
       //query = query.trim();
       console.log('convert_query', '#'+query+'#')
       let waits_for_idx = 0;

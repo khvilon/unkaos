@@ -110,7 +110,7 @@ export default mod;
         <div class="table_card_fields">
           <component
             v-bind:is="input.type + 'Input'"
-            v-for="(input, index) in inputs"
+            v-for="(input, index) in !issue_types_selected ? inputs.filter((inp)=>inp.id!='fields') : inputs"
             :label="input.label"
             :key="index"
             :id="input.id"
