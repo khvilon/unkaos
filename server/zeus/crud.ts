@@ -1197,7 +1197,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
       }
 
       if (del_query != ""){ //&& table_name != 'users') {
-        let [q, p] = crud.push_query([query, pg_params, del_query], [[]], false);
+        let [q, p] = crud.push_query(query, pg_params, del_query, [[]], true);
 
         query = q;
         pg_params = p;
