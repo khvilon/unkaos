@@ -16,7 +16,6 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartkick": "^5.0.1",
     "d3": "^7.4.3",
-    "date-fns": "^3.6.0",
     "highcharts": "^11.4.0",
     "markdown-it": "^13.0.1",
     "marked": "^4.1.1",
