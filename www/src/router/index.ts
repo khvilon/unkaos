@@ -117,7 +117,14 @@ router.beforeEach((to, from, next) => {
   store.state["common"].is_in_workspace = !to.path.contains("/login") && to.params.workspace;
 
   let htmlElement = document.documentElement;
-  if(store.state["common"].is_in_workspace) htmlElement.setAttribute("theme", cache.getString('theme'));
+  if(store.state.common.is_in_workspace) {
+    let theme = cache.getString('theme');
+    if(theme) htmlElement.setAttribute("theme", theme);
+    else {
+      cache.setString('theme', "dark");
+      htmlElement.setAttribute("theme", "dark");
+    }
+  }
   else htmlElement.setAttribute("theme", "dark");
 
 
