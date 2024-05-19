@@ -395,6 +395,7 @@ $logo-icon-size: 32px;
   display: flex;
   top: 6px;
   left: 40px;
+  height: $main-menu-width;
 }
 
 .main-menu-element {
