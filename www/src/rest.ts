@@ -144,7 +144,11 @@ export default class rest {
       store.state["alerts"][alert_id].type = "error";
       return null;
     }
-    if (resp.status == 401 && !window.location.href.endsWith('/login')) window.location.href = '/' + rest.workspace + '/login';
+    if (resp.status == 401 && !window.location.href.endsWith('/login')) 
+    {
+      cache.setString('location_before_login', window.location.href);
+      window.location.href = '/' + rest.workspace + '/login';
+    }
     //console.log('resp.status', resp  )
     if (resp.status != 200) {
       console.log('>>>rest err', resp)
