@@ -173,6 +173,12 @@ const init = async function() {
         res.send({ readme: readmeContent });    
     })
 
+    app.get('/version', async (req:any, res:any) => {  
+        let path = '../meta.json';
+        let metaContent = await fs.readFile(path, 'utf-8');
+        res.send({ version: metaContent });    
+    })
+
     app.listen(port, async () => {
         console.log(`Eileithyia running on port ${port}`)
     })

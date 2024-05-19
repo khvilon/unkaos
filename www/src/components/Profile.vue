@@ -1,5 +1,6 @@
 <script>
 import cache from "../cache";
+import rest from "../rest";
 export default {
   data() {
     return {
@@ -17,6 +18,7 @@ export default {
       lock_main_menu: false,
       //instead of user.avatar for new year
       is_new_year: false,
+      version: 'fff'
     };
   },
   mounted() {
@@ -40,6 +42,8 @@ export default {
       }
     }
     console.log('isadmin>>>>>>>>>>', this.$store.state.common.is_admin)
+
+    this.getVersion();
   },
   updated() {
     //console.log('uuuuu')
@@ -78,14 +82,18 @@ export default {
       cache.setObject("lock_main_menu", value)
     },
 
-    get_avatar()
-    {
-      return this.user.avatar ? this.user.avatar : 'https://oboz.myjetbrains.com/hub/api/rest/avatar/7755ec62-dfa1-4c3c-a3a9-ac6748d607c1?dpr=1.25&size=20'
+    get_avatar(){
+      return this.user.avatar ? this.user.avatar : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAe9JREFUSEvlVtFRHTEQkyqADggVABWEdAAdQAVABSQVABWkBOgAqACoAEqACsRoZp05fPZ5j8kMH+zPvbnzW3m18srEFwW/CBefApa0D2AnNv1I8n5tAauAJR0A+AtgswJ6BXBM8ia7gTSwpEsAJ4PEZyS9bhgp4KD2NrKZVie/I/kaLJwC+Bnff5G8GyFngR+jp08kd1tJJb0A2ALgnu/9L2BFoi6Vkn4DOPc6ksOChgsqmrs0ZtcVJjLAPwA8xx8Oe8qVdBSK99Jtkqa+G0Ng/1OSj8sGgCuSFtIsJqp/I1kft9n6LPD0KM3ormjubm6KngV2BT4iZVr5t5VuJjxUitK7qq9LTgEH3e61J1MBr3P5fB+NepsWV51dkns8rdKV32Qn1qeBR4Mh+z1FtST30BT72Zxc0XNX7z77uRiLwJIsKruRqV0T1oLdyuJrRhe4Y4FvUVkrmZnwWS+xaJVN4KD2YZLkyo40UqwkK9/im9rnXov6HnBxI1d4kLG5KQXB1nW8a7rVDHjqMgDSxt45dhfx/g9Ju9e/aAF7KtnU01OoJyBJhbl7kr6nLQIX753tco2svXbJoz9UXImqa4HZDVS9/iCyGth0lLtV6u60tImly0EN7IFRJpPV2B0AmapjADXzpUZmBmTtmu8H/A4J79EfjfUqWAAAAABJRU5ErkJggg=='
     },
-    toggle_menu()
-    {
+    toggle_menu(){
       console.log('tm')
       this.menu_visible = !this.menu_visible
+    },
+    async getVersion(){
+      let meta = await rest.version();
+      console.log('meta', meta)
+      meta = JSON.parse(meta.version);
+      this.version = meta.version;
     }
     
   },
@@ -149,6 +157,8 @@ export default {
           <span>Выход</span>
         </div>
       </div>
+      <br>
+      <span>Версия системы: {{ version }}</span>
     </div>
   </div>
 </template>

@@ -69,6 +69,15 @@ export default class rest {
     return await resp.json();
   }
 
+  static async version(): Promise<any> {
+    let options: RequestInit = {
+      method: 'GET',
+      headers: rest.headers
+    }
+    let resp = await fetch(conf.register_url + 'version?dt=' + new Date(), options);
+    return await resp.json();
+  }
+
 
   static async run_gpt(input: string, command: string, signal: any): Promise<any> {
     //return null;//todo
