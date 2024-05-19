@@ -99,8 +99,7 @@ export default {
     @value_selected="tag_selected"
     @value_deselected="tag_deselected"
     :dropdownShouldOpen="computedDropdownShouldOpen"
-    
-
+    :label="label"
   >
   </SelectInput>
 
@@ -142,17 +141,17 @@ export default {
 
 .tag-input .vs__search {
   margin: 0;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .tag-input .vs__actions{
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
 .tag-input .select-input-selected {
   margin-right: 5px !important;
   height: 23px;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .tag-input .vs__selected-options {
