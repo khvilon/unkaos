@@ -79,6 +79,7 @@ export default mod
       :users="users"
       :sprints="sprints"
       :parent_query="currentConfig.query"
+	  :searchOnParentUpdate="false"
     >
     </IssuesSearchInput>
 	
