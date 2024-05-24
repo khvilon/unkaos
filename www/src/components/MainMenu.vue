@@ -3,29 +3,35 @@ import dict from "../dict.ts";
 import tools from "../tools.ts";
 import cache from "../cache";
 
+
+
 let items = [
         {
           link: "/favourites",
           name: "Избранное",
           icon: "bx-star",
+          tabler_icon: "Star",
           level: 1,
         },
         {
           link: "/dashboards",
           name: "Дашборды",
           icon: "bxs-dashboard",
+          tabler_icon: "LayoutDashboard",
           level: 1,
         },
         {
           link: "/boards",
           name: "Доски",
           icon: "bx-columns",
+          tabler_icon: "LayoutKanban",
           level: 1,
         },
         {
           link: "/issues",
           name: "Задачи",
           icon: "bx-detail",
+          tabler_icon: "Article",
           level: 1,
         },
         /*{
@@ -38,6 +44,7 @@ let items = [
           link: "/configs",
           name: "Настройки",
           icon: "bx-cog",
+          tabler_icon: "Settings",
           level: 1,
           server: true,
           hide_on_mobile: true
@@ -46,6 +53,7 @@ let items = [
           link: "/configs/users",
           name: "Пользователи",
           icon: "bx-user",
+          tabler_icon: "User",
           level: 2,
           server: true
         },
@@ -53,6 +61,7 @@ let items = [
           link: "/configs/roles",
           name: "Роли",
           icon: "bx-group",
+          tabler_icon: "Users",
           level: 2,
           admin_only: true,
         },
@@ -60,6 +69,7 @@ let items = [
           link: "/configs/projects",
           name: "Проекты",
           icon: "bx-briefcase-alt-2",
+          tabler_icon: "Briefcase",
           level: 2,
           hide_on_mobile: true
         },
@@ -67,6 +77,7 @@ let items = [
           link: "/configs/sprints",
           name: "Спринты",
           icon: "bx-timer",
+          tabler_icon: "TimelineEvent",
           level: 2,
           admin_only: true
         },
@@ -74,6 +85,7 @@ let items = [
           link: "/configs/fields",
           name: "Поля",
           icon: "bx-bracket",
+          tabler_icon: "Forms",
           level: 2,
           admin_only: true,
         },
@@ -81,6 +93,7 @@ let items = [
           link: "/configs/issue_statuses",
           name: "Статусы задач",
           icon: "bx-flag",
+          tabler_icon: "Pennant",
           level: 2,
           admin_only: true,
         },
@@ -88,6 +101,7 @@ let items = [
           link: "/configs/workflows",
           name: "Воркфлоу задач",
           icon: "bx-sitemap",
+          tabler_icon: "Schema",
           level: 2,
           admin_only: true,
         },
@@ -95,6 +109,7 @@ let items = [
           link: "/configs/issue_types",
           name: "Типы задач",
           icon: "bx-category-alt",
+          tabler_icon: "Template",
           level: 2,
           admin_only: true,
         },/*
@@ -287,6 +302,12 @@ export default {
           ></div>
           <div :class="'main-menu-link main-menu-element-' + menuItem.level">
             <i class="bx" :class="menuItem.icon || 'bx-square-rounded'"></i>
+              <component
+              v-if="false"
+              class="tabler-icon"
+                v-bind:is="'Icon' + menuItem.tabler_icon"
+              ></component>
+    
             <span
               v-show="!$store.state['common']['is_mobile']"
               class="links_name"
@@ -446,6 +467,15 @@ $logo-icon-size: 32px;
   left: calc(($main-menu-width - $main-menu-icon-size) / 2);
 }
 
+.main-menu-element .tabler-icon {
+  position: relative;
+  width: $main-menu-icon-size;
+  min-width: $main-menu-icon-size;
+  left: calc(($main-menu-width - $main-menu-icon-size) / 2);
+  stroke-width: 2.5;
+  display: inline-block;
+}
+
 .mobile-sidebar .main-menu-element i {
   //font-size: 30px !important;
 }
@@ -469,7 +499,8 @@ $logo-icon-size: 32px;
   left: $main-menu-selection-offset;
 }
 .sidebar.open .main-menu-element-2 i,
-.sidebar.open .main-menu-element-2 span {
+.sidebar.open .main-menu-element-2 span
+.sidebar.open .main-menu-element-2 svg {
   padding-left: $main-menu-selection-offset;
 }
 
