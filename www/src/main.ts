@@ -73,6 +73,14 @@ import GadgetConfig from "./gadgets/GadgetConfig.vue";
 import VueChartkick from 'vue-chartkick'
 import Highcharts from 'highcharts'
 
+import { IconStar,IconLayoutDashboard, IconUser, IconUsers, IconLayoutKanban,IconNotes,
+  IconSettings, IconBriefcase, IconArticle, IconTimelineEvent, IconForms,IconPennant, IconSchema,
+  IconAdjustmentsAlt, IconTemplate
+
+ } from '@tabler/icons-vue';
+
+
+
 // Russian locale settings for Highcharts
 Highcharts.setOptions({
   lang: {
@@ -180,6 +188,21 @@ app.component("CheckboxListInput", CheckboxListInput)
 
 app.component("GadgetConfig", GadgetConfig)
 
+app.component("IconStar", IconStar)
+app.component("IconLayoutDashboard", IconLayoutDashboard)
+app.component("IconUser", IconUser)
+app.component("IconUsers", IconUsers)
+app.component("IconLayoutKanban", IconLayoutKanban)
+app.component("IconNotes", IconNotes)
+app.component("IconSettings", IconSettings)
+app.component("IconBriefcase", IconBriefcase)
+app.component("IconArticle", IconArticle)
+app.component("IconTimelineEvent", IconTimelineEvent)
+app.component("IconForms", IconForms)
+app.component("IconPennant", IconPennant)
+app.component("IconSchema", IconSchema)
+app.component("IconAdjustmentsAlt", IconAdjustmentsAlt)
+app.component("IconTemplate", IconTemplate)
 
 
 
