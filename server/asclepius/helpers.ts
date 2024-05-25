@@ -57,6 +57,7 @@ export async function signIn(page: Page, email: string, pass: string) {
   await passInput.waitFor({ state: 'visible' });
   await passInput.fill(pass);
   await page.click('.login-panel .btn_input');
+  console.log(`Clicked login button`);
 }
 
 
