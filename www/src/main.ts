@@ -1,7 +1,6 @@
 //import { createApp } from 'vue'
 
 import { createApp } from "vue/dist/vue.esm-bundler";
-import { createStore } from "vuex";
 
 import router from "./router";
 import store from "./stores";
@@ -9,7 +8,6 @@ import store from "./stores";
 import App from "./App.vue";
 import vSelect from "vue-select";
 
-import { initYandexMetrika } from 'yandex-metrika-vue3';
 
 import "vue-select/dist/vue-select.css";
 
@@ -69,16 +67,16 @@ import LangSelect from "@/components/LangSelect.vue";
 import GadgetConfig from "./gadgets/GadgetConfig.vue";
 
 
-
 import VueChartkick from 'vue-chartkick'
 import Highcharts from 'highcharts'
 
+/*
 import { IconStar,IconLayoutDashboard, IconUser, IconUsers, IconLayoutKanban,IconNotes,
   IconSettings, IconBriefcase, IconArticle, IconTimelineEvent, IconForms,IconPennant, IconSchema,
   IconAdjustmentsAlt, IconTemplate
 
  } from '@tabler/icons-vue';
-
+*/
 
 
 // Russian locale settings for Highcharts
@@ -132,12 +130,6 @@ app.use(VueChartkick.use(Highcharts));
 app.use(router);
 app.use(store);
 
-app.use(initYandexMetrika, {
-  id: 93544300,
-  router: router, // экземпляр Vue Router
-});
-
-
 
 app.component("v-select", vSelect);
 
@@ -188,6 +180,7 @@ app.component("CheckboxListInput", CheckboxListInput)
 
 app.component("GadgetConfig", GadgetConfig)
 
+/*
 app.component("IconStar", IconStar)
 app.component("IconLayoutDashboard", IconLayoutDashboard)
 app.component("IconUser", IconUser)
@@ -202,7 +195,7 @@ app.component("IconForms", IconForms)
 app.component("IconPennant", IconPennant)
 app.component("IconSchema", IconSchema)
 app.component("IconAdjustmentsAlt", IconAdjustmentsAlt)
-app.component("IconTemplate", IconTemplate)
+app.component("IconTemplate", IconTemplate)*/
 
 
 

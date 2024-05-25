@@ -11,13 +11,17 @@ test.describe('Регресионный тест', () => {
   const userLogin = 'spetrov';
   const userName = 'Сергей Петров';
   let state = 0;
+  const baseUrl = 'https://unkaos.tech/'
 
   test.beforeEach(async ({ page }) => {
    // await page.setViewportSize({ width: 1920, height: 1080 });
+   console.log('state', state)
     if (!state) return;
-    await page.goto(`/`);
+    await page.goto(baseUrl + workspace + '/login');
     if (state == 1) await signIn(page, adminEmail, newPass);
     else if (state == 2) await signIn(page, usereMail, newPass);
+    await page.waitForSelector('.profile');
+    await page.waitForSelector('.main-menu-list');
   });
 
   test('Регистрация рабочего пространства и смена пароля', async ({ page }) => {
@@ -33,6 +37,10 @@ test.describe('Регресионный тест', () => {
 
     await page.goto(link);
     await signIn(page, adminEmail, pass);
+
+    await page.waitForSelector('.profile');
+    await page.goto('/' + workspace + '/configs/users');
+    await page.waitForSelector('.ktable .user');
     await changeField(page, 'ФИО', adminName, adminEmail);
     await changeField(page, 'Пароль', newPass, adminEmail);
     await page.waitForSelector('.profile');
@@ -40,7 +48,8 @@ test.describe('Регресионный тест', () => {
   });
 
   test('Создание пользователя', async ({ page }) => {
-    await navigateMainMenu(page, 'workflows');
+    await navigateMainMenu(page, 'users');
+    await page.waitForSelector('.table_card_fields');
     await createUser(page, userName, userLogin, userName);
   });
 /*
