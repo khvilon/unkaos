@@ -12,7 +12,6 @@ import BurndownConfig from "../gadgets/BurndownConfig.vue";
 import d from "../dict.ts";
 import rest from "../rest";
 import tools from "../tools.ts";
-import { computed } from "@vue/runtime-core";
 
 let methods = {
   init: async function () {
