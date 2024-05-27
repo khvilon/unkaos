@@ -86,6 +86,10 @@ export default {
   cursor: pointer;
 }
 
+.btn .btn_input:hover {
+  background-color: var(--button-color-hover);
+}
+
 .btn .disabled-btn {
   cursor: not-allowed;
   background-color: var(--input-bg-color-disabled);
