@@ -35,7 +35,7 @@ export default {
 </script>
 
 <template>
-  <div class="topbar panel">
+  <div class="topbar">
     <div
       style="
         display: flex;

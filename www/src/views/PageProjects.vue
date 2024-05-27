@@ -93,7 +93,7 @@ export default mod;
       :collumns="search_collumns"
     />
     <div class="table_down_panel">
-      <div class="table_panel panel">
+      <div class="table_panel">
         <KTable
           :collumns="collumns"
           :table-data="projects"

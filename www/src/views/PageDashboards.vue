@@ -87,7 +87,7 @@ export default mod;
       />
 
       <div id="dashboards_down_panel">
-        <div id="dashboards_table_panel" class="panel">
+        <div id="dashboards_table_panel">
           <Transition name="element_fade">
             <KTable
               v-if="!loading"

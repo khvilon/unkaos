@@ -158,11 +158,13 @@ export default {
     };
   },
   methods: {
-    move_hover(e) {
-      console.log('mooooved', e)
+    open_menu(e) {
       if (this.$store.state["common"]["is_mobile"]) return;
       if (cache.getObject("lock_main_menu") !== true) this.is_opened = true;
-      console.log('mooooved2', e)
+    },
+    move_hover(e) {
+      if (this.$store.state["common"]["is_mobile"]) return;
+      if (cache.getObject("lock_main_menu") !== true) this.is_opened = true;
       this.hover_opacity = 1;
       this.hover_offset_x = e.target.offsetLeft;
       this.hover_offset_y = e.target.offsetTop;
@@ -270,6 +272,14 @@ export default {
       <div class="logo_name">unkaos</div>
     </div>
 
+    <a class="new-issue-button"
+    :href="'/' + $store.state['common'].workspace + '/issue?t=' + new Date().getTime()"
+    @mouseenter="open_menu($event)"
+    >
+      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-hexagon-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.875 6.27c.7 .398 1.13 1.143 1.125 1.948v7.284c0 .809 -.443 1.555 -1.158 1.948l-6.75 4.27a2.269 2.269 0 0 1 -2.184 0l-6.75 -4.27a2.225 2.225 0 0 1 -1.158 -1.948v-7.285c0 -.809 .443 -1.554 1.158 -1.947l6.75 -3.98a2.33 2.33 0 0 1 2.25 0l6.75 3.98h-.033z" /><path d="M9 12h6" /><path d="M12 9v6" /></svg>
+      <span>Создать задачу</span>
+    </a>
+
     <div class="main-menu-list">
       <div
         class="main-menu-element-bg-hover"
@@ -332,6 +342,7 @@ $main-menu-icon-size: 20px;
 $main-menu-element-font-size: 16px;
 $main-menu-selection-offset: 10px;
 $logo-icon-size: 32px;
+$new-issue-btn-size: 45px;
 
 
 .menu-logo {
@@ -353,7 +364,6 @@ $logo-icon-size: 32px;
   transition-property: all !important;
   transition-duration: $main-menu-open-time !important;
   z-index: 10;
-
 
   margin: 1px;
 }
@@ -400,10 +410,61 @@ $logo-icon-size: 32px;
   font-size: 35px;
 }
 
-.sidebar .main-menu-list {
-  height: calc(100vh - $logo-field-size);
-  position: absolute;
+
+.sidebar .new-issue-button {
   top: $logo-field-size;
+  position: absolute;
+  background-color: transparent;
+  left: calc(($main-menu-width - $main-menu-icon-size) / 2);
+  cursor: pointer;
+  height: $main-menu-icon-size;
+
+  z-index: 2;
+  display: flex;
+  width: $main-menu-icon-size;
+  height: auto;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.sidebar.open .new-issue-button {
+  width: auto;
+}
+
+.sidebar .new-issue-button svg{
+  width: $main-menu-icon-size;
+  max-width: $main-menu-icon-size;
+  min-width: $main-menu-icon-size;
+  
+}
+
+.sidebar .new-issue-button svg path{
+  color: var(--link-color);
+}
+
+.sidebar .new-issue-button span{
+  position: relative;
+  left: 0;
+  font-size: $main-menu-element-font-size;
+  padding-left: $main-menu-selection-offset;
+  opacity: 0;
+
+  transition-property: all;
+  transition-duration: $main-menu-open-time;
+  text-wrap: nowrap;
+  color: var(--link-color);
+  font-weight: 400;
+  
+}
+
+.sidebar.open .new-issue-button span {
+  opacity: 1;
+}
+
+.sidebar .main-menu-list {
+  height: calc(100vh - $logo-field-size - $new-issue-btn-size);
+  position: absolute;
+  top: calc($logo-field-size + $new-issue-btn-size);
   left: 0px;
   width: 100%;
   overflow-y: scroll;
@@ -489,6 +550,7 @@ $logo-icon-size: 32px;
 
   transition-property: all;
   transition-duration: $main-menu-open-time;
+  text-wrap: nowrap;
 }
 
 .sidebar.open .main-menu-element span {

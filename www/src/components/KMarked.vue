@@ -108,6 +108,7 @@ export default {
     recalcMd: async function(val)
     {
       //let start = new Date()
+      console.log('recalcMd', val)
       this.md_value = this.md(val);
 
       //console.log(new Date() - start)
@@ -147,7 +148,7 @@ export default {
       nextTick(() => {
         this.wait_for_recalc_count++;
 
-        setTimeout(this.recalcMd, 0, val)
+        setTimeout(this.recalcMd, 10, val)
       })
     },
     deep: true
