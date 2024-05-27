@@ -110,6 +110,7 @@
 
     --button-color: rgb(78, 78, 78);
     --button-color-hover: rgb(98, 98, 98);
+    --button-color-disabled: rgb(35, 39, 43);
 
     --on-button-icon-color: rgb(255, 255, 255);
     --off-button-icon-color: rgb(108, 108, 108);
@@ -156,7 +157,6 @@
 }
 [theme="light"]
 {
-
     --body-bg-color: rgb(231,232,235);
 
     --panel-bg-color: rgb(251,252,255);
@@ -191,6 +191,7 @@
 
     --button-color: rgb(195, 216, 255);
     --button-color-hover: rgb(175, 186, 255);
+    --button-color-disabled: rgb(240, 240, 240);
 
     --on-button-icon-color: rgb(80, 90, 205);
     --off-button-icon-color: rgb(140, 140, 140);
@@ -256,7 +257,7 @@
     --input-bg-color-disabled : rgb(35, 35, 38);
     --input-hover-bg-color: rgb(34, 32, 54);
 
-    --disabled-bg-color: #283240;
+    --disabled-bg-color: rgb(40, 50, 64);
     --disabled-text-color: rgba(118, 120, 130);
 
     --workflow-marker-color: rgb(230, 230, 230);
@@ -270,6 +271,8 @@
 
     --button-color: rgb(74, 88, 103);
     --button-color-hover: rgb(94, 108, 133);
+    --button-color-disabled:  rgb(32, 42, 52);
+    
 
     --on-button-icon-color: rgb(198, 216, 227);
     --off-button-icon-color: rgb(108, 108, 108);

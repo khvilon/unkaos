@@ -1693,14 +1693,6 @@ $code-width: 160px;
   width: 100%;
 }
 
-.issue-author-input {
-}
-
-#send_comment_btn {
-  .disabled-btn {
-    background-color: var(--panel-bg-color);
-  }
-}
 
 #send_comment_btn .btn_input {
   height: 25px;
