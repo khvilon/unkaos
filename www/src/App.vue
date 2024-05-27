@@ -266,11 +266,11 @@ html[theme="dark"] .main-bg{
 }
 
 html[theme="dark"] .main-bg-big{
-  background-image: url('https://i.postimg.cc/prKh7Tmr/m5.png');
+  background-image: url('/m5.png');
 }
 
 html[theme="dark"] .main-bg-small{
-  background-image: url('https://i.postimg.cc/L4JVDBvQ/m4.webp');
+  background-image: url('/m4.webp');
 }
 
 .main-bg-blurer{
