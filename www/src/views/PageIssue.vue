@@ -480,7 +480,7 @@ let methods = {
       this.edit_mode = true;
     }
     
-    this.current_description = issues_drafts[this.issue[0].uuid].description
+    this.current_description = this.issue[0].description
 
     this.scrollToElementByUrl()
 
@@ -624,7 +624,7 @@ let methods = {
     this.edit_mode = true;
   },
   cancel_edit_mode: function () {
-    this.issue[0].description.value = this.saved_descr;
+    this.issue[0].description = this.saved_descr;
     this.issue[0].title = this.saved_name;
     this.issue[0].project_uuid = this.saved_project_uuid
     this.current_description = this.saved_descr;
@@ -1114,7 +1114,7 @@ export default mod;
       <img :src="full_size_image"/>
     </div>
 
-    <div id="issue_top_panel" class="panel"   >
+    <div id="issue_top_panel"   >
 
     <div class="issue-top-buttons">
       <Transition name="element_fade">
@@ -1190,7 +1190,7 @@ export default mod;
     </div>
 
     <div id="issue_down_panel">
-      <div id="issue_main_panel" class="panel">
+      <div id="issue_main_panel">
 
         <div class="issue-line" v-if="!loading && id !==''">
           <div class="issue-tags-container">
@@ -1312,6 +1312,15 @@ export default mod;
             />
           </TransitionGroup>
         </div>
+
+      <Transition name="element_fade">
+        <div class='preview-label' v-if="!loading && (edit_mode || id === '')">
+          Предпросмотр описания:
+          <br>
+          <br>
+        </div>
+
+			</Transition>
 
 			<Transition name="element_fade">
         <KMarked v-if="!loading"
@@ -1684,14 +1693,6 @@ $code-width: 160px;
   width: 100%;
 }
 
-.issue-author-input {
-}
-
-#send_comment_btn {
-  .disabled-btn {
-    background-color: var(--panel-bg-color);
-  }
-}
 
 #send_comment_btn .btn_input {
   height: 25px;
@@ -1794,6 +1795,10 @@ $code-width: 160px;
 }
 .cancel-issue-edit-mode-btn {
   padding-left: $input-height;
+}
+
+#issue_down_panel .preview-label{
+  font-weight: 500;
 }
 
 .bx-purchase-tag

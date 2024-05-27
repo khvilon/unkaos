@@ -48,6 +48,7 @@
     --loading-bar-color: rgba(20, 22, 24, 0.5);
 
     --panel-border-radius: 10px;
+    --panel-border-color: rgb(46, 58, 64);
     --border-radius: 6px;
     --border-style: inset;
     --border-width: 2px;
@@ -83,10 +84,12 @@
 
     --text-color: rgb(190, 190, 190);
     --text-gradient-color: rgba(130, 130, 130);
+    --text-weight: 400;
 
     --border-color: rgba(156, 69, 69, 0);
-    --table-row-color: rgb(40, 45, 50);
-    --table-row-color-selected: rgb(50, 60, 70);
+    --table-row-color: rgba(32, 35, 38, 0.8);
+    --table-row-color-hover: rgba(80, 90, 100);
+    --table-row-color-selected: rgb(60, 70, 80);
     --table-row-border-color: black;
 
     --input-bg-color: rgb(19, 17, 39);
@@ -105,7 +108,9 @@
     --link-color: rgb(128, 146, 157);
     --issue-card-descr-color: rgb(128, 146, 157);
 
-    --button-color: #333;
+    --button-color: rgb(78, 78, 78);
+    --button-color-hover: rgb(98, 98, 98);
+    --button-color-disabled: rgb(35, 39, 43);
 
     --on-button-icon-color: rgb(255, 255, 255);
     --off-button-icon-color: rgb(108, 108, 108);
@@ -122,6 +127,8 @@
     --loading-bar-color: rgba(20, 22, 24, 0.5);
 
     --panel-border-radius: 10px;
+    --panel-border-color: rgb(46, 58, 64);
+    --panel-border-style: groove;
     --border-radius: 6px;
     --border-style: inset;
     --border-width: 2px;
@@ -150,7 +157,6 @@
 }
 [theme="light"]
 {
-
     --body-bg-color: rgb(231,232,235);
 
     --panel-bg-color: rgb(251,252,255);
@@ -159,10 +165,12 @@
 
     --text-color: rgb(17, 64, 152);
     --text-gradient-color: #316086;
+    --text-weight: 400;
 
     --border-color: rgb(108, 146, 211);
-    --table-row-color: rgb(241, 242, 245);
-    --table-row-color-selected: rgb(235, 246, 255);
+    --table-row-color: rgba(251, 252, 255, 0.8);
+    --table-row-color-hover: rgb(150, 150, 252);
+    --table-row-color-selected: rgb(205, 216, 255);
     --table-row-border-color: rgb(51, 51, 51);
 
     --input-bg-color: rgb(241,247,255);
@@ -181,7 +189,9 @@
     --link-color: rgb(38, 66, 205);
     --issue-card-descr-color: rgb(28, 46, 57);
 
-    --button-color: rgb(235, 246, 255);
+    --button-color: rgb(195, 216, 255);
+    --button-color-hover: rgb(175, 186, 255);
+    --button-color-disabled: rgb(240, 240, 240);
 
     --on-button-icon-color: rgb(80, 90, 205);
     --off-button-icon-color: rgb(140, 140, 140);
@@ -197,6 +207,8 @@
     --loading-bar-color: rgba(201,217,245, 0.5);
 
     --panel-border-radius: 4px;
+    --panel-border-color: rgb(231,232,235);
+    --panel-border-style: groove;
     --border-radius: 3px;
     --border-style: solid;
     --border-width: 1px;
@@ -222,27 +234,30 @@
     --chart-color0: rgb(108, 126,137);
     --chart-color1: rgb(0, 0, 198);
     --chart-color2: rgb(0, 148, 0);
+    
 }
 [theme="dark"]
 {
-    --body-bg-color: rgb(23, 33, 43);
+    --body-bg-color: rgb(13, 23, 30);
 
-    --panel-bg-color: rgb(36, 47, 61);
+    --panel-bg-color: rgba(86, 97, 111, 0.2);
     --group-bg-color: rgba(30, 40, 50, 0.5);
 
     --text-color: rgba(228, 230, 240);
     --text-gradient-color: rgba(148, 150, 160);
+    --text-weight: 300;
 
-    --border-color: rgba(71, 81, 89, 0.6);
-    --table-row-color: rgb(45, 56, 71);
-    --table-row-color-selected: #394c60;
-    --table-row-border-color: black;
+    --border-color: rgba(71, 81, 89, 0.2);
+    --table-row-color: rgba(96, 107, 121, 0.2);
+    --table-row-color-hover: rgba(48, 65, 80, 0.6);
+    --table-row-color-selected: rgba(57, 76, 96, 0.7);
+    --table-row-border-color: rgba(0, 0, 0, 0.6);
 
     --input-bg-color: rgb(30 34 46);
     --input-bg-color-disabled : rgb(35, 35, 38);
     --input-hover-bg-color: rgb(34, 32, 54);
 
-    --disabled-bg-color: #283240;
+    --disabled-bg-color: rgb(40, 50, 64);
     --disabled-text-color: rgba(118, 120, 130);
 
     --workflow-marker-color: rgb(230, 230, 230);
@@ -254,7 +269,10 @@
     --link-color: rgb(108, 146, 211);
     --issue-card-descr-color: rgb(128, 146, 157);
 
-    --button-color: #4a5867;
+    --button-color: rgb(74, 88, 103);
+    --button-color-hover: rgb(94, 108, 133);
+    --button-color-disabled:  rgb(32, 42, 52);
+    
 
     --on-button-icon-color: rgb(198, 216, 227);
     --off-button-icon-color: rgb(108, 108, 108);
@@ -267,11 +285,13 @@
     --issues-search-idx-4-color: rgb(187, 174, 130);
     --issues-search-bad-color: red;
 
-    --loading-bg-color: rgba(40, 44, 50, 0.6);
+    --loading-bg-color: rgba(40, 44, 50, 0);
     --loading-bar-color: rgba(20, 24, 30, 0.5);
 
 
     --panel-border-radius: 4px;
+    --panel-border-color: rgba(23, 33, 43, 0.3);
+    --panel-border-style: groove;
     --border-radius: 3px;
     --border-style: inset;
     --border-width: 1px;

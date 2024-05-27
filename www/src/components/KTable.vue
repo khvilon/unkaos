@@ -274,13 +274,14 @@ td {
 
 .selected_row td {
   background-color: var(--table-row-color-selected);
-  border-color: var(--table-row-color-selected);
+  //border-color: var(--table-row-color-selected);
 }
 td {
   border: solid 2px #000;
   border-style: solid none;
   padding: 3px 3px 3px 3px;
-  border-color: var(--table-row-color);
+  //border-color: var(--table-row-color);
+  border-color: transparent;
   background-color: var(--table-row-color);
 }
 td:first-child {
@@ -292,6 +293,16 @@ td:last-child {
   border-right-style: solid;
   border-bottom-right-radius: var(--border-radius);
   border-top-right-radius: var(--border-radius);
+}
+
+.selected_row td {
+  background-color: var(--table-row-color-selected);
+  //border-color: var(--table-row-color-selected);
+}
+
+.ktable tr:hover{
+  background-color: var(--table-row-color-hover);
+  //border-color: var(--table-row-color-selected);
 }
 /*
  .selected_row
