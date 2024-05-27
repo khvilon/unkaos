@@ -110,7 +110,7 @@ export default {
       >
         {{ user.name }}
       </div>
-      <div class="top-menu-icon-btn">
+      <div class="top-menu-icon-btn" v-if="false">
         <a
             class="bx new-issue-btn"
             title="Создать новую задачу"
@@ -189,6 +189,7 @@ export default {
 .profile-username {
   padding: 5px;
   margin: 0 5px;
+  font-weight: 400;
 }
 
 .new-issue-btn {
@@ -262,7 +263,6 @@ export default {
 
 .profile-top div {
   float: right;
-  font-weight: 600;
   font-size: 14px;
 }
 
