@@ -3,12 +3,8 @@
 import matrix from "../matrix.ts";
 import rest from "../rest.ts";
 import tools from "../tools.ts";
-import cache from "../cache.ts";
-import conf from "../conf.ts";
 
 import { nextTick } from "vue";
-import KMarked from "./KMarked.vue";
-
 
 export default {
   props: {
@@ -76,11 +72,10 @@ export default {
       }
       else {
         ans += '\r\n\r\nНайдено задач: ' + this.issues.length + '. ';
-        ans += (gptJson.command == 'find') ? 'Перейти?' : 'Выполнить?'
+        if (gptJson.command == 'find') ans += 'Перейти?';
+        else if(this.issues.length) ans += 'Выполнить?';
       }
       
-      
-
       return ans
     },
     async getIssues(){
@@ -214,9 +209,6 @@ export default {
       }
     },
 
-
-    
-
     async writeValue(issue, v){
 
       let parent
@@ -314,7 +306,7 @@ export default {
     class="gpt-panel"
     :class="[panelVisible ? 'gpt-panel-open' : 'gpt-panel-closed']"
   >
-    <div @click="togglePanel" class="toggle-panel">
+    <div @click="togglePanel" class="toggle-panel panel">
       <i class='bx bxs-brain toggle-icon'
       :class="[ $store.state['common'].is_on_landing ? 'active_icon' : '']"></i>
       
@@ -389,7 +381,7 @@ export default {
   display: flex;
   justify-content:center;
   align-items: flex-end;
-  background: var(--loading-bg-color);
+  
 
   clip-path: polygon(
     0% 100%,

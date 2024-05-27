@@ -168,6 +168,9 @@ export default {
 <template>
   <div class="main-container" 
   v-bind:class="{'mobile': $store.state['common']['is_mobile']}">
+  <div class="main-bg-small main-bg"></div>
+  <div class="main-bg-big main-bg"></div>
+  <div class="main-bg-blurer"></div>
   <div
     id="router-view-container"
     v-bind:class="{
@@ -227,7 +230,7 @@ body {
 
   //background-color: var(--body-bg-color);
   transition: all 0 ease !important;
-  background: 'https://sopranoclub.ru/images/150-fonov-i-oboev-s-serdechkami/file56005.jpeg';
+  
   //black;
   
 }
@@ -235,13 +238,50 @@ body {
 
 
 .main-container{
-  background: var(--body-bg-color);
+  background-color: var(--body-bg-color);
   position: fixed;
   left: 0;
   top: 0;
   width: 100vw;
   height: 100vh;
-  //background-image: url('');
+  overflow: hidden;
+}
+
+.main-bg{
+  background-color: transparent;
+}
+
+html[theme="dark"] .main-bg{
+  background-color: var(--body-bg-color);
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  object-fit: cover; 
+  object-position: center; 
+  background-position-x: center;
+  background-size:cover;
+  background-blend-mode: color-dodge;
+}
+
+html[theme="dark"] .main-bg-big{
+  background-image: url('https://i.postimg.cc/prKh7Tmr/m5.png');
+}
+
+html[theme="dark"] .main-bg-small{
+  background-image: url('https://i.postimg.cc/L4JVDBvQ/m4.webp');
+}
+
+.main-bg-blurer{
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  left: 0;
+  top: 0;
+
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px); 
 }
 
 .table_card_buttons .btn .btn_input {
@@ -264,7 +304,7 @@ html {
   box-sizing: border-box;
   transition: all 0.2s ease;
   opacity: 1;
-  font-weight: 300;
+  font-weight: var(--text-weight);
 
   // font-family: 'Poppins', sans-serif;
 }
@@ -291,11 +331,12 @@ html {
 
 #router-view-container {
   position: absolute;
-  background-color: var(--body-bg-color);
+  //background-color: var(--body-bg-color);
   top: 0px;
   left: $main-menu-width;
   width: calc(100vw - $main-menu-width);
   height: 100vh;
+  background: transparent;
  // background-image: url('');
 }
 
@@ -324,9 +365,12 @@ html {
   background: var(--panel-bg-color);
   border-radius: var(--panel-border-radius);
   margin: 0px;
-  border-style: ridge;
+  border-style: var(--panel-border-style);
   border-width: $border-width;
-  border-color: var(--body-bg-color);
+  border-color: var(--panel-border-color);
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px); 
   //box-shadow: 1px 0px 1px $body-bg-color;
 }
 
@@ -399,7 +443,9 @@ input {
   background: var(--loading-bg-color);
   overflow: hidden !important;
   border-radius: var(--panel-border-radius);
-  z-index: 10 !important;
+  z-index: 100 !important;
+  backdrop-filter: blur(4px) !important; /* Apply blur effect */
+  -webkit-backdrop-filter: blur(4px) !important; /* For Safari support */
 }
 
 .loading-bar {
@@ -414,6 +460,7 @@ input {
   //left:-$loading-bar-width;
   //background: linear-gradient(0.25turn, rgba(200,200,200,0.0), rgba(0,0,0,0.8), rgba(200,200,200,0.0));
   //animation: background 3s infinite ease-in-out;
+
   
 }
 

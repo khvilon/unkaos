@@ -1114,7 +1114,7 @@ export default mod;
       <img :src="full_size_image"/>
     </div>
 
-    <div id="issue_top_panel" class="panel"   >
+    <div id="issue_top_panel"   >
 
     <div class="issue-top-buttons">
       <Transition name="element_fade">
@@ -1190,7 +1190,7 @@ export default mod;
     </div>
 
     <div id="issue_down_panel">
-      <div id="issue_main_panel" class="panel">
+      <div id="issue_main_panel">
 
         <div class="issue-line" v-if="!loading && id !==''">
           <div class="issue-tags-container">

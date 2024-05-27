@@ -315,7 +315,7 @@ export default mod;
 
 <template ref="issues">
   <div>
-    <div class="panel topbar">
+    <div class="topbar">
       <div
         style="
           display: flex;
@@ -366,7 +366,7 @@ export default mod;
       </div>
     </div>
 
-    <div id="issues_down_panel" class="panel">
+    <div id="issues_down_panel">
       <div id="issues_table_panel" ref="issuesTablePanel">
         <Transition name="element_fade">
           <KTable
