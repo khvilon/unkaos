@@ -553,19 +553,19 @@ input {
 .top-menu-icon-btn {
 	  height: $input-height;
     width: $input-height;
-    font-size: calc($input-height - 10px);
+    font-size: calc($input-height - 4px);
     border-radius: var(--border-radius);
     margin-left: 10px;
 	  color: var(--text-color);
     background-color: var(--button-color);
-    border-width: 1px;
+    border-width: 0px;
     border-color: var(--border-color);
     border-style: solid;
     border-style: outset;
     cursor: pointer;
 	
     text-align: center;
-	  padding-top: 4px;
+	  padding-top: 2px;
     background: transparent;
     border-color: var(--text-color);
   }
@@ -594,6 +594,10 @@ input {
 
 .issue-top-button-inactive {
   color: var(--off-button-icon-color) !important;
+}
+
+.issue-top-button-inactive path {
+  stroke: var(--off-button-icon-color) !important;
 }
 
 .issue-top-button:hover {
