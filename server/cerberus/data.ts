@@ -30,7 +30,7 @@ export default class Data {
     const schemas = await sql`    
       SELECT schema_name
       FROM information_schema.schemata
-      WHERE schema_name = ${workspace_name} 
+      WHERE schema_name = ${workspaceName} 
       AND schema_name NOT LIKE 'pg_%'
     `; 
 
