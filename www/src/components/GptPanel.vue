@@ -312,7 +312,7 @@ export default {
       
     </div>
   
-      <div class="panel" :class="['gpt-down-panel', animationVisible ? 'gradient-background' : '']"> 
+      <div class="panel gpt-down-panel-bg" :class="['gpt-down-panel', animationVisible ? 'gradient-background' : '']"> 
        
         <div class="gpt-chat gradient-animation">
           <div class="gpt-chat-text">
@@ -365,8 +365,17 @@ export default {
   transition: bottom 0.4s ease-in-out;
 }
 
+
+
 .gpt-panel-open{
   
+}
+
+.gpt-down-panel-bg::before {
+
+  transition: backdrop-filter 10s ease;
+  backdrop-filter: blur(20px);
+
 }
 
 .gpt-panel-closed{

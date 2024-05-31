@@ -427,6 +427,17 @@ $new-issue-btn-size: 45px;
   text-decoration: none;
 }
 
+.mobile-sidebar .new-issue-button {
+  top: 16px;
+  left: 60px;
+  width: 30px;
+}
+.mobile-sidebar .new-issue-button svg {
+  width: 30px !important;
+  min-width: 30px !important;
+  height: auto;
+}
+
 .sidebar.open .new-issue-button {
   width: auto;
 }
@@ -478,7 +489,7 @@ $new-issue-btn-size: 45px;
 .mobile-sidebar .main-menu-list {
   display: flex;
   top: 6px;
-  left: 40px;
+  left: 80px;
   height: $main-menu-width;
 }
 

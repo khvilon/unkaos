@@ -58,7 +58,7 @@ export default {
 </script>
 <template>
   
-    <div class="panel modal edit-tag-modal" :class="{'non-issue-tag-modal': !isIssueTag}">
+    <div class="modal-panel modal edit-tag-modal" :class="{'non-issue-tag-modal': !isIssueTag}">
       <ColorInput
         label="Цвет заливки"
         :value="tag.color"
@@ -110,6 +110,7 @@ export default {
   left:  50%;
   top: 50%;
   transform: translate(-50%, -50%);
+  position: fixed;
 }
 
 .edit-tag-modal > *:not(:last-child) {
