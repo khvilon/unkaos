@@ -270,7 +270,7 @@ html[theme="dark"] .main-bg-big{
 }
 
 html[theme="dark"] .main-bg-small{
-  background-image: url('/m4.webp');
+  background-image: url('/m5.webp');
 }
 
 .main-bg-blurer{
@@ -362,17 +362,33 @@ html {
 }
 
 .panel {
-  background: var(--panel-bg-color);
   border-radius: var(--panel-border-radius);
   margin: 0px;
   border-style: var(--panel-border-style);
   border-width: $border-width;
   border-color: var(--panel-border-color);
+  background:var(--panel-bg-color);
 
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px); 
+  //backdrop-filter: blur(8px);
+  //-webkit-backdrop-filter: blur(8px); 
   //box-shadow: 1px 0px 1px $body-bg-color;
+  /* Start hidden */
+  //backdrop-filter: blur(0px);
 }
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent; 
+  backdrop-filter: blur(8px);
+  z-index: -1;
+}
+
+
 
 .hidden {
   opacity: 0;

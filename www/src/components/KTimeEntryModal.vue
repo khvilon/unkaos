@@ -63,7 +63,7 @@ export default {
 </script>
 <template>
   <div class="modal-bg" @mousedown.self="close()">
-    <div class="panel modal time-entry-modal">
+    <div class="modal-panel modal time-entry-modal">
 
       <i
         v-if="time_entry.uuid"

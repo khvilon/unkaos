@@ -99,7 +99,7 @@ export default {
 </script>
 <template>
   <div class="modal-bg" @click.self="close()">
-    <div class="panel modal new-relation-modal">
+    <div class="modal-panel modal new-relation-modal">
       <SelectInput
         label="Тип связи"
         :value="relation_types[0]"
