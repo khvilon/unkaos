@@ -125,7 +125,7 @@ mod.computed.is_this_user2=function(){
 };
 
 mod.computed.allow_edit=function(){
-  if(!this.users_selected) return false
+  //if(!this.users_selected) return false
   if(this.$store.state['common'].is_admin) return true;
   let user = cache.getObject("profile");
 
