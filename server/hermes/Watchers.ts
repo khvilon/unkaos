@@ -19,7 +19,7 @@ class Watchers {
 
 
   private async handleNotify(row:any, { command, relation, key, old }: any){
-    console.log('new handleNotify', command, relation, row)
+
     if(command != 'insert' || relation.table != 'logs_done') return
     if(row.table_name == 'issue' && row.table_name == 'issue_actions') return
 
@@ -43,12 +43,9 @@ class Watchers {
       body+='\r\n'
     }
 
-    console.log('new handleNotify0', issue_uuid)
-
     let watchers = await sql`SELECT user_uuid FROM ${sql(relation.schema + '.watchers') } WHERE issue_uuid = ${issue_uuid}`
     if(!watchers || watchers.length < 1) return
 
-    console.log('new handleNotify1', issue_uuid)
 
     let infos = await sql`SELECT 
       p.short_name || '-' || i.num AS num,
@@ -58,7 +55,6 @@ class Watchers {
       ON p.uuid = i.project_uuid
       WHERE i.uuid = ${issue_uuid}`
 
-    console.log('new handleNotify2', infos)
     
     if(!infos || infos.length != 1) return
     issue_url += infos[0].num
