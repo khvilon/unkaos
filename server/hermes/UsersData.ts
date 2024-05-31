@@ -43,13 +43,10 @@ class UsersData {
     await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect)
   }
 
-    public getUser(uuid:string){
-        for (let i = 0; i < this.workspaces.length; i++) {
-            if(this.users[this.workspaces[i]][uuid]) {
-                return this.users[this.workspaces[i]][uuid]
-            }
-        }
-        return null
+    public getUser(uuid:string, workspace:string){
+      if(!this.users[workspace]) return null;
+      if(!this.users[workspace][uuid]) return null;
+      this.users[workspace][uuid]
     }
 
     public async setTelegramtId(username:string, id:string){

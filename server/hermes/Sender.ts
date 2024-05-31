@@ -77,7 +77,7 @@ class Sender {
       return {status:-1, status_details: errMsg}
     }
 
-    let user:any = this.userData.getUser(recipient)
+    let user:any = this.userData.getUser(recipient, workspace)
     if(!user){
       let errMsg = `Error - user ${recipient} not found`
       console.log(errMsg) 
