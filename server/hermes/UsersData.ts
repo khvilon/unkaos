@@ -38,7 +38,7 @@ class UsersData {
     }
 
     this.users = users;
-    console.log('Users loaded')
+    console.log('Users loaded', users)
 
     await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect)
   }
