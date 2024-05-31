@@ -135,7 +135,9 @@ export default {
       
       try {
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
+          console.log('>>>gpt command0', this.userInput);
           const commandAns = await rest.run_gpt(this.userInput, 'classify');
+          console.log('>>>gpt command1', commandAns);
           let command = (await commandAns.json()).command;
           let step0text = this.step0text[command];
 
@@ -152,7 +154,7 @@ export default {
 
       } catch (error) {
         console.error('Request error:', error);
-        this.gptResultHuman = techErrText;
+        this.gptResultHuman = this.techErrText;
         this.animationVisible = false;
       } 
     },
