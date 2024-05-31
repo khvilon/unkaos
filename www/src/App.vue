@@ -389,6 +389,16 @@ html {
 }
 
 
+.modal-panel {
+  border-radius: var(--panel-border-radius);
+  margin: 0px;
+  border-style: var(--panel-border-style);
+  border-width: $border-width;
+  border-color: var(--panel-border-color);
+  background:var(--modal-bg-color);
+}
+
+
 
 .hidden {
   opacity: 0;
