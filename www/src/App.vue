@@ -169,7 +169,7 @@ export default {
   <div class="main-container" 
   v-bind:class="{'mobile': $store.state['common']['is_mobile']}">
   <div class="main-bg-small main-bg"></div>
-  <div class="main-bg-big main-bg"></div>
+ 
   <div class="main-bg-blurer"></div>
   <div
     id="router-view-container"
