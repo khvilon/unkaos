@@ -193,6 +193,8 @@ Unkaos is built on a robust, scalable, and modern technology stack designed for 
 
 The database structure allows users to access their workspace data while securely isolating other workspaces—each workspace is represented by a schema in the PostgreSQL DB.
 
+Unkaos is designed to handle heavy loads and has no limit on the number of tasks due to its horizontal scalability.
+
 ![Unkaos Logo](pictures/architecture.png)
 
 ### Key services:
