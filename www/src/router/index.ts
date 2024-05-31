@@ -119,7 +119,7 @@ router.beforeEach((to, from, next) => {
   let htmlElement = document.documentElement;
   if(store.state.common.is_in_workspace) {
     let theme = cache.getString('theme');
-    if(theme) htmlElement.setAttribute("theme", theme);
+    if(theme && typeof theme == 'string') htmlElement.setAttribute("theme", theme);
     else {
       cache.setString('theme', "dark");
       htmlElement.setAttribute("theme", "dark");

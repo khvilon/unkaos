@@ -183,7 +183,7 @@ export default mod;
             :id="input.id"
             :value="selected_users[input.id]"
             :parent_name="'users'"
-            :disabled="input.disabled || (!allow_edit && !is_this_user2)"
+            :disabled="input.disabled || (!allow_edit)"
             :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
           ></component>
           <StringInput v-if="is_this_user2"
@@ -193,7 +193,7 @@ export default mod;
             </StringInput>
           
         </div>
-        <div class="table_card_buttons" v-if="allow_edit || is_this_user2">
+        <div class="table_card_buttons" v-if="allow_edit">
           <KButton v-if="users_selected && !is_this_user2"
             class="change-password"
             :name="'Сбросить пароль'"
