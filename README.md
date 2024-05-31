@@ -35,6 +35,7 @@ Built on stable and modern technologies such as Vue.js 3, Node.js, TypeScript, a
         - [Burndown Charts](#burndown-charts)
       - [Personal Configurations](#personal-configurations)
     - [🛠️For Workspace Administrators](#🛠️for-workspace-administrators)
+      - [Get started](#get-started)
       - [Workspace Configurations](#workspace-configurations)
       - [Customizing Processes](#customizing-processes)
       - [Users and Roles](#users-and-roles)
@@ -128,6 +129,13 @@ In your user settings, you can configure notifications, update your profile, and
 ## 🛠️For Workspace Administrators
 
 As a workspace administrator, you have additional responsibilities and capabilities within Unkaos.
+
+### Get started
+
+To register a new workspace follow the link on the main page and then the instructions. After your email is verified a workspace is created and you can sign in with the password provided in the email message.
+
+You should start your work with the users page of the main menu. Here you can set a new password for yourself and add team members. After a user is added to the workspace he does not receive any message. To let him know he is registered use the reset password button in that user card. After that a mail with a random password will be sent to that person. The password can be set to a specified value only by the user for himself.
+
 
 ### Workspace Configurations
 
