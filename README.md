@@ -35,6 +35,7 @@ Built on stable and modern technologies such as Vue.js 3, Node.js, TypeScript, a
         - [Burndown Charts](#burndown-charts)
       - [Personal Configurations](#personal-configurations)
     - [🛠️For Workspace Administrators](#🛠️for-workspace-administrators)
+      - [Get started](#get-started)
       - [Workspace Configurations](#workspace-configurations)
       - [Customizing Processes](#customizing-processes)
       - [Users and Roles](#users-and-roles)
@@ -129,6 +130,13 @@ In your user settings, you can configure notifications, update your profile, and
 
 As a workspace administrator, you have additional responsibilities and capabilities within Unkaos.
 
+### Get started
+
+To register a new workspace follow the link on the main page and then the instructions. After your email is verified a workspace is created and you can sign in with the password provided in the email message.
+
+You should start your work with the users page of the main menu. Here you can set a new password for yourself and add team members. After a user is added to the workspace he does not receive any message. To let him know he is registered use the reset password button in that user card. After that a mail with a random password will be sent to that person. The password can be set to a specified value only by the user for himself.
+
+
 ### Workspace Configurations
 
 Admins can configure global settings, including project structures, default permissions, and integrations with other tools.
@@ -184,6 +192,8 @@ Autoupdate at night hours is on by default, it will look for last stable version
 Unkaos is built on a robust, scalable, and modern technology stack designed for efficiency and ease of use. At its core, Unkaos uses Vue.js 3 for the front end, providing a reactive and composable user interface. The back end is powered by Node.js, ensuring fast and scalable server-side logic. Data storage is managed by PostgreSQL, known for its reliability and powerful features.
 
 The database structure allows users to access their workspace data while securely isolating other workspaces—each workspace is represented by a schema in the PostgreSQL DB.
+
+Unkaos is designed to handle heavy loads and has no limit on the number of tasks due to its horizontal scalability.
 
 ![Unkaos Logo](pictures/architecture.png)
 
