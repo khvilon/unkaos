@@ -38,18 +38,15 @@ class UsersData {
     }
 
     this.users = users;
-    console.log('Users loaded')
+    console.log('Users loaded', users)
 
     await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect)
   }
 
-    public getUser(uuid:string){
-        for (let i = 0; i < this.workspaces.length; i++) {
-            if(this.users[this.workspaces[i]][uuid]) {
-                return this.users[this.workspaces[i]][uuid]
-            }
-        }
-        return null
+    public getUser(uuid:string, workspace:string){
+      if(!this.users[workspace]) return null;
+      if(!this.users[workspace][uuid]) return null;
+      return this.users[workspace][uuid]
     }
 
     public async setTelegramtId(username:string, id:string){

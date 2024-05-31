@@ -90,7 +90,7 @@ export default {
 </script>
 <template>
   <div class="modal-bg" @mousedown.self="close()">
-    <div class="panel modal board-filter-modal">
+    <div class="modal-panel modal board-filter-modal">
 
       <i
         v-if="modif_filter.uuid"

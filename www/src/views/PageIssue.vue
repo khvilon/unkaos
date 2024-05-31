@@ -1142,11 +1142,12 @@ export default mod;
       <Transition name="element_fade">
         <div
             v-if="!loading && id !== ''"
-            class="top-menu-icon-btn"
-            title="Следить за задачей (функция в разработке)"
+            class="top-menu-icon-btn issue-watch-btn"
+            :class="{ 'issue-top-button-inactive': !watch }"
+            title="Получать уведомления при изменении другими пользователями"
             @click="togle_watch"
         >
-          <IWatcher :enabled="watch"/>
+          <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-bell"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>
         </div>
       </Transition>
 
@@ -1155,10 +1156,11 @@ export default mod;
           <a
             v-if="!loading && id != '' &&
             !$store.state['common']['is_mobile']"
-            class="issue-clone-button top-menu-icon-btn bx bx-duplicate "
+            class="issue-clone-button top-menu-icon-btn"
             title="Клонировать задачу"
             :href="get_clone_url()"
           >
+            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-copy-plus"><path d="M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z" /><path d="M4.012 16.737a2 2 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1" /><path d="M11 14h6" /><path d="M14 11v6" /></svg>
           </a>
        
       </Transition>
@@ -1166,10 +1168,36 @@ export default mod;
       <Transition name="element_fade">
         <div class="top-menu-icon-btn" v-if="!loading && id !== '' && !$store.state['common']['is_mobile']">
           <a
-            class="make-child-btn issue-top-button bx bx-subdirectory-right"
+            class="make-child-btn issue-top-button"
             title="Создать дочернюю задачу"
             :href="('/' + $store.state['common'].workspace + '/issue?t=' + new Date().getTime() + '&parent_uuid=' + issue[0].uuid)"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="35" height="36" viewBox="0 0 35 36" xml:space="preserve">
+              <desc>Created with Fabric.js 3.6.6</desc>
+              <defs>
+              </defs>
+              <g transform="matrix(1.88 0 0 1.88 26.74 28.16)"  >
+              <path style="stroke: rgb(0,0,0); stroke-width: 2; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;"  transform=" translate(-19, -19)" d="M 16 19 h 6" stroke-linecap="round" />
+              </g>
+              <g transform="matrix(1.88 0 0 1.88 26.76 28.15)"  >
+              <path style="stroke: rgb(0,0,0); stroke-width: 2; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;"  transform=" translate(-19, -19)" d="M 19 16 v 6" stroke-linecap="round" />
+              </g>
+              <g transform="matrix(1.94 0 0 1.94 11.85 10.21)"  >
+              <path style="stroke: rgb(0,0,0); stroke-width: 2; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;"  transform=" translate(-9, -9)" d="M 6 9 l 6 0" stroke-linecap="round" />
+              </g>
+              <g transform="matrix(1.94 0 0 1.94 6.03 2.45)"  >
+              <path style="stroke: rgb(0,0,0); stroke-width: 2; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;"  transform=" translate(-6, -5)" d="M 4 5 l 4 0" stroke-linecap="round" />
+              </g>
+              <g transform="matrix(1.94 0 0 1.8 11.85 13.11)"  >
+              <path style="stroke: rgb(0,0,0); stroke-width: 2; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;"  transform=" translate(-9, -11)" d="M 6 5 v 11 a 1 1 0 0 0 1 1 h 5" stroke-linecap="round" />
+              </g>
+              <g transform="matrix(1.94 0 0 1.94 25.42 10.21)"  >
+              <path style="stroke: rgb(0,0,0); stroke-width: 2; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;"  transform=" translate(-16, -9)" d="M 12 7 m 0 1 a 1 1 0 0 1 1 -1 h 6 a 1 1 0 0 1 1 1 v 2 a 1 1 0 0 1 -1 1 h -6 a 1 1 0 0 1 -1 -1 z" stroke-linecap="round" />
+              </g>
+              <g transform="matrix(0.42 0 0 1 17.48 23.66)"  >
+              <path style="stroke: rgb(0,0,0); stroke-width: 2; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 4; fill: none; fill-rule: nonzero; opacity: 1;"  transform=" translate(-16, -17)" d="M 12 15 m 0 1 a 1 1 0 0 1 1 -1 h 6 a 1 1 0 0 1 1 1 v 2 a 1 1 0 0 1 -1 1 h -6 a 1 1 0 0 1 -1 -1 z" stroke-linecap="round" />
+              </g>
+            </svg>
           </a>
         </div>
       </Transition>
@@ -1557,17 +1585,33 @@ $code-width: 160px;
   font-size: 35px;
   text-decoration: none;
   color: var(--on-button-icon-color);
+  display: flex;
 }
 
 .make-child-btn {
   display: flex !important;
   font-size: 20px !important;
-  border-radius: 50% !important;
-  border-style: solid;
   margin-top: 0px;
   margin-left: 4px;
   width: 20px !important;
   height: 20px !important;
+}
+
+.make-child-btn path, .issue-clone-button path {
+  stroke: var(--link-color) !important;
+}
+
+.make-child-btn svg{
+  width: 22px;
+  min-width: 22px;
+  margin-top: 4px;
+}
+
+.issue-clone-button svg {
+  width: 28px;
+  min-width: 28px;
+  margin-top: 0px;
+  padding-top: 0px;
 }
 
 
@@ -1651,6 +1695,9 @@ $code-width: 160px;
   left: 100vw !important;
 }
 
+.issue-watch-btn{
+  margin-top: -6px;
+}
 
 #issue_down_panel {
   display: flex;

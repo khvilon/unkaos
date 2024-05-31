@@ -1304,7 +1304,7 @@ export default mod
 				</StringInput>
 
 
-				<i class='bx bx-dots-horizontal-rounded top-menu-icon-btn' @click="configs_open = !configs_open"></i>
+				<i class='bx bx-slider top-menu-icon-btn' @click="configs_open = !configs_open"></i>
 				<i class='bx bx-trash top-menu-icon-btn delete-board-btn' @click="delete_board()">
 				</i>
 				<i class='bx bx-star top-menu-icon-btn' @click="add_to_favourites"
@@ -1320,7 +1320,7 @@ export default mod
 
 
 
-		<div id=board_down_panel class="panel">
+		<div id=board_down_panel>
 
 			<div class="filters-row">
 				<i class='bx bx-filter-alt'></i>
@@ -1470,7 +1470,7 @@ export default mod
 
 
 			<div class="modal-bg" v-show="configs_open">
-				<div class="panel modal board-config table_card">
+				<div class="modal-panel modal board-config table_card">
 					
 					<div class="table_card_fields">
 						<IssuesSearchInput v-if="board != undefined && 

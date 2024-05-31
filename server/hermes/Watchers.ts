@@ -12,9 +12,6 @@ try {
   };
 }
 
-
-const titleFieldUuid = 'c96966ea-a591-47a9-992c-0a2f6443bc80'
-
 class Watchers {
 
   constructor() {
@@ -22,8 +19,11 @@ class Watchers {
 
 
   private async handleNotify(row:any, { command, relation, key, old }: any){
+
     if(command != 'insert' || relation.table != 'logs_done') return
     if(row.table_name == 'issue' && row.table_name == 'issue_actions') return
+
+    
     
 
     let issue_url = conf.base_url + 'issue/'
@@ -46,15 +46,15 @@ class Watchers {
     let watchers = await sql`SELECT user_uuid FROM ${sql(relation.schema + '.watchers') } WHERE issue_uuid = ${issue_uuid}`
     if(!watchers || watchers.length < 1) return
 
+
     let infos = await sql`SELECT 
       p.short_name || '-' || i.num AS num,
-      fv.value AS title
+      title
       FROM ${sql(relation.schema + '.issues') } i 
       LEFT JOIN ${sql(relation.schema + '.projects') } p 
       ON p.uuid = i.project_uuid
-      LEFT JOIN ${sql(relation.schema + '.field_values') } fv
-      ON fv.issue_uuid = i.uuid AND fv.field_uuid = ${titleFieldUuid}
       WHERE i.uuid = ${issue_uuid}`
+
     
     if(!infos || infos.length != 1) return
     issue_url += infos[0].num

@@ -57,9 +57,9 @@ const handleRequest = async function(req:any, res:any) {
     if(method!='read') dbLoger.writeLogDone(subdomain, req_uuid,  req.headers.user_uuid, table_name, method, params.uuid, params)
         
     //add watcher
-    if(method!='read' && table_name == 'issue'){
-        sql.query(subdomain, `INSERT INTO watchers (user_uuid, issue_uuid) VALUES('` + req.headers.user_uuid + "','" + params.uuid + `') ON CONFLICT DO NOTHING`)
-    } 
+    //if(method!='read' && table_name == 'issue'){
+    //    sql.query(subdomain, `INSERT INTO watchers (user_uuid, issue_uuid) VALUES('` + req.headers.user_uuid + "','" + params.uuid + `') ON CONFLICT DO NOTHING`)
+    //} 
 
     res.send(ans)
 }

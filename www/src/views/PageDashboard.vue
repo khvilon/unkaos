@@ -373,7 +373,7 @@ export default mod;
 
     <div v-if="gadget_types_modal_visible" class = gadget-types-modal-container>
       <div class="modal-bg" @mousedown.self="gadget_types_modal_visible=false">
-        <div class="panel modal gadget-types-modal">
+        <div class="modal-panel modal gadget-types-modal">
           <Transition name="element_fade">
           <div class="gadget-types-cells">
             
@@ -467,7 +467,7 @@ export default mod;
               @click="delete_gadget(gadget)"
             ></i>
             <i
-              class="bx bx-dots-horizontal-rounded gadget-btn"
+              class="bx bx-slider gadget-btn"
               @click="gadget.config_open = !gadget.config_open"
             ></i>
             

@@ -77,7 +77,7 @@ class Sender {
       return {status:-1, status_details: errMsg}
     }
 
-    let user:any = this.userData.getUser(recipient)
+    let user:any = this.userData.getUser(recipient, workspace)
     if(!user){
       let errMsg = `Error - user ${recipient} not found`
       console.log(errMsg) 
@@ -102,7 +102,7 @@ class Sender {
       case 'telegram':
         if(!user.telegram){
           let errMsg = `Error - user ${user.name} has no registered telegram`
-          console.log(errMsg) 
+          console.log(errMsg, user) 
           return {status:-1, status_details: errMsg}
         }
         if(!user.telegram_id){
