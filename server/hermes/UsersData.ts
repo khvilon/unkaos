@@ -44,6 +44,11 @@ class UsersData {
   }
 
     public getUser(uuid:string, workspace:string){
+      for (let i = 0; i < this.workspaces.length; i++) {
+        console.log(this.workspaces[i], workspace)
+      }
+
+
       if(!this.users[workspace]) return null;
       if(!this.users[workspace][uuid]) return null;
       this.users[workspace][uuid]
