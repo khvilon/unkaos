@@ -89,9 +89,11 @@ export default class rest {
     }
     if(signal) options.signal = signal;
 
+    let userUuid = user ? user.uuid : '';
+
     try{
         //const response = await fetch('http://localhost:3010/gpt?userInput=' + this.userInput  + '&userUuid=' + user.uuid, {
-        return fetch(conf.base_url + 'gpt?userInput=' + input  + '&userCommand=' + command  + '&userUuid=' + user.uuid, options);
+        return fetch(conf.base_url + 'gpt?userInput=' + input  + '&userCommand=' + command  + '&userUuid=' + userUuid, options);
     }
     catch(err){
       return {err: err}
