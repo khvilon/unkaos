@@ -25,6 +25,35 @@ export default class Data {
     await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect); // bind to keep `this` reference
   }
 
+
+  private async getWorkspace(workspaceName: string){
+    const schemas = await sql`    
+      SELECT schema_name
+      FROM information_schema.schemata
+      WHERE schema_name = ${workspace_name} 
+      AND schema_name NOT LIKE 'pg_%'
+    `; 
+
+    if(!schemas || !schemas[0]) return;
+
+    let schema = schemas[0]
+
+    this.workspaces.set( schema.schema_name, {
+        name: schema.schema_name,
+        sessions: new Map(),//token, user_uuid
+        permissions: new Map(),//user_uuid.table_name.CRUD as ke
+        users: new Map() //users by uuid
+      } as Workspace)
+
+      this.updateWorkspaceUsers(schema.schema_name);
+      this.updateWorkspaceSessions(schema.schema_name);
+      this.updateWorkspacePermissions(schema.schema_name);
+      console.log(`Loaded workspace: ${schema.schema_name}`)
+
+
+  }
+  
+
   private async getWorkspaces() {
     const schemas = await sql`    
       SELECT schema_name
@@ -208,7 +237,7 @@ export default class Data {
 
   private async handleNotify(row: Row, { command, relation, _key, _old }: any) {
     if(!this.workspaces.get(relation.schema)){
-      await this.getWorkspaces();
+      await this.getWorkspace(relation.schema);
     }
 
     if (relation.table == 'user_sessions' && command == 'insert') {
@@ -245,7 +274,7 @@ export default class Data {
     
     let workspace: Workspace | undefined = this.workspaces.get(workspaceName);
     if(!workspace){
-      await this.getWorkspaces();
+      await this.getWorkspace(workspaceName);
       workspace = this.workspaces.get(workspaceName);
       if(!workspace) return null;
     }
