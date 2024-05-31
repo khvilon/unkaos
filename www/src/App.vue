@@ -270,7 +270,7 @@ html[theme="dark"] .main-bg-big{
 }
 
 html[theme="dark"] .main-bg-small{
-  background-image: url('/m4.webp');
+  background-image: url('/m5.webp');
 }
 
 .main-bg-blurer{
@@ -362,17 +362,43 @@ html {
 }
 
 .panel {
-  background: var(--panel-bg-color);
   border-radius: var(--panel-border-radius);
   margin: 0px;
   border-style: var(--panel-border-style);
   border-width: $border-width;
   border-color: var(--panel-border-color);
+  background:var(--panel-bg-color);
 
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px); 
+  //backdrop-filter: blur(8px);
+  //-webkit-backdrop-filter: blur(8px); 
   //box-shadow: 1px 0px 1px $body-bg-color;
+  /* Start hidden */
+  //backdrop-filter: blur(0px);
 }
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent; 
+  backdrop-filter: blur(8px);
+  z-index: -1;
+}
+
+
+.modal-panel {
+  border-radius: var(--panel-border-radius);
+  margin: 0px;
+  border-style: var(--panel-border-style);
+  border-width: $border-width;
+  border-color: var(--panel-border-color);
+  background:var(--modal-bg-color);
+}
+
+
 
 .hidden {
   opacity: 0;
@@ -553,19 +579,19 @@ input {
 .top-menu-icon-btn {
 	  height: $input-height;
     width: $input-height;
-    font-size: calc($input-height - 10px);
+    font-size: calc($input-height - 4px);
     border-radius: var(--border-radius);
     margin-left: 10px;
 	  color: var(--text-color);
     background-color: var(--button-color);
-    border-width: 1px;
+    border-width: 0px;
     border-color: var(--border-color);
     border-style: solid;
     border-style: outset;
     cursor: pointer;
 	
     text-align: center;
-	  padding-top: 4px;
+	  padding-top: 2px;
     background: transparent;
     border-color: var(--text-color);
   }
@@ -594,6 +620,10 @@ input {
 
 .issue-top-button-inactive {
   color: var(--off-button-icon-color) !important;
+}
+
+.issue-top-button-inactive path {
+  stroke: var(--off-button-icon-color) !important;
 }
 
 .issue-top-button:hover {
