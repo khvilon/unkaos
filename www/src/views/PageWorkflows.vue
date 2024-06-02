@@ -64,7 +64,7 @@ export default mod;
       :label="label"
       :collumns="search_collumns"
     />
-    <div class="table_down_panel">
+    <div class="table_down_panel" :class="{table_down_panel_no_card: !selected_workflows.uuid}">
       <div class="table_panel">
         <KTable
           :collumns="collumns"
@@ -73,6 +73,10 @@ export default mod;
         />
       </div>
       <div class="table_card panel workflow-table-card">
+        <i
+            class="bx bx-x table-card-close-button"
+            @click="closeMobileTableCard"
+        ></i>
         <KTabPanel>
           <KTab title="Основное" :visible="true">
             <div class="table_card_fields">
@@ -108,7 +112,7 @@ export default mod;
               <div class="table_card_footer">
                 <KButton
                   class="table_card_footer_btn"
-                  :name="'Сохранить'"
+                  :name="workflows_selected ? 'Сохранить' : 'Создать'"
                   :func="'save_workflows'"
                 />
                 <KButton

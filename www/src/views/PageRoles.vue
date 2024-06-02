@@ -282,11 +282,15 @@ export default mod;
       :label="'Роли пользователей'"
       :collumns="search_collumns"
     />
-    <div class="table_down_panel">
+    <div class="table_down_panel" :class="{table_down_panel_no_card: !selected_roles.uuid}">
       <div class="table_panel">
         <KTable :collumns="collumns" :table-data="roles" :name="'roles'" />
       </div>
       <div class="table_card panel">
+        <i
+            class="bx bx-x table-card-close-button"
+            @click="closeMobileTableCard"
+        ></i>
         <div class="table_card_fields">
         <StringInput
           :label="'Название'"
@@ -354,7 +358,7 @@ export default mod;
             <div class="table_card_footer">
               <KButton
                 class="table_card_footer_btn"
-                name="Сохранить"
+                :name="roles_selected ? 'Сохранить' : 'Создать'"
                 @click="save"
               />
               <KButton v-if="roles_selected"
