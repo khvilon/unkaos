@@ -146,6 +146,21 @@ export default {
       ],
       brackets: ["(", ")"],
       operations: ["=", "!=", "<", ">", "like"],
+      types_to_operations: {
+        User: ["=", "!="],
+        Numeric: ["=", "!=", "<", ">"],
+        Timestamp: ["=", "!=", "<", ">"],
+        String: ["=", "!=", "like"],
+        Text: ["=", "!=", "like"],
+        Sprint: ["=", "!="],
+        Type: ["=", "!="],
+        Project: ["=", "!="],
+        Status: ["=", "!="],
+        Tag: ["=", "!="],
+        Select: ["=", "!="],
+        Boolean: ["="],
+        Time: ["=", "!=", "<", ">"]
+      },
       logic_operators: ["and", "or ", "order by"],
       order_operators: ["desc", ","],
       fields_and_attributes: [],
@@ -421,7 +436,7 @@ export default {
     },
 
     fill_suggestions(waits_for_idx, field_type) {
-      // console.log('fill_suggestions', waits_for_idx)
+       console.log('fill_suggestions', field_type)
 
       let project_field_name = "Проект";
 
@@ -447,7 +462,11 @@ export default {
         fast_projects.map((o) => this.fields_and_attributes.push(o));
 
         this.suggestions = this.fields_and_attributes;
-      } else if (waits_for_idx == 1) this.suggestions = this.operations;
+      } else if (waits_for_idx == 1) {
+        let operations = this.types_to_operations[field_type]
+        if(!operations) operations = this.operations;
+        this.suggestions = tools.clone_obj(operations);
+      }
       else if (waits_for_idx == 2) {
         if (this.vals_dict[field_type] != undefined) {
           this.suggestions = this.vals_dict[field_type].map((p) => p.name);

@@ -89,6 +89,15 @@ $table-card-width: calc(100% - $table-panel-width);
   
 }
 
+.table_card_fields .input{
+  margin-bottom: 15px;
+  
+}
+
+.table_card_fields .issue-search-div{
+  margin-bottom: 15px;
+}
+
 .table_card_buttons{
   display: flex;
   flex-direction: column;
