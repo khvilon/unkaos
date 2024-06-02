@@ -266,7 +266,8 @@ page_helper.create_module = async function (data, methods) {
     //mounted,
     beforeUnmount,
     data: function () {
-      return tools.clone_obj(data);
+      return tools.clone_obj_deep(data);
+     //return data;
     },
     beforeCreate,
     methods,
