@@ -194,7 +194,7 @@ page_helper.create_module = async function (data, methods) {
 
     if(this.name){
       //console.log('ttt', this.$store.state[this.name][this.name])
-      //this.$store.state[this.name]["selected_" + this.name] = instance;
+      if(this.name == 'board') this.$store.state[this.name]["selected_" + this.name] = instance;
 
       //console.log("this.$store.state[this.name]['selected_' + this.name]", this.$store.state[this.name]['selected_' + this.name])
       this.$store.state[this.name]["instance_" + this.name] =
