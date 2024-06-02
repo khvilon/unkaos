@@ -69,35 +69,62 @@ export default class tools {
   static string_is_date(str): boolean{
     return (new Date(str) !== "Invalid Date") && !isNaN(new Date(str))
   }
-  /*
-  tools.clone_obj = tools.obj_clone = function(obj) {
-    //  if(obj.boards_columns != undefined) console.log('cloneclone', JSON.stringify(obj))
-      if(obj.toBuffer != undefined) return obj.clone()
-      var clone = {};
-      if(Array.isArray(obj))
-      {
-          clone = []
-          for(var i in obj) {
-              if(obj[i] != null &&  typeof(obj[i])=="object" && obj[i].naturalHeight == undefined)
-                  clone.push(tools.obj_clone(obj[i]))
-              else
-              clone.push(obj[i])
+  
+  static clone_obj_deep(obj: any, hash = new WeakMap()) {
+    if (obj === null || typeof obj !== 'object') {
+        return obj; // Return the value if obj is not an object
+    }
+    
+    // If obj is a function, return it as is
+    if (typeof obj === 'function') {
+        return obj;
+    }
 
-          }
-      }
-      else
-      {
-          for(var i in obj) {
-              if(obj[i] != null &&  typeof(obj[i])=="object" && obj[i].naturalHeight == undefined)
-                  clone[i] = tools.obj_clone(obj[i]);
-              else
-                  clone[i] = obj[i];
-          }
-      }
-     // if(obj.boards_columns != undefined) console.log('cloneclone2', JSON.stringify(clone))
-      return clone;
-  }
-  */
+    // Handle Date
+    if (obj instanceof Date) {
+        return new Date(obj);
+    }
+
+    // Handle RegExp
+    if (obj instanceof RegExp) {
+        return new RegExp(obj);
+    }
+
+    // Handle Arrays
+    if (Array.isArray(obj)) {
+        const arrCopy: any[] = [];
+        obj.forEach((_, i) => {
+            arrCopy[i] = tools.clone_obj_deep(obj[i], hash);
+        });
+        return arrCopy;
+    }
+
+    // Handle Objects with circular references
+    if (hash.has(obj)) {
+        return hash.get(obj);
+    }
+
+    // Create a new object to hold the cloned properties
+    const cloneObj = Object.create(Object.getPrototypeOf(obj));
+    hash.set(obj, cloneObj);
+
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            cloneObj[key] = tools.clone_obj_deep(obj[key], hash);
+        }
+    }
+
+    // Handle symbols
+    const symbols = Object.getOwnPropertySymbols(obj);
+    for (const sym of symbols) {
+        if (obj.propertyIsEnumerable(sym)) {
+            cloneObj[sym] = tools.clone_obj_deep(obj[sym], hash);
+        }
+    }
+
+    return cloneObj;
+}
+  
 
   static obj_length(obj: any): number {
     return Object.keys(obj).length;
