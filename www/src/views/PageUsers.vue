@@ -12,6 +12,7 @@ const data = {
       name: "ФИО",
       id: "uuid",
       type: "user",
+      search: true,
     },
 
     {
