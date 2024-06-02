@@ -11,6 +11,7 @@ $table-card-width: calc(100% - $table-panel-width);
 
 .table_panel {
   display: flex;
+  position: relative;
   width: calc($table-panel-width - 20px);
   min-width: calc($table-panel-width - 20px);
   height: calc(100vh - $top-menu-height);
@@ -26,11 +27,17 @@ $table-card-width: calc(100% - $table-panel-width);
 
 .mobile-view .table_panel {
   height: calc(100vh - $top-menu-height - $main-menu-width);
-  width: 100%;
+  width:0;
+  flex-grow: 1;
+  min-width: 0;
+  max-width: 0;
 }
 
-
-
+.mobile-view .table_down_panel_no_card .table_panel {
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+}
 
 
 .table_card {
@@ -46,11 +53,12 @@ $table-card-width: calc(100% - $table-panel-width);
   position: relative;
 }
 
+
+
 .mobile-view .table_card {
   height: calc(100vh - $top-menu-height - 20px - $main-menu-width);
   width: calc(100% - 40px);
   margin-left: 20px;
-  position: absolute;
 }
 
 .table_card > *:not(:last-child) {
