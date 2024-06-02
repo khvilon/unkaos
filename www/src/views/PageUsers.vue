@@ -155,7 +155,7 @@ export default mod;
       :label="'Пользователи'"
       :collumns="search_collumns"
     />
-    <div class="table_down_panel">
+    <div class="table_down_panel" :class="{table_down_panel_no_card: !selected_users.uuid}">
       <div class="table_panel">
         <Transition name="element_fade">
           <KTable
@@ -169,7 +169,6 @@ export default mod;
       </div>
       <div class="table_card panel" v-show="!$store.state['common']['is_mobile'] || selected_users.uuid">
         <i
-          v-if="$store.state['common'] && $store.state['common']['is_mobile']"
           class="bx bx-x table-card-close-button"
           @click="closeMobileTableCard"
         >
@@ -203,7 +202,7 @@ export default mod;
             <KButton
               ref="saveButton"
               class="table_card_footer_btn"
-              :name="'Сохранить'"
+              :name="users_selected ? 'Сохранить' : 'Создать'"
               :func="'save_users'"
               @button_ans="saved"
               :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid)"

@@ -395,7 +395,7 @@ export default mod;
     </div>
 
 
-    <div class="panel topbar">
+    <div class="topbar">
       <div
         style="
           display: flex;
@@ -428,7 +428,7 @@ export default mod;
       </div>
     </div>
 
-    <div id="dashboard_down_panel" ref="dashboard_down_panel" class="panel">
+    <div id="dashboard_down_panel" ref="dashboard_down_panel">
       <div
         class="gadgets"
         ref="gadgets"
