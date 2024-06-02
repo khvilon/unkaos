@@ -56,7 +56,7 @@ const data = {
   ],
   buttons_route: [
     {
-      name: "Создать",
+      name: "bx-plus-circle",
       route: "/board",
     },
   ],

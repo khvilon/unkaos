@@ -49,7 +49,7 @@ export default {
 </script>
 
 <template>
-  <div class="btn">
+  <div class="btn" :class="{'bx-btn': name.substr(0, 3) == 'bx-'}">
     <input
       v-if="name.substr(0, 3) != 'bx-'"
       class="btn_input"
@@ -86,8 +86,19 @@ export default {
   cursor: pointer;
 }
 
+.bx-btn .btn_input{
+  width: $input-height !important;
+  background-color: transparent;
+  border: none;
+  margin-left: 10px;
+}
+
 .btn .btn_input:hover {
   background-color: var(--button-color-hover);
+}
+
+.bx-btn .btn_input:hover {
+  background-color: transparent;
 }
 
 .btn .disabled-btn {
@@ -103,6 +114,11 @@ export default {
 .btn i {
   text-align: center;
   line-height: $input-height;
-  font-size: 18px !important;
+  font-size: 22px !important;
+}
+
+.btn i:hover {
+//text-shadow: 0px 0px 2px var(--text-color); 
+color: var(--link-color);
 }
 </style>

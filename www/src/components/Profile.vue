@@ -178,6 +178,7 @@ export default {
   color: white;
   width: auto;
   height: 68px;
+  z-index: 11;
 }
 
 .mobile .profile{

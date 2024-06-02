@@ -11,10 +11,17 @@ $table-card-width: calc(100% - $table-panel-width);
 
 .table_panel {
   display: flex;
-  width: $table-panel-width;
+  width: calc($table-panel-width - 20px);
+  min-width: calc($table-panel-width - 20px);
   height: calc(100vh - $top-menu-height);
-  
-  background: transparent;
+  transition: width 0.2s, min-width 0.2s;
+}
+
+.table_down_panel_no_card .table_panel{
+  width: 100%;
+  flex-grow: 1;
+  width: 100%;
+  min-width: 100%;
 }
 
 .mobile-view .table_panel {
@@ -24,15 +31,19 @@ $table-card-width: calc(100% - $table-panel-width);
 
 
 
+
+
 .table_card {
   height: calc(100vh - $top-menu-height - 20px);
-  padding: 10px 14px 20px 20px;
+  padding: 22px 14px 20px 20px;
   width: $table-card-width;
+  min-width: $table-card-width;
   margin-right: 20px;
   margin-bottom: 20px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  position: relative;
 }
 
 .mobile-view .table_card {
@@ -97,6 +108,20 @@ $table-card-width: calc(100% - $table-panel-width);
   position: absolute;
   right: 0;
   top: 0;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+
+.mobile-view .table-card-close-button{
+  position: absolute;
+  right: 0;
+  top: 0;
   font-size: 30px;
+}
+
+.table-card-close-button:hover{
+color: var(--link-color);
 }
 

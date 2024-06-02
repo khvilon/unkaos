@@ -69,7 +69,7 @@ export default mod;
         :label="label"
         :collumns="search_collumns"
       />
-      <div class="table_down_panel">
+      <div class="table_down_panel" :class="{table_down_panel_no_card: !selected_fields.uuid}">
         <div class="table_panel">
           <Transition name="element_fade">
             <KTable
@@ -81,6 +81,10 @@ export default mod;
           </Transition>
         </div>
         <div class="table_card panel">
+          <i
+            class="bx bx-x table-card-close-button"
+            @click="closeMobileTableCard"
+          ></i>
           <div class="table_card_fields" @keyup.enter="saveEnter()">
             <component
               v-bind:is="input.type + 'Input'"
@@ -147,7 +151,7 @@ export default mod;
               <KButton 
                 ref="saveButton"
                 class="table_card_footer_btn"
-                :name="'Сохранить'"
+                :name="fields_selected ? 'Сохранить' : 'Создать'"
                 @click="updateSelectVal"
                 :func="'save_fields'"
                 @button_ans="function(ans){try_done = !ans}"

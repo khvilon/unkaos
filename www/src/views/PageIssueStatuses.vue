@@ -72,7 +72,7 @@ export default mod;
       :label="'Статусы задач'"
       :collumns="search_collumns"
     />
-    <div class="table_down_panel">
+    <div class="table_down_panel" :class="{table_down_panel_no_card: !selected_issue_statuses.uuid}">
       <div class="table_panel">
         <KTable
           :collumns="collumns"
@@ -81,6 +81,10 @@ export default mod;
         />
       </div>
       <div class="table_card panel">
+        <i
+            class="bx bx-x table-card-close-button"
+            @click="closeMobileTableCard"
+        ></i>
         <div class="table_card_fields">
           <component
             v-bind:is="input.type + 'Input'"
@@ -98,7 +102,7 @@ export default mod;
           <div class="table_card_footer">
             <KButton
                 class="table_card_footer_btn"
-              :name="'Сохранить'"
+              :name="issue_statuses_selected ? 'Сохранить' : 'Создать'"
               :func="'save_issue_statuses'"
               @button_ans="function(ans){try_done = !ans}"
               :stop="!inputs.filter((inp)=>inp.required).every(is_input_valid)"

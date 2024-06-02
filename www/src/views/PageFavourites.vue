@@ -42,7 +42,7 @@ export default mod;
     <TopMenu :name="name" :label="label" :collumns="search_collumns" />
     <div class="favourites-panel">
       <div class="favourites-container" v-if="favourites != undefined">
-        <div v-for="(type, index) in ['Доска', 'Сохраненный запрос']">
+        <div v-for="(type, index) in ['Доска', 'Сохраненный запрос', 'Задача']">
           <span>{{ type }}</span>
           <div v-for="(favourite) in favourites.filter((f)=>f.type[0].name == type)">
             <i

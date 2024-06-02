@@ -75,6 +75,7 @@ page_helper.create_module = async function (data, methods) {
   data.visible = false;
   data.loaded = false;
   data.try_done = false;
+  data.card_visible = false;
 
   data.url_params = tools.get_uri_params(window.location.href);
 
@@ -82,7 +83,7 @@ page_helper.create_module = async function (data, methods) {
 
   if(data.name){
     data.buttons.push({
-      name: "Создать",
+      name: "bx-plus-circle",
       func: "unselect_" + data.name
     });
   }
@@ -269,7 +270,7 @@ page_helper.create_module = async function (data, methods) {
 
     if(this.name){
       //console.log('ttt', this.$store.state[this.name][this.name])
-      this.$store.state[this.name]["selected_" + this.name] = instance;
+      //this.$store.state[this.name]["selected_" + this.name] = instance;
 
       //console.log("this.$store.state[this.name]['selected_' + this.name]", this.$store.state[this.name]['selected_' + this.name])
       this.$store.state[this.name]["instance_" + this.name] =
