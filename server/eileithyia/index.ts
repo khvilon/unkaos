@@ -130,6 +130,12 @@ const init = async function() {
                         <p><a href='https://${process.env.DOMAIN}/register/${uuid}'>Нажмите здесь, чтобы активировать вашу учетную запись</a></p>
                         <p>Ваш временный пароль для входа: <strong>${pass}</strong></p>
                         <p>После входа в систему рекомендуем вам изменить этот временный пароль.</p>
+                        <br>
+                        <p>Для последующего входа в ваше рабочее пространство используте:</p> 
+                        <p><a href='https://${process.env.DOMAIN}/${workspace}/login'>https://${process.env.DOMAIN}/${workspace}/login</a></p>
+                        <p>Если вы авторизованы, ваши задачи доступны по ссылке:</p>
+                        <p><a href='https://${process.env.DOMAIN}/${workspace}/issues'>https://${process.env.DOMAIN}/${workspace}/issues</a></p>
+                        <br>
                         <p>С уважением,<br/>Команда Unkaos</p>
                     </body>
                     </html>`
