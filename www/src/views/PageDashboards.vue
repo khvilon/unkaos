@@ -80,7 +80,7 @@ export default mod;
   <div>
     <div>
       <TopMenu
-        :buttons="[{name:'Создать', click: new_dashboard}]"
+        :buttons="[{name:'bx-plus-circle', click: new_dashboard}]"
         :name="name"
         :label="label"
         :collumns="search_collumns"
