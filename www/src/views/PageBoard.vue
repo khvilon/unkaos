@@ -1279,10 +1279,12 @@ export default mod
 
 		<div class='panel topbar'>
 			<div style="display: flex ; flex-direction:row; flex-grow: 1; max-height: calc(100% - 60px); ">
-				<StringInput v-if="board != undefined && selected_board != undefined" label='' id="name"
-					key="board_name" :parent_name="'board'" class="board-name-input"
-					:value="get_json_val(selected_board, 'name')" :disabled="!configs_open">
-				</StringInput>
+				
+				<span class="topbar-label"
+					v-if="board != undefined && selected_board != undefined"
+				>
+					{{selected_board.name}}
+				</span>
 
 
 				<div v-if="board != undefined && selected_board != undefined && selected_board.use_sprint_filter && this.$store.state['common'].use_sprints && sprints.length > 0"
@@ -1473,6 +1475,15 @@ export default mod
 				<div class="modal-panel modal board-config table_card">
 					
 					<div class="table_card_fields">
+						<StringInput label='Название'
+							v-if="board != undefined && selected_board != undefined"
+							:value="selected_board.name" 
+							id="name"
+							:parent_name="'board'"
+							>
+						</StringInput>
+
+
 						<IssuesSearchInput v-if="board != undefined && 
 						selected_board && (!(selected_board.use_sprint_filter && $store.state['common'].use_sprints) || sprints[curr_sprint_num])" label="Запрос" class='board-issue-search-input'
 							:parent_name="'board'" @update_parent_from_input="update_search_query" :fields="fields"
