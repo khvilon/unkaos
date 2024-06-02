@@ -854,25 +854,33 @@ let methods = {
 
 
   get_favourite_uuid: async function() {
-    let favourites = await rest.run_method("read_relation_types");
-		if (!favourites || !this.selected_issue) return ''
+    console.log('get_favourite_uuid0')
+    let favourites = await rest.run_method("read_favourites");
+    console.log('get_favourite_uuid1')
+		if (!favourites || !this.issue[0]) return ''
+    console.log('get_favourite_uuid2')
+    let code = this.issue[0].project_short_name + '-' + this.issue[0].num
 		for (let i = 0; i < favourites.length; i++) {
-			if (favourites[i].link.indexOf(this.selected_issue.uuid) > -1) {
-				this.favourite_uuid = this.favourites[i].uuid;
+      console.log('get_favourite_uuid20', favourites[i])
+			if (favourites[i].link.indexOf(code) > -1) {
+				this.favourite_uuid = favourites[i].uuid;
         return;
 			}
 		}
+
+    console.log('get_favourite_uuid3')
 
 		this.favourite_uuid = '';
 	},
 
   async add_to_favourites() {
+    let code = this.issue[0].project_short_name + '-' + this.issue[0].num
 		let favourite =
 		{
 			uuid: tools.uuidv4(),
 			type_uuid: this.favourite_issue_type_uuid,
 			name: this.selected_issue.title,
-			link: '/' + this.$store.state['common'].workspace + '/issue/' + this.selected_issue.uuid
+			link: '/' + this.$store.state['common'].workspace + '/issue/' + code
 		}
 
 		await rest.run_method('create_favourites', favourite)
@@ -1187,7 +1195,7 @@ export default mod;
       </Transition>
 
     
-      <Transition name="element_fade">
+
         <div
             v-if="!loading && id !== '' && !favourite_uuid"
             :class="{ '': !edit_mode }"
@@ -1196,9 +1204,8 @@ export default mod;
             @click="add_to_favourites"
         >
         </div>
-      </Transition>
 
-      <Transition name="element_fade">
+  
         <div
             v-if="!loading && id !== '' && favourite_uuid"
             class="top-menu-icon-btn bx bxs-star"
@@ -1206,7 +1213,7 @@ export default mod;
             @click="delete_from_favourites"
         >
         </div>
-      </Transition>
+
 
       <Transition name="element_fade">
       
