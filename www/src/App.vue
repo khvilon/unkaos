@@ -572,6 +572,36 @@ input {
   background: rgba(0,0,0,0);
 }
 
+
+/* For Firefox */
+* {
+  scrollbar-width: thin; /* Adjust the width as needed */
+  scrollbar-color: var(--scroll-color) transparent; /* Thumb color and track color */
+}
+
+/* Optional: Specific styles for Firefox */
+body::-moz-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+body::-moz-scrollbar-track {
+  background: none;
+  border-radius: 10px;
+}
+
+body::-moz-scrollbar-thumb {
+  border-radius: 10px;
+  background: var(--scroll-color);
+  box-shadow: inset 0 0 5px var(--scroll-shadow-color);
+}
+
+body::-moz-scrollbar-corner {
+  background: rgba(0,0,0,0);
+}
+
+
+
 .change-password .btn_input {
   width: 100% !important;
 }
