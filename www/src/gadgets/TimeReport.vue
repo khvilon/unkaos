@@ -14,6 +14,10 @@ let methods = {
     if(this.config.user && this.config.user.uuid) options.author_uuid = this.config.user.uuid, 
     this.time_entries = await rest.run_method("read_time_report", options);
 
+    console.log('>>>load_time_entries0',  this.time_entries)
+
+    //alert(this.time_entries_copy)
+
     this.total_duration = 0
     for(let i = 0; i < this.time_entries.length; i++){
       this.total_duration += Number(this.time_entries[i].duration)
@@ -22,8 +26,10 @@ let methods = {
   format_date: function(dt){return tools.format_date(dt)}
 };
 
-const data = {
+let data = {
   time_entries: [],
+  total_duration: 0,
+  name: 'report_time_' + Math.random() + '_' + new Date(),
   collumns: [
         {
           name: 'Дата',
@@ -89,12 +95,13 @@ export default mod;
     </div>
 
       <div class="gadget_issues_table_panel panel">
+        {{config.time_entries_copy}}
         <Transition name="element_fade">
           <KTable
             v-if="!loading"
             :collumns="collumns"
             :table-data="time_entries"
-            :name="'time_entries'"
+            :name="'time_entries' + Math.random()"
             :dicts="{ users: users }"
           />
         </Transition>
