@@ -480,10 +480,23 @@ $new-issue-btn-size: 45px;
   width: 100%;
   overflow-y: scroll;
   min-height: 0;
+  scrollbar-width: none; /* Hide scrollbar */
 }
 
 .sidebar .main-menu-list::-webkit-scrollbar {
   display: none;
+}
+
+/* Hide scrollbar for Firefox */
+.sidebar .main-menu-list {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+/* Optional: Ensure no scrollbars in IE, Edge, and Firefox */
+.sidebar .main-menu-list {
+  overflow: -moz-scrollbars-none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
 }
 
 .mobile-sidebar .main-menu-list {
