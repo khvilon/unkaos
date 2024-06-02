@@ -64,7 +64,7 @@ const data = {
   favourite_issues_type_uuid: "ac367512-c614-4f2a-b7d3-816018f71ad8",
   loaded_issues: [],
   loaded_issues_tree: [],
-  name: 'report_issues__table_' + Math.random() + '_' + new Date(),
+  name: "issues",
   label: "Задачи",
   search_query: undefined,
   search_query_encoded: "",

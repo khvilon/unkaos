@@ -449,7 +449,7 @@ export default mod;
           <div class="shadow-gadget"></div>
         </div>
         <div
-          v-for="(gadget, index) in gadgets" :key="index"
+          v-for="(gadget, index) in gadgets"
           v-bind:style="{
             width: Number(uh) * Number(gadget.width) + 'px',
             height: Number(uv) * Number(gadget.height) + 'px',
@@ -474,7 +474,6 @@ export default mod;
           </div>
           <div class="gadget-body">
             <component
-              :ref="index"
               v-show="!gadget.config_open"
               v-bind:is="gadget.type[0].code"
               :config="gadget.config ? JSON.parse(gadget.config) : {}"
