@@ -29,7 +29,6 @@ let methods = {
 let data = {
   time_entries: [],
   total_duration: 0,
-  name: 'report_time_' + Math.random() + '_' + new Date(),
   collumns: [
         {
           name: 'Дата',
