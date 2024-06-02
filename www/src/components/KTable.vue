@@ -300,7 +300,7 @@ td:last-child {
   //border-color: var(--table-row-color-selected);
 }
 
-.ktable tr:hover{
+.ktable tbody tr:hover{
   background-color: var(--table-row-color-hover);
   //border-color: var(--table-row-color-selected);
 }

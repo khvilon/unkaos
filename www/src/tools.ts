@@ -37,7 +37,9 @@ export default class tools {
     //console.log('cont', val, columns, row)
     if (columns == undefined || columns.length == 0) columns = Object.keys(row);
     for (const i in columns) {
-      if (tools.str_contains(row[columns[i]], val)) return true;
+      let collumn_name = columns[i];
+      if(collumn_name == 'uuid') collumn_name = 'name';
+      if (tools.str_contains(row[collumn_name], val)) return true;
     }
     return false;
   }

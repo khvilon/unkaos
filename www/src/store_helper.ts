@@ -150,7 +150,7 @@ store_helper.create_module = function (name) {
     this.commit("get_" + name, data);
   };
   actions["filter_" + name] = async function (state, { val, collumns }) {
-    console.log("ffffiiiiii", val, collumns);
+    console.log("ffffiiiiii", val, collumns, state.state[name]);
     const data = tools.filter_data(state.state[name], val, collumns);
 
     this.commit("filter_" + name, data);

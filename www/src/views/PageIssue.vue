@@ -463,6 +463,8 @@ let methods = {
     this.load_tags()
     this.load_time_entries()
 
+    this.get_favourite_uuid()
+
     console.log('time_entries', this.time_entries)
     
     this.sprints = this.sprints.sort(tools.compare_obj('start_date')).reverse()
@@ -848,7 +850,46 @@ let methods = {
     }
 
     this.current_description_with_implants = processedParts.join('');
-  }
+  },
+
+
+  get_favourite_uuid: async function() {
+    console.log('get_favourite_uuid0')
+    let favourites = await rest.run_method("read_favourites");
+    console.log('get_favourite_uuid1')
+		if (!favourites || !this.issue[0]) return ''
+    console.log('get_favourite_uuid2')
+    let code = this.issue[0].project_short_name + '-' + this.issue[0].num
+		for (let i = 0; i < favourites.length; i++) {
+      console.log('get_favourite_uuid20', favourites[i])
+			if (favourites[i].link.indexOf(code) > -1) {
+				this.favourite_uuid = favourites[i].uuid;
+        return;
+			}
+		}
+
+    console.log('get_favourite_uuid3')
+
+		this.favourite_uuid = '';
+	},
+
+  async add_to_favourites() {
+    let code = this.issue[0].project_short_name + '-' + this.issue[0].num
+		let favourite =
+		{
+			uuid: tools.uuidv4(),
+			type_uuid: this.favourite_issue_type_uuid,
+			name: this.selected_issue.title,
+			link: '/' + this.$store.state['common'].workspace + '/issue/' + code
+		}
+
+		await rest.run_method('create_favourites', favourite)
+		this.favourite_uuid = favourite.uuid;
+	},
+	async delete_from_favourites() {
+		await rest.run_method('delete_favourites', { uuid: this.favourite_uuid })
+		this.favourite_uuid = '';
+	},
 };
 
 const data = {
@@ -926,6 +967,8 @@ const data = {
   full_size_image: null,
   current_description_with_implants: '',
   implants_images: [],
+  favourite_issue_type_uuid: '3d500dc8-6ea4-42f9-8ac6-a23105c60e6f',
+  favourite_uuid: '',
   instance: {
   },
 };
@@ -1151,6 +1194,27 @@ export default mod;
         </div>
       </Transition>
 
+    
+
+        <div
+            v-if="!loading && id !== '' && !favourite_uuid"
+            :class="{ '': !edit_mode }"
+            class="top-menu-icon-btn bx bx-star issue-top-button-inactive"
+            title="Добавить в избранное"
+            @click="add_to_favourites"
+        >
+        </div>
+
+  
+        <div
+            v-if="!loading && id !== '' && favourite_uuid"
+            class="top-menu-icon-btn bx bxs-star"
+            title="Удалить из избранного"
+            @click="delete_from_favourites"
+        >
+        </div>
+
+
       <Transition name="element_fade">
       
           <a
@@ -1164,6 +1228,7 @@ export default mod;
           </a>
        
       </Transition>
+      
 
       <Transition name="element_fade">
         <div class="top-menu-icon-btn" v-if="!loading && id !== '' && !$store.state['common']['is_mobile']">
