@@ -93,6 +93,8 @@ const init = async function() {
         let workspace = req.body.workspace
         let email = req.body.email
         let uuid = tools.uuidv4()
+
+        workspace = workspace.toLowerCase();
         
         let ans
 
