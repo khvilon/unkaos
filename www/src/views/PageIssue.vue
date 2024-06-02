@@ -854,21 +854,15 @@ let methods = {
 
 
   get_favourite_uuid: async function() {
-    console.log('get_favourite_uuid0')
     let favourites = await rest.run_method("read_favourites");
-    console.log('get_favourite_uuid1')
 		if (!favourites || !this.issue[0]) return ''
-    console.log('get_favourite_uuid2')
     let code = this.issue[0].project_short_name + '-' + this.issue[0].num
 		for (let i = 0; i < favourites.length; i++) {
-      console.log('get_favourite_uuid20', favourites[i])
 			if (favourites[i].link.indexOf(code) > -1) {
 				this.favourite_uuid = favourites[i].uuid;
         return;
 			}
 		}
-
-    console.log('get_favourite_uuid3')
 
 		this.favourite_uuid = '';
 	},

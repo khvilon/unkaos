@@ -123,7 +123,6 @@ export default {
       return val;
     },
   },
-  emits: ["scroll_update"],
   data() {
     return {
       last_scroll_update: new Date(),

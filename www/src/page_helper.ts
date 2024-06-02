@@ -139,92 +139,16 @@ page_helper.create_module = async function (data, methods) {
     }
 
     
-    if(this.name) await register_store_module_if_not_exists(this.name, params);
+    if(this.name && this.name.indexOf('report') != 0) await register_store_module_if_not_exists(this.name, params);
 
     for (const i in this.inputs) {
       if (this.inputs[i].dictionary == undefined) continue;
       register_store_module_if_not_exists(this.inputs[i].dictionary);
     }
 
-    this.init_part2(params);
-
-    return;
-    //console.log('created')
-
-    for (const i in this.inputs) {
-      this.inputs[i].values = this[this.inputs[i].dictionary];
-    }
-
-    let instance = {};
-    if (this.instance !== undefined) instance = tools.obj_clone(this.instance);
-    instance.uuid = tools.uuidv4();
-    //instance.name = 'aaa'
-    instance.is_new = true;
-
-    if (this.name == "issue" && params == undefined) {
-      instance.project_uuid = this.$store.state["projects"]["projects"][0].uuid;
-      instance.type_uuid =
-        this.$store.state["issue_types"]["issue_types"][0].uuid;
-
-      this.$store.state[this.name]["filtered_" + this.name] = [instance];
-
-      this.$store.state[this.name][this.name] = [instance];
-    } else if (
-      (this.name == "board" || this.name == "dashboard") &&
-      params == undefined
-    ) {
-      this.$store.state[this.name]["filtered_" + this.name] = [instance];
-
-      this.$store.state[this.name][this.name] = [instance];
-    }
-
-    //console.log('ttt', this.$store.state[this.name][this.name])
-    this.$store.state[this.name]["selected_" + this.name] = instance;
-
-    //console.log("this.$store.state[this.name]['selected_' + this.name]", this.$store.state[this.name]['selected_' + this.name])
-    this.$store.state[this.name]["instance_" + this.name] =
-      tools.obj_clone(instance);
-
-    this.inputs_dict = {};
-    for (const i in this.inputs) {
-      //console.log('iiiii00', this.inputs[i].values)
-      if (
-        typeof this.inputs[i].values != undefined &&
-        typeof this.inputs[i].values == "string" &&
-        this.inputs[i].values.split(".")[0] == "this"
-      )
-        this.inputs[i].values = this[this.inputs[i].values.split(".")[1]];
-
-      this.inputs_dict[this.inputs[i].id] = this.inputs[i];
-      //this[this.inputs[i].dictionary] = this.$store.state[this.inputs[i].dictionary]
-    }
-
-    //console.log('cr', this.$store.state[this.name])
-
-    //this[this.name] = this.$store.getters['get_' + this.name]
-    //this['selected_' + this.name] = this.$store.getters['selected_' + this.name]
-
-    this.loaded = true;
-    //console.log('meee loaaaaadeeeeeddd')
-
-    this.$store.state["common"]["loading"] = false;
-
-    if (this.name == "issue") {
-      //console.log('selilili', this[this.name][0].uuid)
-      this.$store.commit("select_issue", this[this.name][0].uuid);
-    }
-
-    //this.$forceUpdate()
+    this.init_part2(params);    
   };
 
-  /* const mounted = function() {
-		//this.$forceUpdate()
-		console.log('meee 555555 Mounted!')
-		this.visible = true
-		store.state['common']['is_router_view_visible'] = true
-	  }*/
-
-    
 
   if (methods == undefined) methods = {};
   methods.get_json_val = tools.obj_attr_by_path;
@@ -342,7 +266,7 @@ page_helper.create_module = async function (data, methods) {
     //mounted,
     beforeUnmount,
     data: function () {
-      return data;
+      return tools.clone_obj(data);
     },
     beforeCreate,
     methods,
