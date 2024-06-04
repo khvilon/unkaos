@@ -128,10 +128,24 @@ export default class Rest {
                 transport: "email",
                 recipient: req.body.user.mail,
                 title: "Новый пароль Unkaos",
-                body: "Ваш новый пароль Unkaos: " + password,
+                body: `
+                <html>
+                <body>
+                    <p>Здравствуйте!</p>
+                    <p>Ваш новый пароль Unkaos: ${password}</p> 
+                    <br>
+                    <p>Задачи вашего рабочего пространства:</p>
+                    <p><a href='https://${process.env.DOMAIN}/${workspace}/issues'></p>
+                    <br>
+                    <p>С уважением,<br/>Команда Unkaos</p>
+                </body>
+                </html>`,
                 workspace: workspace
             }
         })
+
+
+        
 
         res.status(hermes_answer.status);
         if (hermes_answer.status == 200) {
