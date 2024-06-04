@@ -32,6 +32,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_DATABASE=${DB_DATABASE}
       - HERMES_URL=${HERMES_URL}
+      - DOMAIN=${DOMAIN}
     depends_on:
       - postgres
 
