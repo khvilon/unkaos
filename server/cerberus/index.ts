@@ -135,7 +135,7 @@ export default class Rest {
                     <p>Ваш новый пароль Unkaos: ${password}</p> 
                     <br>
                     <p>Задачи вашего рабочего пространства:</p>
-                    <p><a href='https://${process.env.DOMAIN}/${workspace}/issues'></p>
+                    <p><a href='https://${process.env.DOMAIN}/${workspace}/issues'></a></p>
                     <br>
                     <p>С уважением,<br/>Команда Unkaos</p>
                 </body>
