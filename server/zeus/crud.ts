@@ -395,7 +395,7 @@ crud.load = async function () {
         R.DELETED_AT,
         RT.NAME TYPE_NAME,
         P.SHORT_NAME || '-' || I.NUM  ID,
-        FV.value ISSUE_NAME,
+        I.TITLE ISSUE_NAME,
         IST.IS_END ISSUE_RESOLVED
         FROM RELATIONS R
         LEFT JOIN RELATION_TYPES RT
@@ -406,10 +406,6 @@ crud.load = async function () {
         ON I.STATUS_UUID = IST.UUID
         LEFT JOIN PROJECTS P
         ON P.UUID = I.PROJECT_UUID 
-        LEFT JOIN FIELD_VALUES FV
-        ON FV.FIELD_UUID = '` +
-    name_field_uuid +
-    `' AND FV.ISSUE_UUID = I.UUID
         UNION
         SELECT 
         R.UUID, 
@@ -417,7 +413,7 @@ crud.load = async function () {
         R.DELETED_AT,
         RT.REVERT_NAME TYPE_NAME,
         P.SHORT_NAME || '-' || I.NUM  ID,
-        FV.value ISSUE_NAME,
+        I.TITLE ISSUE_NAME,
         IST.IS_END ISSUE_RESOLVED
         FROM RELATIONS R
         LEFT JOIN RELATION_TYPES RT
@@ -428,10 +424,6 @@ crud.load = async function () {
         ON I.STATUS_UUID = IST.UUID
         LEFT JOIN PROJECTS P
         ON P.UUID = I.PROJECT_UUID 
-        LEFT JOIN FIELD_VALUES FV
-        ON FV.FIELD_UUID = '` +
-    name_field_uuid +
-    `' AND FV.ISSUE_UUID = I.UUID
     ) T1 WHERE DELETED_AT IS NULL $@1
     LIMIT 50`;
 
