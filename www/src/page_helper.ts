@@ -122,6 +122,8 @@ page_helper.create_module = async function (data, methods) {
         short_name: proj_short,
       });
 
+      this.current_start_project = proj[0];
+
       params = { project_uuid: proj[0].uuid, num: num }
 
       let issues = await rest.run_method("read_issue_uuid", params);

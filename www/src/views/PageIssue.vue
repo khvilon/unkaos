@@ -412,6 +412,61 @@ let methods = {
     console.log("loaded", this.issue[0]);
     this.set("values", values);
   },
+  load_knowledge_base: async function(project_uuid){
+    for (let i in this.knowledge_bases) {
+        if (this.knowledge_bases[i].uuid === project_uuid) {
+            if( this.knowledge_bases[i].issues)  {
+              this.knowledge_bases[i].issues = null;
+              return;
+            }
+
+            this.knowledge_bases[i].issues = await rest.run_method("read_issues", {
+                project_uuid: this.knowledge_bases[i].uuid
+            });
+            
+            // Строим дерево задач
+            let issuesMap = new Map();
+            this.knowledge_bases[i].issues.forEach(issue => {
+                issue.children = [];
+                issuesMap.set(issue.uuid, issue);
+            });
+
+            let rootIssues = [];
+            this.knowledge_bases[i].issues.forEach(issue => {
+                if (issue.parent_uuid === null) {
+                    rootIssues.push(issue);
+                } else {
+                    let parent = issuesMap.get(issue.parent_uuid);
+                    if (parent) {
+                        parent.children.push(issue);
+                    }
+                }
+            });
+
+            // Функция для сортировки и присвоения уровня вложенности
+            function sortAndAssignLevels(issues, level) {
+                issues.sort((a, b) => a.title.localeCompare(b.title));
+                let sortedIssues = [];
+                for (let issue of issues) {
+                    issue.level = level;
+                    sortedIssues.push(issue);
+                    if (issue.children.length > 0) {
+                        sortedIssues = sortedIssues.concat(sortAndAssignLevels(issue.children, level + 1));
+                    }
+                }
+                return sortedIssues;
+            }
+
+            // Применяем сортировку и присвоение уровня вложенности
+            this.knowledge_bases[i].issues = sortAndAssignLevels(rootIssues, 0);
+        }
+    }
+  },
+  load_knowledge_bases: async function(){
+    this.knowledge_bases = (await rest.run_method("read_projects")).filter(p => p.is_knowledge_base);
+
+    this.load_knowledge_base(this.current_project.uuid)
+  },
   init: async function (delay) {
 
     let uri_params = tools.obj_clone(this.url_params)
@@ -440,8 +495,8 @@ let methods = {
       this.load_params_from_localstorage("last_saved_issue_params");
     }
 
+    if(this.current_project?.is_knowledge_base) this.load_knowledge_bases()
     
-
     if (this.id == undefined || this.id == "") {
       // console.log("ibiiit issue", this.issue[0]);
       for (let i in this.issue[0].values) {
@@ -464,8 +519,6 @@ let methods = {
     this.load_time_entries()
 
     this.get_favourite_uuid()
-
-    console.log('time_entries', this.time_entries)
     
     this.sprints = this.sprints.sort(tools.compare_obj('start_date')).reverse()
 
@@ -890,6 +943,8 @@ const data = {
   parent_relation_type_uuid: "73b0a22e-4632-453d-903b-09804093ef1b",
   current_description: "",
   tags: [],
+  knowledge_bases: [],
+  current_start_project: null,
   actions: [],
   card_open: false,
   edit_mode: false,
@@ -1075,6 +1130,16 @@ mod.computed.images_with_implants_images = function () {
   return [...this.images, ...this.implants_images]
 };
 
+mod.computed.current_project = function(){
+  if(this.current_start_project) return this.current_start_project;
+  if(!this.issue || !this.issue[0] || !this.projects) return null;
+  for(let i in this.projects){
+    if(this.issue[0].project_uuid == this.projects[i].uuid) return this.projects[i];
+  }
+  return null;
+}
+
+
 mod.watch = {
     current_description: {
       handler: function() {
@@ -1124,7 +1189,7 @@ export default mod;
 </script>
 
 <template ref="issue">
-  <div>
+  <div :class="{'knowledge-base-page': current_project?.is_knowledge_base}">
     <Transition name="element_fade">
       <KNewRelationModal
         v-if="new_relation_modal_visible"
@@ -1431,7 +1496,7 @@ export default mod;
         </Transition>
         <Transition name="element_fade">
           <KTimeEntries
-            v-if="!loading && id != '' && $store.state['common'].use_time_tracking"
+            v-if="!loading && id != '' && $store.state['common'].use_time_tracking && !current_project?.is_knowledge_base"
             label=""
             id="issue_time_entries"
             @new_time_entry="new_time_entry"
@@ -1488,8 +1553,32 @@ export default mod;
           'hidden-card': !card_open && $store.state['common']['is_mobile'],
         }"
       >
+      <Transition name="element_fade">
+        <div id="issue_card_scroller"  v-if="!loading && current_project?.is_knowledge_base">
+          <div v-for="(knowledge_base, kb_index) in knowledge_bases"
+            :key="kb_index"
+            class="knowledge-base-project"
+          >
+            <i class='bx bxs-right-arrow' v-if="knowledge_base.issues===null" @click="load_knowledge_base(knowledge_base.uuid)"></i>
+            <i class='bx bxs-down-arrow' v-if="knowledge_base.issues!==null" @click="load_knowledge_base(knowledge_base.uuid)"></i>
+            <span @click="load_knowledge_base(knowledge_base.uuid)">{{knowledge_base.name}}</span>
+            <div v-for="(kb_issue, kbi_index) in knowledge_base.issues"
+              :key="kbi_index"
+              :style="{ marginLeft: `${kb_issue.level * 10 + 30}px` }"
+              :class="{'selected-kb-issue': kb_issue.uuid==issue[0].uuid}"
+            >
+              <a
+                :href="'/' + $store.state['common'].workspace +'/issue/' + kb_issue.project_short_name + '-' + kb_issue.num"
+              >
+                {{ kb_issue.title}}
+              </a>
+            </div>
+          </div>
+        </div>
+      </Transition>
+      
         <Transition name="element_fade">
-          <div id="issue_card_scroller" v-if="!loading">
+          <div id="issue_card_scroller" v-if="!loading && !current_project?.is_knowledge_base">
             <StringInput
               v-if="
                 !loading &&
@@ -1739,6 +1828,10 @@ $code-width: 160px;
   flex-direction: column;
 }
 
+.knowledge-base-page #issue_card{
+  width: $card-width;
+}
+
 .mobile-view #issue_card {
   position: absolute;
   width: calc(100% - 20px);
@@ -1748,6 +1841,23 @@ $code-width: 160px;
 
 .iframe-view #issue_card {
   height: calc(100% - 20px);
+}
+
+.knowledge-base-project{
+  //color: var(--text-color);
+  cursor: pointer;
+}
+.knowledge-base-project *{
+  color: var(--text-color);
+  text-decoration: none;
+}
+.knowledge-base-project span{
+  //color: var(--text-color);
+  margin-left: 4px;
+}
+.selected-kb-issue a{
+  font-weight: 600;
+  color: var(--link-color);
 }
 
 .hidden-card {
