@@ -1189,7 +1189,9 @@ export default mod;
 </script>
 
 <template ref="issue">
-  <div :class="{'knowledge-base-page': current_project?.is_knowledge_base}">
+  <div :class="{'knowledge-base-page': current_project?.is_knowledge_base, 
+          'card-open-issue-page': card_open && $store.state['common']['is_mobile']
+        }">
     <Transition name="element_fade">
       <KNewRelationModal
         v-if="new_relation_modal_visible"
@@ -1776,6 +1778,11 @@ $code-width: 160px;
   margin-bottom: 20px;
 }
 
+
+
+
+
+
 .issue-code {
   width: $code-width;
 }
@@ -1786,11 +1793,28 @@ $code-width: 160px;
   display: flex;
   flex-direction: column;
   width: $issue-workspace-width;
+  max-width: $issue-workspace-width;
+  min-width: $issue-workspace-width;
   overflow-y: auto;
   overflow-anchor: none;
   background: transparent;
   //scrollbar-color: red;
 }
+
+.card-open-issue-page #issue_main_panel{
+  width: 0 !important;
+  max-width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+}
+
+.mobile-view #issue_main_panel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
+}
+
+
 
 #issue_main_panel * {
   user-select: text;
@@ -1798,10 +1822,6 @@ $code-width: 160px;
 
 #issue_main_panel .text {
   margin-bottom: 10px;
-}
-
-.mobile-view #issue_main_panel {
-  width: 100vw !important;
 }
 
 #issue_footer_buttons {
@@ -1863,6 +1883,7 @@ $code-width: 160px;
 .hidden-card {
   left: 100vw !important;
 }
+
 
 .issue-watch-btn{
   margin-top: -6px;
