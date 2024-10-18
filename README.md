@@ -199,7 +199,7 @@ Unkaos is designed to handle heavy loads and has no limit on the number of tasks
 
 ### Key services:
 
-The first service reached by any request from a client is the Gateway. It does not have much functionality, it works like a proxy, checking user permissions in the Cerberus service and connecting to the required service in the local server network.
+The first service reached by any request from a client is Hecate. It does not have much functionality, it works like a proxy, checking user permissions in the Cerberus service and connecting to the required service in the local server network.
 
 The back-end services are named following Greek mythology:
 

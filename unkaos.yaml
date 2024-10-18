@@ -1,0 +1,345 @@
+# Add helm repo
+# helm repo add nixys https://registry.nixys.io/chartrepo/public
+# 
+# Generate and check k8s manifests
+# helm template unkaos nixys/nxs-universal-chart -f unkaos.yaml --namespace unkaos
+# 
+# Apply to k8s
+# helm apply unkaos nixys/nxs-universal-chart -f unkaos.yaml --namespace unkaos
+secrets:
+  secrets-db:
+    data:
+      DB_DATABASE: ++++++++
+      DB_HOST: ++++++++
+      DB_PASSWORD: ++++++++
+      DB_PORT: ++++++++
+      DB_USER: ++++++++
+  secrets-hermes:
+    data:
+      DISCORD_TOKEN: ++++++++
+      EMAIL_FROM: ++++++++
+      EMAIL_PASS: ++++++++
+      EMAIL_SERVICE: ++++++++
+      EMAIL_USER: ++++++++
+      TELEGRAM_TOKEN: ++++++++
+configMaps:
+  nginx-config:
+    data:
+      server.conf: |
+        gzip_static on;
+        gzip_proxied any;
+
+        server {
+            listen 80 default_server;
+
+            location / {
+                root   /usr/share/nginx/html;
+                index  index.html index.htm;
+                try_files $uri/ $uri /index.html;
+                add_header 'Cache-Control' 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
+                expires -1;
+            }
+
+            location /_api/ {
+                proxy_pass http://unkaos-gateway.unkaos:3001/;
+                proxy_set_header Host $http_host;
+                proxy_set_header Access-Control-Allow-Origin *;
+                proxy_set_header X-Forwarded-Host $http_host;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            location /_ws/ {
+                proxy_pass http://unkaos-ossa.unkaos:3004/;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_set_header Host $http_host;
+                proxy_set_header Access-Control-Allow-Origin *;
+                proxy_set_header X-Forwarded-Host $http_host;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            error_page   500 502 503 504  /50x.html;
+            location = /50x.html {
+                root   /usr/share/nginx/html;
+            }
+        }
+ingresses:
+  unkaos-test.oboz.tech:
+    name: unkaos
+    ingressClassName: nginx
+    hosts:
+      - paths:
+        - serviceName: frontend
+          servicePort: http
+          path: /
+          pathType: Prefix
+    extraTls:
+      - hosts:
+        - unkaos.tech
+        secretName: unkaos.tech
+deployments:
+  athena:
+    labels:
+      app.kubernetes.io/component: athena
+    extraSelectorLabels:
+      app.kubernetes.io/component: athena
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    containers:
+      - name: athena
+        image: unkaos/athena
+        imageTag: "0.0.4"
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 5010
+          protocol: TCP
+        env:
+        - name: ATHENA_PORT
+          value: "5010"
+        envFrom:
+        - secretRef:
+            name: unkaos-secrets-db
+  cerberus:
+    labels:
+      app.kubernetes.io/component: cerberus
+    extraSelectorLabels:
+      app.kubernetes.io/component: cerberus
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    containers:
+      - name: cerberus
+        image: unkaos/cerberus
+        imageTag: "0.0.4"
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 3005
+          protocol: TCP
+        env:
+        - name: HERMES_URL
+          value: http://unkaos-hermes.unkaos:5009
+        envFrom:
+        - secretRef:
+            name: unkaos-secrets-db
+  gateway:
+    labels:
+      app.kubernetes.io/component: gateway
+    extraSelectorLabels:
+      app.kubernetes.io/component: gateway
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    containers:
+      - name: gateway
+        image: unkaos/gateway
+        imageTag: "0.0.4"
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 3001
+          protocol: TCP
+        env:
+        - name: ATHENA_URL
+          value: http://unkaos-athena.unkaos:5010
+        - name: CERBERUS_URL
+          value: http://unkaos-cerberus.unkaos:3005
+        - name: ZEUS_URL
+          value: http://unkaos-zeus.unkaos:3006
+  hermes:
+    labels:
+      app.kubernetes.io/component: hermes
+    extraSelectorLabels:
+      app.kubernetes.io/component: hermes
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    containers:
+      - name: hermes
+        image: unkaos/hermes
+        imageTag: "0.0.4"
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 5009
+          protocol: TCP
+        env:
+        - name: HERMES_PORT
+          value: "5009"
+        - name: BASE_URL
+          value: "https://unkaos.tech/"
+        envFrom:
+        - secretRef:
+            name: unkaos-secrets-db
+        - secretRef:
+            name: unkaos-secrets-hermes
+  ossa:
+    labels:
+      app.kubernetes.io/component: ossa
+    extraSelectorLabels:
+      app.kubernetes.io/component: ossa
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    containers:
+      - name: ossa
+        image: unkaos/ossa
+        imageTag: "0.0.4"
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 3004
+          protocol: TCP
+        envFrom:
+        - secretRef:
+            name: unkaos-secrets-db
+  zeus:
+    labels:
+      app.kubernetes.io/component: zeus
+    extraSelectorLabels:
+      app.kubernetes.io/component: zeus
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    containers:
+      - name: zeus
+        image: unkaos/zeus
+        imageTag: "0.0.4"
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 3006
+          protocol: TCP
+        envFrom:
+        - secretRef:
+            name: unkaos-secrets-db
+  frontend:
+    labels:
+      app.kubernetes.io/component: frontend
+    extraSelectorLabels:
+      app.kubernetes.io/component: frontend
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    containers:
+      - name: unkaos
+        image: unkaos/unkaos
+        imageTag: "0.0.4"
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        env:
+        - name: BASE_URL
+          value: https://unkaos.tech/_api/
+        - name: WS_URL
+          value: wss://unkaos.tech/_ws/
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/server.conf
+          subPath: server.conf
+    volumes:
+    - type: configMap
+      name: nginx-config
+      defaultMode: 420
+      items:
+      - key: server.conf
+        path: server.conf
+services:
+  athena:
+    labels:
+      app.kubernetes.io/component: athena
+    extraSelectorLabels:
+      app.kubernetes.io/component: athena
+    type: ClusterIP
+    ports:
+    - name: http
+      port: 5010
+      protocol: TCP
+      targetPort: http
+  cerberus:
+    labels:
+      app.kubernetes.io/component: cerberus
+    extraSelectorLabels:
+      app.kubernetes.io/component: cerberus
+    type: ClusterIP
+    ports:
+    - name: http
+      port: 3005
+      protocol: TCP
+      targetPort: http
+  gateway:
+    labels:
+      app.kubernetes.io/component: gateway
+    extraSelectorLabels:
+      app.kubernetes.io/component: gateway
+    type: ClusterIP
+    ports:
+    - name: http
+      port: 3001
+      protocol: TCP
+      targetPort: http
+  hermes:
+    labels:
+      app.kubernetes.io/component: hermes
+    extraSelectorLabels:
+      app.kubernetes.io/component: hermes
+    type: ClusterIP
+    ports:
+    - name: http
+      port: 5009
+      protocol: TCP
+      targetPort: http
+  ossa:
+    labels:
+      app.kubernetes.io/component: ossa
+    extraSelectorLabels:
+      app.kubernetes.io/component: ossa
+    type: ClusterIP
+    ports:
+    - name: http
+      port: 3004
+      protocol: TCP
+      targetPort: http
+  zeus:
+    labels:
+      app.kubernetes.io/component: zeus
+    extraSelectorLabels:
+      app.kubernetes.io/component: zeus
+    type: ClusterIP
+    ports:
+    - name: http
+      port: 3006
+      protocol: TCP
+      targetPort: http
+  frontend:
+    labels:
+      app.kubernetes.io/component: frontend
+    extraSelectorLabels:
+      app.kubernetes.io/component: frontend
+    type: ClusterIP
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
