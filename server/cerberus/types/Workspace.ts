@@ -1,7 +1,7 @@
-import User from "./User";
-import UserSession from "./UserSession";
+import { User } from "./User";
+import { UserSession } from "./UserSession";
 
-export default interface Workspace {
+export interface Workspace {
   name: string;
   sessions: Map<string, UserSession>; //token, user_uuid
   permissions: Map<string, boolean>; //user_uuid.table_name.CRUD as key

@@ -19,4 +19,3 @@ String.prototype.replaceFrom = function (oldSubstr, newSubstr, start) {
         start = 0;
     return str.substring(0, start) + str.substring(start).replace(oldSubstr, newSubstr);
 };
-

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hermes
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hermes
+  template:
+    metadata:
+      labels:
+        app: hermes
+    spec:
+      initContainers:
+      - name: install-deps
+        image: unkaos_hermes:latest
+        command: ['sh', '-c', 'cd /app/hermes && npm install && npm install -g ts-node typescript']
+        volumeMounts:
+        - name: app-data
+          mountPath: /app
+      containers:
+      - name: hermes
+        image: unkaos_hermes:latest
+        imagePullPolicy: Never
+        command: ['sh', '-c', 'cd /app/hermes && npx ts-node index.ts']
+        ports:
+        - containerPort: 3005
+        envFrom:
+        - configMapRef:
+            name: unkaos-config
+        - secretRef:
+            name: unkaos-secrets
+        volumeMounts:
+        - name: app-data
+          mountPath: /app
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3005
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3005
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 5
+      volumes:
+      - name: app-data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hermes-service
+spec:
+  selector:
+    app: hermes
+  ports:
+    - protocol: TCP
+      port: 3005
+      targetPort: 3005

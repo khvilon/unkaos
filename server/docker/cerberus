@@ -4,9 +4,15 @@ RUN npm install -g npm@10.6.0
 
 COPY ./server /app
 WORKDIR /app/cerberus
-RUN yarn install
-RUN npm i --save-dev @types/express
+
+# Install dependencies
+RUN npm install
 
 USER node
 
-CMD [ "npx", "ts-node", "index.ts" ]
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3002/health || exit 1
+
+# Run with ts-node with debug flags
+CMD ["./node_modules/.bin/ts-node", "--transpile-only", "--log-error", "index.ts"]

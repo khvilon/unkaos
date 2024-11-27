@@ -8,7 +8,7 @@ try {
   restConf = restConfig;
 } catch (error) {
     restConf = {
-    port: process.env.HERMES_PORT
+    port: process.env.HERMES_PORT || 3005
   };
 }
 
@@ -35,9 +35,12 @@ export class Rest {
             }
         });
 
+        app.get('/health', async (req: any, res: any) => {
+            res.status(200).send({ status: "healthy" });
+        });
+
         app.get('/ping', async (req: any, res: any) => {
-            res.status(200)
-            res.send({status: "OK"})
+            res.status(200).send({status: "OK"});
         });
 
         app.listen(restConf.port, () => {

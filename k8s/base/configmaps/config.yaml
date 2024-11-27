@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unkaos-config
+data:
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_DATABASE: "unkaos"
+  DOMAIN: "unkaos.local"
+  HERMES_URL: "http://hermes-service:5009"
+  ZEUS_URL: "http://zeus-service:3006"
+  CERBERUS_URL: "http://cerberus-service:3005"
+  ATHENA_URL: "http://athena-service:3003"
+  ATHENA_PORT: "3003"
+  HERMES_PORT: "5009"
+  POSTGRES_VERSION: "15"

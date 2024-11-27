@@ -7,10 +7,8 @@ export default class Security {
 
   private static key: string = 'shhhhh';
 
-  
-
   private static async fetchUser(workspace: string, email: string, pass: string) : Promise<any> {
-    return sql`
+    return sql.sql`
     SELECT 
     U.uuid,
     U.name,
@@ -21,9 +19,9 @@ export default class Security {
     U.created_at,
     U.updated_at,
     COALESCE(json_agg(R) FILTER (WHERE R.uuid IS NOT NULL), '[]') as roles
-    FROM ${sql(workspace + '.users')} U
-    LEFT JOIN ${sql(workspace + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
-    LEFT JOIN (SELECT uuid, name FROM ${sql(workspace + '.roles')}) R ON R.uuid = UR.roles_uuid
+    FROM ${sql.sql(workspace + '.users')} U
+    LEFT JOIN ${sql.sql(workspace + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
+    LEFT JOIN (SELECT uuid, name FROM ${sql.sql(workspace + '.roles')}) R ON R.uuid = UR.roles_uuid
     WHERE mail = ${email} 
     AND password = MD5(${pass}) 
     AND deleted_at IS NULL 
@@ -48,7 +46,7 @@ export default class Security {
     if(!users || users.length != 1) return null
     let user_data = { uuid: users[0].uuid }
     let token = jwt.sign(user_data, this.key)
-    await sql`INSERT INTO ${sql(workspace + '.user_sessions') } (uuid, user_uuid, token) 
+    await sql.sql`INSERT INTO ${sql.sql(workspace + '.user_sessions') } (uuid, user_uuid, token) 
       values( ${ tools.uuidv4() }, ${ users[0].uuid }, MD5(${ token }))`
     return {user_token: token, profile: users[0]}
   }
@@ -72,8 +70,8 @@ export default class Security {
   }
 
   public static async setUserPassword(workspace: string, user: any, newPassword: string) {
-    return await sql`
-      UPDATE ${sql(workspace + '.users') } 
+    return await sql.sql`
+      UPDATE ${sql.sql(workspace + '.users') } 
       SET password = MD5(${ newPassword }),
           updated_at = NOW()
       WHERE uuid = ${ user.uuid }
@@ -82,8 +80,8 @@ export default class Security {
 
   private static async invalidateUserSessions(workspace: string, user: any) {
     console.log(`Invalidate all sessions of user: ${user.uuid}`)
-    await sql`
-      UPDATE ${sql(workspace + '.user_sessions') } 
+    await sql.sql`
+      UPDATE ${sql.sql(workspace + '.user_sessions') } 
       SET deleted_at = NOW()
       WHERE user_uuid = ${ user.uuid }
         and deleted_at IS NULL

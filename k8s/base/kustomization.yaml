@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployments/cerberus.yaml
+  - deployments/eileithyia.yaml
+  - deployments/hecate.yaml
+  - deployments/hermes.yaml
+  - deployments/memcached.yaml
+  - deployments/ossa.yaml
+  - deployments/postgres.yaml
+  - deployments/zeus.yaml
+  - configmap.yaml
+  - secrets.yaml
+  - ingress.yaml
+  - postgres-pvc.yaml
+  - postgres-init-configmap.yaml
+
+commonLabels:
+  app: unkaos

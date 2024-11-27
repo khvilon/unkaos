@@ -1,9 +1,18 @@
-FROM node:18-bullseye-slim
+FROM node:20-bullseye-slim
 
 COPY ./server /app
 WORKDIR /app/hermes
-RUN yarn install
+
+# Install dependencies using npm instead of yarn
+RUN npm install
+
+# Install ts-node globally
+RUN npm install -g ts-node typescript
 
 USER node
+
+# Add health check endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3005/health || exit 1
 
 CMD [ "npx", "ts-node", "index.ts" ]
