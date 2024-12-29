@@ -1,6 +1,4 @@
-
 import postgres from "postgres";
-import tools from "../tools";
 
 let dbConf: any;
 
@@ -21,7 +19,7 @@ console.log('dbConf', dbConf)
 
 var sql:any = {}
 
-let zeusDbConf = tools.obj_clone(dbConf)
+let zeusDbConf = structuredClone(dbConf)
 //zeusDbConf.publications = 'zeus_publication'
 
 sql.admin = postgres(zeusDbConf) 

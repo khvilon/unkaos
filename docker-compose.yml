@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   ossa:
     build:
@@ -103,7 +101,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_DATABASE=${DB_DATABASE}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   athena:
     build:
@@ -174,14 +173,49 @@ services:
     ports:
      - '5432:5432'
     volumes:
-      - ./server/db:/docker-entrypoint-initdb.d
+      - ./server/db:/sql-scripts:ro
       - unkaos-pg-data:/var/lib/postgresql/data 
-    command:
-      - "postgres"
-      - "-c"
-      - "wal_level=logical"
+    command: >
+      bash -c '
+        schema_name="server" &&
+        
+        # Создаем временные директории для обработки
+        mkdir -p /tmp/psql-init &&
+        mkdir -p /tmp/psql-final &&
+        mkdir -p /docker-entrypoint-initdb.d &&
+        
+        # Копируем все SQL файлы во временную директорию
+        cp /sql-scripts/*.sql /tmp/psql-init/ &&
+
+        # Копируем и модифицируем -public.sql для схемы server
+        cp /tmp/psql-init/-public.sql /tmp/psql-final/0$${schema_name}.sql &&
+        sed -i "s/\bpublic\b/$${schema_name}/g" /tmp/psql-final/0$${schema_name}.sql &&
+
+        # Обрабатываем _m.sql файлы
+        for file in /tmp/psql-init/*_m.sql; do
+          if [ -f "$${file}" ]; then
+            new_name="/tmp/psql-final/$(basename $${file/_m/_m_$${schema_name}})" &&
+            cp "$${file}" "$${new_name}" &&
+            sed -i "s/\bpublic\b/$${schema_name}/g" "$${new_name}"
+          fi
+        done &&
+
+        # Копируем остальные файлы без изменений
+        for file in /tmp/psql-init/*.sql; do
+          if [ -f "$${file}" ] && [[ ! "$${file}" == *"_m.sql" ]] && [ "$${file}" != "/tmp/psql-init/-public.sql" ]; then
+            cp "$${file}" "/tmp/psql-final/$(basename $${file})"
+          fi
+        done &&
+
+        # Перемещаем обработанные файлы в директорию для инициализации
+        mv /tmp/psql-final/*.sql /docker-entrypoint-initdb.d/ &&
+
+        # Запускаем PostgreSQL с обработанными файлами
+        export POSTGRES_INITDB_ARGS="--data-checksums" &&
+        docker-entrypoint.sh postgres -c wal_level=logical
+      '
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -Uunkaos -dunkaos"]
+      test: ["CMD-SHELL", "pg_isready -U${DB_USER} -d${DB_DATABASE}"]
       interval: 30s
       timeout: 5s
       retries: 5

@@ -13,7 +13,7 @@ export default {
     };
     return d;
   },
-  emits: ["search", "update_parent_from_input", "updated", "tag_clicked", "value_created", "value_selected", "value_deselected"],
+  emits: ["search", "update_parent_from_input", "updated", "tag_clicked", "value_created", "value_selected", "value_deselected", "update:value"],
 
   beforeCreate() {},
   watch: {
@@ -206,7 +206,8 @@ export default {
     <div class="label" v-if="label">{{ label }}</div>
 
     <v-select
-      v-model="val"
+      :value="val"
+      @input="$emit('update:value', $event.target.value)"
       :label="'name'"
       :reduce="reduce"
       :multiple="parameters.multiple"

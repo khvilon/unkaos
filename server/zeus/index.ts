@@ -7,8 +7,7 @@ import crud from "./crud";
 import cors from 'cors';
 
 import express from "express";
-import tools from "../tools";
-
+import { randomUUID } from 'crypto';
 
 const app:any = express()
 const port = 3006
@@ -34,11 +33,17 @@ app.use(express.urlencoded({limit: '150mb', extended: true}));
 const handleRequest = async function(req:any, res:any) {
 
     // console.log("request: ", req)
-    let req_uuid = tools.uuidv4()
+    let req_uuid = randomUUID()
+    console.log('req_uuid', req_uuid)
     dbLoger.writeLogIncoming(req_uuid,  req)
 
     let func_name = req.url.split('/')[1].split('?')[0]
-    let [method, table_name] = tools.split2(func_name, '_')
+    console.log('func_name', func_name)
+
+    const parts = func_name.split('_');
+    const method = parts[0];
+    const table_name = parts.slice(1).join('_');
+
     let subdomain = req.headers.subdomain
     let params = req.query
 

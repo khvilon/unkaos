@@ -5,13 +5,14 @@ import {
   MessageStructureObject
 } from "imapflow";
 import { decodeWords } from "libmime";
-import tools from "../tools";
+import { v4 as uuidv4 } from 'uuid';
 import {sql} from "./Sql";
 import {MessagePart, MsgIn, MsgInPart, MsgPipe, MsgStatus} from "./Types";
 import {Readable} from "stream";
 import {AsyncTask, SimpleIntervalJob, ToadScheduler} from "toad-scheduler";
+import pino from 'pino';
 
-const log = require('bunyan').createLogger({ name: "MailPoller" });
+const log = pino({ name: "MailPoller" });
 
 export class MailPoller {
 
@@ -67,7 +68,7 @@ export class MailPoller {
   private async parseAndSaveMessage(workspace: string, client: ImapFlow, pipe: MsgPipe, msg: FetchMessageObject) {
     log.info(`New email message from: ${msg.envelope.sender[0].address} to ${pipe.login}; subject: ${msg.envelope.subject}`)
     try {
-      const uuid = tools.uuidv4()
+      const uuid = uuidv4()
       await this.insertMsgIn(workspace, {
         uuid: uuid,
         pipe_uuid: pipe.uuid,
@@ -112,7 +113,7 @@ export class MailPoller {
         decodedPartContent = ''
       }
       await this.insertMsgInPart(workspace, {
-        uuid: tools.uuidv4(),
+        uuid: uuidv4(),
         msg_in_uuid: msg_uuid,
         content: decodedPartContent,
         type: part.structure.type,

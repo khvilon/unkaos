@@ -1,0 +1,9 @@
+{
+  "name": "@unkaos/tools",
+  "version": "1.0.0",
+  "main": "tools.ts",
+  "types": "tools.d.ts",
+  "dependencies": {
+    "typescript": "^5.0.0"
+  }
+}

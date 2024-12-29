@@ -1,7 +1,7 @@
 let crud:any = {};
 
 import data_model from "./data_model";
-import tools from "../tools";
+import { randomUUID } from 'crypto';
 import sql from "./sql";
 
 const Memcached = require('memcached');
@@ -501,9 +501,10 @@ crud.load = async function () {
 };
 
 
+
 crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is_revert:any) {
 
-
+//console.log('push_query', query0, query1)
   if (query1 == "") return [query0, params0];
   let query = [];
   let params = [];
@@ -545,7 +546,7 @@ crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is
 
 crud.concat_querys = function (query0:any, params0:any, query1:any, params1:any, middle:any) {
 
-
+//console.log('concat_querys', query0, query1)
   if (Array.isArray(query0)) return [query0, params0];
 
   let query = query1;
@@ -640,20 +641,20 @@ crud.make_query = {
       
       while (user_query.indexOf("attr#") > -1) {
         let start = user_query.indexOf("attr#");
-        user_query = user_query.replaceFrom("attr#", "I.", start);
-        user_query = user_query.replaceFrom("#", "", start);
-        user_query = user_query.replaceFrom("#", "", start);
-        user_query = user_query.replaceFrom("like'", " like '", start);
+        user_query = user_query.substring(0, start) + user_query.substring(start).replace("attr#", "I.");
+        user_query = user_query.substring(0, start) + user_query.substring(start).replace("#", "");
+        user_query = user_query.substring(0, start) + user_query.substring(start).replace("#", "");
+        user_query = user_query.substring(0, start) + user_query.substring(start).replace("like'", " like '");
         
       }
       const field_tag = "fields#"
 
       while (user_query.indexOf("fields#") > -1) {
         let start = user_query.indexOf("fields#");
-        user_query = user_query.replaceFrom("fields#", 'I."', start);
-        user_query = user_query.replaceFrom("#", '"', start);
-        user_query = user_query.replaceFrom("#", "", start);
-        user_query = user_query.replaceFrom("like'", " like '", start);  
+        user_query = user_query.substring(0, start) + user_query.substring(start).replace("fields#", 'I."');
+        user_query = user_query.substring(0, start) + user_query.substring(start).replace("#", '"');
+        user_query = user_query.substring(0, start) + user_query.substring(start).replace("#", "");
+        user_query = user_query.substring(0, start) + user_query.substring(start).replace("like'", " like '");  
       }
       
       user_query = user_query.replaceAll(
@@ -832,7 +833,7 @@ crud.make_query = {
       set = set.concat(i, "=$", pg_params.length.toString());
     }
 
-
+//console.log('update query', query, set, pg_params)
 
     query = query.replace("$@2", set);
 
@@ -932,6 +933,7 @@ crud.make_query = {
           child
         );
 
+//console.log('upsert subquery', new_subqyery, new_subparams)
 
         let [q, p]:any[] = crud.push_query(
           subquerys,
@@ -961,6 +963,7 @@ crud.get_query = function (method:string, table_name:string, params:any) {
       uuid: params.uuid,
     });
 
+//console.log('read_query', read_query, read_params)
 
     let [q, p] = crud.push_query(query, pg_params, read_query, read_params);
     query = q;
@@ -995,6 +998,7 @@ crud.get_uuids = function (obj:any) {
 
   let fks = data_model.model[obj.table_name]["fks"];
 
+//console.log('fks', fks)
 
   for (let i in obj) {
     console.log(">>>>>>>>>get_uuids2", obj[i])
@@ -1006,19 +1010,19 @@ crud.get_uuids = function (obj:any) {
     )
       continue;
 
-
     if (fks == undefined || !fks.includes(obj[i][0].table_name)) continue;
 
     for (let j in obj[i]) {
       let ch_uuids = crud.get_uuids(obj[i][j])
       if(ch_uuids == null) return null
-      ans = tools.obj_join(ans, ch_uuids);
+      ans = { ...ans, ...ch_uuids };
     }
   }
 
   return ans;
 };
 
+//console.log('crud.get_uuids', crud.get_uuids({table_name: 'issues', uuid: '123', project_uuid: '456'}))
 
 crud.updateQueryWithProjectsPermissionsFilter = async function(subdomain: string, table_name: string, method: string, author_uuid: string, query: string, params: any, readed_data: any){
   let key = 'w:' + subdomain  + ':user:' + author_uuid + ':projects'
@@ -1098,7 +1102,7 @@ crud.writeIssueHistory = function(query: any, pg_params: any, readed_data: any, 
     issue_uuid: params.uuid,
     author_uuid: params.author_uuid,
     type_uuid: type_uuid,
-    uuid: tools.uuidv4(),
+    uuid: randomUUID(),
   };
 
   let [ia_query, ia_params] = crud.make_query.create(
@@ -1124,6 +1128,7 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
  
   let [query, pg_params] = crud.get_query(method, table_name, params);
 
+//console.log('crud.do', query, pg_params)
 
   let readed_data: any;
   

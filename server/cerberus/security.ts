@@ -1,7 +1,7 @@
-import tools from "../tools";
 import sql from "./sql";
 // @ts-ignore
 import jwt from "jsonwebtoken";
+import { randomUUID } from 'crypto';
 
 export default class Security {
 
@@ -49,7 +49,7 @@ export default class Security {
     let user_data = { uuid: users[0].uuid }
     let token = jwt.sign(user_data, this.key)
     await sql`INSERT INTO ${sql(workspace + '.user_sessions') } (uuid, user_uuid, token) 
-      values( ${ tools.uuidv4() }, ${ users[0].uuid }, MD5(${ token }))`
+      values( ${ randomUUID() }, ${ users[0].uuid }, MD5(${ token }))`
     return {user_token: token, profile: users[0]}
   }
 

@@ -1,5 +1,4 @@
 import sql from "./sql";
-import tools from "../tools";
 import Workspace from "./types/Workspace";
 import UserSession from "./types/UserSession";
 import User from "./types/User";
@@ -72,6 +71,7 @@ export default class Data {
     }));
 
 
+
     for (let [workspaceName, workspace] of this.workspaces) {
       this.updateWorkspaceUsers(workspaceName);
       this.updateWorkspaceSessions(workspaceName);
@@ -112,7 +112,6 @@ export default class Data {
     const workspace = this.workspaces.get(workspaceName);
     if(!workspace) return;
 
-    
 
     let permissions = (await sql`
       SELECT 

@@ -31,7 +31,7 @@ export default {
     }
   },
 
-  emits: ["update_parent_from_input", "updated"],
+  emits: ["update_parent_from_input", "updated", "update:value"],
   methods: {
     blur() {
       this.$emit("updated");
@@ -83,7 +83,8 @@ export default {
     <input
       type="number"
       class="numeric-input"
-      v-model="value"
+      :value="value"
+      @input="$emit('update:value', $event.target.value)"
       :disabled="disabled"
       @blur="blur"
     />

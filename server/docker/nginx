@@ -1,9 +1,14 @@
-FROM node:16.19.0-bullseye-slim as build
- 
+FROM node:23-alpine as build
+
 WORKDIR /app
-COPY ./www /app
+
+# Копируем сначала только файлы для установки зависимостей
+COPY ./www/package.json .
 RUN yarn install
+
+# Затем копируем остальные файлы и собираем
+COPY ./www .
 RUN yarn build
- 
-FROM nginx:alpine
+
+FROM nginx:1.24-alpine
 COPY --from=build /app/dist /usr/share/nginx/html

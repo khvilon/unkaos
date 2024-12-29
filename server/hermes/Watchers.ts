@@ -1,5 +1,5 @@
 import {sql} from "./Sql";
-import tools from "../tools";
+import { v4 as uuidv4 } from 'uuid';
 
 let conf: any;
 
@@ -77,7 +77,7 @@ class Watchers {
       ${sql(relation.schema + '.msg_out') }
       (uuid, transport, recipient, title, body)
       VALUES (
-        ${tools.uuidv4()}, 
+        ${uuidv4()}, 
         '', 
         ${watchers[i].user_uuid}, 
          ${title}, 

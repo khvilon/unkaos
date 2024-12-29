@@ -1,14 +1,17 @@
-FROM node:21-bookworm-slim
+FROM node:23-alpine
 
-RUN npm install -g npm@10.6.0
+WORKDIR /app/eileithyia
 
-COPY ./server /app
+# Копируем сначала только файлы для установки зависимостей
+COPY ./server/eileithyia/package.json .
+RUN yarn install
+
+# Затем копируем остальные файлы
+COPY ./server/eileithyia .
 COPY ./README.md /app/README.md
 COPY ./README_RU.md /app/README_RU.md
 COPY ./LICENSE /app/LICENSE
 COPY ./meta.json /app/meta.json
-WORKDIR /app/eileithyia
-RUN yarn install
 
 USER node
 

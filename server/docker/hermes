@@ -1,8 +1,22 @@
-FROM node:18-bullseye-slim
+FROM node:23-alpine
 
-COPY ./server /app
+WORKDIR /app
+
+# Копируем общие утилиты и их package.json
+COPY ./server/package.json ./server/
+COPY ./server/tools.ts ./server/
+COPY ./server/tools.d.ts ./server/
+COPY ./server/string.extensions.ts ./server/
+
+# Копируем файлы сервиса для установки зависимостей
+COPY ./server/hermes/package.json ./hermes/
 WORKDIR /app/hermes
-RUN yarn install
+
+# Устанавливаем зависимости, включая локальный пакет tools
+RUN yarn add file:/app/server && yarn install
+
+# Затем копируем остальные файлы сервиса
+COPY ./server/hermes .
 
 USER node
 

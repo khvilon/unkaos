@@ -1,8 +1,13 @@
-FROM node:16.19.0-bullseye-slim
+FROM node:23-alpine
 
-COPY ./server /app
 WORKDIR /app/gateway
+
+# Копируем сначала только файлы для установки зависимостей
+COPY ./server/gateway/package.json .
 RUN yarn install
+
+# Затем копируем остальные файлы
+COPY ./server/gateway .
 
 USER node
 

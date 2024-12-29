@@ -1,38 +1,33 @@
-
 interface String {
-    contains(substr:any): Boolean;
+    contains(): Boolean;  
+    contains(substr: string): boolean;  
+    replaceAll(searchValue: string | RegExp, replaceValue: string): string;
+    replaceAll(searchValue: string | RegExp, replacer: (substring: string, ...args: any[]) => string): string;
+    replaceFrom(oldSubstr: string, newSubstr: string, start?: number): string;
 }
 
-String.prototype.contains = function(substr:any){
-    let str = this.toLowerCase()
-
-    substr = substr.toString().toLowerCase() 
-
-    return str.indexOf(substr) > -1
+String.prototype.contains = function(substr?: string): boolean {
+    if (substr === undefined) {
+        return false; 
+    }
+    const str = this.toLowerCase();
+    const substrLower = substr.toString().toLowerCase();
+    return str.indexOf(substrLower) > -1;
 }
 
-interface String {
-    replaceAll(oldSubstr:string, newSubstr:string):  String;
+String.prototype.replaceAll = function(
+    searchValue: string | RegExp,
+    replaceValue: string | ((substring: string, ...args: any[]) => string)
+): string {
+    if (typeof replaceValue === 'function') {
+        return this.replace(new RegExp(searchValue, 'g'), replaceValue);
+    }
+    if (searchValue instanceof RegExp) {
+        return this.replace(searchValue, replaceValue);
+    }
+    return this.split(searchValue).join(replaceValue);
 }
 
-String.prototype.replaceAll = function(oldSubstr:string, newSubstr:string){
-    let str = this
- //   console.log('while replaceAll', str)
-    let strParts = str.split(oldSubstr)
- //   console.log('while replaceAll2', str_parts)
-    let newStr = strParts.join(newSubstr)
- //   console.log('while replaceAll3', str)
-    
-    return newStr
+String.prototype.replaceFrom = function(oldSubstr: string, newSubstr: string, start: number = 0): string {
+    return this.substring(0, start) + this.substring(start).replace(oldSubstr, newSubstr);
 }
-
-interface String {
-    replaceFrom(oldSubstr:string, newSubstr:string, start:number):  String;
-}
-
-String.prototype.replaceFrom = function(oldSubstr:string, newSubstr:string, start:number){
-    let str = this
-    if(start == undefined) start = 0
-    return str.substring(0, start) + str.substring(start).replace(oldSubstr, newSubstr)
-}
-

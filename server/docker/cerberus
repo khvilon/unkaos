@@ -1,11 +1,19 @@
-FROM node:21-bookworm-slim
+FROM node:23-alpine
 
-RUN npm install -g npm@10.6.0
+WORKDIR /app
 
-COPY ./server /app
+# Копируем общие утилиты
+COPY ./server/tools.ts ./server/
+COPY ./server/tools.d.ts ./server/
+COPY ./server/string.extensions.ts ./server/
+
+# Копируем сначала только файлы для установки зависимостей
+COPY ./server/cerberus/package.json ./cerberus/
 WORKDIR /app/cerberus
 RUN yarn install
-RUN npm i --save-dev @types/express
+
+# Затем копируем файлы сервиса
+COPY ./server/cerberus .
 
 USER node
 

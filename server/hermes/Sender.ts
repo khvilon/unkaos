@@ -16,7 +16,7 @@ class Sender {
     this.discord = new DiscordMessage(this.userData);
     this.telegram = new TelegramMessage(this.userData);
 
-    sql.subscribe('*', this.updateSender.bind(this), this.handleSubscribeConnect)
+    sql.subscribe('*', this.updateSender.bind(this), this.handleSubscribeConnect.bind(this))
   }
 
   private handleSubscribeConnect(){
@@ -29,7 +29,7 @@ class Sender {
     console.log('updating sender conf', row)
     if(row.service == 'email' ) this.email = new MailSender();
     if(row.service == 'discord' ) this.discord = new DiscordMessage(this.userData);
-    if(row.service == 'telegram' ) this.telegram.init(this.userData);
+    if(row.service == 'telegram' ) this.telegram = new TelegramMessage(this.userData);
   }
 
   private isUUID(str: string): boolean {
@@ -44,6 +44,9 @@ class Sender {
 
   public async init(){
     await this.userData.init()
+    await this.email.init();
+    await this.discord.init(this.userData);
+    await this.telegram.init();
   }
 
   public async send(transport: string, recipient: string, title: string, body: string, workspace: string=''):Promise<any> {

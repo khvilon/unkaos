@@ -53,19 +53,18 @@ class Support {
     }
 
     private async get_last_num(project_uuid : string){
-        let ans = await sql`SELECT MAX(num) AS num FROM issues WHERE project_uuid=${project_uuid} AND deleted_at IS NULL`
+        let ans = await sql`SELECT MAX(num) AS num FROM server.issues WHERE project_uuid=${project_uuid} AND deleted_at IS NULL`
         if (ans == null || ans.length < 1) return [];
         return Number(ans[0].num)
     }
 
     private async get_new_project_issues(project_uuid : string, me: any){
-        let ans = await sql`SELECT i.num, fv.value FROM issues i  
-            LEFT JOIN field_values fv ON fv.issue_uuid=i.uuid
+        let ans = await sql`SELECT i.num, fv.value FROM server.issues i  
+            LEFT JOIN server.field_values fv ON fv.issue_uuid=i.uuid
             AND fv.field_uuid = ${me.titleFieldUuid}
             WHERE i.num > ${me.last_num[project_uuid]} AND
-            i.project_uuid=${project_uuid} AND i.deleted_at IS NULL`
-        if(ans != null && ans != undefined) return ans
-        return []
+            i.project_uuid = ${project_uuid} AND i.deleted_at IS NULL`
+        return ans
     }
 
     private async check_new_issues(project_uuid : string, me : any){

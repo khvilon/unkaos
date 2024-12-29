@@ -1,71 +1,54 @@
-import TelegramBot from 'node-telegram-bot-api';
+import { Bot } from 'grammy';
 import UserData from '../UsersData';
 import {sql} from "../Sql";
 
 let telegramConf: any;
+let bot: Bot;
 
-//var id = 228803942
-class TelegramMessage {
-  private bot: any;
+export default class TelegramMessage {
+  private userData: UserData;
 
   constructor(userData: UserData) {
-    this.init(userData);
+    this.userData = userData;
   }
 
-  async init(userData: UserData) {
-    const ans = await sql`SELECT value FROM server.configs WHERE service = 'telegram' AND name = 'token'`;
-    telegramConf = { token: ans[0].value };
+  async init() {
+    const conf = await sql`select value from server.configs where service = 'telegram' and name = 'token'`;
+    if (!conf.length) {
+      console.log('Telegram token not found in config');
+      return;
+    }
+    
+    const token = conf[0].value;
+    if (!token) {
+      console.log('Empty telegram token in config');
+      return;
+    }
+    
+    telegramConf = { token };
+    console.log('Initializing telegram bot');
 
-    if(!telegramConf.token) return;
+    bot = new Bot(telegramConf.token);
 
-    await this.stopBot();
+    // Handle messages for user registration
+    bot.on('message', async (ctx) => {
+      if (!ctx.from) return;
+      if (!ctx.from.username) return;
 
-    this.bot = new TelegramBot(telegramConf.token, { polling: true });
-    let me = this
+      const username = ctx.from.username;
+      const telegramId = ctx.from.id.toString();
 
-    this.bot.onText(/.*?/, async (msg: any, match: any) => {
-      if(!msg.from) return
-      if(!msg.from.username) return
-
-      const username = msg.from.username//.toLowerCase();
-      const telegramId = msg.from.id.toString();
-      let added = await userData.setTelegramtId(username, telegramId)
-      let ans = 'ваш телеграм добавлен в список'
-      if(!added) ans = 'пользователь с вашим телеграм именем не найден в базе Unkaos или не требует обновления ID'
-      me.bot.sendMessage(telegramId, username + ', ' + ans);
+      await this.userData.setTelegramtId(username, telegramId);
     });
 
-    console.log('telegram bot up', telegramConf.token)
-  }
-
-  async stopBot() {
-    console.log('stopBot');
-    if (this.bot) {
-      await this.bot.stopPolling();
-      console.log('Stopped existing bot instance');
-      this.bot = null;
-    }
+    // Start the bot
+    bot.start();
   }
 
   async send(userId: string, title: string, body: string) {
-
-    if(!this.bot){
-      console.log('cant send telegram - not configured');
-      return;
-    }
-
-    console.log('userId', userId)
-    try{ 
-      await this.bot.sendMessage(userId, `${title}\n${body}`) 
-      console.log(`Message sent to telegram user ${userId}`) 
-      return {status: 2}
-    } 
-    catch(err){ 
-      let errMsg = `Error sending telegram msg ${err}`
-      console.log(errMsg) 
-      return {status:-1, status_details: errMsg}
-    }
+    if (!bot) return;
+    
+    const message = title ? `${title}\n\n${body}` : body;
+    await bot.api.sendMessage(userId, message);
   }
 }
-
-export default TelegramMessage;

@@ -1,5 +1,4 @@
 const postgres = require('postgres') 
-import tools from "../tools";
 let dbConf: any;
 
 try {
@@ -16,7 +15,7 @@ try {
 }
 
 console.log('dbConf', dbConf)
-let cerberusDbConf = tools.obj_clone(dbConf)
+let cerberusDbConf = structuredClone(dbConf)
 cerberusDbConf.publications = 'cerberus_publication'
 
 const sql = postgres(cerberusDbConf)

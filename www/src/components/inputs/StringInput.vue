@@ -35,7 +35,7 @@ export default {
     }
   },
 
-  emits: ["update_parent_from_input", "updated"],
+  emits: ["update_parent_from_input", "updated", "update:value"],
 
   methods: {
     blur:function() {
@@ -92,7 +92,8 @@ export default {
     <input
       ref="inputField"
       class="string-input"
-      v-model="value"
+      :value="value"
+      @input="$emit('update:value', $event.target.value)"
       @keyup.enter="keyup_enter(); doBlur()"
       :type="type"
       :disabled="disabled"
