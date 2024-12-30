@@ -10,7 +10,8 @@ export default class Security {
   
 
   private static async fetchUser(workspace: string, email: string, pass: string) : Promise<any> {
-    return sql`
+    console.log('Executing SQL query with:', { workspace, email, pass });
+    const result = await sql`
     SELECT 
     U.uuid,
     U.name,
@@ -38,8 +39,8 @@ export default class Security {
     U.created_at,
     U.updated_at
     `;
-
-    
+    console.log('SQL query result:', result);
+    return result;
 }
 
   public static async newToken(workspace: string, email: string, pass: string) {

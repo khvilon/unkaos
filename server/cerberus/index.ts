@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import express from 'express';
 
@@ -165,7 +164,9 @@ export default class Rest {
   private async handleGetToken(req: any, workspace: string, res: any) {
     let email = req.headers.email
     let pass = req.headers.password
+    console.log('handleGetToken:', { workspace, email, pass });
     let token = await Security.newToken(workspace, email, pass)
+    console.log('token result:', token);
     if (token == null) {
       res.status(401);
       res.send({message: 'Неверное имя пользователя или пароль'});

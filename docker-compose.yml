@@ -191,6 +191,9 @@ services:
         # Копируем -public.sql без изменений
         cp /tmp/psql-init/-public.sql /tmp/psql-final/-public.sql &&
 
+        # Копируем -workspace.sql без изменений
+        cp /tmp/psql-init/-workspace.sql /docker-entrypoint-initdb.d/-workspace.sql &&
+
         # Создаем копию для схемы server
         cp /tmp/psql-init/-public.sql /tmp/psql-final/0server.sql &&
         sed -i "s/\bpublic\b/server/g" /tmp/psql-final/0server.sql &&
