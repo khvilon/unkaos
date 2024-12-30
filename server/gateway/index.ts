@@ -1,11 +1,11 @@
 import axios from "axios";
 import cors from "cors";
 import express from "express";
-import tools from "../tools";
+
 const app: any = express();
 const port = 3001;
 
-const restMethodDict : any = {
+const restMethodDict: any = {
   read: "get",
   create: "post",
   update: "put",
@@ -13,14 +13,13 @@ const restMethodDict : any = {
   upsert: "post"
 };
 
-
 let conf: any;
 try {
   const confFile = require('./conf.json');
   conf = confFile;
 } catch (error) {
   conf = {
-    zeusUrl:process.env.ZEUS_URL,
+    zeusUrl: process.env.ZEUS_URL,
     cerberusUrl: process.env.CERBERUS_URL,
     athenaUrl: process.env.ATHENA_URL
   };
@@ -37,8 +36,6 @@ try {
 
 async function init() {
   const zeus_listeners = await axios.get(conf.zeusUrl + "/read_listeners");
-  //console.log("Zeus listeners loaded: ")
-  //console.table(zeus_listeners.data)
 
   for (let i = 0; i < zeus_listeners.data.length; i++) {
     const method = zeus_listeners.data[i].method;
@@ -47,10 +44,7 @@ async function init() {
     console.log('func', func)
 
     const handler = async (req: any, res: any) => {
-      //console.log(req)
-
       req.headers.request_function = func;
-      //console.log(req.headers)
 
       let user_uuid = ''
 
@@ -59,13 +53,13 @@ async function init() {
         cerberus_ans = await axios({
           method: "get",
           url: conf.cerberusUrl + "/check_session",
-          headers: { token: req.headers.token, subdomain: req.headers.subdomain,  request_function: req.headers.request_function},
+          headers: { token: req.headers.token, subdomain: req.headers.subdomain, request_function: req.headers.request_function },
           validateStatus: function (status) {
-            return true; // Разрешить, только если код состояния меньше 500
+            return true;
           },
         });
       } catch (err) {
-        console.log("Check session error: "+JSON.stringify(err));
+        console.log("Check session error: " + JSON.stringify(err));
         if (cerberus_ans != undefined) {
           res.status(cerberus_ans.status);
           res.send(cerberus_ans.data);
@@ -89,7 +83,6 @@ async function init() {
       }
       req.headers.user_uuid = cerberus_ans.data.uuid;
       user_uuid = cerberus_ans.data.uuid;
-    
 
       const zeus_ans = await axios({
         data: req.body,
@@ -107,10 +100,14 @@ async function init() {
 
     app[method]("/" + func, handler);
 
-    const [oper, tableName] = tools.split2(func, '_')
-    if(!oper) continue;
+    // Разделяем строку на две части: операцию и имя таблицы
+    const parts = func.split('_');
+    const oper = parts[0];
+    const tableName = parts.slice(1).join('_');
+    
+    if (!oper) continue;
     const restMethod = restMethodDict[oper];
-    if(restMethod) app[restMethod]("/v2/" + tableName, handler);
+    if (restMethod) app[restMethod]("/v2/" + tableName, handler);
   }
 
   app.get("/get_token", async (req: any, res: any) => {
@@ -127,14 +124,13 @@ async function init() {
       res.status(cerberus_ans.status);
       res.send(cerberus_ans.data);
     } catch (error: any) {
-      console.log('/get_token error: '+JSON.stringify(error))
+      console.log('/get_token error: ' + JSON.stringify(error))
       res.status(error?.response?.status ?? 500)
       res.send({ message: error?.response?.data?.message ?? 'Internal Server Error' })
     }
   });
 
-
-  let upsert_password = async function(req: any, res: any, rand: boolean = true){
+  let upsert_password = async function (req: any, res: any, rand: boolean = true) {
     const request = req.url.split('/')[1]
     console.log(request, req.body)
 
@@ -149,10 +145,10 @@ async function init() {
       })
       res.status(cerberus_ans.status);
       res.send(cerberus_ans.data);
-    } catch (error : any) {
-      console.log(request + ' error: '+JSON.stringify(error))
+    } catch (error: any) {
+      console.log(request + ' error: ' + JSON.stringify(error))
       res.status(error?.response?.status ?? 500)
-      res.send( {message: error?.response?.data?.message ?? 'Internal Server Error' })
+      res.send({ message: error?.response?.data?.message ?? 'Internal Server Error' })
     }
   }
 
@@ -165,18 +161,38 @@ async function init() {
   });
 
   app.get("/gpt", async (req: any, res: any) => {
-    // TODO protect this method with cerberus
-    const athena_ans = await axios({
-      method: 'get',
-      url: conf.athenaUrl + req.url,
-      headers: {
-        workspace: req.headers.workspace,
-        user_uuid: '-',
-      },
-    });
+    try {
+      const cerberus_ans = await axios({
+        method: "get",
+        url: conf.cerberusUrl + "/check_session",
+        headers: { token: req.headers.token, subdomain: req.headers.subdomain, request_function: 'gpt' },
+        validateStatus: function (status) {
+          return true;
+        },
+      });
 
-    res.status(athena_ans.status);
-    res.send(athena_ans.data);
+      if (!cerberus_ans || cerberus_ans.status !== 200) {
+        res.status(cerberus_ans?.status ?? 401);
+        res.send(cerberus_ans?.data ?? { message: "Ошибка авторизации" });
+        return;
+      }
+
+      const athena_ans = await axios({
+        method: 'get',
+        url: conf.athenaUrl + req.url,
+        headers: {
+          workspace: req.headers.workspace,
+          user_uuid: cerberus_ans.data.uuid,
+        },
+      });
+
+      res.status(athena_ans.status);
+      res.send(athena_ans.data);
+    } catch (error: any) {
+      console.log('/gpt error: ' + JSON.stringify(error));
+      res.status(error?.response?.status ?? 500);
+      res.send({ message: error?.response?.data?.message ?? 'Internal Server Error' });
+    }
   });
 
   app.listen(port, async () => {

@@ -1,5 +1,5 @@
 import sql from './sql';
-import tools from '../tools';
+import { randomUUID } from 'crypto';
 import { isNumber } from 'util';
 
 const attributeHumanDictionary: Record<string, string> = {
@@ -21,7 +21,7 @@ export class Data {
   }
 
   public async log(prompt: string, user_uuid: string): Promise<string> {
-    let uuid = tools.uuidv4()
+    let uuid = randomUUID()
     await sql`INSERT INTO  ${sql(this.workspace + '.gpt_logs')} (uuid, prompt, user_uuid) VALUES (${uuid}, ${prompt}, ${user_uuid})`
     return uuid
   }
@@ -101,7 +101,7 @@ export class Data {
       return true;
     }
 
-    const similarity = tools.jaroWinkler(value1Lower, value2Lower);
+    const similarity = 0; //tools.jaroWinkler(value1Lower, value2Lower);
     return similarity >= similarityThreshold;
   }
 
@@ -112,8 +112,8 @@ export class Data {
       }
     }
 
-    let trValue = tools.transliterateRuToEn(value);
-    if(trValue === value) trValue = tools.transliterateEnToRu(value);
+    let trValue = ''; //tools.transliterateRuToEn(value);
+    if(trValue === value) trValue = ''; //tools.transliterateEnToRu(value);
 
     for (let i = 0; i < values.length; i++) {
       if (this.isMatching(trValue, values[i])){
@@ -132,28 +132,19 @@ export class Data {
 
   private async checkValue(name: string, value: string, forFilter: boolean = true) {
     const validAttributes = ['sprint', 'status', 'project', 'type', 'author', 'created_at', 'updated_at'];
-    if(name.toLowerCase() == 'parent' && !forFilter){
+    if(name.toLowerCase() == 'parent' && !forFilter) {
+      let [shortProjectName, numStr] = value.split('-');
+      if (!shortProjectName || !numStr) return null;
 
- 
-      let [shortProjectName, numStr] = value.split('-')
+      let issue = await this.getIssue(shortProjectName, parseInt(numStr));
+      if (!issue) return null;
 
-      if(!shortProjectName || !numStr) return null
-     
-      let num
-      try{
-        num = Number.parseInt(numStr)
-      }
-      catch{return null}
-      
-      let issue = await this.getIssue(shortProjectName, num)
-      
-      if(!issue || !issue.uuid) return null
       return {
         name: 'parent_uuid',
-        value:  "'" + issue.uuid + "'",
-        human_name: 'Родительская задача',
-        human_value: value,
-      }
+        value: issue.uuid,
+        human_name: 'Родитель',
+        human_value: value
+      };
     }
     else if (validAttributes.includes(name.toLowerCase())) {
       
@@ -278,7 +269,7 @@ export class Data {
   
   private convertFilterToQueryString(filter: any): string {
     if (!filter) return '';
-  
+
     if (filter.conditions) {
       const conditions = filter.conditions.map((condition: any) => {
         if (condition.conditions) {
@@ -287,44 +278,54 @@ export class Data {
           return `${condition.name} ${condition.operator} ${condition.value}`;
         }
       });
-  
+
       return `(${conditions.join(` ${filter.operator} `)})`;
     }
-  
+
     return '';
   }
   
   public async check(command: any) {
-    const humanCommand = tools.obj_clone(command);
-  
+    interface CommandWithSet {
+      set?: Array<{ name: string; value: string }>;
+      filter?: any;
+    }
+
+    const humanCommand: CommandWithSet = {
+      set: command.set ? [] : undefined,
+      filter: command.filter
+    };
+
     if(command.set){
       for (let i = 0; i < command.set.length; i++) {
         const result = await this.checkValue(command.set[i].name, command.set[i].value, false);
         if (result) {
           command.set[i].name = result.name;
           command.set[i].value = result.value;
-          humanCommand.set[i].name = result.human_name ? result.human_name : result.name;
-          humanCommand.set[i].value = result.human_value ? result.human_value : result.value;
+          humanCommand.set![i] = {
+            name: result.human_name ? result.human_name : result.name,
+            value: result.human_value ? result.human_value : result.value
+          };
         } else {
           console.log('Not found ' + JSON.stringify(command.set[i]));
           return [null, null];
         }
       }
     }
-  
+
     await this.processFilter(command.filter, this.checkValue.bind(this));
     await this.processFilter(humanCommand.filter, this.checkValue.bind(this), true);
-  
+
     // Convert the filter object to a query string
     const queryString = this.convertFilterToQueryString(command.filter);
     // Replace the JSON-based filter with the query string form
     command.filter = queryString;
-  
+
     // Convert the filter object to a query string
     const humanQueryString = this.convertFilterToQueryString(humanCommand.filter);
     // Replace the JSON-based filter with the query string form
     humanCommand.filter = humanQueryString;
-  
+
     return [command, humanCommand];
   }
 }

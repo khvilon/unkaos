@@ -15,9 +15,17 @@ class DiscordMessage {
 
     async init(userData: UserData) {    
       const ans = await sql`SELECT value FROM server.configs WHERE service = 'discord' AND name = 'token'`;
+      if (!ans || ans.length === 0) {
+        console.log('Discord token not found in configs');
+        return;
+      }
+      
       discordConf = { token: ans[0].value };
 
-      if(!discordConf.token) return;
+      if(!discordConf.token) {
+        console.log('Discord token is empty');
+        return;
+      }
        
       this.client = new Client({intents: [
         GatewayIntentBits.Guilds,

@@ -72,7 +72,7 @@ data_model.load_relations = async function()
     {
         let fk = forein_keys[i]
 
-        if(fk.table_name.contains('_to_')) //relation many to many via _to_ table
+        if(fk.table_name.includes('_to_')) //relation many to many via _to_ table
         {
             let table_name = fk.table_name.split('_to_')[0]
 
@@ -95,7 +95,7 @@ data_model.load_relations = async function()
     
     }
 
-    console.log(data_model.model. issue_types)
+    console.log(data_model.model.issue_types)
 }
 
 data_model.has_fk = function(table_name:string, fk_name:string)

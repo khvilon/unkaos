@@ -1,22 +1,16 @@
 import sql from "./sql";
-
 import cors from 'cors';
-
 import express from "express";
-import tools from "../tools";
-
 import axios from "axios";
-
 import fs from 'fs/promises';
+import crypto from 'crypto';
 
 const app:any = express();
 const port = 5001;
 
-
 app.use(express.json({limit: '1mb'}));
 app.use(express.raw({limit: '1mb'}));
 app.use(express.urlencoded({limit: '1mb', extended: true}));
-
 
 app.use(cors({origin: '*'}));
 
@@ -92,7 +86,7 @@ const init = async function() {
     app.post('/upsert_workspace_requests', async (req:any, res:any) => {   
         let workspace = req.body.workspace
         let email = req.body.email
-        let uuid = tools.uuidv4()
+        let uuid = crypto.randomUUID()
 
         workspace = workspace.toLowerCase();
         
