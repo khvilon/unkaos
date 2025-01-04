@@ -1,5 +1,4 @@
 import postgres = require('postgres');
-import tools from "/app/server/tools";
 
 let dbConf: any;
 

@@ -2,20 +2,18 @@ FROM node:23-alpine
 
 WORKDIR /app
 
-# Копируем общие утилиты и их package.json
-COPY ./server/package.json ./server/
-COPY ./server/tools.ts ./server/
-COPY ./server/tools.d.ts ./server/
-COPY ./server/string.extensions.ts ./server/
+# Копируем common и устанавливаем его зависимости
+COPY ./server/common ./server/common
+WORKDIR /app/server/common
+RUN yarn install
 
-# Копируем файлы сервиса для установки зависимостей
+# Копируем сначала только файлы для установки зависимостей hermes
+WORKDIR /app
 COPY ./server/hermes/package.json ./hermes/
 WORKDIR /app/hermes
+RUN yarn install
 
-# Устанавливаем зависимости, включая локальный пакет tools
-RUN yarn add file:/app/server && yarn install
-
-# Затем копируем остальные файлы сервиса
+# Затем копируем файлы сервиса
 COPY ./server/hermes .
 
 USER node

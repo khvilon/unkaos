@@ -26,6 +26,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/pg": "^8.10.9",
     "@types/node": "^18.11.18",
+    "@types/pino": "^7.0.5",
     "tslib": "^2.4.1"
   }
 }

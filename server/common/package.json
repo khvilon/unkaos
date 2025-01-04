@@ -1,0 +1,9 @@
+{
+  "name": "@unkaos/common",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "pino": "^9.6.0",
+    "pino-pretty": "^10.3.1"
+  }
+}

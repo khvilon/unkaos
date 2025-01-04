@@ -2,15 +2,16 @@ import sql from "./sql";
 // @ts-ignore
 import jwt from "jsonwebtoken";
 import { randomUUID } from 'crypto';
+import logger from '../server/common/logging';
 
 export default class Security {
 
   private static key: string = 'shhhhh';
 
-  
+
 
   private static async fetchUser(workspace: string, email: string, pass: string) : Promise<any> {
-    console.log('Executing SQL query with:', { workspace, email, pass });
+    logger.debug('Executing SQL query for user authentication:', { workspace, email });
     const result = await sql`
     SELECT 
     U.uuid,
@@ -39,19 +40,17 @@ export default class Security {
     U.created_at,
     U.updated_at
     `;
-    console.log('SQL query result:', result);
-    return result;
+    return result[0];
 }
 
   public static async newToken(workspace: string, email: string, pass: string) {
-    let users = await this.fetchUser(workspace, email, pass)
-    console.log(email, pass)
-    if(!users || users.length != 1) return null
-    let user_data = { uuid: users[0].uuid }
+    let user = await this.fetchUser(workspace, email, pass)
+    if(!user) return null
+    let user_data = { uuid: user.uuid }
     let token = jwt.sign(user_data, this.key)
     await sql`INSERT INTO ${sql(workspace + '.user_sessions') } (uuid, user_uuid, token) 
-      values( ${ randomUUID() }, ${ users[0].uuid }, MD5(${ token }))`
-    return {user_token: token, profile: users[0]}
+      values( ${ randomUUID() }, ${ user.uuid }, MD5(${ token }))`
+    return {user_token: token, profile: user}
   }
 
   public static async setRandomPassword(workspace : string, user : any) : Promise<string> {
@@ -82,7 +81,7 @@ export default class Security {
   }
 
   private static async invalidateUserSessions(workspace: string, user: any) {
-    console.log(`Invalidate all sessions of user: ${user.uuid}`)
+    logger.debug(`Invalidate all sessions of user: ${user.uuid}`)
     await sql`
       UPDATE ${sql(workspace + '.user_sessions') } 
       SET deleted_at = NOW()

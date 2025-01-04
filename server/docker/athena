@@ -1,12 +1,19 @@
 FROM node:23-alpine
 
-WORKDIR /app/athena
+WORKDIR /app
 
-# Копируем сначала только файлы для установки зависимостей
-COPY ./server/athena/package.json .
+# Копируем common и устанавливаем его зависимости
+COPY ./server/common ./server/common
+WORKDIR /app/server/common
 RUN yarn install
 
-# Затем копируем остальные файлы
+# Копируем сначала только файлы для установки зависимостей athena
+WORKDIR /app
+COPY ./server/athena/package.json ./athena/
+WORKDIR /app/athena
+RUN yarn install
+
+# Затем копируем файлы сервиса
 COPY ./server/athena .
 
 USER node

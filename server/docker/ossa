@@ -1,12 +1,19 @@
 FROM node:23-alpine
 
-WORKDIR /app/ossa
+WORKDIR /app
 
-# Копируем сначала только файлы для установки зависимостей
-COPY ./server/ossa/package.json .
+# Копируем common и устанавливаем его зависимости
+COPY ./server/common ./server/common
+WORKDIR /app/server/common
 RUN yarn install
 
-# Затем копируем остальные файлы
+# Копируем сначала только файлы для установки зависимостей ossa
+WORKDIR /app
+COPY ./server/ossa/package.json ./ossa/
+WORKDIR /app/ossa
+RUN yarn install
+
+# Затем копируем файлы сервиса
 COPY ./server/ossa .
 
 USER node

@@ -1,111 +1,126 @@
 import axios from "axios";
 import express from 'express';
+import logger from '../server/common/logging';
 
 import Security from "./security";
 import Data from "./data";
 import User from "./types/User";
 
-let conf: any;
-
-try {
-  const dbConfFile = require('./conf.json');
-  conf = dbConfFile;
-} catch (error) {
-  conf = {
-    hermesUrl: process.env.HERMES_URL
-  };
-}
-
-const app = express()
-const port = 3005
+const conf = require('./conf.json')
 
 export default class Rest {
+  private data: Data = new Data()
 
-  data: Data = new Data();
-
-  async init() {
-    await this.data.init();
-    app.use(express.json({limit: '150mb'}));
+  public async init() {
+    await this.data.init()
+    const app = express()
+    app.use(express.json())
     app.use(express.raw({limit: '150mb'}));
     app.use(express.urlencoded({limit: '150mb', extended: true}));
-    app.get('/get_token', async (req : any, res : any) => {
+
+    app.get('/get_token', async (req: any, res: any) => {
       this.handleRequest(req, res)
     })
-    app.get('/check_session', async (req : any, res : any) => {
+
+    app.get('/check_session', async (req: any, res: any) => {
       this.handleRequest(req, res)
     })
-    app.post('/upsert_password', async (req : any, res : any) => {
+
+    app.post('/upsert_password', async (req: any, res: any) => {
       this.handleRequest(req, res)
     })
-    app.post('/upsert_password_rand', async (req : any, res : any) => {
+
+    app.post('/upsert_password_rand', async (req: any, res: any) => {
       this.handleRequest(req, res)
     })
-    app.listen(port, async () => {
-      console.log(`Cerberus running on port ${port}`)
+
+    const port = 3005;
+    app.listen(port, () => {
+      logger.info(`Cerberus running on port ${port}`);
     })
   }
 
-  private async handleRequest(req : any, res : any) {
+  private async handleRequest(req: any, res: any) {
+    try {
+      const workspace: string = req.headers.subdomain;
 
-    const workspace: string = req.headers.subdomain
+      logger.info('Incoming request:', { 
+        workspace, 
+        method: req.method, 
+        path: req.path
+      });
 
-    if (workspace == undefined || workspace == '') {
-      res.status(400);
-      res.send({ message: 'Необходим заголовок subdomain в качестве workspace' });
-      return
-    }
+      if (workspace == undefined || workspace == '') {
+        res.status(400);
+        res.send({ message: 'Необходим заголовок subdomain в качестве workspace' });
+        return;
+      }
 
-    const request = req.url.split('/')[1]
+      const request = req.url.split('/')[1];
 
-    if (request == 'get_token') {
-      await this.handleGetToken(req, workspace, res);
-      return
-    } 
-    
-    const token = req.headers.token
-    if (!token) {
-      res.status(401);
-      res.send({ message: 'Требуется токен авторизации' });
-      return
-    }
+      if (request == 'get_token') {
+        await this.handleGetToken(req, workspace, res);
+        return;
+      }
 
-    const user = await this.data.checkSession(workspace, token)
+      const token = req.headers.token;
+      if (!token) {
+        res.status(401);
+        res.send({ message: 'Требуется токен авторизации' });
+        return;
+      }
 
-    console.log('>>>>>>>>>>>>test', user, workspace, token)
-    if (!user) {
-      res.status(401);
-      res.send({ message: 'Пользовательский токен не валиден' });
-      return
-    }
+      const user = await this.data.checkSession(workspace, token);
+      logger.debug('Session check:', { 
+        workspace,
+        userId: user?.uuid,
+        authenticated: !!user 
+      });
 
-    let isAdmin = this.data.isAdmin(workspace, user.uuid);
-    let allow = isAdmin || this.data.checkPermission(workspace, user.uuid, req.headers.request_function);
-    let self = (user.uuid == req.body.user?.uuid);
-    if(req.headers.request_function == 'upsert_user') allow = self || allow;
-    else if(req.headers.request_function == 'upsert_password') allow = self
+      if (!user) {
+        res.status(401);
+        res.send({ message: 'Пользовательский токен не валиден' });
+        return;
+      }
 
-    console.log('>>>>>>>>>>>>test', user, req.headers.request_function, request, allow)
+      let isAdmin = this.data.isAdmin(workspace, user.uuid);
+      let allow = isAdmin || this.data.checkPermission(workspace, user.uuid, req.headers.request_function);
+      let self = (user.uuid == req.body.user?.uuid);
+      if (request == 'upsert_user') allow = self || allow;
+      else if (request == 'upsert_password') allow = self;
 
-    if(!allow){
+      logger.debug('Permission check:', { 
+        userId: user.uuid,
+        request,
+        isAdmin,
+        allow 
+      });
+
+      if (!allow) {
         res.status(403);
-        res.send({ message: 'Forbidden' });
-        return
-    }
+        res.send({ message: 'Доступ запрещен' });
+        return;
+      }
 
-    if (request == 'check_session') {
+      if (request == 'check_session') {
         user.is_admin = isAdmin;
-        res.send(user)
-    } 
-    else if (request == 'upsert_password') {
-      await Security.setUserPassword(workspace, user, req.body.password)
-      res.send({})
-    } 
-    else if (request == 'upsert_password_rand') {
-      this.upsertPasswordRand(workspace, req.body.user, req, res);
-    } 
-    else {
-      res.status(501)
-      res.send("Несуществующий метод")
+        res.send(user);
+      } else if (request == 'upsert_password') {
+        await Security.setUserPassword(workspace, user, req.body.password);
+        res.send({});
+      } else if (request == 'upsert_password_rand') {
+        await this.upsertPasswordRand(workspace, user, req, res);
+      } else {
+        res.status(501);
+        res.send("Несуществующий метод");
+      }
+    } catch (e) {
+      logger.error('Error in request handler:', { 
+        path: req.path, 
+        error: e instanceof Error ? e.message : String(e)
+      });
+      res.status(500);
+      res.send({ message: "Internal Server Error" });
     }
   }
 
@@ -154,7 +169,7 @@ export default class Rest {
         }
     } 
     catch(e) {
-        console.log('/upsert_password_rand error: ' + JSON.stringify(e))
+        logger.error('Error in upsert_password_rand:', e);
         res.status(500)
         res.send({message: "Internal Server Error"})
     }
@@ -164,9 +179,9 @@ export default class Rest {
   private async handleGetToken(req: any, workspace: string, res: any) {
     let email = req.headers.email
     let pass = req.headers.password
-    console.log('handleGetToken:', { workspace, email, pass });
+    logger.debug('Processing token request:', { workspace, email });
     let token = await Security.newToken(workspace, email, pass)
-    console.log('token result:', token);
+    logger.debug('Token generation result:', { success: !!token });
     if (token == null) {
       res.status(401);
       res.send({message: 'Неверное имя пользователя или пароль'});
@@ -186,6 +201,5 @@ export default class Rest {
   }
 
 }
-
 
 new Rest().init()

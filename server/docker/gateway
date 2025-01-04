@@ -1,12 +1,19 @@
 FROM node:23-alpine
 
-WORKDIR /app/gateway
+WORKDIR /app
 
-# Копируем сначала только файлы для установки зависимостей
-COPY ./server/gateway/package.json .
+# Копируем common и устанавливаем его зависимости
+COPY ./server/common ./server/common
+WORKDIR /app/server/common
 RUN yarn install
 
-# Затем копируем остальные файлы
+# Копируем сначала только файлы для установки зависимостей gateway
+WORKDIR /app
+COPY ./server/gateway/package.json ./gateway/
+WORKDIR /app/gateway
+RUN yarn install
+
+# Затем копируем файлы сервиса
 COPY ./server/gateway .
 
 USER node
