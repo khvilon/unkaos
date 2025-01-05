@@ -1,11 +1,15 @@
+version: '3.8'
+
 services:
+  # Ваши существующие сервисы
+
   ossa:
     build:
       context: .
       dockerfile: server/docker/ossa
     restart: always
     ports:
-     - '3004'
+      - '3004'
     environment:
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
@@ -50,7 +54,7 @@ services:
     depends_on:
       - postgres
       - ossa
-  
+
   eileithyia:
     build:
       context: .
@@ -73,8 +77,8 @@ services:
       context: .
       dockerfile: server/docker/gateway
     restart: always
-    ports:
-      - '3001:3001'
+    expose:
+      - '3001'
     environment:
       - ZEUS_URL=${ZEUS_URL}
       - CERBERUS_URL=${CERBERUS_URL}
@@ -131,31 +135,30 @@ services:
     depends_on:
       - postgres
 
-      
   nginx:
     build:
       context: .
       dockerfile: server/docker/nginx
     restart: always
     volumes:
-     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-     - ./nginx/ssl:/etc/nginx/ssl
-     - ./nginx/conf.d:/etc/nginx/conf.d
-     - ./nginx/templates:/etc/nginx/templates
-     - ./www:/var/www
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/templates:/etc/nginx/templates
+      - ./www:/var/www
     container_name: unkaos-nginx
     ports:
-     - '80:80'
-     - '443:443'
-     - '3003:3003'
-     - '3002:3002'
-     - '6001:6001'
+      - '80:80'
+      - '443:443'
+      - '3003:3003'
+      - '3002:3002'
+      - '6001:6001'
     environment:
-     - BASE_URL="https://${DOMAIN}:3002/"
-     - WS_URL="wss://${DOMAIN}:3003/"
-     - DOMAIN=${DOMAIN}
-     - domain=${DOMAIN}
-     - DOCKER_BUILDKIT=1
+      - BASE_URL="https://${DOMAIN}:3002/"
+      - WS_URL="wss://${DOMAIN}:3003/"
+      - DOMAIN=${DOMAIN}
+      - domain=${DOMAIN}
+      - DOCKER_BUILDKIT=1
     depends_on:
       - gateway
     healthcheck:
@@ -171,7 +174,7 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
-     - '5432:5432'
+      - '5432:5432'
     volumes:
       - ./server/db:/sql-scripts:ro
       - unkaos-pg-data:/var/lib/postgresql/data 
@@ -184,20 +187,20 @@ services:
         
         # Копируем все SQL файлы во временную директорию
         cp /sql-scripts/*.sql /tmp/psql-init/ &&
-
+  
         # Копируем -basic.sql без изменений
         cp /tmp/psql-init/-basic.sql /tmp/psql-final/-basic.sql &&
-
+  
         # Копируем -public.sql без изменений
         cp /tmp/psql-init/-public.sql /tmp/psql-final/-public.sql &&
-
+  
         # Копируем -workspace.sql без изменений
         cp /tmp/psql-init/-workspace.sql /docker-entrypoint-initdb.d/-workspace.sql &&
-
+  
         # Создаем копию для схемы server
         cp /tmp/psql-init/-public.sql /tmp/psql-final/0server.sql &&
         sed -i "s/\bpublic\b/server/g" /tmp/psql-final/0server.sql &&
-
+  
         # Обрабатываем _m.sql файлы для обеих схем
         for file in /tmp/psql-init/*_m.sql; do
           if [ -f "$${file}" ]; then
@@ -209,10 +212,10 @@ services:
             sed -i "s/\bpublic\b/server/g" "$${new_name}"
           fi
         done &&
-
+  
         # Копируем все обработанные файлы в директорию инициализации
         cp /tmp/psql-final/*.sql /docker-entrypoint-initdb.d/ &&
-
+  
         # Запускаем postgres с wal_level=logical
         docker-entrypoint.sh postgres -c wal_level=logical'
     healthcheck:
@@ -221,5 +224,79 @@ services:
       timeout: 5s
       retries: 5
 
+  # Новые сервисы для Graylog
+
+  mongodb:
+    image: mongo:6.0.18
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - graylog-mongodb-data:/data/db
+      - graylog-mongodb-config:/data/configdb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  opensearch:
+    image: opensearchproject/opensearch:2.5.0
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
+      - plugins.security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - graylog-opensearch-data:/var/lib/opensearch
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  graylog:
+    image: graylog/graylog:6.1
+    restart: always
+    environment:
+      - GRAYLOG_PASSWORD_SECRET=${GRAYLOG_PASSWORD_SECRET}
+      - GRAYLOG_ROOT_PASSWORD_SHA2=${GRAYLOG_ROOT_PASSWORD_SHA2}
+      - GRAYLOG_HTTP_EXTERNAL_URI=http://${DOMAIN}:9000/
+      - GRAYLOG_MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/graylog?authSource=admin
+      - GRAYLOG_OPENSEARCH_HOSTS=http://opensearch:9200
+    depends_on:
+      - mongodb
+      - opensearch
+    ports:
+      - "9000:9000"
+      - "5044:5044"   # Beats
+      - "5140:5140"   # Syslog TCP
+      - "5140:5140/udp" # Syslog UDP
+      - "12201:12201" # GELF TCP
+      - "12201:12201/udp" # GELF UDP
+    volumes:
+      - graylog_data:/usr/share/graylog/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/api/system | grep '\"version\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
 volumes:
   unkaos-pg-data:
+
+  # Томa для Graylog
+  graylog-mongodb-data:
+  graylog-mongodb-config:
+  graylog-opensearch-data:
+  graylog_data:
