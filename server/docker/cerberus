@@ -13,9 +13,13 @@ COPY ./server/cerberus/package.json ./cerberus/
 WORKDIR /app/cerberus
 RUN yarn install
 
+# Устанавливаем pino-gelf глобально
+RUN npm install -g pino-gelf
+
 # Затем копируем файлы сервиса
 COPY ./server/cerberus .
 
 USER node
 
-CMD [ "npx", "ts-node", "index.ts" ]
+# Запускаем сервис и пайплайним логи через pino-gelf
+CMD npx ts-node index.ts | pino-gelf log -h graylog -p 12201

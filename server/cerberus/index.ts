@@ -18,6 +18,8 @@ export default class Rest {
     app.use(express.raw({limit: '150mb'}));
     app.use(express.urlencoded({limit: '150mb', extended: true}));
 
+    logger.info('Cerberus service starting up...');
+
     app.get('/get_token', async (req: any, res: any) => {
       this.handleRequest(req, res)
     })
