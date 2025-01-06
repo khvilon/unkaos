@@ -3,6 +3,9 @@ let crud:any = {};
 import data_model from "./data_model";
 import { randomUUID } from 'crypto';
 import sql from "./sql";
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('zeus:crud');
 
 const Memcached = require('memcached');
 const memcached = new Memcached('memcached:11211');
@@ -40,13 +43,24 @@ async function cacheGet(key: string) {
   try {
     const data = await getMemcachedValue(key); // Wait for the promise to resolve
     if (data) {
-      console.log('Retrieved value from Memcached:', data);
+      logger.debug({
+        msg: 'Retrieved value from Memcached',
+        key,
+        value: data
+      });
       return data;
     } else {
-      console.log('Key not found:', key);
+      logger.debug({
+        msg: 'Key not found in Memcached',
+        key
+      });
     }
   } catch (err) {
-    console.error('Memcached get error:', err); // Handle any errors here
+    logger.error({
+      msg: 'Memcached get error',
+      key,
+      error: err
+    });
   }
 }
 
@@ -502,6 +516,7 @@ crud.load = async function () {
 
 
 
+
 crud.push_query = function (query0:any, params0:any, query1:any, params1:any, is_revert:any) {
 
 //console.log('push_query', query0, query1)
@@ -562,6 +577,7 @@ crud.concat_querys = function (query0:any, params0:any, query1:any, params1:any,
   }
   query = query0 + middle + query;
 
+//console.log('concat_querys', query, params)
 
   return [query, params];
 };
@@ -976,32 +992,46 @@ crud.get_query = function (method:string, table_name:string, params:any) {
 crud.get_uuids = function (obj:any) {
   
 
-  console.log(">>>>>>>>>get_uuids", obj)
+  logger.debug({
+    msg: 'Getting UUIDs',
+    obj
+  });
 
   if(!obj.table_name) return null
   let ans:any = {};
   if (obj.uuid !== undefined) ans[obj.uuid] = obj.table_name;
 
+//console.log('crud.get_uuids', obj)
 
   let fk = data_model.model[obj.table_name]["fk"];
-    console.log(">>>>>>>>>get_uuids3", fk)
-    if (fk !== undefined) {
+  logger.debug({
+    msg: 'Processing foreign keys',
+    table: obj.table_name,
+    fk
+  });
+
+  if (fk !== undefined) {
  
 
-      for (let k in fk) {
-        for (let j in obj[fk[k]]) {
-          if (obj[fk[k]][j].uuid == undefined) ans[obj[fk[k]][j]] = fk[k];
-          else ans[obj[fk[k]][j].uuid] = fk[k];
-        }
+    for (let k in fk) {
+      for (let j in obj[fk[k]]) {
+        if (obj[fk[k]][j].uuid == undefined) ans[obj[fk[k]][j]] = fk[k];
+        else ans[obj[fk[k]][j].uuid] = fk[k];
       }
     }
+  }
 
   let fks = data_model.model[obj.table_name]["fks"];
 
 //console.log('fks', fks)
 
   for (let i in obj) {
-    console.log(">>>>>>>>>get_uuids2", obj[i])
+    logger.debug({
+      msg: 'Processing object field',
+      field: i,
+      value: obj[i]
+    });
+
     if (
       obj[i] === undefined ||
       obj[i] === null ||
@@ -1018,6 +1048,11 @@ crud.get_uuids = function (obj:any) {
       ans = { ...ans, ...ch_uuids };
     }
   }
+
+  logger.debug({
+    msg: 'Got UUIDs',
+    result: ans
+  });
 
   return ans;
 };
@@ -1131,7 +1166,15 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
 //console.log('crud.do', query, pg_params)
 
   let readed_data: any;
-  
+
+  logger.debug({
+    msg: 'Processing request',
+    subdomain,
+    method,
+    table_name,
+    author_uuid,
+    is_admin
+  });
 
   if (method != "read") {
     if(table_name == "issue_types") params.table_name = "issue_types";
@@ -1150,7 +1193,11 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
       let new_uuids = crud.get_uuids(params); 
       if(!new_uuids) new_uuids = {};
 
-      console.log('>>>>>>>new_uuids, old_uuids' , new_uuids, old_uuids);
+      logger.debug({
+        msg: 'Processing UUIDs',
+        old_uuids,
+        new_uuids
+      });
 
       let del_query = "";
       for (let i in old_uuids) {
@@ -1203,11 +1250,23 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
   //}
   }
 
-  //check projects permissions for user
-  console.log('is_admin:', is_admin)
+  logger.debug({
+    msg: 'Checking admin permissions',
+    is_admin
+  });
+
   if(!is_admin){
     let q = await crud.updateQueryWithProjectsPermissionsFilter(subdomain, table_name, method, author_uuid, query, params, readed_data)
-    if(!q) return {message: 'forbidden'}
+    if(!q) {
+      logger.warn({
+        msg: 'Access forbidden',
+        subdomain,
+        table_name,
+        method,
+        author_uuid
+      });
+      return {message: 'forbidden'};
+    }
     query = q;
   }
 
@@ -1215,6 +1274,12 @@ crud.do = async function (subdomain:string, method:string, table_name:string, pa
   let ans = await sql.query(subdomain, query, pg_params);
 
   if (ans != null && ans[1] != undefined) ans = ans[ans.length - 1];
+
+  logger.debug({
+    msg: 'Request processed',
+    status: ans ? 'success' : 'error',
+    rows: ans?.rows?.length
+  });
 
   return ans;
 };

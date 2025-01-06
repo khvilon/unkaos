@@ -1,6 +1,9 @@
-let data_model:any = {}
-
 import sql from "./sql";
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('zeus');
+
+let data_model:any = {}
 
 const schema = 'public'
    
@@ -42,6 +45,7 @@ data_model.querys =
 
 data_model.load_columns = async function()
 {
+    logger.debug('Loading database columns');
     let ans = await sql.query(schema, data_model.querys.columns)
     let columns = ans.rows
     data_model.model = {}
@@ -57,16 +61,18 @@ data_model.load_columns = async function()
 
         data_model.model[table_name].columns[column.column_name] = column
     }
+    logger.info({
+        msg: 'Database columns loaded',
+        tables: Object.keys(data_model.model).length
+    });
 }
-
-
 
 data_model.load_relations = async function()
 {
+    logger.debug('Loading database relations');
     let ans = await sql.query(schema, data_model.querys.forein_keys)
 
     let forein_keys = ans.rows
-
 
     for(let i = 0; i <  forein_keys.length; i++)
     {
@@ -92,14 +98,22 @@ data_model.load_relations = async function()
                 data_model.model[local_name]['fks'].push(fk.table_name) 
             }
         }   
-    
     }
 
-    console.log(data_model.model.issue_types)
+    logger.info({
+        msg: 'Database relations loaded',
+        foreign_keys: forein_keys.length
+    });
 }
 
 data_model.has_fk = function(table_name:string, fk_name:string)
 {
+    logger.debug({
+        msg: 'Checking foreign key',
+        table: table_name,
+        fk: fk_name
+    });
+
     let fk = data_model.model[table_name].fk
     if(fk == undefined) return false
     for(let i in fk)
@@ -111,8 +125,10 @@ data_model.has_fk = function(table_name:string, fk_name:string)
 
 data_model.load = async function()
 {
+    logger.info('Loading data model');
     await data_model.load_columns()
     await data_model.load_relations()
+    logger.info('Data model loaded successfully');
 }
 
 export default data_model
