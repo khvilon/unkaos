@@ -1,5 +1,8 @@
-
 import { Configuration, OpenAIApi } from 'openai';
+import { sql } from "./Sql";
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('athena:gpt');
 
 let openaiConf;
 
@@ -12,10 +15,12 @@ try {
   };
 }
 
-
 const key = openaiConf.key
 
-console.log(key)
+logger.debug({
+  msg: 'OpenAI key',
+  key
+})
 
 const configuration = new Configuration({
   apiKey: key,
@@ -145,14 +150,15 @@ export class Gpt {
       temperature: temper,
     });
 
-    console.log(context)
+    logger.debug({
+      msg: 'GPT context',
+      context
+    });
 
     const gptResponse = completion.data.choices[0].message?.content ?  completion.data.choices[0].message?.content : ''
 
     return gptResponse
   }
-
-
 
   public async parseUserCommand(input: string, fields: Array<any>, language: string = 'russian'): Promise<any> {
   
@@ -161,7 +167,6 @@ export class Gpt {
     const context = `${unkaosDescr}.
     ${fieldsStr}.`
 
-
     const parsedCommandStr = await this.ask(input, context)
 
     let parsedCommand: any
@@ -169,7 +174,11 @@ export class Gpt {
     try {
       parsedCommand = JSON.parse(parsedCommandStr);
     } catch (error) {
-      console.log("Error gpt JSON", parsedCommandStr)
+      logger.error({
+        msg: 'Error parsing GPT JSON',
+        error,
+        parsedCommandStr
+      })
       parsedCommand = {}
     }
 

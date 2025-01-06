@@ -1,10 +1,9 @@
-
-
 import sql from './sql';
 import axios from 'axios';
-// Destructure from the module if it exports as an object
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import { createLogger } from '../server/common/logging';
 
+const logger = createLogger('athena');
 
 var openaiConfig: any = {}
 
@@ -174,8 +173,6 @@ Available issue attributes are 'sprint', 'status', 'project', 'type', 'created_a
 The 'num' attribute is the numeric ID, and 'num' is strictly an integer. Available issue fields are:
 `
 
-
-
 const unkaosDescr: any = {
   find_issues:
 `
@@ -209,6 +206,7 @@ If the field or issue attribute has a list of available values, any values in 's
 If the field or issue attribute has a list of available values, any values in 'set' and 'filter' must be from the available values list. 
 The status attr also have for filter a value Решенные that can be used like one of the available values for it. 
 `
+
 }
 
 const request_types: any = {
@@ -225,10 +223,18 @@ export class Gpt {
   }
 
   private handleSubscribeConnect(){
-    console.log('subscribe sql configs connected!')
+    logger.info('Subscribed to config changes');
   }
 
   private async updateConfig(row:any, { command, relation, key, old }: any){
+    logger.debug({
+      msg: 'Config updated',
+      row,
+      command,
+      relation,
+      key,
+      old
+    });
     if(relation.table == 'configs' || relation.schema == 'server') this.init()
   }
 
@@ -252,34 +258,39 @@ export class Gpt {
     let temperature = openaiConfig['temperature' + n];
     let proxy = openaiConfig['proxy' + n];
 
-    console.log('temperature000 model>>', model)
+    logger.debug({
+      msg: 'Creating request config',
+      model,
+      temperature,
+      type
+    });
 
-    const defaultTemperature =  0.4;
-    console.log('temperature0>>', temperature)
-    try{
+    const defaultTemperature = 0.4;
+    try {
       temperature = Number(temperature);
-      if( isNaN(temperature)) temperature = defaultTemperature;
-    }
-    catch{
+      if (isNaN(temperature)) temperature = defaultTemperature;
+    } catch {
       temperature = defaultTemperature;
     }
     
-    console.log('temperature>>', temperature)
+    logger.debug({
+      msg: 'Using temperature',
+      temperature
+    });
+
     let data: any = {
       "model": model,
-      //"response_format": { "type": 'json_object' },
       "messages": [
-            {
-                "role": "system",
-                "content": systemMessage
-            },
-           
-          {
-            "role": "user",
-            "content": userMessage
-        }],
-       
-      "temperature": temperature//Number(openaiConfig.temperature)
+        {
+          "role": "system",
+          "content": systemMessage
+        },
+        {
+          "role": "user",
+          "content": userMessage
+        }
+      ],
+      "temperature": temperature
     };
 
     if(systemMessage.indexOf('JSON') > -1){
@@ -306,71 +317,97 @@ export class Gpt {
   }
 
   public async classify(input: string): Promise<any> {
-    console.log('classify gpt', openaiConfig)
+    logger.debug({
+      msg: 'Classifying input',
+      input,
+      config: openaiConfig
+    });
 
     let config:any = this.createRequestConfig(classifyDescr, input, 'classify')
 
-    try{
+    try {
       let response = await axios(config);
+      
+      logger.debug({
+        msg: 'Got classification response',
+        content: response.data.choices[0].message.content
+      });
 
-      console.log('>>gptResponse0', response.data.choices[0].message.content);
       if(!response.data.choices[0].message.content) return {};
-      console.log('>>gptResponse', response.data.choices[0].message.content);
+      
       return {command: response.data.choices[0].message.content.replace('\n','')};
-    }
-    catch(err) {
-      console.log(err);
+    } catch(err) {
+      logger.error({
+        msg: 'Classification error',
+        error: err
+      });
       return {};
     }
   }
 
   public async useReadme(input: string): Promise<any> {
     const readme = await axios({url:'https://raw.githubusercontent.com/khvilon/unkaos/master/README.md'});
-
     let descr = readmeDescr + readme.data;
 
-    console.log('readme descr', descr)
+    logger.debug({
+      msg: 'Using readme',
+      descr
+    });
 
     let config:any = this.createRequestConfig(descr, input, 'use_readme')
 
-    
-
-    try{
+    try {
       let response = await axios(config);
-      console.log('>>gptResponse0', response.data.choices[0].message.content);
+      
+      logger.debug({
+        msg: 'Got readme response',
+        content: response.data.choices[0].message.content
+      });
+
       return {humanGpt: response.data.choices[0].message.content};
-    }
-    catch(err) {
-      console.log(err);
+    } catch(err) {
+      logger.error({
+        msg: 'Readme error',
+        error: err
+      });
       return {};
     }
   }
 
   private async ask(input: string, context: string): Promise<any> {
-
-
-    console.log('ask gpt openaiConfig', openaiConfig)
+    logger.debug({
+      msg: 'Asking GPT',
+      input,
+      config: openaiConfig
+    });
 
     let config:any = this.createRequestConfig(context, input)
 
-    try{
+    try {
       let response = await axios(config);
 
-      console.log('>>gptResponse0', response.data.choices[0].message.content);
-
+      logger.debug({
+        msg: 'Got GPT response',
+        content: response.data.choices[0].message.content
+      });
 
       let gptResponse = JSON.parse(response.data.choices[0].message.content.replace('```json', '').replace('```', ''));
       if(!gptResponse) return {};
-      console.log('>>gptResponse', JSON.stringify(gptResponse), null, 4);
+
+      logger.debug({
+        msg: 'Parsed GPT response',
+        response: JSON.stringify(gptResponse, null, 4)
+      });
+
       return gptResponse;
-    }
-    catch(err) {
-      console.log(err);
+    } catch(err) {
+      logger.error({
+        msg: 'GPT error',
+        error: err
+      });
       return {};
     }
   }
-
-
 
   public async parseUserCommand(input: string, command: string, fields: Array<any>, language: string = 'russian'): Promise<any> {
   

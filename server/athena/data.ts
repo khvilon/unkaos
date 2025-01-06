@@ -1,6 +1,9 @@
 import sql from './sql';
 import { randomUUID } from 'crypto';
 import { isNumber } from 'util';
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('athena');
 
 const attributeHumanDictionary: Record<string, string> = {
   sprint: 'Спринт',
@@ -192,7 +195,11 @@ export class Data {
       else return null
     } else {
 
-      console.log('>>>', name, this.data.field)
+      logger.debug({
+        msg: 'Checking value',
+        name: name,
+        data: this.data.field
+      });
 
       for (let i = 0; i < this.data.field.length; i++) {
         if (!this.isMatching(name, this.data.field[i].name)) continue;
@@ -260,7 +267,10 @@ export class Data {
               ? improvedCondition.human_value
               : improvedCondition.value;
           } else {
-            console.log('Not found ' + JSON.stringify(condition));
+            logger.warn({
+              msg: 'Condition not found',
+              condition: JSON.stringify(condition)
+            });
           }
         }
       }
@@ -307,7 +317,10 @@ export class Data {
             value: result.human_value ? result.human_value : result.value
           };
         } else {
-          console.log('Not found ' + JSON.stringify(command.set[i]));
+          logger.warn({
+            msg: 'Command set not found',
+            command: JSON.stringify(command.set[i])
+          });
           return [null, null];
         }
       }
