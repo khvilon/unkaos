@@ -1,5 +1,8 @@
 const postgres = require('postgres') 
-import logger from '../server/common/logging';
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('cerberus');
+
 let dbConf: any;
 
 try {

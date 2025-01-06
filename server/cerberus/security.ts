@@ -2,7 +2,9 @@ import sql from "./sql";
 // @ts-ignore
 import jwt from "jsonwebtoken";
 import { randomUUID } from 'crypto';
-import logger from '../server/common/logging';
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('cerberus');
 
 export default class Security {
 

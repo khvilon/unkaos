@@ -1,6 +1,8 @@
 import axios from "axios";
 import express from 'express';
-import logger from '../server/common/logging';
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('cerberus');
 
 import Security from "./security";
 import Data from "./data";

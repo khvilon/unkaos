@@ -2,8 +2,10 @@ import sql from "./sql";
 import Workspace from "./types/Workspace";
 import UserSession from "./types/UserSession";
 import User from "./types/User";
-import logger from '../server/common/logging';
+import { createLogger } from '../server/common/logging';
 import {Row} from "postgres";
+
+const logger = createLogger('cerberus');
 
 export default class Data {
 
