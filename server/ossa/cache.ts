@@ -1,5 +1,8 @@
 import Memcached from 'memcached';
 import sql from "./sql";
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('ossa:cache');
 
 export default class Cache {
   private memcached: any = new Memcached('memcached:11211');
@@ -7,14 +10,20 @@ export default class Cache {
 
   public async init() {
     await this.loadCacheFromDB();
-
     await sql.subscribe('*', this.handleNotify.bind(this), this.handleSubscribeConnect); // bind to keep `this` reference
 
     try {
         const result = await this.setAsync('common:loaded', 'true');
-        console.log('Set operation result:', result);
+        logger.debug({
+            msg: 'Cache initialization complete',
+            result
+        });
     } catch (err) {
-        console.error('Error setting value in Memcached:', err);
+        logger.error({
+            msg: 'Failed to set value in Memcached',
+            error: err,
+            key: 'common:loaded'
+        });
     }
   }
 
@@ -22,11 +31,22 @@ export default class Cache {
   private async setAsync(key: string, value: string): Promise<any> {
     let me = this;
     return new Promise((resolve, reject) => {
-        console.log('>>>>>>>mem0', me.cacheLifetime, me)
       me.memcached.set(key, value, me.cacheLifetime, (err: any, result: any) => {
-        console.log('>>>>>>>mem1', result, err)
-        if (err) reject(err);
-        else resolve(result);
+        if (err) {
+            logger.error({
+                msg: 'Memcached set error',
+                error: err,
+                key
+            });
+            reject(err);
+        }
+        else {
+            logger.debug({
+                msg: 'Memcached set success',
+                key
+            });
+            resolve(result);
+        }
       });
     });
   }
@@ -39,12 +59,22 @@ export default class Cache {
       AND schema_name NOT LIKE 'pg_%'
     `;
 
+    logger.info({
+        msg: 'Loading cache from database',
+        workspaces: schemas.length
+    });
+
     for (let workspace of schemas.map((row: any)=>row.schema_name)) {
       await this.updateWorkspaceUsers(workspace);
     }
   }
 
   private async updateWorkspaceUsers(workspaceName: string) {
+    logger.debug({
+        msg: 'Updating workspace users cache',
+        workspace: workspaceName
+    });
+
     let users = await sql`
       SELECT 
           U.uuid,
@@ -68,10 +98,20 @@ export default class Cache {
 
     for(let user of users){
         try {
-            const result = await this.setAsync('workspace:' +workspaceName  + ':user:' + user.uuid + ':roles', user.roles);
-            console.log('Set operation result:', result);
+            const key = 'workspace:' + workspaceName + ':user:' + user.uuid + ':roles';
+            const result = await this.setAsync(key, user.roles);
+            logger.debug({
+                msg: 'Updated user roles cache',
+                workspace: workspaceName,
+                userId: user.uuid
+            });
         } catch (err) {
-            console.error('Error setting value in Memcached:', err);
+            logger.error({
+                msg: 'Failed to update user roles cache',
+                workspace: workspaceName,
+                userId: user.uuid,
+                error: err
+            });
         }
     }
 
@@ -92,29 +132,45 @@ export default class Cache {
 
     for(let userProjects of usersProjects){
         try {
-            let key = 'w:' +workspaceName  + ':user:' + userProjects.user_uuid + ':projects';
-             
-            let val_r = JSON.stringify(userProjects.projects_r)
-            let val_w = JSON.stringify(userProjects.projects_w)
-            console.log('key', key, val_r, val_w)
+            let key = 'w:' + workspaceName + ':user:' + userProjects.user_uuid + ':projects';
+            let val_r = JSON.stringify(userProjects.projects_r);
+            let val_w = JSON.stringify(userProjects.projects_w);
+
             const result_r = await this.setAsync(key + '_r', val_r);
             const result_w = await this.setAsync(key + '_w', val_w);
-            console.log('Set operation result:', result_r, result_w);
+            
+            logger.debug({
+                msg: 'Updated user projects cache',
+                workspace: workspaceName,
+                userId: userProjects.user_uuid
+            });
         } catch (err) {
-            console.error('Error setting value in Memcached:', err);
+            logger.error({
+                msg: 'Failed to update user projects cache',
+                workspace: workspaceName,
+                userId: userProjects.user_uuid,
+                error: err
+            });
         }
     }
   }
 
   private async handleNotify(row: any, { command, relation, _key, _old }: any) {
-     if (relation.table == 'users' || relation.table == 'users_to_roles' || 
-     relation.table == 'roles' || relation.table == 'projects_permissions') {
-      await this.updateWorkspaceUsers(relation.schema)
+    if (relation.table == 'users' || relation.table == 'users_to_roles' || 
+        relation.table == 'roles' || relation.table == 'projects_permissions') {
+        logger.info({
+            msg: 'Cache update triggered',
+            table: relation.table,
+            workspace: relation.schema,
+            command
+        });
+        await this.updateWorkspaceUsers(relation.schema);
     }
   }
 
   private handleSubscribeConnect() {
-    console.log('subscribe connected!')
+    logger.info({
+        msg: 'Cache database subscription connected'
+    });
   }
-
 }
