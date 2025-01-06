@@ -22,4 +22,4 @@ COPY ./server/cerberus .
 USER node
 
 # Запускаем сервис и пайплайним логи через pino-gelf
-CMD npx ts-node index.ts | pino-gelf log -h graylog -p 12201
+CMD npx ts-node index.ts
