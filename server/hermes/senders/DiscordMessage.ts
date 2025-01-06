@@ -1,6 +1,9 @@
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
 import UserData from '../UsersData';
 import {sql} from "../Sql";
+import { createLogger } from '../../server/common/logging';
+
+const logger = createLogger('hermes:discord');
 
 const conf_retry_period = 10 * 1000
 
@@ -14,19 +17,28 @@ class DiscordMessage {
     }
 
     async init(userData: UserData) {    
-      const ans = await sql`SELECT value FROM server.configs WHERE service = 'discord' AND name = 'token'`;
-      if (!ans || ans.length === 0) {
-        console.log('Discord token not found in configs');
+      const ans = await sql`SELECT name, value FROM server.configs WHERE service = 'discord'`;
+      let ans_dict = ans.reduce((obj: any, item: any) => {
+        obj[item.name] = item.value;
+        return obj;
+      }, {});
+
+      if (!ans_dict.token) {
+        logger.warn({
+          msg: 'Discord token not found in configs'
+        });
         return;
       }
       
-      discordConf = { token: ans[0].value };
-
-      if(!discordConf.token) {
-        console.log('Discord token is empty');
+      if (ans_dict.token === '') {
+        logger.warn({
+          msg: 'Discord token is empty'
+        });
         return;
       }
        
+      discordConf = { token: ans_dict.token };
+
       this.client = new Client({intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
@@ -39,57 +51,70 @@ class DiscordMessage {
         this.client.on('messageCreate', async (message:any) => {
 
           if(message.author.bot) return;
-          console.log('mmm', message.channel.type)
-          if (message.channel.type !== 1) return;
-         // console.log('mmm', message)
-            if (!message.author.username) return;
-            
-            const username = message.author.username;
-            const discordId = message.author.id;
-            let added = await userData.setDiscordId(username, discordId);
-            let ans = 'Your Discord ID has been added to the list.';
-            if (!added) ans = 'User with your Discord username was not found in Unkaos database or does not require ID update.';
-            message.reply(username + ', ' + ans);
+          if (!message.guild) return;
+          
+          const username = message.author.username;
+          const discordId = message.author.id;
+          
+          await userData.setDiscordId(username, discordId);
         });
 
         try{
-          let botUp = this.client.login(discordConf.token);
-          if(botUp) console.log('discord bot up');
-          else {
-            console.log('unable discord bot up');
-            this.client = null;
+          await this.client.login(discordConf.token);
+          const botUp = await this.client.isReady();
+          if (botUp) {
+            logger.info({
+              msg: 'Discord bot up'
+            });
+          } else {
+            logger.error({
+              msg: 'Unable to start discord bot'
+            });
           } 
         }
         catch(err)
         {
-          console.log('discord bot failed login', err);
+          logger.error({
+            msg: 'Discord bot failed login',
+            error: err
+          });
         }
         
     }
 
     async send(userId: string, title: string, body: string) {
         if(!this.client){
-          console.log('cant send discord - not configured');
+          logger.warn({
+            msg: 'Cannot send discord message - not configured'
+          });
           return;
         }
         try {
             let user =  await this.client.users.fetch(userId);
             if (!user) {
-                console.log(`Error sending discord msg, user not found`); 
-                return {status:-1, status_details: 'Discord u not found'}
+                logger.warn({
+                  msg: 'Discord user not found',
+                  userId
+                });
+                return {status:-1, status_details: 'Discord user not found'};
             }
-            await user.send(`**${title}**\n${body}`);
-            console.log(`Message sent to discord user`);
+            const message = title ? `**${title}**\n\n${body}` : body;
+            await user.send(message);
+            logger.info({
+              msg: 'Message sent to discord user',
+              userId
+            });
             return {status:2}
         } 
         catch (err) {
-            let errMsg = `Error sending discord msg ${err}`
-            console.log(errMsg) 
-            return {status:-1, status_details: errMsg}
+            logger.error({
+              msg: 'Error sending discord message',
+              userId,
+              error: err
+            });
+            return {status:-1, status_details: 'Error sending discord message'};
         }
     }
 }
 
 export default DiscordMessage;
-
-

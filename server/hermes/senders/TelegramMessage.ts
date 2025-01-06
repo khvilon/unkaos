@@ -1,6 +1,9 @@
 import { Bot } from 'grammy';
 import UserData from '../UsersData';
-import {sql} from "../Sql";
+import { sql } from "../Sql";
+import { createLogger } from '../../server/common/logging';
+
+const logger = createLogger('hermes:telegram');
 
 let telegramConf: any;
 let bot: Bot;
@@ -13,21 +16,32 @@ export default class TelegramMessage {
   }
 
   async init() {
-    const conf = await sql`select value from server.configs where service = 'telegram' and name = 'token'`;
-    if (!conf.length) {
-      console.log('Telegram token not found in config');
-      return;
-    }
-    
-    const token = conf[0].value;
-    if (!token) {
-      console.log('Empty telegram token in config');
-      return;
-    }
-    
-    telegramConf = { token };
-    console.log('Initializing telegram bot');
+    let ans = await sql`SELECT name, value FROM server.configs WHERE service = 'telegram'`
 
+    let ans_dict = ans.reduce((obj: any, item: any) => {
+      obj[item.name] = item.value;
+      return obj;
+    }, {});
+
+    if (!ans_dict.token) {
+      logger.warn({
+        msg: 'Telegram token not found in config'
+      });
+      return;
+    }
+
+    if (ans_dict.token === '') {
+      logger.warn({
+        msg: 'Empty telegram token in config'
+      });
+      return;
+    }
+
+    logger.info({
+      msg: 'Initializing telegram bot'
+    });
+
+    telegramConf = { token: ans_dict.token };
     bot = new Bot(telegramConf.token);
 
     // Handle messages for user registration
