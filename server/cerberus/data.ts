@@ -49,9 +49,10 @@ export default class Data {
       this.updateWorkspaceUsers(schema.schema_name);
       this.updateWorkspaceSessions(schema.schema_name);
       this.updateWorkspacePermissions(schema.schema_name);
-      logger.info(`Loaded workspace: ${schema.schema_name}`)
-
-
+      logger.info({
+        msg: 'Loaded workspace',
+        workspace: schema.schema_name
+      });
   }
   
 
@@ -77,7 +78,12 @@ export default class Data {
       this.updateWorkspaceUsers(workspaceName);
       this.updateWorkspaceSessions(workspaceName);
       this.updateWorkspacePermissions(workspaceName);
-      logger.info(`Loaded workspace: ${workspaceName}, users: ${workspace.users.size}, sessions: ${workspace.sessions.size}`)
+      logger.info({
+        msg: 'Loaded workspace',
+        workspace: workspaceName,
+        users: workspace.users.size,
+        sessions: workspace.sessions.size
+      });
     }
   }
 
@@ -143,7 +149,10 @@ export default class Data {
           let key = permissions[i].user_uuid + '.' + request;
           workspace.permissions.set(key, true);
           if(method == 'update') workspace.permissions.set(permissions[i].user_uuid + '.upsert_' + targets[j].table, true);
-          logger.debug('Permission key created:', { key });
+          logger.debug({
+            msg: 'Permission key created',
+            key
+          });
           if(request == 'update_users') workspace.permissions.set(permissions[i].user_uuid + '.upsert_password_rand', true)
         }
       }
@@ -163,7 +172,10 @@ export default class Data {
 
     for(let i in admins){
       workspace.permissions.set(admins[i].user_uuid, true);
-      logger.debug('Admin permission key created:', { user_uuid: admins[i].user_uuid });
+      logger.debug({
+        msg: 'Admin permission key created',
+        userId: admins[i].user_uuid
+      });
     }
 
     let commonPermissions = (await sql`
@@ -185,7 +197,10 @@ export default class Data {
         let request: string = method + '_' + targets[j].table;
         workspace.permissions.set(request, true);
         if(method == 'update') workspace.permissions.set('upsert_' + targets[j].table, true);
-        logger.debug('Common permission key created:', { request });
+        logger.debug({
+          msg: 'Common permission key created',
+          request
+        });
       }
     }
   }
@@ -216,7 +231,9 @@ export default class Data {
 
   private async md5(text: string){
     let md5text = (await sql`SELECT MD5( ${text})`)[0].md5
-    logger.debug('MD5 hash generated');
+    logger.debug({
+      msg: 'MD5 hash generated'
+    });
     return await md5text
   }
   
@@ -228,7 +245,10 @@ export default class Data {
       workspace.sessions.forEach((session: UserSession, token: string) => {
         if (session.expires_at !== undefined && session.expires_at < now) {
           workspace.sessions.delete(token);
-          logger.debug('Removed expired token from workspace', { workspaceName });
+          logger.debug({
+            msg: 'Removed expired token from workspace',
+            workspace: workspaceName
+          });
         }
       })
     })
@@ -264,7 +284,9 @@ export default class Data {
   }
 
   private handleSubscribeConnect() {
-    logger.info('Database subscription connected');
+    logger.info({
+      msg: 'Database subscription connected'
+    });
   }
 
   public async checkSession(workspaceName: string, token: string): Promise<User | null> {
@@ -278,7 +300,11 @@ export default class Data {
       if(!workspace) return null;
     }
 
-    logger.info('Session check:', { workspaceName, tokenValid: !!workspace.sessions.get(md5Token) });
+    logger.info({
+      msg: 'Session check',
+      workspace: workspaceName,
+      tokenValid: !!workspace.sessions.get(md5Token)
+    });
     const userSession: UserSession | undefined = workspace.sessions.get(md5Token);
     if(!userSession) return null;
     const user: User | undefined = workspace.users.get(userSession.user_uuid);

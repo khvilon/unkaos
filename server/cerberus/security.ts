@@ -10,10 +10,12 @@ export default class Security {
 
   private static key: string = 'shhhhh';
 
-
-
   private static async fetchUser(workspace: string, email: string, pass: string) : Promise<any> {
-    logger.debug('Executing SQL query for user authentication:', { workspace, email });
+    logger.debug({
+      msg: 'Executing SQL query for user authentication',
+      workspace,
+      email
+    });
     const result = await sql`
     SELECT 
     U.uuid,
@@ -43,7 +45,7 @@ export default class Security {
     U.updated_at
     `;
     return result[0];
-}
+  }
 
   public static async newToken(workspace: string, email: string, pass: string) {
     let user = await this.fetchUser(workspace, email, pass)
@@ -83,7 +85,10 @@ export default class Security {
   }
 
   private static async invalidateUserSessions(workspace: string, user: any) {
-    logger.debug(`Invalidate all sessions of user: ${user.uuid}`)
+    logger.debug({
+      msg: 'Invalidating all user sessions',
+      userId: user.uuid
+    });
     await sql`
       UPDATE ${sql(workspace + '.user_sessions') } 
       SET deleted_at = NOW()
