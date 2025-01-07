@@ -89,144 +89,253 @@ export default class Data {
 
   private async updateWorkspaceUsers(workspaceName: string) {
     const workspace = this.workspaces.get(workspaceName);
-    if(!workspace) return;
-
-    let users = (await sql<User>`
-      SELECT 
-          U.uuid,
-          U.name,
-          U.login,
-          U.mail,
-          U.telegram,
-          json_agg(R) as roles
-      FROM ${sql(workspaceName + '.users')} U
-      LEFT JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
-      LEFT JOIN (SELECT uuid, name FROM ${sql(workspaceName + '.roles')}) R ON R.uuid = UR.roles_uuid
-      WHERE U.active 
-      AND U.deleted_at IS NULL
-      GROUP BY
-      U.uuid,
-      U.name,
-      U.login,
-      U.mail,
-      U.telegram
-    `);
-
-    workspace.users = new Map(users.map((user: User)=>[user.uuid, user]));
-  }
-
-  private async updateWorkspacePermissions(workspaceName: string) {
-    const workspace = this.workspaces.get(workspaceName);
-    if(!workspace) return;
-
-
-    let permissions = (await sql`
-      SELECT 
-        U.uuid user_uuid,
-        P.targets
-      FROM 
-      ${sql(workspaceName + '.users')} U
-        JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
-        JOIN ${sql(workspaceName + '.roles')} R ON R.uuid = UR.roles_uuid
-        JOIN ${sql(workspaceName + '.roles_to_permissions')} RP ON RP.roles_uuid = R.uuid
-        JOIN ${sql(workspaceName + '.permissions')} P ON P.uuid = RP.permissions_uuid
-      WHERE
-        U.active AND 
-        U.deleted_at IS NULL AND 
-        R.deleted_at IS NULL AND
-        P.deleted_at IS NULL
-    `)
-
-    workspace.permissions = new Map();
-
-    for(let i in permissions){
-      let targets = permissions[i].targets;
-      for(let j in targets){
-        let crud: string = targets[j].allow;
-        for(let l = 0; l < crud.length; l++){
-          let method: string = this.CRUD[crud[l]];
-          let request: string = method + '_' + targets[j].table;
-          let key = permissions[i].user_uuid + '.' + request;
-          workspace.permissions.set(key, true);
-          if(method == 'update') workspace.permissions.set(permissions[i].user_uuid + '.upsert_' + targets[j].table, true);
-          logger.debug({
-            msg: 'Permission key created',
-            key
-          });
-          if(request == 'update_users') workspace.permissions.set(permissions[i].user_uuid + '.upsert_password_rand', true)
-        }
-      }
-    }
-
-    let admins = (await sql`
-      SELECT 
-        U.uuid user_uuid
-      FROM 
-        ${sql(workspaceName + '.users')} U
-        JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
-      WHERE
-        U.active AND 
-        U.deleted_at IS NULL AND 
-        UR.roles_uuid = '556972a6-0370-4f00-aca2-73a477e48999'
-    `)
-
-    for(let i in admins){
-      workspace.permissions.set(admins[i].user_uuid, true);
-      logger.debug({
-        msg: 'Admin permission key created',
-        userId: admins[i].user_uuid
+    if(!workspace) {
+      logger.warn({
+        msg: 'Workspace not found while updating users',
+        workspace: workspaceName
       });
+      return;
     }
 
-    let commonPermissions = (await sql`
-      SELECT 
-        P.targets
-      FROM 
-        ${sql(workspaceName + '.permissions')} P
-      WHERE
-        P.deleted_at IS NULL AND P.code = 'common'
-    `)
+    try {
+      logger.debug({
+        msg: 'Fetching users from database',
+        workspace: workspaceName
+      });
 
-    let targets = commonPermissions[0]?.targets
-    if(!targets) return
+      let users = (await sql<User>`
+        SELECT 
+            U.uuid,
+            U.name,
+            U.login,
+            U.mail,
+            U.telegram,
+            json_agg(R) as roles
+        FROM ${sql(workspaceName + '.users')} U
+        LEFT JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
+        LEFT JOIN (SELECT uuid, name FROM ${sql(workspaceName + '.roles')}) R ON R.uuid = UR.roles_uuid
+        WHERE U.active 
+        AND U.deleted_at IS NULL
+        GROUP BY
+        U.uuid,
+        U.name,
+        U.login,
+        U.mail,
+        U.telegram
+      `);
 
-    for(let j in targets){
-      let crud: string = targets[j].allow;
-      for(let l = 0; l < crud.length; l++){
-        let method: string = this.CRUD[crud[l]];
-        let request: string = method + '_' + targets[j].table;
-        workspace.permissions.set(request, true);
-        if(method == 'update') workspace.permissions.set('upsert_' + targets[j].table, true);
-        logger.debug({
-          msg: 'Common permission key created',
-          request
-        });
-      }
+      logger.debug({
+        msg: 'Users fetched from database',
+        workspace: workspaceName,
+        count: users.length,
+        users: users.map((u: User) => ({ uuid: u.uuid, name: u.name }))
+      });
+
+      workspace.users = new Map(users.map((user: User)=>[user.uuid, user]));
+
+      logger.info({
+        msg: 'Workspace users updated',
+        workspace: workspaceName,
+        users_count: workspace.users.size
+      });
+    } catch (error) {
+      logger.error({
+        msg: 'Error updating workspace users',
+        workspace: workspaceName,
+        error
+      });
     }
   }
 
   private async updateWorkspaceSessions(workspaceName: string) {
     const workspace = this.workspaces.get(workspaceName);
-    if(!workspace) return;
+    if(!workspace) {
+      logger.warn({
+        msg: 'Workspace not found while updating sessions',
+        workspace: workspaceName
+      });
+      return;
+    }
 
-    const sessions = (await sql<UserSession>`
-      SELECT 
-        US.uuid,
-        US.user_uuid,
-        US.token,
-        US.created_at AS token_created_at,
-        (US.created_at + ${this.tokenExpirationTimeSec} * interval '1 second') as expires_at
-      FROM ${sql(workspaceName + '.user_sessions')} US
-      LEFT JOIN ${sql(workspaceName + '.users')} U
-        ON US.user_uuid = U.uuid
-      WHERE U.active 
-        AND U.deleted_at IS NULL 
-        AND (US.created_at + ${this.tokenExpirationTimeSec} * interval '1 second') > NOW() 
-        AND US.deleted_at IS NULL
-      ORDER BY US.CREATED_AT
-    `)
+    try {
+      logger.debug({
+        msg: 'Fetching sessions from database',
+        workspace: workspaceName
+      });
 
-    workspace.sessions = new Map(sessions.map((session: UserSession)=>[session.token, session]))
+      const sessions = (await sql<UserSession>`
+        SELECT 
+          US.uuid,
+          US.user_uuid,
+          US.token,
+          US.created_at AS token_created_at,
+          (US.created_at + ${this.tokenExpirationTimeSec} * interval '1 second') as expires_at
+        FROM ${sql(workspaceName + '.user_sessions')} US
+        LEFT JOIN ${sql(workspaceName + '.users')} U
+          ON US.user_uuid = U.uuid
+        WHERE U.active 
+          AND U.deleted_at IS NULL 
+          AND (US.created_at + ${this.tokenExpirationTimeSec} * interval '1 second') > NOW() 
+          AND US.deleted_at IS NULL
+        ORDER BY US.CREATED_AT
+      `);
+
+      logger.debug({
+        msg: 'Sessions fetched from database',
+        workspace: workspaceName,
+        count: sessions.length,
+        sessions: sessions.map((s: UserSession) => ({ uuid: s.uuid, user_uuid: s.user_uuid }))
+      });
+
+      workspace.sessions = new Map(sessions.map((session: UserSession)=>[session.token, session]));
+
+      logger.info({
+        msg: 'Workspace sessions updated',
+        workspace: workspaceName,
+        sessions_count: workspace.sessions.size
+      });
+    } catch (error) {
+      logger.error({
+        msg: 'Error updating workspace sessions',
+        workspace: workspaceName,
+        error
+      });
+    }
+  }
+
+  private async updateWorkspacePermissions(workspaceName: string) {
+    const workspace = this.workspaces.get(workspaceName);
+    if(!workspace) {
+      logger.warn({
+        msg: 'Workspace not found while updating permissions',
+        workspace: workspaceName
+      });
+      return;
+    }
+
+    try {
+      logger.debug({
+        msg: 'Fetching permissions from database',
+        workspace: workspaceName
+      });
+
+      let permissions = (await sql`
+        SELECT 
+          U.uuid user_uuid,
+          P.targets
+        FROM 
+        ${sql(workspaceName + '.users')} U
+          JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
+          JOIN ${sql(workspaceName + '.roles')} R ON R.uuid = UR.roles_uuid
+          JOIN ${sql(workspaceName + '.roles_to_permissions')} RP ON RP.roles_uuid = R.uuid
+          JOIN ${sql(workspaceName + '.permissions')} P ON P.uuid = RP.permissions_uuid
+        WHERE
+          U.active AND 
+          U.deleted_at IS NULL AND 
+          R.deleted_at IS NULL AND
+          P.deleted_at IS NULL
+      `)
+
+      logger.debug({
+        msg: 'Permissions fetched from database',
+        workspace: workspaceName,
+        count: permissions.length,
+        permissions: permissions.map((p: any) => ({ user_uuid: p.user_uuid, targets: p.targets }))
+      });
+
+      workspace.permissions = new Map();
+
+      for(let i in permissions){
+        let targets = permissions[i].targets;
+        for(let j in targets){
+          let crud: string = targets[j].allow;
+          for(let l = 0; l < crud.length; l++){
+            let method: string = this.CRUD[crud[l]];
+            let request: string = method + '_' + targets[j].table;
+            let key = permissions[i].user_uuid + '.' + request;
+            workspace.permissions.set(key, true);
+            if(method == 'update') workspace.permissions.set(permissions[i].user_uuid + '.upsert_' + targets[j].table, true);
+            logger.debug({
+              msg: 'Permission key created',
+              key
+            });
+            if(request == 'update_users') workspace.permissions.set(permissions[i].user_uuid + '.upsert_password_rand', true)
+          }
+        }
+      }
+
+      let admins = (await sql`
+        SELECT 
+          U.uuid user_uuid
+        FROM 
+          ${sql(workspaceName + '.users')} U
+          JOIN ${sql(workspaceName + '.users_to_roles')} UR ON UR.users_uuid = U.uuid
+        WHERE
+          U.active AND 
+          U.deleted_at IS NULL AND 
+          UR.roles_uuid = '556972a6-0370-4f00-aca2-73a477e48999'
+      `)
+
+      logger.debug({
+        msg: 'Admins fetched from database',
+        workspace: workspaceName,
+        count: admins.length,
+        admins: admins.map((a: any) => ({ user_uuid: a.user_uuid }))
+      });
+
+      for(let i in admins){
+        workspace.permissions.set(admins[i].user_uuid, true);
+        logger.debug({
+          msg: 'Admin permission key created',
+          userId: admins[i].user_uuid
+        });
+      }
+
+      let commonPermissions = (await sql`
+        SELECT 
+          P.targets
+        FROM 
+          ${sql(workspaceName + '.permissions')} P
+        WHERE
+          P.deleted_at IS NULL AND P.code = 'common'
+      `)
+
+      logger.debug({
+        msg: 'Common permissions fetched from database',
+        workspace: workspaceName,
+        count: commonPermissions.length,
+        commonPermissions: commonPermissions.map((p: any) => ({ targets: p.targets }))
+      });
+
+      let targets = commonPermissions[0]?.targets
+      if(!targets) return
+
+      for(let j in targets){
+        let crud: string = targets[j].allow;
+        for(let l = 0; l < crud.length; l++){
+          let method: string = this.CRUD[crud[l]];
+          let request: string = method + '_' + targets[j].table;
+          workspace.permissions.set(request, true);
+          if(method == 'update') workspace.permissions.set('upsert_' + targets[j].table, true);
+          logger.debug({
+            msg: 'Common permission key created',
+            request
+          });
+        }
+      }
+
+      logger.info({
+        msg: 'Workspace permissions updated',
+        workspace: workspaceName,
+        permissions_count: workspace.permissions.size
+      });
+    } catch (error) {
+      logger.error({
+        msg: 'Error updating workspace permissions',
+        workspace: workspaceName,
+        error
+      });
+    }
   }
 
   private async md5(text: string){
