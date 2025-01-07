@@ -5,6 +5,7 @@ import cors from 'cors';
 import express from "express";
 import { randomUUID } from 'crypto';
 import { createLogger } from '../server/common/logging';
+import { Server } from 'socket.io';
 
 const logger = createLogger('zeus');
 
@@ -22,6 +23,7 @@ const dict:any =
 var listeners:any[] = []
 
 const app:any = express()
+const httpServer = require('http').createServer(app);
 const port = 3006
 
 //var bodyParser = require('body-parser');
@@ -147,10 +149,65 @@ const init = async function() {
         }
     }
 
-    app.listen(port, async () => {
-        logger.info(`Zeus running on port ${port}`);
-    })
+    // Создаем Socket.IO сервер
+    const io = new Server(httpServer, {
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST", "PUT", "DELETE"],
+            credentials: true
+        },
+        transports: ['polling', 'websocket'],
+        path: '/socket.io'
+    });
 
+    // Обработка Socket.IO подключений
+    io.on('connection', (socket) => {
+        logger.info({
+            msg: 'New gateway connection',
+            socketId: socket.id
+        });
+
+        socket.on('request', async (data, callback) => {
+            // Создаем объект req как в express
+            const req: any = {
+                url: data.url,
+                method: data.method,
+                headers: data.headers,
+                query: {},
+                body: data.body
+            };
+
+            // Создаем объект res как в express
+            const res: any = {
+                status: function(code: number) {
+                    this.statusCode = code;
+                    return this;
+                },
+                send: function(data: any) {
+                    callback({
+                        status: this.statusCode || 200,
+                        data: data
+                    });
+                }
+            };
+
+            // Используем существующий handleRequest
+            await handleRequest(req, res);
+        });
+
+        socket.on('disconnect', () => {
+            logger.info({
+                msg: 'Gateway disconnected',
+                socketId: socket.id
+            });
+        });
+    });
+
+    httpServer.listen(port, () => {
+        logger.info({
+            msg: `Zeus running on port ${port}`
+        });
+    });
 }
     
 init()

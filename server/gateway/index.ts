@@ -99,6 +99,38 @@ app.get("/get_token", async (req: any, res: any) => {
   }
 });
 
+// Добавляем Socket.IO клиент для Zeus
+const zeusSocket = io(conf.zeusUrl, {
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000,
+  transports: ['polling', 'websocket'],
+  path: '/socket.io',
+  autoConnect: true,
+  forceNew: true
+});
+
+zeusSocket.on('connect', () => {
+  logger.info({
+    msg: 'Connected to Zeus',
+    socketId: zeusSocket.id
+  });
+});
+
+zeusSocket.on('disconnect', () => {
+  logger.warn({
+    msg: 'Disconnected from Zeus'
+  });
+});
+
+zeusSocket.on('connect_error', (error) => {
+  logger.error({
+    msg: 'Zeus connection error',
+    error: error.message,
+    description: error
+  });
+});
+
 async function init() {
   const zeus_listeners = await axios.get(conf.zeusUrl + "/read_listeners");
 
@@ -127,22 +159,25 @@ async function init() {
             return;
           }
 
-          req.headers.user_uuid = response.data.uuid;
-          
           try {
-            const zeus_ans = await axios({
-              data: req.body,
+            zeusSocket.emit('request', {
               method: method,
-              url: conf.zeusUrl + req.url,
+              url: req.url,
               headers: {
                 subdomain: req.headers.subdomain,
                 user_uuid: response.data.uuid,
                 is_admin: response.data.is_admin
               },
+              body: req.body
+            }, (zeus_ans: any) => {
+              logger.debug({
+                msg: 'Zeus response received',
+                status: zeus_ans.status,
+                url: req.url
+              });
+              res.status(zeus_ans.status);
+              res.send(zeus_ans.data);
             });
-
-            res.status(zeus_ans.status);
-            res.send(zeus_ans.data);
           } catch (error) {
             logger.error({
               msg: 'Zeus request error',
