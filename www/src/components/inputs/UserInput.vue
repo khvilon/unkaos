@@ -3,14 +3,14 @@ import Multiselect from "vue-multiselect";
 import store_helper from "../../store_helper.ts";
 import tools from "../../tools.ts";
 
-import "vue-multiselect/dist/vue-multiselect.min.css";
+import "vue-select/dist/vue-select.css";
 import cache from "../../cache";
 
 export default {
   components: {
     Multiselect,
   },
-  emits: ["search", "update_parent_from_input", "updated", "updated_full_user", "update:value"],
+  emits: ["search", "update_parent_from_input", "updated", "updated_full_user"],
   data() {
     return {
       is_open: false,
@@ -138,7 +138,10 @@ export default {
       type: Boolean,
       default: false,
     },
+
+    
   },
+
 };
 </script>
 
@@ -146,8 +149,8 @@ export default {
   <div class="user-input input">
     <div class="label" v-if="label">{{ label }}</div>
 
-    <Multiselect
-      :value="value"
+    <v-select
+      v-model="value"
       label="name"
       :clearable="clearable"
       :options="options"
@@ -155,7 +158,6 @@ export default {
       :reduce="(user) => user.uuid"
       @open="is_open=true"
       @close="is_open=false"
-      @input="$emit('update:value', $event.target.value)"
       :multiple="multiple"
     >
       <template v-if="is_open" #option="{ name, active, avatar }">
@@ -169,7 +171,7 @@ export default {
       <template v-slot:no-options="{ search, searching }">
         <template v-if="searching"> Ничего не найдено </template>
       </template>
-    </Multiselect>
+    </v-select>
   </div>
 </template>
 

@@ -44,7 +44,7 @@ export default {
     }
   },
 
-  emits: ["update_parent_from_input", "input_focus", "update:value"],
+  emits: ["update_parent_from_input", "input_focus"],
 
   methods: {
     resize2() {
@@ -161,8 +161,7 @@ export default {
       :id="textarea_id"
       class="text-input"
       :type="type"
-      :value="val"
-      @input="$emit('update:value', $event.target.value)"
+      v-model="val"
       :disabled="disabled"
       @click="countTextareaCapacity"
     ></textarea>

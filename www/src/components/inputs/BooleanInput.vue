@@ -1,6 +1,6 @@
 <script>
 export default {
-  emits: ["update_parent_from_input", "updated", "update:value"],
+  emits: ["update_parent_from_input", "updated"],
   props: {
     disabled: {
       type: Boolean,
@@ -41,13 +41,7 @@ export default {
 <template>
   <label class="boolean input">
     <div class="label" v-if="label != ''">{{ label }}</div>
-    <input 
-      type="checkbox" 
-      :checked="value" 
-      @input="$emit('update:value', $event.target.checked)" 
-      :disabled="disabled" 
-      style="display: none"
-    />
+    <input type="checkbox" v-model="value" :disabled="disabled" style="display: none"/>
     <span class="boolean-input" v-bind:class="{ disabled: disabled }"> </span>
   </label>
 </template>

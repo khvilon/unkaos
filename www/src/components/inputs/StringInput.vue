@@ -50,12 +50,36 @@ export default {
     value: function (val, oldVal) {
       //console.log(val, oldVal, this.id, this.parent_name);
 
+      this.$emit("update_parent_from_input", val);
+
       if (this.parent_name == undefined || this.parent_name == "") return;
+
+      /*
+        
+        let data = val
+
+        let id_parts = this.id.split('.')
+
+        let i = id_parts.length-1;
+        let id = id_parts[i]
+         
+        while (id != undefined)
+        {
+          let new_data = {}
+          new_data[id] = data
+          data = new_data
+          i--
+          id = id_parts[i]
+        }
+        */
 
       this.$store.commit("id_push_update_" + this.parent_name, {
         id: this.id,
         val: val,
       });
+
+      //data[this.id] = val
+      //this.$store.commit('push_update_' + this.parent_name, data)
     },
     
   },
@@ -68,8 +92,7 @@ export default {
     <input
       ref="inputField"
       class="string-input"
-      :value="value"
-      @input="$emit('update_parent_from_input', $event.target.value)"
+      v-model="value"
       @keyup.enter="keyup_enter(); doBlur()"
       :type="type"
       :disabled="disabled"
