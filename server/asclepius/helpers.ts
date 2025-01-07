@@ -55,23 +55,35 @@ export async function getIframeBody(page: Page) {
     // Читаем первое письмо
     const email = await readEmail(emails[0].id);
     
-    // Создаем временный iframe с содержимым письма
-    await page.evaluate((html) => {
-        const iframe = document.createElement('iframe');
-        iframe.name = 'email_iframe';
-        iframe.srcdoc = html;
-        document.body.appendChild(iframe);
+    // Создаем временный div для парсинга HTML
+    const activationData = await page.evaluate((html) => {
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        
+        // Ищем ссылку активации (она содержит /register/ в href)
+        const link = div.querySelector('a[href*="/register/"]');
+        if (!link) return null;
+        
+        // Ищем пароль (в теге strong)
+        const password = div.querySelector('strong');
+        if (!password) return null;
+        
+        return {
+            href: link.getAttribute('href'),
+            password: password.textContent
+        };
     }, email.body);
 
-    const frame = await page.frame({ name: 'email_iframe' });
-    if (!frame) throw new Error('No frame found');
-    await frame.waitForSelector('body');
-    
-    // Ищем ссылку активации по тексту
-    const activationLink = frame.locator('a:has-text("активировать")').first();
-    await activationLink.waitFor({ state: 'visible' });
-    
-    return activationLink;
+    if (!activationData) {
+        throw new Error('Could not find activation link or password in email');
+    }
+
+    return {
+        getAttribute: (attr: string) => attr === 'href' ? activationData.href : null,
+        locator: () => ({
+            innerText: async () => activationData.password
+        })
+    };
 }
 
 export async function waitRegisterMail(page: Page) {
@@ -114,12 +126,19 @@ export async function sendWorkspaceRegister(page: Page, workspace: string, admin
   console.log('Clicking submit button...');
   await page.click('.register-panel .btn_input');
   
-  // Добавляем проверку на ошибки
-  const errorLabel = page.locator('.register-err-label');
-  const exists = await errorLabel.isVisible();
-  if (exists) {
-    const errorText = await errorLabel.innerText();
-    console.error('Registration error:', errorText);
+  // Проверяем возможные ошибки
+  const workspaceExistsError = page.locator('.register-err-label:has-text("Пространство с таким названием существует")');
+  const registrationError = page.locator('.register-err-label:has-text("Не удалось создать заявку на регистрацию")');
+  
+  const hasWorkspaceError = await workspaceExistsError.isVisible();
+  const hasRegistrationError = await registrationError.isVisible();
+  
+  if (hasWorkspaceError) {
+    throw new Error('Workspace already exists');
+  }
+  
+  if (hasRegistrationError) {
+    throw new Error('Failed to create registration request');
   }
 
   console.log('Waiting for success message...');

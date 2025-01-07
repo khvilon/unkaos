@@ -16,10 +16,12 @@ RUN yarn install
 # Затем копируем файлы сервиса
 COPY ./server/eileithyia .
 
+# Копируем дополнительные файлы в корень /app, так как код ищет их через ../
 COPY ./README.md /app/README.md
 COPY ./README_RU.md /app/README_RU.md
 COPY ./LICENSE /app/LICENSE
 COPY ./meta.json /app/meta.json
+COPY ./server/db /app/db
 
 USER node
 
