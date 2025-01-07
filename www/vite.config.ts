@@ -13,14 +13,14 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-  server: {
+  server: !process.env.VITE_CONTAINER ? {
     https: {
       key: fs.readFileSync(path.resolve(__dirname, '../nginx/ssl/privkey.pem')),
       cert: fs.readFileSync(path.resolve(__dirname, '../nginx/ssl/cert.pem')),
     },
     host: 'unkaos.local',
     port: 3000
-  },
+  } : undefined,
   build: {
     target: 'esnext'
   }
