@@ -1,7 +1,9 @@
 import axios from "axios";
 import express from 'express';
+import { createServer } from 'http';
 import { createLogger } from '../server/common/logging';
 import { randomUUID } from 'crypto';
+import { SocketServer } from './socket-server';
 
 const logger = createLogger('cerberus');
 
@@ -17,6 +19,8 @@ export default class Rest {
   public async init() {
     await this.data.init()
     const app = express()
+    const httpServer = createServer(app);
+    
     app.use(express.json())
     app.use(express.raw({limit: '150mb'}));
     app.use(express.urlencoded({limit: '150mb', extended: true}));
@@ -25,6 +29,26 @@ export default class Rest {
       msg: 'Cerberus service starting up...'
     });
 
+    const port = 3005;
+    httpServer.listen(port, () => {
+      logger.info({
+        msg: `HTTP server running on port ${port}`
+      });
+    });
+
+    // Инициализация Socket.IO сервера
+    logger.info({
+      msg: 'Initializing Socket.IO server...'
+    });
+
+    const socketServer = new SocketServer(httpServer);
+    await socketServer.start();
+
+    logger.info({
+      msg: 'Socket.IO server initialized'
+    });
+
+    // Оставляем HTTP эндпоинты для обратной совместимости
     app.get('/get_token', async (req: any, res: any) => {
       this.handleRequest(req, res)
     })
@@ -41,12 +65,9 @@ export default class Rest {
       this.handleRequest(req, res)
     })
 
-    const port = 3005;
-    app.listen(port, () => {
-      logger.info({
-        msg: `Cerberus running on port ${port}`
-      });
-    })
+    logger.info({
+      msg: `Cerberus running on port ${port} with Socket.IO support`
+    });
   }
 
   private async handleRequest(req: any, res: any) {
