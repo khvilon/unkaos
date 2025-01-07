@@ -11,7 +11,7 @@ test.describe('Регресионный тест', () => {
   const userLogin = 'spetrov';
   const userName = 'Сергей Петров';
   let state = 0;
-  const baseUrl = 'https://unkaos.tech/'
+  const baseUrl = 'https://unkaos.local:3000/'
 
   test.beforeEach(async ({ page }) => {
    // await page.setViewportSize({ width: 1920, height: 1080 });
@@ -31,11 +31,12 @@ test.describe('Регресионный тест', () => {
     await sendWorkspaceRegister(page, workspace, adminEmail);
     await waitRegisterMail(page);
 
-    const frame = await getIframeBody(page);
-    const pass = await frame.locator('strong').innerText();
-    const link = await frame.locator('a').getAttribute('href');
+    const activationLink = await getIframeBody(page);
+    const pass = await activationLink.locator('strong').innerText();
+    const link = await activationLink.getAttribute('href');
+    if (!link) throw new Error('Activation link not found');
 
-    await page.goto(link);
+    await page.goto(link.replace('unkaos.ru', 'unkaos.local:3000'));
     await signIn(page, adminEmail, pass);
 
     await page.waitForSelector('.profile');

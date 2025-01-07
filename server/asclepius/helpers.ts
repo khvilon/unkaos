@@ -1,51 +1,130 @@
 import { Page } from '@playwright/test';
 
+interface Email {
+    id: number;
+    from: string;
+    subject: string;
+    date: string;
+    body: string;
+}
+
+let currentEmail: string = '';
+let currentDomain: string = '';
+
+async function generateEmail(): Promise<string> {
+    const response = await fetch('https://www.1secmail.com/api/v1/?action=genRandomMailbox');
+    const [email] = await response.json();
+    const [login, domain] = email.split('@');
+    currentEmail = login;
+    currentDomain = domain;
+    return email;
+}
+
+async function getEmails(): Promise<Email[]> {
+    const response = await fetch(`https://www.1secmail.com/api/v1/?action=getMessages&login=${currentEmail}&domain=${currentDomain}`);
+    return response.json();
+}
+
+async function readEmail(id: number): Promise<Email> {
+    const response = await fetch(`https://www.1secmail.com/api/v1/?action=readMessage&login=${currentEmail}&domain=${currentDomain}&id=${id}`);
+    return response.json();
+}
+
 export async function getEmailFromTempMail(page: Page): Promise<string> {
-    await page.goto('https://tempmail.lol/');
-  
-    let email = '';
-    const timeout = 15000;
-    const interval = 200;
-    const startTime = Date.now();
-  
-    while (!email && Date.now() - startTime < timeout) {
-      email = await page.locator('#email_field').inputValue();
-      if (email) break;
-      await page.waitForTimeout(interval);
-    }
-  
-    if (!email) throw new Error('Email field is empty after waiting');
-  
+    const email = await generateEmail();
     return email;
 }
 
 export async function getIframeBody(page: Page) {
-  const frame = await page.frame({ name: 'email_iframe' });
-  if (!frame) throw new Error('No frame found');
-  await frame.waitForSelector('body');
-  return frame.locator('body');
+    // Ждем появления писем
+    let emails: Email[] = [];
+    const timeout = 60000;
+    const interval = 2000;
+    const startTime = Date.now();
+
+    while (emails.length === 0 && Date.now() - startTime < timeout) {
+        emails = await getEmails();
+        if (emails.length > 0) break;
+        await new Promise(resolve => setTimeout(resolve, interval));
+    }
+
+    if (emails.length === 0) {
+        throw new Error('No emails received after timeout');
+    }
+
+    // Читаем первое письмо
+    const email = await readEmail(emails[0].id);
+    
+    // Создаем временный iframe с содержимым письма
+    await page.evaluate((html) => {
+        const iframe = document.createElement('iframe');
+        iframe.name = 'email_iframe';
+        iframe.srcdoc = html;
+        document.body.appendChild(iframe);
+    }, email.body);
+
+    const frame = await page.frame({ name: 'email_iframe' });
+    if (!frame) throw new Error('No frame found');
+    await frame.waitForSelector('body');
+    
+    // Ищем ссылку активации по тексту
+    const activationLink = frame.locator('a:has-text("активировать")').first();
+    await activationLink.waitFor({ state: 'visible' });
+    
+    return activationLink;
 }
 
 export async function waitRegisterMail(page: Page) {
-  await page.goto('https://tempmail.lol/');
-  await page.waitForSelector('tr[style="cursor: pointer;"]', { timeout: 60000 });
-  await page.click('tr[style="cursor: pointer;"]');
+    // Ждем появления писем
+    let emails: Email[] = [];
+    const timeout = 60000;
+    const interval = 2000;
+    const startTime = Date.now();
+
+    while (emails.length === 0 && Date.now() - startTime < timeout) {
+        emails = await getEmails();
+        if (emails.length > 0) break;
+        await new Promise(resolve => setTimeout(resolve, interval));
+    }
+
+    if (emails.length === 0) {
+        throw new Error('No registration email received after timeout');
+    }
 }
 
 export async function sendWorkspaceRegister(page: Page, workspace: string, adminEmail: string) {
-  await page.goto('https://unkaos.tech/');
+  console.log('Navigating to homepage...');
+  await page.goto('https://unkaos.local:3000/');
+  
+  console.log('Clicking registration link...');
   await page.click('a:has-text("Регистрация рабочего пространства")');
+  
+  console.log('Waiting for register panel...');
   await page.waitForSelector('.register-panel');
+  
+  console.log('Filling workspace name:', workspace);
   const workspaceInput = page.locator('.register-panel .string.input:has(.label:has-text("Название рабочего пространства")) .string-input');
   await workspaceInput.fill(workspace);
 
+  console.log('Filling email:', adminEmail);
   const emailInput = page.locator('.register-panel .string.input:has(.label:has-text("Электронная почта")) .string-input');
   await emailInput.waitFor({ state: 'visible' });
   await emailInput.fill(adminEmail);
 
+  console.log('Clicking submit button...');
   await page.click('.register-panel .btn_input');
-  console.log(`Clicked submit button`);
+  
+  // Добавляем проверку на ошибки
+  const errorLabel = page.locator('.register-err-label');
+  const exists = await errorLabel.isVisible();
+  if (exists) {
+    const errorText = await errorLabel.innerText();
+    console.error('Registration error:', errorText);
+  }
+
+  console.log('Waiting for success message...');
   await page.waitForSelector('span.workspace-register-ok', { timeout: 10000 });
+  console.log('Success message found!');
 }
 
 export async function signIn(page: Page, email: string, pass: string) {
@@ -59,8 +138,6 @@ export async function signIn(page: Page, email: string, pass: string) {
   await page.click('.login-panel .btn_input');
   console.log(`Clicked login button`);
 }
-
-
 
 export async function signOut(page: Page) {
   await page.click('.profile-top img');
@@ -77,7 +154,7 @@ export async function changeField(page: Page, fieldName: string, value: string, 
     await field.waitFor({ state: 'visible' });
     await field.fill(value);
     if(key) await page.click('input[type="button"][value="Сохранить"]');
-  }
+}
 
 export async function createUser(page: Page, name: string, login: string, email: string) {
   await page.click('input[type="button"][value="Создать"]');
