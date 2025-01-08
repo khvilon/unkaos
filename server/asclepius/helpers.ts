@@ -188,11 +188,14 @@ export async function changeField(page: Page, fieldName: string, value: string, 
 }
 
 export async function createUser(page: Page, name: string, login: string, email: string) {
+  console.log(`Creating user`, name, login, email);
   await page.click('input[type="button"][value="Создать"]');
   await changeField(page, "ФИО", name);
   await changeField(page, "Логин", login);
   await changeField(page, "Адрес почты", email);
-  await page.click('input[type="button"][value="Сохранить"]');
+  await page.click('input[type="button"][value="Создать"]');
+  await page.locator(`.ktable :text("${name}")`).waitFor({ state: 'visible' });
+  console.log(`User created`);
 }
 
 export async function createProject(page: Page, name: string, code: string, description: string, owner: string) {
