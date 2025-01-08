@@ -1,5 +1,6 @@
 <script>
 import page_helper from "../page_helper.ts";
+import D3WorkflowEditor from "../components/D3WorkflowEditor.vue";
 
 const data = {
   name: "workflows",
@@ -50,8 +51,9 @@ mod.computed.workflow_selected=function(){
   this.selected_workflows.created_at
 };
 
-
-
+mod.components = {
+  D3WorkflowEditor
+};
 
 export default mod;
 </script>
@@ -107,7 +109,7 @@ export default mod;
             </div>
           </KTab>
           <KTab title="Схема" :visible="true">
-            <WorkflowsEditor :wdata="selected_workflows" />
+            <D3WorkflowEditor :wdata="selected_workflows" />
             <div class="table_card_buttons">
               <div class="table_card_footer">
                 <KButton
