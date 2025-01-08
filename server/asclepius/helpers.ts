@@ -159,6 +159,7 @@ export async function signIn(page: Page, email: string, pass: string) {
   console.log(`Starting sign in`, email, pass);
   await fillLocator(page, '.login-panel .string.input:has(.label:has-text("Электронная почта")) .string-input', email);
   await fillLocator(page, '.login-panel .string.input:has(.label:has-text("Пароль")) .string-input', pass);
+
   await page.click('.login-panel .btn_input');
   console.log(`Clicked login button`);
 }

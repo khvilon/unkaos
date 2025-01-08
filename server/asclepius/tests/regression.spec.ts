@@ -17,11 +17,19 @@ test.describe('Регресионный тест', () => {
    // await page.setViewportSize({ width: 1920, height: 1080 });
    console.log('state', state)
     if (!state) return;
+    console.log('login url', baseUrl + workspace + '/login');
     await page.goto(baseUrl + workspace + '/login');
-    await page.waitForSelector('.login-panel string-input');
-    if (state == 1) await signIn(page, adminEmail, newPass);
+    console.log('waitForSelector', '.login-panel .string-input');
+    await page.waitForSelector('.login-panel .string-input');
+    if (state == 1) 
+      {
+        console.log('adminEmail', adminEmail, newPass);
+        await signIn(page, adminEmail, newPass);
+      }
     else if (state == 2) await signIn(page, usereMail, newPass);
+    console.log('waitForSelector', '.profile');
     await page.waitForSelector('.profile');
+    console.log('waitForSelector', '.main-menu-list');
     await page.waitForSelector('.main-menu-list');
   });
 
@@ -48,8 +56,10 @@ test.describe('Регресионный тест', () => {
     await changeField(page, 'ФИО', adminName, adminEmail);
     await changeField(page, 'Пароль', newPass, adminEmail);
     await page.waitForSelector('.profile');
+    await page.waitForTimeout(1000);
     await signOut(page);
     await signIn(page, adminEmail, newPass);
+    await signOut(page);
 
     state = 1;
   });

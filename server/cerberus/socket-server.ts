@@ -45,16 +45,27 @@ export class SocketServer {
             socket.on('get_token', async (data: any, callback: Function) => {
                 logger.debug({
                     msg: 'Handling get_token request',
-                    socketId: socket.id
+                    socketId: socket.id,
+                    data
                 });
 
                 try {
                     const token = await Security.newToken(data.subdomain, data.email, data.password);
+                    logger.debug({
+                        msg: 'Token generated',
+                        socketId: socket.id,
+                        token
+                    });
+                    if (!token) {
+                        callback({ status: 401, data: { message: 'Неверное имя пользователя или пароль' } });
+                        return;
+                    }
                     callback({ status: 200, data: token });
                 } catch (error) {
                     logger.error({
                         msg: 'get_token error',
-                        error
+                        error: error instanceof Error ? error.message : error,
+                        stack: error instanceof Error ? error.stack : undefined
                     });
                     callback({ status: 401, data: { message: 'Неверное имя пользователя или пароль' } });
                 }

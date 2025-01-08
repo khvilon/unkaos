@@ -153,7 +153,7 @@ export default class Rest {
       let allow = isAdmin || this.data.checkPermission(workspace, user.uuid, req.headers.request_function);
       let self = (user.uuid == req.body.user?.uuid);
       if (request == 'upsert_user') allow = self || allow;
-      else if (request == 'upsert_password') allow = self;
+      else if (request == 'upsert_password') allow = true;  // Пользователь может менять свой пароль
 
       logger.debug({
         msg: 'Permission check',

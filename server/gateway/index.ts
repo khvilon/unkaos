@@ -266,6 +266,15 @@ let upsert_password = async function (req: any, res: any, rand: boolean = true) 
   }
 }
 
+// Добавляем обработчики для смены пароля
+app.post("/upsert_password", async (req: any, res: any) => {
+  await upsert_password(req, res, false);
+});
+
+app.post("/upsert_password_rand", async (req: any, res: any) => {
+  await upsert_password(req, res, true);
+});
+
 app.listen(port, () => {
   logger.info({
     msg: `Gateway running on port ${port}`

@@ -31,9 +31,16 @@ export default class rest {
       method: "get",
       headers: rest.headers,
     };
+    console.log('Sending request to:', conf.base_url + "get_token", 'with options:', options);
     const resp = await fetch(conf.base_url + "get_token", options);
-    if (resp.status != 200) return null;
-    const data = await resp.json();
+    console.log('Response status:', resp.status);
+    if (resp.status != 200) {
+      console.log('Error response:', await resp.text());
+      return null;
+    }
+    const responseText = await resp.text();
+    console.log('Response text:', responseText);
+    const data = JSON.parse(responseText);
     
     cache.setString("user_token", data.user_token);
     cache.setObject("profile", data.profile);

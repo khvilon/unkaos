@@ -187,6 +187,7 @@ export default class Data {
         sessions: sessions.map((s: UserSession) => ({ uuid: s.uuid, user_uuid: s.user_uuid }))
       });
 
+      // В БД хранятся хеши токенов, используем их напрямую как ключи в Map
       workspace.sessions = new Map(sessions.map((session: UserSession)=>[session.token, session]));
 
       logger.info({
@@ -339,7 +340,7 @@ export default class Data {
   }
 
   private async md5(text: string){
-    let md5text = (await sql`SELECT MD5( ${text})`)[0].md5
+    let md5text = (await sql`SELECT MD5(${text})`)[0].md5
     logger.debug({
       msg: 'MD5 hash generated'
     });
@@ -399,9 +400,6 @@ export default class Data {
   }
 
   public async checkSession(workspaceName: string, token: string, isRetry: boolean = false): Promise<User | null> {
-    const md5Token: string = await this.md5(token)
-
-    
     let workspace: Workspace | undefined = this.workspaces.get(workspaceName);
     if(!workspace){
       await this.getWorkspace(workspaceName);
@@ -409,16 +407,26 @@ export default class Data {
       if(!workspace) return null;
     }
 
+    // Получаем хеш токена для поиска в БД
+    const tokenHash: string = (await sql`SELECT MD5(${token})`)[0].md5;
+    
+    logger.debug({
+      msg: 'Token hash debug',
+      workspace: workspaceName,
+      tokenHash,
+      sessionKeys: Array.from(workspace.sessions.keys())
+    });
+
     logger.info({
       msg: 'Session check',
       workspace: workspaceName,
-      tokenValid: !!workspace.sessions.get(md5Token)
+      tokenValid: !!workspace.sessions.get(tokenHash)
     });
-    const userSession: UserSession | undefined = workspace.sessions.get(md5Token);
+    const userSession: UserSession | undefined = workspace.sessions.get(tokenHash);
     if(!userSession){
       if(isRetry) return null;
       await this.updateWorkspaceSessions(workspaceName);
-      return this.checkSession(workspaceName, token, true);
+      return await this.checkSession(workspaceName, token, true);
     }
     const user: User | undefined = workspace.users.get(userSession.user_uuid);
     if(!user) return null;
