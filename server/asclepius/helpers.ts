@@ -230,28 +230,7 @@ export async function createIssueStatus(page: Page, name: string, isStart: boole
   await page.click('input[type="button"][value="Сохранить"]');
 }
 
-export async function moveStatusNode(page: Page, name: string, x: number, y: number) {
-  const element = page.locator('.svg-workflow').locator(`text="${name}"`).locator('..');
-  const boundingBox = await element.boundingBox();
-  if (!boundingBox) throw new Error('Element not found');
-  const originX = boundingBox.x + boundingBox.width / 2;
-  const originY = boundingBox.y + boundingBox.height / 2;
 
-  await page.mouse.move(originX, originY);
-  await page.mouse.down();
-  await page.mouse.move(originX + x, originY + y);
-  await page.mouse.up();
-}
-
-export async function createWorkflow(page: Page, name: string, statuses: string[]) {
-  await page.click('input[type="button"][value="Создать"]');
-  await page.fill('.label:has-text("Название") ~ input.string-input', name);
-  await page.click('li:has-text("Схема")');
-  await page.click('tbody span:has-text("Новая")');
-  await page.click('input[type="button"][value="Использовать статус"]');
-  await moveStatusNode(page, 'Новая', 500, 500);
-  await page.click('input[type="button"][value="Сохранить"]');
-}
 
 export async function createIssueType(page: Page, name: string, workflow: string, fields: string[]) {
   await page.click('input[type="button"][value="Создать"]');

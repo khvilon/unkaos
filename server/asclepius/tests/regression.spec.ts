@@ -1,5 +1,6 @@
 import { test } from '@playwright/test';
-import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createProject, createIssueField, createIssueStatus, createWorkflow, createIssueType } from '../helpers';
+import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createProject, createIssueField, createIssueStatus, createIssueType } from '../helpers';
+import {  createWorkflow } from '../helpers_workflow';
 
 test.describe('Регресионный тест', () => {
   const startTime = new Date().getTime();
@@ -69,12 +70,13 @@ test.describe('Регресионный тест', () => {
     await page.waitForSelector('.table_card_fields');
     await createUser(page, userName, userLogin, userName);
   });
-/*
+
   test('Создание воркфлоу', async ({ page }) => {
     await navigateMainMenu(page, 'workflows');
     await createWorkflow(page, 'Тестовый', ['Новая', 'В работе']);
   });
 
+  /*
   test('Создание типа задачи', async ({ page }) => {
     await navigateMainMenu(page, 'issue_types');
     await createIssueType(page, 'Сторя', 'Простой', ['Приоритет', 'Ответственный']);
