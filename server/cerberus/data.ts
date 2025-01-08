@@ -398,7 +398,7 @@ export default class Data {
     });
   }
 
-  public async checkSession(workspaceName: string, token: string): Promise<User | null> {
+  public async checkSession(workspaceName: string, token: string, isRetry: boolean = false): Promise<User | null> {
     const md5Token: string = await this.md5(token)
 
     
@@ -415,7 +415,11 @@ export default class Data {
       tokenValid: !!workspace.sessions.get(md5Token)
     });
     const userSession: UserSession | undefined = workspace.sessions.get(md5Token);
-    if(!userSession) return null;
+    if(!userSession){
+      if(isRetry) return null;
+      await this.updateWorkspaceSessions(workspaceName);
+      return this.checkSession(workspaceName, token, true);
+    }
     const user: User | undefined = workspace.users.get(userSession.user_uuid);
     if(!user) return null;
     return user;

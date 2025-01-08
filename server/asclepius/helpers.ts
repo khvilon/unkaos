@@ -11,28 +11,31 @@ interface Email {
 let currentEmail: string = '';
 let currentDomain: string = '';
 
-async function generateEmail(): Promise<string> {
-    const response = await fetch('https://www.1secmail.com/api/v1/?action=genRandomMailbox');
-    const [email] = await response.json();
-    const [login, domain] = email.split('@');
-    currentEmail = login;
-    currentDomain = domain;
-    return email;
-}
-
 async function getEmails(): Promise<Email[]> {
-    const response = await fetch(`https://www.1secmail.com/api/v1/?action=getMessages&login=${currentEmail}&domain=${currentDomain}`);
-    return response.json();
+  console.log(`Getting emails`);
+  const response = await fetch(`https://www.1secmail.com/api/v1/?action=getMessages&login=${currentEmail}&domain=${currentDomain}`);
+  const emails = await response.json();
+  console.log(`Emails count: ${emails.length}`);
+  return emails;
 }
 
 async function readEmail(id: number): Promise<Email> {
-    const response = await fetch(`https://www.1secmail.com/api/v1/?action=readMessage&login=${currentEmail}&domain=${currentDomain}&id=${id}`);
-    return response.json();
+  console.log(`Reading email`);
+  const response = await fetch(`https://www.1secmail.com/api/v1/?action=readMessage&login=${currentEmail}&domain=${currentDomain}&id=${id}`);
+  const email = await response.json();
+  console.log(`Email subject: ${email.subject}`);
+  return email;
 }
 
-export async function getEmailFromTempMail(page: Page): Promise<string> {
-    const email = await generateEmail();
-    return email;
+export async function getEmailFromTempMail(): Promise<string> {
+  console.log(`Getting email from temp mail`);
+  const response = await fetch('https://www.1secmail.com/api/v1/?action=genRandomMailbox');
+  const [email] = await response.json();
+  const [login, domain] = email.split('@');
+  currentEmail = login;
+  currentDomain = domain;
+  console.log(`Current email: ${currentEmail}@${currentDomain}`);
+  return email;
 }
 
 export async function getIframeBody(page: Page) {
@@ -146,21 +149,29 @@ export async function sendWorkspaceRegister(page: Page, workspace: string, admin
   console.log('Success message found!');
 }
 
-export async function signIn(page: Page, email: string, pass: string) {
+async function fillLocator(page: Page, locator: string, value: string) {
+  const input = page.locator(locator);
+  await input.waitFor({ state: 'visible' });
+  await input.fill(value);
+}
 
-  await page.waitForSelector('.login-panel');
-  const emailInput = page.locator('.login-panel .string.input:has(.label:has-text("Электронная почта")) .string-input');
-  await emailInput.fill(email);
-  const passInput = page.locator('.login-panel .string.input:has(.label:has-text("Пароль")) .string-input');
-  await passInput.waitFor({ state: 'visible' });
-  await passInput.fill(pass);
+export async function signIn(page: Page, email: string, pass: string) {
+  console.log(`Starting sign in`, email, pass);
+  await fillLocator(page, '.login-panel .string.input:has(.label:has-text("Электронная почта")) .string-input', email);
+  await fillLocator(page, '.login-panel .string.input:has(.label:has-text("Пароль")) .string-input', pass);
   await page.click('.login-panel .btn_input');
   console.log(`Clicked login button`);
 }
 
 export async function signOut(page: Page) {
-  await page.click('.profile-top img');
-  await page.click('#profile-menu-exit');
+  console.log(`Starting sign out`);
+  const profile = page.locator('.profile-top img');
+  await profile.waitFor({ state: 'visible' });
+  await profile.click();
+  const exit = page.locator('#profile-menu-exit');
+  await exit.waitFor({ state: 'visible' });
+  await exit.click();
+  console.log(`Clicked exit button`);
 }
 
 export async function navigateMainMenu(page: Page, menu: string) {

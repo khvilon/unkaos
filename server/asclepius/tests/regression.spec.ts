@@ -18,6 +18,7 @@ test.describe('Регресионный тест', () => {
    console.log('state', state)
     if (!state) return;
     await page.goto(baseUrl + workspace + '/login');
+    await page.waitForSelector('.login-panel string-input');
     if (state == 1) await signIn(page, adminEmail, newPass);
     else if (state == 2) await signIn(page, usereMail, newPass);
     await page.waitForSelector('.profile');
@@ -25,8 +26,8 @@ test.describe('Регресионный тест', () => {
   });
 
   test('Регистрация рабочего пространства и смена пароля', async ({ page }) => {
-    adminEmail = await getEmailFromTempMail(page);
-    state = 1;
+    adminEmail = await getEmailFromTempMail();
+    
 
     await sendWorkspaceRegister(page, workspace, adminEmail);
     await waitRegisterMail(page);
@@ -37,6 +38,8 @@ test.describe('Регресионный тест', () => {
     if (!link) throw new Error('Activation link not found');
 
     await page.goto(link.replace('unkaos.ru', 'unkaos.local:3000'));
+    await page.waitForSelector('.login-panel .string-input');
+    await page.waitForTimeout(2000);
     await signIn(page, adminEmail, pass);
 
     await page.waitForSelector('.profile');
@@ -46,6 +49,9 @@ test.describe('Регресионный тест', () => {
     await changeField(page, 'Пароль', newPass, adminEmail);
     await page.waitForSelector('.profile');
     await signOut(page);
+    await signIn(page, adminEmail, newPass);
+
+    state = 1;
   });
 
   test('Создание пользователя', async ({ page }) => {

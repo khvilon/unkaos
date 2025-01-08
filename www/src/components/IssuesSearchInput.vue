@@ -194,6 +194,10 @@ export default {
     },
 
     get_html() {
+      console.log('Value type:', typeof this.value, 'Value:', this.value); // Отладочный вывод
+      if (typeof this.value !== 'string') {
+        this.value = String(this.value || '');
+      }
       this.value = this.value.replaceAll("\n", "").replaceAll("\r", "");
       let chars = this.value.split("");
       // console.log(chars)
@@ -766,7 +770,6 @@ export default {
         );
 
       this.converted_query = qd.converted_query;
-
 
       console.log('convert_query10', '#'+qd.i+'#', qd )
 
