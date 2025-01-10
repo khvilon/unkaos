@@ -286,6 +286,15 @@ function handleStatusSelect(uuid: string) {
         cursor: grabbing;
       }
 
+      &.dragging {
+        cursor: grabbing;
+        
+        circle {
+          stroke-width: 4px;
+          stroke: var(--workflow-g-selected-color);
+        }
+      }
+
       circle {
         fill: var(--workflow-g-fill-color);
         stroke: var(--workflow-marker-color);

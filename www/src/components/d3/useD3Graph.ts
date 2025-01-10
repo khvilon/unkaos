@@ -11,24 +11,29 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
   // D3 simulation
   const simulation = d3.forceSimulation<D3Node>()
     .force('link', d3.forceLink<D3Node, D3Link>().id((d) => d.uuid).distance(150))
-    .force('charge', d3.forceManyBody().strength(-500))
+    .force('charge', d3.forceManyBody().strength(-1000))  // Увеличиваем силу отталкивания
     .force('center', d3.forceCenter(width.value / 2, height.value / 2))
+    .force('collision', d3.forceCollide().radius(50))  // Добавляем силу коллизии
+    .alphaDecay(0.1)  // Замедляем затухание alpha для более плавной анимации
+    .velocityDecay(0.6)  // Увеличиваем затухание скорости для большей стабильности
     .on('tick', () => {
+      if (!currentLinksGroup || !currentNodesGroup || !currentData) return
+
       // Обновляем позиции при каждом тике simulation
-      if (currentLinksGroup && currentNodesGroup) {
-        currentLinksGroup.selectAll('.link')
-          .attr('d', d => calculateLinkPath(d, currentData))
-        
-        currentNodesGroup.selectAll('.conceptG')
-          .attr('transform', d => `translate(${d.x},${d.y})`)
-      }
+      currentLinksGroup.selectAll('.link')
+        .attr('d', d => calculateLinkPath(d, currentData))
+      
+      currentNodesGroup.selectAll('.conceptG')
+        .attr('transform', d => `translate(${d.x},${d.y})`)
     })
 
   // Храним текущие элементы для обновления в tick
   let currentLinksGroup: any = null
   let currentNodesGroup: any = null
   let currentData: WorkflowData | null = null
+  let isDragging = false  // Флаг для отслеживания состояния перетаскивания
 
+  // Create new SVG
   function initSvg() {
     if (!container.value) return { svg: null, g: null, linksGroup: null, nodesGroup: null }
 
@@ -182,9 +187,16 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
       .attr('transform', d => `translate(${d.x},${d.y})`)
       .call(d3.drag<any, D3Node>()
         .on('start', (event: any) => {
-          simulation.stop()
+          if (!event.active) {
+            simulation.stop()  // Останавливаем simulation только если это первый перетаскиваемый узел
+          }
+          isDragging = true
           event.subject.fx = event.subject.x
           event.subject.fy = event.subject.y
+          
+          // Добавляем класс dragging для визуального фидбека
+          d3.select(event.sourceEvent.target.parentNode)
+            .classed('dragging', true)
         })
         .on('drag', (event: any) => {
           // Обновляем позиции узла и его связей
@@ -197,10 +209,18 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
           d3.select(event.sourceEvent.target.parentNode)
             .attr('transform', `translate(${event.x},${event.y})`)
           
+          // Обновляем только связанные с этим узлом линии
           linksGroup.selectAll('.link')
+            .filter(d => d.source === event.subject || d.target === event.subject)
             .attr('d', d => calculateLinkPath(d, data))
         })
         .on('end', (event: any) => {
+          isDragging = false
+          
+          // Убираем класс dragging
+          d3.select(event.sourceEvent.target.parentNode)
+            .classed('dragging', false)
+          
           // Фиксируем конечную позицию
           event.subject.x = event.x
           event.subject.y = event.y
@@ -208,10 +228,17 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
           event.subject.fy = null
           
           if (onNodeDragEnd) onNodeDragEnd(event.subject)
+          
+          // Запускаем simulation с небольшим alpha только если это последний перетаскиваемый узел
+          if (!event.active) {
+            simulation.alpha(0.1).restart()
+          }
         }))
       .on('click', (event: Event, d: D3Node) => {
-        event.stopPropagation()
-        if (onNodeClick) onNodeClick(d)
+        if (!isDragging) {  // Вызываем click только если не было перетаскивания
+          event.stopPropagation()
+          if (onNodeClick) onNodeClick(d)
+        }
       })
 
     // Add circles to nodes
