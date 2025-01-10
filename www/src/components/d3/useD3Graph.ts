@@ -10,9 +10,24 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
   
   // D3 simulation
   const simulation = d3.forceSimulation<D3Node>()
-    .force('link', d3.forceLink<D3Node, D3Link>().id((d) => d.uuid))
-    .force('charge', d3.forceManyBody().strength(-300))
+    .force('link', d3.forceLink<D3Node, D3Link>().id((d) => d.uuid).distance(150))
+    .force('charge', d3.forceManyBody().strength(-500))
     .force('center', d3.forceCenter(width.value / 2, height.value / 2))
+    .on('tick', () => {
+      // Обновляем позиции при каждом тике simulation
+      if (currentLinksGroup && currentNodesGroup) {
+        currentLinksGroup.selectAll('.link')
+          .attr('d', d => calculateLinkPath(d, currentData))
+        
+        currentNodesGroup.selectAll('.conceptG')
+          .attr('transform', d => `translate(${d.x},${d.y})`)
+      }
+    })
+
+  // Храним текущие элементы для обновления в tick
+  let currentLinksGroup: any = null
+  let currentNodesGroup: any = null
+  let currentData: WorkflowData | null = null
 
   function initSvg() {
     if (!container.value) return { svg: null, g: null, linksGroup: null, nodesGroup: null }
@@ -142,12 +157,17 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
     onEdgeClick?: (link: D3Link) => void,
     onNodeDragEnd?: (node: D3Node) => void
   ) {
+    // Сохраняем текущие элементы
+    currentLinksGroup = linksGroup
+    currentNodesGroup = nodesGroup
+    currentData = data
+
     // Add links
     const link = linksGroup.selectAll('.link')
       .data(links)
       .join('path')
       .attr('class', 'link')
-      .attr('marker-end', 'url(#arrow)')  
+      .attr('marker-end', 'url(#arrow)')
       .attr('d', d => calculateLinkPath(d, data))
       .on('click', (event: Event, d: D3Link) => {
         event.stopPropagation()
@@ -160,21 +180,33 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
       .join('g')
       .attr('class', 'conceptG')
       .attr('transform', d => `translate(${d.x},${d.y})`)
-      .call(d3.drag()
+      .call(d3.drag<any, D3Node>()
         .on('start', (event: any) => {
+          simulation.stop()
           event.subject.fx = event.subject.x
           event.subject.fy = event.subject.y
         })
         .on('drag', (event: any) => {
+          // Обновляем позиции узла и его связей
           event.subject.fx = event.x
           event.subject.fy = event.y
-          // Update links during drag
+          event.subject.x = event.x
+          event.subject.y = event.y
+          
+          // Обновляем отображение
+          d3.select(event.sourceEvent.target.parentNode)
+            .attr('transform', `translate(${event.x},${event.y})`)
+          
           linksGroup.selectAll('.link')
             .attr('d', d => calculateLinkPath(d, data))
         })
         .on('end', (event: any) => {
+          // Фиксируем конечную позицию
+          event.subject.x = event.x
+          event.subject.y = event.y
           event.subject.fx = null
           event.subject.fy = null
+          
           if (onNodeDragEnd) onNodeDragEnd(event.subject)
         }))
       .on('click', (event: Event, d: D3Node) => {
@@ -195,6 +227,13 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
       .attr('text-anchor', 'middle')
       .attr('dy', '.35em')
       .text(d => formatNodeText(d.issue_statuses[0]?.name || ''))
+
+    // Обновляем simulation с новыми данными
+    simulation.nodes(nodes)
+    simulation.force<d3.ForceLink<D3Node, D3Link>>('link')?.links(links)
+    
+    // Запускаем simulation с небольшим alpha
+    simulation.alpha(0.3).restart()
 
     return { link, node }
   }
