@@ -32,6 +32,7 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
   let currentNodesGroup: any = null
   let currentData: WorkflowData | null = null
   let isDragging = false  // Флаг для отслеживания состояния перетаскивания
+  let draggedElement: d3.Selection<any, any, any, any> | null = null // Сохраняем элемент, который перетаскиваем
 
   // Create new SVG
   function initSvg() {
@@ -190,38 +191,46 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
           if (!event.active) {
             simulation.stop()  // Останавливаем simulation только если это первый перетаскиваемый узел
           }
-          isDragging = true
-          event.subject.fx = event.subject.x
-          event.subject.fy = event.subject.y
+          // Сохраняем элемент при начале перетаскивания
+          draggedElement = d3.select(event.sourceEvent.target.closest('.conceptG'))
+          draggedElement.classed('dragging', true)
           
-          // Добавляем класс dragging для визуального фидбека
-          d3.select(event.sourceEvent.target.parentNode)
-            .classed('dragging', true)
-        })
-        .on('drag', (event: any) => {
-          // Обновляем позиции узла и его связей
           event.subject.fx = event.x
           event.subject.fy = event.y
+          
+          // Добавляем класс dragging для визуального фидбека
+          // d3.select(event.sourceEvent.target.parentNode)
+          //   .classed('dragging', true)
+        })
+        .on('drag', (event: any) => {
+          if (!draggedElement) return
+          
+          // Обновляем фиксированные координаты для D3
+          event.subject.fx = event.x
+          event.subject.fy = event.y
+          
+          // Обновляем реальные координаты узла для правильного расчета линий
           event.subject.x = event.x
           event.subject.y = event.y
           
-          // Обновляем отображение
-          d3.select(event.sourceEvent.target.parentNode)
-            .attr('transform', `translate(${event.x},${event.y})`)
+          // Перемещаем узел
+          draggedElement.attr('transform', `translate(${event.x},${event.y})`)
           
-          // Обновляем только связанные с этим узлом линии
+          // Обновляем связанные линии
           linksGroup.selectAll('.link')
             .filter(d => d.source === event.subject || d.target === event.subject)
             .attr('d', d => calculateLinkPath(d, data))
         })
         .on('end', (event: any) => {
-          isDragging = false
+          if (!draggedElement) return
+          
+          draggedElement.classed('dragging', false)
+          draggedElement = null // Очищаем сохраненный элемент
           
           // Убираем класс dragging
-          d3.select(event.sourceEvent.target.parentNode)
-            .classed('dragging', false)
+          // d3.select(event.sourceEvent.target.parentNode)
+          //   .classed('dragging', false)
           
-          // Фиксируем конечную позицию
           event.subject.x = event.x
           event.subject.y = event.y
           event.subject.fx = null
@@ -235,7 +244,8 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
           }
         }))
       .on('click', (event: Event, d: D3Node) => {
-        if (!isDragging) {  // Вызываем click только если не было перетаскивания
+        // Вызываем click только если не было перетаскивания
+        if (!draggedElement) {
           event.stopPropagation()
           if (onNodeClick) onNodeClick(d)
         }
