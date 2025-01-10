@@ -25,7 +25,8 @@ const selected = ref<Selected>({
 const arrows = [
   { id: 'arrow' },
   { id: 'arrow-selected' },
-  { id: 'drag-end-arrow' }
+  { id: 'drag-end-arrow' },
+  { id: 'arrow-hover' }
 ]
 
 // Initialize D3 graph
@@ -233,21 +234,29 @@ function handleStatusSelect(uuid: string) {
 
     .link {
       fill: none;
-      stroke: var(--text-color);
-      stroke-width: 2px;
+      stroke: var(--workflow-marker-color);
+      stroke-width: 3px;
       cursor: pointer;
+      transition: all 0.05s ease;
 
       &.selected {
-        stroke: var(--selected-color);
+        stroke: var(--workflow-g-selected-color);
         marker-end: url(#arrow-selected) !important;
       }
 
-      &:not(.selected) {
+      &:not(.selected):not(:hover) {
         marker-end: url(#arrow) !important;
+      }
+
+      &:hover {
+        stroke: var(--workflow-g-hover-color);
+        marker-end: url(#arrow-hover) !important;
       }
 
       &.dragline {
         pointer-events: none;
+        stroke-dasharray: 15, 4;
+        stroke-width: 2px;
         marker-end: url(#arrow) !important;
 
         &.hidden {
@@ -257,42 +266,54 @@ function handleStatusSelect(uuid: string) {
     }
 
     .arrow-head {
-      fill: var(--text-color);
+      fill: var(--workflow-marker-color);
       stroke: none;
 
       &.selected {
-        fill: var(--selected-color);
+        fill: var(--workflow-g-selected-color);
+      }
+
+      &.hover {
+        fill: var(--workflow-g-hover-color);
       }
     }
 
     .conceptG {
-      cursor: pointer;
+      cursor: grab;
+      transition: all 0.05s ease;
+
+      &:active {
+        cursor: grabbing;
+      }
 
       circle {
-        fill: var(--input-bg-color);
-        stroke: var(--text-color);
+        fill: var(--workflow-g-fill-color);
+        stroke: var(--workflow-marker-color);
         stroke-width: 2px;
       }
 
       text {
-        fill: var(--text-color);
+        fill: var(--workflow-marker-color);
         font-weight: 300;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
-        font-size: 14px;
+        font-size: 12px;
         pointer-events: none;
         user-select: none;
       }
 
       &:hover circle {
-        fill: var(--hover-color);
+        fill: var(--workflow-g-hover-fill-color);
+        stroke: var(--workflow-g-hover-color);
       }
 
       &.selected {
         circle {
-          stroke: var(--selected-color);
+          stroke-width: 4px;
+          stroke: var(--workflow-g-selected-color);
         }
-        text {
-          fill: var(--selected-color);
+        &:hover circle {
+          stroke-width: 4px;
+          stroke: var(--workflow-g-selected-color);
         }
       }
     }
