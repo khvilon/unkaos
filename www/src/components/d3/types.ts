@@ -28,6 +28,7 @@ export interface WorkflowData {
 export interface D3Node extends WorkflowNode {
   x: number
   y: number
+  r: number
   fx?: number | null
   fy?: number | null
 }

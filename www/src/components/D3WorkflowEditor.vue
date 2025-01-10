@@ -21,8 +21,15 @@ const selected = ref<Selected>({
   edge: null
 })
 
+// Define markers
+const arrows = [
+  { id: 'arrow' },
+  { id: 'arrow-selected' },
+  { id: 'drag-end-arrow' }
+]
+
 // Initialize D3 graph
-const { initSvg, processData, updateSimulation } = useD3Graph(svgContainer)
+const { initSvg, processData, updateSimulation, renderGraph: renderD3Graph } = useD3Graph(svgContainer)
 
 function renderGraph() {
   console.log('Starting graph render with data:', props.wdata)
@@ -48,44 +55,23 @@ function renderGraph() {
 
   console.log('Rendering graph elements:', { nodes: nodes.length, links: links.length })
 
-  // Add links
-  const link = linksGroup.selectAll('.link')
-    .data(links)
-    .enter()
-    .append('path')
-    .attr('class', 'link')
-    .attr('marker-end', 'url(#end)')
-    .attr('d', d => calculateLinkPath(d, props.wdata))
-    .on('click', (event, d) => {
-      event.stopPropagation()
-      selectEdge(d)
-    })
-
-  // Add nodes
-  const node = nodesGroup.selectAll('.conceptG')
-    .data(nodes)
-    .enter()
-    .append('g')
-    .attr('class', 'conceptG')
-    .attr('transform', d => `translate(${d.x},${d.y})`)
-    .call(d3.drag()
-      .on('start', dragstarted)
-      .on('drag', dragged)
-      .on('end', dragended))
-    .on('click', (event, d) => {
-      event.stopPropagation()
-      selectNode(d)
-    })
-
-  // Add circles to nodes
-  node.append('circle')
-    .attr('r', 20)
-
-  // Add text to nodes
-  node.append('text')
-    .attr('text-anchor', 'middle')
-    .attr('dy', '.35em')
-    .text(d => formatNodeText(d.issue_statuses[0]?.name || ''))
+  // Render graph using the function from useD3Graph
+  renderD3Graph(
+    linksGroup,
+    nodesGroup,
+    links,
+    nodes,
+    props.wdata,
+    selectNode,
+    selectEdge,
+    (node) => {
+      emit('update:node-position', {
+        uuid: node.uuid,
+        x: node.x,
+        y: node.y
+      })
+    }
+  )
 
   // Add zoom behavior
   const zoom = d3.zoom()
@@ -141,37 +127,7 @@ function updateSelection() {
   // Update links
   svg.selectAll('.link')
     .classed('selected', d => selected.value.edge?.uuid === d.uuid)
-    .attr('marker-end', d => selected.value.edge?.uuid === d.uuid ? 'url(#selected)' : 'url(#end)')
-}
-
-function dragstarted(event: any) {
-  event.subject.fx = event.subject.x
-  event.subject.fy = event.subject.y
-}
-
-function dragged(event: any) {
-  event.subject.fx = event.x
-  event.subject.fy = event.y
-  updateLinkPositions()
-}
-
-function dragended(event: any) {
-  event.subject.fx = null
-  event.subject.fy = null
-  
-  const node = event.subject
-  emit('update:node-position', {
-    uuid: node.uuid,
-    x: node.x,
-    y: node.y
-  })
-}
-
-function updateLinkPositions() {
-  d3.select(svgContainer.value)
-    .select('svg')
-    .selectAll('.link')
-    .attr('d', d => calculateLinkPath(d, props.wdata))
+    .attr('marker-end', d => selected.value.edge?.uuid === d.uuid ? 'url(#arrow-selected)' : 'url(#arrow)')
 }
 
 function updateName(value: string) {
@@ -258,92 +214,89 @@ function handleStatusSelect(uuid: string) {
 </template>
 
 <style lang="scss" scoped>
-@use '@/css/global.scss';
-
-:deep(.svg-workflow) {
-  width: 100%;
-  height: 100%;
-  border-radius: var(--border-radius);
-  background-color: var(--input-bg-color);
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-  transition: all 0.2s ease;
-  border: 2px inset var(--border-color);
-
-  .link {
-    fill: none;
-    stroke: var(--text-color);
-    stroke-width: 3px;
-    cursor: pointer;
-
-    &.selected {
-      stroke: var(--selected-color);
-    }
-
-    &.dragline {
-      pointer-events: none;
-
-      &.hidden {
-        stroke-width: 0;
-      }
-    }
-  }
-
-  .conceptG {
-    cursor: pointer;
-
-    circle {
-      fill: var(--input-bg-color);
-      stroke: var(--text-color);
-      stroke-width: 2px;
-    }
-
-    text {
-      fill: var(--text-color) !important;
-      font-weight: 300;
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
-      font-size: 14px;
-      pointer-events: none;
-      user-select: none;
-      color: var(--text-color) !important;
-    }
-
-    &:hover circle {
-      fill: var(--hover-color);
-    }
-
-    &.selected {
-      circle {
-        stroke: var(--selected-color);
-      }
-      text {
-        fill: var(--selected-color) !important;
-        color: var(--selected-color) !important;
-      }
-    }
-  }
-
-  marker {
-    fill: var(--text-color);
-    
-    &#end path {
-      fill: var(--text-color);
-      stroke: none;
-    }
-
-    &#selected path {
-      fill: var(--selected-color);
-      stroke: none;
-    }
-  }
-}
-
 .d3-workflows-editor {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
+
+  :deep(.svg-workflow) {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg-color);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: all 0.2s ease;
+    border: 2px inset var(--border-color);
+
+    .link {
+      fill: none;
+      stroke: var(--text-color);
+      stroke-width: 2px;
+      cursor: pointer;
+
+      &.selected {
+        stroke: var(--selected-color);
+        marker-end: url(#arrow-selected) !important;
+      }
+
+      &:not(.selected) {
+        marker-end: url(#arrow) !important;
+      }
+
+      &.dragline {
+        pointer-events: none;
+        marker-end: url(#arrow) !important;
+
+        &.hidden {
+          stroke-width: 0;
+        }
+      }
+    }
+
+    .arrow-head {
+      fill: var(--text-color);
+      stroke: none;
+
+      &.selected {
+        fill: var(--selected-color);
+      }
+    }
+
+    .conceptG {
+      cursor: pointer;
+
+      circle {
+        fill: var(--input-bg-color);
+        stroke: var(--text-color);
+        stroke-width: 2px;
+      }
+
+      text {
+        fill: var(--text-color);
+        font-weight: 300;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
+        font-size: 14px;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      &:hover circle {
+        fill: var(--hover-color);
+      }
+
+      &.selected {
+        circle {
+          stroke: var(--selected-color);
+        }
+        text {
+          fill: var(--selected-color);
+        }
+      }
+    }
+  }
 
   .workflows-command-panel {
     display: flex;

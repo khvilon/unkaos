@@ -1,7 +1,8 @@
 import * as d3 from 'd3'
 import { ref, type Ref } from 'vue'
 import type { D3Node, D3Link, WorkflowData } from './types'
-import { calculateLinkPath, formatNodeText, findNodeAtPosition } from './graphUtils'
+import { formatNodeText, findNodeAtPosition } from './graphUtils'
+import graph_math from '@/graph_math'
 
 export function useD3Graph(container: Ref<HTMLElement | null>) {
   const width = ref(800)
@@ -31,34 +32,32 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
 
     // Define arrow markers
     const defs = svg.append('defs')
-    
-    // End marker
-    defs.append('marker')
-      .attr('id', 'end')
-      .attr('viewBox', '0 -5 10 10')
-      .attr('refX', 20)
-      .attr('refY', 0)
-      .attr('markerWidth', 6)
-      .attr('markerHeight', 6)
-      .attr('orient', 'auto')
-      .append('path')
-      .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', 'var(--text-color)')
-      .attr('stroke', 'none')
 
-    // Selected marker
+    // Standard arrow
     defs.append('marker')
-      .attr('id', 'selected')
+      .attr('id', 'arrow')
       .attr('viewBox', '0 -5 10 10')
-      .attr('refX', 20)
+      .attr('refX', 10)  
       .attr('refY', 0)
-      .attr('markerWidth', 6)
-      .attr('markerHeight', 6)
+      .attr('markerWidth', 6)  
+      .attr('markerHeight', 6)  
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', 'var(--selected-color)')
-      .attr('stroke', 'none')
+      .attr('class', 'arrow-head')
+
+    // Selected arrow
+    defs.append('marker')
+      .attr('id', 'arrow-selected')
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 10)  
+      .attr('refY', 0)
+      .attr('markerWidth', 6)  
+      .attr('markerHeight', 6)  
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('class', 'arrow-head selected')
 
     // Create containers
     const g = svg.append('g')
@@ -80,7 +79,8 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
     const nodes: D3Node[] = data.workflow_nodes.map(node => ({
       ...node,
       x: node.x || Math.random() * width.value,
-      y: node.y || Math.random() * height.value
+      y: node.y || Math.random() * height.value,
+      r: 35
     }))
 
     console.log('Processed nodes:', nodes)
@@ -119,28 +119,90 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
     simulation.alpha(1).restart()
   }
 
-  function renderGraph(linksGroup: any, nodesGroup: any, links: D3Link[], nodes: D3Node[], data: any, selected: any) {
+  function renderGraph(
+    linksGroup: any, 
+    nodesGroup: any, 
+    links: D3Link[], 
+    nodes: D3Node[], 
+    data: WorkflowData,
+    onNodeClick?: (node: D3Node) => void,
+    onEdgeClick?: (link: D3Link) => void,
+    onNodeDragEnd?: (node: D3Node) => void
+  ) {
     // Add links
-    const link = linksGroup
-      .selectAll('.link')
+    const link = linksGroup.selectAll('.link')
       .data(links)
       .join('path')
       .attr('class', 'link')
+      .attr('marker-end', 'url(#arrow)')  
       .attr('d', d => calculateLinkPath(d, data))
-      .attr('marker-end', d => selected.value?.edge?.uuid === d.uuid ? 'url(#selected)' : 'url(#end)')
+      .on('click', (event: Event, d: D3Link) => {
+        event.stopPropagation()
+        if (onEdgeClick) onEdgeClick(d)
+      })
 
-    // Add nodes
-    const node = nodesGroup
-      .selectAll('.node')
+    // Add nodes with drag behavior
+    const node = nodesGroup.selectAll('.conceptG')
       .data(nodes)
       .join('g')
-      .attr('class', 'node')
-      .attr('transform', d => `translate(${d.x}, ${d.y})`)
+      .attr('class', 'conceptG')
+      .attr('transform', d => `translate(${d.x},${d.y})`)
+      .call(d3.drag()
+        .on('start', (event: any) => {
+          event.subject.fx = event.subject.x
+          event.subject.fy = event.subject.y
+        })
+        .on('drag', (event: any) => {
+          event.subject.fx = event.x
+          event.subject.fy = event.y
+          // Update links during drag
+          linksGroup.selectAll('.link')
+            .attr('d', d => calculateLinkPath(d, data))
+        })
+        .on('end', (event: any) => {
+          event.subject.fx = null
+          event.subject.fy = null
+          if (onNodeDragEnd) onNodeDragEnd(event.subject)
+        }))
+      .on('click', (event: Event, d: D3Node) => {
+        event.stopPropagation()
+        if (onNodeClick) onNodeClick(d)
+      })
+
+    // Add circles to nodes
+    node.selectAll('circle')
+      .data(d => [d])
+      .join('circle')
+      .attr('r', d => d.r)
+
+    // Add text to nodes
+    node.selectAll('text')
+      .data(d => [d])
+      .join('text')
+      .attr('text-anchor', 'middle')
+      .attr('dy', '.35em')
+      .text(d => formatNodeText(d.issue_statuses[0]?.name || ''))
+
+    return { link, node }
   }
 
-  function calculateLinkPath(link: D3Link, data: any) {
-    // Implement link path calculation logic here
-    return ''
+  function calculateLinkPath(link: D3Link, data: WorkflowData): string {
+    const source = { x: link.source.x, y: link.source.y }
+    const target = { x: link.target.x, y: link.target.y }
+    
+    return graph_math.calc_edge_d(
+      source,
+      target,
+      35,  // Используем тот же радиус что и для узлов
+      isBidirectional(link, data)
+    )
+  }
+
+  function isBidirectional(link: D3Link, data: WorkflowData): boolean {
+    return data.transitions.some(t => 
+      t.status_from_uuid === link.status_to_uuid && 
+      t.status_to_uuid === link.status_from_uuid
+    )
   }
 
   return {
