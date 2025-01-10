@@ -10,12 +10,15 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
   
   // D3 simulation
   const simulation = d3.forceSimulation<D3Node>()
-    .force('link', d3.forceLink<D3Node, D3Link>().id((d) => d.uuid).distance(150))
-    .force('charge', d3.forceManyBody().strength(-1000))  // Увеличиваем силу отталкивания
-    .force('center', d3.forceCenter(width.value / 2, height.value / 2))
-    .force('collision', d3.forceCollide().radius(50))  // Добавляем силу коллизии
-    .alphaDecay(0.1)  // Замедляем затухание alpha для более плавной анимации
-    .velocityDecay(0.6)  // Увеличиваем затухание скорости для большей стабильности
+    .force('charge', d3.forceManyBody()
+      .strength(-1000)
+      .distanceMax(150) // Максимальное расстояние действия силы отталкивания
+      .theta(0.9)) // Увеличиваем точность расчетов
+    .force('collision', d3.forceCollide()
+      .radius(50) // Радиус коллизии чуть больше размера ноды
+      .strength(0.9)) // Сила коллизии
+    .velocityDecay(0.7)
+    .alphaDecay(0.1)
     .on('tick', () => {
       if (!currentLinksGroup || !currentNodesGroup || !currentData) return
 
@@ -225,12 +228,9 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
           if (!draggedElement) return
           
           draggedElement.classed('dragging', false)
-          draggedElement = null // Очищаем сохраненный элемент
+          draggedElement = null
           
-          // Убираем класс dragging
-          // d3.select(event.sourceEvent.target.parentNode)
-          //   .classed('dragging', false)
-          
+          // Фиксируем конечную позицию
           event.subject.x = event.x
           event.subject.y = event.y
           event.subject.fx = null
@@ -238,10 +238,8 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
           
           if (onNodeDragEnd) onNodeDragEnd(event.subject)
           
-          // Запускаем simulation с небольшим alpha только если это последний перетаскиваемый узел
-          if (!event.active) {
-            simulation.alpha(0.1).restart()
-          }
+          // Запускаем simulation только для отталкивания
+          simulation.alpha(0.1).restart()
         }))
       .on('click', (event: Event, d: D3Node) => {
         // Вызываем click только если не было перетаскивания
@@ -267,9 +265,8 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
 
     // Обновляем simulation с новыми данными
     simulation.nodes(nodes)
-    simulation.force<d3.ForceLink<D3Node, D3Link>>('link')?.links(links)
     
-    // Запускаем simulation с небольшим alpha
+    // Запускаем simulation с небольшим alpha только для начального отталкивания
     simulation.alpha(0.3).restart()
 
     return { link, node }
