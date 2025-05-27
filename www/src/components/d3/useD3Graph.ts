@@ -127,7 +127,8 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
     data: WorkflowData,
     onNodeClick?: (node: D3Node) => void,
     onEdgeClick?: (link: D3Link) => void,
-    onNodeDragEnd?: (node: D3Node) => void
+    onNodeDragEnd?: (node: D3Node) => void,
+    isTransitionMode?: boolean
   ) {
     // Сохраняем текущие элементы
     currentLinksGroup = linksGroup
@@ -173,9 +174,16 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
     const node = nodesGroup.selectAll('.conceptG')
       .data(nodes)
       .join('g')
-      .attr('class', 'conceptG')
+      .attr('class', (d: D3Node) => isTransitionMode ? 'conceptG transition-mode' : 'conceptG')
       .attr('transform', (d: D3Node) => `translate(${d.x},${d.y})`)
-      .call(d3.drag<any, D3Node>()
+      .on('click', (event: Event, d: D3Node) => {
+        event.stopPropagation()
+        if (onNodeClick) onNodeClick(d)
+      })
+
+    // Add drag behavior only if not in transition mode
+    if (!isTransitionMode) {
+      node.call(d3.drag<any, D3Node>()
         .on('start', (event: any) => {
           if (!event.active) {
             simulation.stop()
@@ -224,10 +232,7 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
           
           simulation.alpha(0.1).restart()
         }))
-      .on('click', (event: Event, d: D3Node) => {
-        event.stopPropagation()
-        if (onNodeClick) onNodeClick(d)
-      })
+    }
 
     // Add circles to nodes
     node.selectAll('circle')
