@@ -79,29 +79,22 @@ export class MailPoller {
   }
 
   private async parseAndSaveMessage(workspace: string, client: ImapFlow, pipe: MsgPipe, msg: FetchMessageObject) {
-    logger.info({
-      msg: 'New email message',
-      from: msg.envelope.sender[0].address,
-      to: pipe.login,
-      subject: msg.envelope.subject
-    });
-
     try {
       const uuid = uuidv4()
       await this.insertMsgIn(workspace, {
         uuid: uuid,
         pipe_uuid: pipe.uuid,
-        message_id: msg.envelope.messageId,
+        message_id: msg.envelope?.messageId || '',
         message_uid: String(msg.uid),
-        title: msg.envelope.subject || '',
+        title: msg.envelope?.subject || '',
         body: '',
-        from: this.mapRecipientsToString(msg.envelope.from),
-        senders: this.mapRecipientsToString(msg.envelope.sender),
-        cc: this.mapRecipientsToString(msg.envelope.cc),
-        bcc: this.mapRecipientsToString(msg.envelope.bcc),
-        reply_to: this.mapRecipientsToString(msg.envelope.replyTo),
-        to: this.mapRecipientsToString(msg.envelope.to),
-        message_date: msg.envelope.date,
+        from: this.mapRecipientsToString(msg.envelope?.from),
+        senders: this.mapRecipientsToString(msg.envelope?.sender),
+        cc: this.mapRecipientsToString(msg.envelope?.cc),
+        bcc: this.mapRecipientsToString(msg.envelope?.bcc),
+        reply_to: this.mapRecipientsToString(msg.envelope?.replyTo),
+        to: this.mapRecipientsToString(msg.envelope?.to),
+        message_date: msg.envelope?.date || new Date(),
         status: MsgStatus.NEW
       })
       for (const part of await this.fetchParts(client, msg)) {
@@ -110,9 +103,9 @@ export class MailPoller {
     } catch (e: any) {
       logger.error({
         msg: 'Error processing message',
-        from: msg.envelope.sender[0].address,
+        from: msg.envelope?.sender?.[0]?.address,
         to: pipe.login,
-        subject: msg.envelope.subject,
+        subject: msg.envelope?.subject,
         error: e.message
       });
     }
@@ -129,7 +122,7 @@ export class MailPoller {
           } catch (e: any) {
             logger.warn({
               msg: 'Error decoding message part',
-              subject: msg.envelope.subject,
+              subject: msg.envelope?.subject,
               error: e.message
             });
             decodedPartContent = text
@@ -146,7 +139,7 @@ export class MailPoller {
         msg_in_uuid: msg_uuid,
         content: decodedPartContent,
         type: part.structure.type,
-        encoding: part.structure.encoding,
+        encoding: part.structure.encoding || 'utf8',
         disposition: part.structure.disposition || '',
         part_id: part.structure.id || '',
         part_num: part.structure.part || '',
@@ -155,7 +148,7 @@ export class MailPoller {
     } catch (e: any) {
       logger.error({
         msg: 'Error processing message part',
-        subject: msg.envelope.subject,
+        subject: msg.envelope?.subject,
         error: e.message
       });
     }
@@ -223,11 +216,11 @@ export class MailPoller {
     const lock = await client.getMailboxLock('INBOX');
     try {
       const parts = Array<MessageStructureObject>();
-      if (message.bodyStructure.childNodes !== undefined) {
+      if (message.bodyStructure && message.bodyStructure.childNodes !== undefined) {
         message.bodyStructure.childNodes.forEach((part : MessageStructureObject) => {
           this.stripParts(part, parts)
         })
-      } else {
+      } else if (message.bodyStructure) {
         message.bodyStructure.part = '1'
         parts.push(message.bodyStructure)
       }
@@ -257,7 +250,7 @@ export class MailPoller {
     }
   }
 
-  private mapRecipientsToString(elements: MessageAddressObject[]) : string {
+  private mapRecipientsToString(elements: MessageAddressObject[] | undefined) : string {
     if (elements !== undefined && elements.length !== 0) {
       return elements.map(element => element.address).join(' ').toLowerCase()
     } else {

@@ -1,30 +1,32 @@
-import type { D3Node, D3Link, WorkflowData } from './types'
-import graph_math from '@/graph_math'
+import type { D3Node } from './types'
 
-const CIRCLE_RADIUS = 20
-
-export function isBidirectional(link: D3Link, data: WorkflowData): boolean {
-  return data.transitions.some(t => 
-    t.status_from_uuid === link.status_to_uuid && 
-    t.status_to_uuid === link.status_from_uuid
-  )
-}
-
-export function calculateLinkPath(d: D3Link, data: WorkflowData): string {
-  const source = { x: d.source.x, y: d.source.y }
-  const target = { x: d.target.x, y: d.target.y }
-  
-  return graph_math.calc_edge_d(
-    source,
-    target,
-    CIRCLE_RADIUS,
-    isBidirectional(d, data)
-  )
-}
-
-export function formatNodeText(text: string, maxLength: number = 15): string {
+export function formatNodeText(text: string, maxLength: number = 10): string {
+  if (!text) return 'Статус'
   if (text.length <= maxLength) return text
-  return text.substring(0, maxLength - 3) + '...'
+  
+  // Разбиваем на слова
+  const words = text.split(' ')
+  if (words.length === 1) {
+    // Одно длинное слово - обрезаем с многоточием
+    return text.substring(0, maxLength - 1) + '…'
+  }
+  
+  // Несколько слов - пытаемся сократить
+  let result = words[0]
+  for (let i = 1; i < words.length; i++) {
+    const newResult = result + ' ' + words[i]
+    if (newResult.length <= maxLength) {
+      result = newResult
+    } else {
+      break
+    }
+  }
+  
+  if (result.length < text.length) {
+    result += '…'
+  }
+  
+  return result
 }
 
 export function findNodeAtPosition(nodes: D3Node[], x: number, y: number, radius: number): D3Node | undefined {

@@ -1,6 +1,6 @@
 <script>
 import page_helper from "../page_helper.ts";
-import D3WorkflowEditor from "../components/D3WorkflowEditor.vue";
+import SimpleWorkflowEditor from "../components/SimpleWorkflowEditor.vue";
 
 const data = {
   name: "workflows",
@@ -52,7 +52,7 @@ mod.computed.workflow_selected=function(){
 };
 
 mod.components = {
-  D3WorkflowEditor
+  SimpleWorkflowEditor
 };
 
 export default mod;
@@ -109,19 +109,21 @@ export default mod;
             </div>
           </KTab>
           <KTab title="Схема" :visible="true">
-            <D3WorkflowEditor :wdata="selected_workflows" />
-            <div class="table_card_buttons">
-              <div class="table_card_footer">
-                <KButton
-                  class="table_card_footer_btn"
-                  :name="workflows_selected ? 'Сохранить' : 'Создать'"
-                  :func="'save_workflows'"
-                />
-                <KButton
-                  class="table_card_footer_btn"
-                  :name="'Отменить'"
-                  @click="cancel_workflow_changes"
-                />
+            <div class="schema-tab-content">
+              <SimpleWorkflowEditor :wdata="selected_workflows" />
+              <div class="table_card_buttons">
+                <div class="table_card_footer">
+                  <KButton
+                    class="table_card_footer_btn"
+                    :name="workflows_selected ? 'Сохранить' : 'Создать'"
+                    :func="'save_workflows'"
+                  />
+                  <KButton
+                    class="table_card_footer_btn"
+                    :name="'Отменить'"
+                    @click="cancel_workflow_changes"
+                  />
+                </div>
               </div>
             </div>
           </KTab>
@@ -136,20 +138,36 @@ export default mod;
   $table-panel-width: 15%
 );
 
-.workflow-table-card{
-  padding: 0;
-  background: transparent;
+.workflow-table-card {
+  padding: 16px;
+  background: var(--bg-color);
+  height: calc(100vh - 88px);
+  overflow: hidden;
 }
 
-.workflow-table-card .tab-panel {
-  height: 100%;
-}
-
-.workflow-table-card .tab{
-  height: 100%;
+.schema-tab-content {
   display: flex;
   flex-direction: column;
-  
+  height: calc(100% - 46px);
+  width: 100%;
 }
 
+.schema-tab-content .simple-workflow-editor {
+  flex: 1;
+  min-height: 0;
+}
+
+.schema-tab-content .table_card_buttons {
+  margin-top: 16px;
+  flex-shrink: 0;
+}
+
+.table_card_footer {
+  display: flex;
+  gap: 16px;
+}
+
+.table_card_footer_btn {
+  flex: 1;
+}
 </style>
