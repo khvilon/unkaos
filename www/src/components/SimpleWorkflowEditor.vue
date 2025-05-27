@@ -410,11 +410,15 @@ function deleteSelected() {
       }
     }
 
-    text {
-      fill: #1e293b;
-      font-size: 12px;
+    text, .node-text {
+      fill: var(--text-color);
+      font-size: 10px;
       font-weight: 500;
       pointer-events: none;
+      
+      tspan {
+        fill: var(--text-color);
+      }
     }
   }
 }

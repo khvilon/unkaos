@@ -143,18 +143,38 @@ export default mod;
   background: var(--bg-color);
   height: calc(100vh - 88px);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.workflow-table-card :deep(.tab-panel) {
+  height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.workflow-table-card :deep(.tab) {
+  height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow: hidden;
 }
 
 .schema-tab-content {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 46px);
+  height: 100%;
   width: 100%;
+  flex: 1;
 }
 
 .schema-tab-content .simple-workflow-editor {
   flex: 1;
   min-height: 0;
+  height: 100%;
 }
 
 .schema-tab-content .table_card_buttons {

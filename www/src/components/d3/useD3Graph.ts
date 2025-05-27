@@ -239,14 +239,18 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
     node.selectAll('text')
       .data((d: D3Node) => [d])
       .join('text')
+      .attr('class', 'node-text')  // Добавляем CSS класс
       .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
+      .style('font-size', '10px')  // Уменьшаем размер шрифта
+      .style('font-weight', '500')
+      .style('fill', 'var(--text-color)')  // Добавляем цвет через стиль
       .each(function(this: SVGTextElement, d: D3Node) {
         const textElement = d3.select(this)
         textElement.selectAll('tspan').remove() // Очищаем предыдущие tspan
         
         const fullText = d.issue_statuses[0]?.name || 'Статус'
-        const maxLineLength = 8
+        const maxLineLength = 10  // Увеличиваем максимальную длину строки
         const words = fullText.split(' ')
         
         if (fullText.length <= maxLineLength) {
@@ -266,6 +270,7 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
                 lines.push(currentLine)
                 currentLine = word
               } else {
+                // Если одно слово длиннее максимума - обрезаем
                 lines.push(word.substring(0, maxLineLength - 1) + '…')
                 currentLine = ''
               }
@@ -286,7 +291,7 @@ export function useD3Graph(container: Ref<HTMLElement | null>) {
           lines.forEach((line, i) => {
             textElement.append('tspan')
               .attr('x', 0)
-              .attr('dy', i === 0 ? '-0.2em' : '1em')
+              .attr('dy', i === 0 ? '-0.3em' : '1.1em')  // Улучшаем позиционирование строк
               .text(line)
           })
         }
