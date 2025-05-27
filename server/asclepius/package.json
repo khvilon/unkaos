@@ -1,18 +1,25 @@
 {
   "name": "asclepius",
   "version": "1.0.0",
-  "description": "",
+  "description": "Unkaos автотесты на Playwright",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:ui": "npx playwright test --ui",
+    "test:debug": "npx playwright test --debug",
+    "test:regression": "npx playwright test tests/regression.spec.ts",
+    "install:browsers": "npx playwright install"
   },
-  "keywords": [],
+  "keywords": ["playwright", "testing", "automation", "unkaos"],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "playwright": "^1.49.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.1"
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
   }
 }
