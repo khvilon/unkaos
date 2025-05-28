@@ -76,9 +76,17 @@ function renderGraph() {
     console.error('Failed to initialize SVG elements')
     return
   }
-
+  
+  // Добавляем data-testid к SVG элементу
+  svg.attr('data-testid', 'svg-workflow')
+  
+  // Добавляем data-testid к группам
+  linksGroup.attr('data-testid', 'workflow-links')
+  arrowsGroup.attr('data-testid', 'workflow-arrows')
+  nodesGroup.attr('data-testid', 'workflow-nodes')
+  
   const { nodes, links } = processData(props.wdata)
-
+  
   if (!nodes.length) {
     console.warn('No nodes to render')
     return
@@ -129,6 +137,28 @@ function renderGraph() {
   // Update simulation and selection
   updateSimulation(nodes, links)
   updateSelection()
+  
+  // Добавляем data-testid атрибуты к созданным элементам
+  addDataTestIds(nodesGroup, linksGroup)
+}
+
+// Функция для добавления data-testid атрибутов к D3 элементам
+function addDataTestIds(nodesGroup: any, linksGroup: any) {
+  // Добавляем data-testid к узлам
+  nodesGroup.selectAll('.conceptG')
+    .attr('data-testid', (d: D3Node) => `canvas-status-${d.issue_statuses[0]?.name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}`)
+  
+  // Добавляем data-testid к кругам узлов
+  nodesGroup.selectAll('.conceptG circle')
+    .attr('data-testid', (d: D3Node) => `canvas-status-circle-${d.issue_statuses[0]?.name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}`)
+  
+  // Добавляем data-testid к тексту узлов
+  nodesGroup.selectAll('.conceptG text')
+    .attr('data-testid', (d: D3Node) => `canvas-status-text-${d.issue_statuses[0]?.name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}`)
+  
+  // Добавляем data-testid к связям
+  linksGroup.selectAll('.link')
+    .attr('data-testid', (d: D3Link) => `canvas-transition-${d.source?.issue_statuses[0]?.name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}-to-${d.target?.issue_statuses[0]?.name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}`)
 }
 
 function addTransitionCreationBehavior(svg: any, g: any, nodesGroup: any) {
@@ -419,9 +449,9 @@ function handleCancel() {
 </script>
 
 <template>
-  <div class="simple-workflow-editor">
+  <div class="simple-workflow-editor" data-testid="simple-workflow-editor">
     <!-- Левая панель с инструментами -->
-    <div class="editor-sidebar">
+    <div class="editor-sidebar" data-testid="editor-sidebar">
       <div class="sidebar-content">
         <!-- Основные параметры -->
         <div class="sidebar-section" v-if="inputs && inputs.length > 0">
@@ -434,18 +464,20 @@ function handleCancel() {
               @input="updateField(input.id, $event.target.value)"
               class="form-input"
               :disabled="input.disabled"
+              :data-testid="`workflow-${input.id}`"
             />
           </div>
         </div>
 
         <!-- Добавление статусов -->
         <div class="sidebar-section" v-if="availableStatuses.length > 0">
-          <div class="statuses-grid">
+          <div class="statuses-grid" data-testid="statuses-grid">
             <button 
               v-for="status in availableStatuses" 
               :key="status.uuid"
               @click="addStatusToWorkflow(status.uuid)"
               class="status-button"
+              :data-testid="`status-${status.name.toLowerCase().replace(/\s+/g, '-')}`"
             >
               {{ status.name }}
             </button>
@@ -462,6 +494,7 @@ function handleCancel() {
                 :value="false"
                 v-model="isTransitionCreationMode"
                 @change="renderGraph"
+                data-testid="mode-drag-statuses"
               />
               <span class="radio-mark"></span>
               Перетаскивание статусов
@@ -472,6 +505,7 @@ function handleCancel() {
                 :value="true"
                 v-model="isTransitionCreationMode"
                 @change="renderGraph"
+                data-testid="mode-create-transitions"
               />
               <span class="radio-mark"></span>
               Создание переходов
@@ -496,6 +530,7 @@ function handleCancel() {
               @input="updateName($event.target.value)"
               class="form-input"
               :disabled="!!selected.node"
+              data-testid="selected-element-name"
             />
             <p class="input-hint" v-if="selected.node">
               Название статуса можно изменить только на странице "Статусы задач"
@@ -505,6 +540,7 @@ function handleCancel() {
             :name="selected.node ? 'Удалить из схемы' : 'Удалить переход'"
             @click="deleteSelected"
             class="delete-btn"
+            data-testid="delete-selected-element"
           />
         </div>
       </div>
@@ -516,6 +552,7 @@ function handleCancel() {
           :func="'save_workflows'"
           @button_ans="handleSave"
           class="footer-btn primary"
+          data-testid="save-workflow"
         />
         <KButton 
           v-if="workflowSelected"
@@ -523,18 +560,20 @@ function handleCancel() {
           :func="'delete_workflows'"
           @button_ans="handleDelete"
           class="footer-btn danger"
+          data-testid="delete-workflow"
         />
         <KButton 
           :name="'Отменить'"
           @click="handleCancel"
           class="footer-btn secondary"
+          data-testid="cancel-workflow"
         />
       </div>
     </div>
 
     <!-- Правая панель с графом -->
-    <div class="editor-canvas">
-      <div class="canvas-container" ref="svgContainer">
+    <div class="editor-canvas" data-testid="editor-canvas">
+      <div class="canvas-container" ref="svgContainer" data-testid="workflow-canvas">
         <!-- D3 SVG будет вставлен сюда -->
       </div>
     </div>

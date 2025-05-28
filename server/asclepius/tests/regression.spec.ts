@@ -1,6 +1,5 @@
 import { test } from '@playwright/test';
-import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createProject, createIssueField, createIssueStatus, createIssueType } from '../helpers';
-import {  createWorkflow } from '../helpers_workflow';
+import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createWorkflow } from '../helpers';
 
 test.describe.serial('Регресионный тест', () => {
   const startTime = new Date().getTime();
@@ -16,6 +15,9 @@ test.describe.serial('Регресионный тест', () => {
 
   test.beforeEach(async ({ page }) => {
     console.log('🔄 BeforeEach: state =', state);
+    
+    // Устанавливаем размер окна браузера для правильного отображения
+    await page.setViewportSize({ width: 1920, height: 1080 });
     
     if (!state) {
       console.log('⏭️ Пропускаем beforeEach для state = 0');
@@ -53,6 +55,9 @@ test.describe.serial('Регресионный тест', () => {
   test('Регистрация рабочего пространства и смена пароля', async ({ page }) => {
     console.log('🚀 Начинаем тест регистрации...');
     
+    // Устанавливаем размер окна браузера для правильного отображения
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    
     try {
       // Создаем временный email
       console.log('📧 Создаем временный email...');
@@ -85,14 +90,13 @@ test.describe.serial('Регресионный тест', () => {
       
       // Ждем завершения активации - может быть редирект или обработка
       console.log('⏳ Ждем завершения активации...');
-      await page.waitForTimeout(5000);
-      
-      // Ждем панель логина
-      console.log('⏳ Ждем панель логина...');
-      await page.waitForSelector('.login-panel', { timeout: 10000 });
       await page.waitForTimeout(2000);
       
-      // Логинимся с временным паролем
+      // Ждем панель логина и сразу заполняем
+      console.log('⏳ Ждем панель логина и заполняем форму...');
+      await page.waitForSelector('.login-panel', { timeout: 10000 });
+      
+      // Сразу логинимся с временным паролем без дополнительных ожиданий
       console.log('🔐 Логинимся с временным паролем...');
       await signIn(page, adminEmail, pass);
 
@@ -192,7 +196,7 @@ test.describe.serial('Регресионный тест', () => {
       await navigateMainMenu(page, 'workflows');
       
       console.log('⚙️ Создаем воркфлоу...');
-      await createWorkflow(page, 'Тестовый', ['Новая', 'В работе']);
+      await createWorkflow(page, 'Тестовый');
       
       console.log('✅ Тест создания воркфлоу завершен успешно');
       

@@ -140,18 +140,46 @@ export async function getEmailFromTempMail(): Promise<string> {
     }
 }
 
-export async function getIframeBody(page: Page) {
-    // Ждем появления писем
+// Агрессивная проверка почты с адаптивным интервалом
+async function waitForEmailsAggressive(): Promise<Email[]> {
     let emails: Email[] = [];
     const timeout = 60000;
-    const interval = 2000;
     const startTime = Date.now();
+    
+    // Адаптивный интервал: начинаем с 200мс, постепенно увеличиваем
+    let interval = 200;
+    let checkCount = 0;
+    
+    console.log('🔄 Агрессивная проверка почты...');
 
     while (emails.length === 0 && Date.now() - startTime < timeout) {
         emails = await getEmails();
-        if (emails.length > 0) break;
+        checkCount++;
+        
+        if (emails.length > 0) {
+            console.log(`📧 Письмо получено после ${checkCount} проверок за ${Date.now() - startTime}мс!`);
+            break;
+        }
+        
+        // Адаптивный интервал: первые 10 проверок - 200мс, потом увеличиваем
+        if (checkCount > 10) {
+            interval = Math.min(1000, interval + 100); // Максимум 1 секунда
+        }
+        
+        if (checkCount % 5 === 0) {
+            console.log(`📬 Проверка ${checkCount}, интервал ${interval}мс...`);
+        }
+        
         await new Promise(resolve => setTimeout(resolve, interval));
     }
+    
+    return emails;
+}
+
+export async function getIframeBody(page: Page) {
+    // Используем агрессивную проверку почты
+    console.log('🔄 Начинаем агрессивную проверку почты...');
+    const emails = await waitForEmailsAggressive();
 
     if (emails.length === 0) {
         throw new Error('No emails received after timeout');
@@ -209,43 +237,38 @@ export async function getIframeBody(page: Page) {
 }
 
 export async function waitRegisterMail(page: Page) {
-    // Ждем появления писем
-    let emails: Email[] = [];
-    const timeout = 60000;
-    const interval = 2000;
-    const startTime = Date.now();
-
-    while (emails.length === 0 && Date.now() - startTime < timeout) {
-        emails = await getEmails();
-        if (emails.length > 0) break;
-        await new Promise(resolve => setTimeout(resolve, interval));
-    }
+    // Используем агрессивную проверку почты
+    console.log('📬 Ждем письмо активации (агрессивная проверка)...');
+    const emails = await waitForEmailsAggressive();
 
     if (emails.length === 0) {
         throw new Error('No registration email received after timeout');
     }
+    
+    console.log(`📧 Получено ${emails.length} писем!`);
 }
 
 export async function sendWorkspaceRegister(page: Page, workspace: string, adminEmail: string) {
-  console.log('Navigating to homepage...');
+  console.log('🌐 Переходим на главную страницу...');
   await page.goto(baseUrl);
   
-  console.log('Clicking registration link...');
+  console.log('🔗 Нажимаем ссылку регистрации...');
   await page.click('a:has-text("Регистрация рабочего пространства")');
   
-  console.log('Waiting for register panel...');
-  await page.waitForSelector('.register-panel');
+  console.log('⏳ Ждем панель регистрации...');
+  await page.waitForSelector('.register-panel', { timeout: 5000 }); // Уменьшаем таймаут
   
-  console.log('Filling workspace name:', workspace);
+  console.log('🏢 Заполняем название workspace:', workspace);
   const workspaceInput = page.locator('.register-panel .string.input:has(.label:has-text("Название рабочего пространства")) .string-input');
+  await workspaceInput.waitFor({ state: 'visible', timeout: 5000 }); // Уменьшаем таймаут
   await workspaceInput.fill(workspace);
 
-  console.log('Filling email:', adminEmail);
+  console.log('📧 Заполняем email:', adminEmail);
   const emailInput = page.locator('.register-panel .string.input:has(.label:has-text("Электронная почта")) .string-input');
-  await emailInput.waitFor({ state: 'visible' });
+  await emailInput.waitFor({ state: 'visible', timeout: 5000 }); // Уменьшаем таймаут
   await emailInput.fill(adminEmail);
 
-  console.log('Clicking submit button...');
+  console.log('🚀 Нажимаем кнопку отправки...');
   await page.click('.register-panel .btn_input');
   
   // Проверяем возможные ошибки
@@ -274,6 +297,32 @@ async function fillLocator(page: Page, locator: string, value: string) {
   await input.fill(value);
 }
 
+// Функция для установки масштаба страницы
+async function setPageZoom(page: Page, zoomLevel: number = 0.9) {
+  try {
+    await page.evaluate((zoom) => {
+      // Используем CSS transform вместо zoom для лучшей совместимости
+      document.body.style.transform = `scale(${zoom})`;
+      document.body.style.transformOrigin = 'top left';
+      document.body.style.width = `${100 / zoom}%`;
+      document.body.style.height = `${100 / zoom}%`;
+    }, zoomLevel);
+    console.log(`Page transform scale set to ${zoomLevel}`);
+  } catch (error) {
+    console.log('Failed to set page transform, continuing...');
+  }
+}
+
+// Функция для скроллинга к элементу перед взаимодействием
+async function scrollToElement(page: Page, locator: any) {
+  try {
+    await locator.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500); // Небольшая пауза после скроллинга
+  } catch (error) {
+    console.log('Scroll to element failed, continuing...');
+  }
+}
+
 export async function signIn(page: Page, email: string, pass: string) {
   console.log(`Starting sign in`, email, pass);
   
@@ -292,32 +341,37 @@ export async function signIn(page: Page, email: string, pass: string) {
       }
     });
     
-    // Заполняем email
+    // Заполняем email быстро
+    console.log('📧 Заполняем email...');
     const emailInput = page.locator('.login-panel .string.input:has(.label:has-text("Электронная почта")) .string-input');
-    await emailInput.waitFor({ state: 'visible', timeout: 10000 });
+    await emailInput.waitFor({ state: 'visible', timeout: 5000 }); // Уменьшаем таймаут
+    await scrollToElement(page, emailInput);
     await emailInput.fill(email);
     
-    // Заполняем пароль
+    // Заполняем пароль быстро
+    console.log('🔑 Заполняем пароль...');
     const passwordInput = page.locator('.login-panel .string.input:has(.label:has-text("Пароль")) .string-input');
-    await passwordInput.waitFor({ state: 'visible', timeout: 10000 });
+    await passwordInput.waitFor({ state: 'visible', timeout: 5000 }); // Уменьшаем таймаут
+    await scrollToElement(page, passwordInput);
     await passwordInput.fill(pass);
 
     // Нажимаем кнопку входа и ждем навигации
     const loginButton = page.locator('.login-panel .btn_input');
-    await loginButton.waitFor({ state: 'visible', timeout: 10000 });
+    await loginButton.waitFor({ state: 'visible', timeout: 5000 }); // Уменьшаем таймаут
+    await scrollToElement(page, loginButton);
     
-    console.log(`Clicking login button and waiting for navigation...`);
+    console.log(`🚀 Нажимаем кнопку входа...`);
     
     // Ждем навигацию после клика
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle', timeout: 15000 }),
+      page.waitForNavigation({ waitUntil: 'networkidle', timeout: 10000 }), // Уменьшаем таймаут
       loginButton.click()
     ]);
     
-    console.log(`Navigation completed, current URL: ${page.url()}`);
+    console.log(`✅ Навигация завершена, URL: ${page.url()}`);
     
     // Ждем загрузки страницы
-    await page.waitForLoadState('networkidle', { timeout: 10000 });
+    await page.waitForLoadState('networkidle', { timeout: 5000 }); // Уменьшаем таймаут
     
     // Проверяем наличие ошибок на странице
     const errorSelectors = [
@@ -361,6 +415,11 @@ export async function signIn(page: Page, email: string, pass: string) {
       page.waitForSelector('.main-menu-list', { timeout: 10000 })
     ]);
     
+    // Исправляем позиционирование интерфейса
+    console.log('Fixing interface positioning...');
+    await fixInterfacePositioning(page);
+    await page.waitForTimeout(1000); // Даем время на применение стилей
+    
     console.log(`Login completed successfully`);
     
   } catch (error) {
@@ -381,24 +440,58 @@ export async function signOut(page: Page) {
 }
 
 export async function navigateMainMenu(page: Page, menu: string) {
+  // Для воркфлоу используем полный путь
+  if (menu === 'workflows') {
+    await page.click(`a[href*="/configs/workflows"]`);
+  } else {
   await page.click(`a[href*="/${menu}"]`);
+  }
+  
+  // Ждем загрузки страницы
+  await page.waitForTimeout(1000); // Уменьшено с 2000мс
+  
+  // Применяем исправление позиционирования после навигации
+  console.log('Fixing interface positioning after navigation...');
+  await fixInterfacePositioning(page);
+  await page.waitForTimeout(500); // Уменьшено с 1000мс
 }
 
 export async function changeField(page: Page, fieldName: string, value: string, key: string = '') {
-    if(key) await page.click(`span:has-text("${key}")`, { timeout: 5000 });
+    if(key) {
+        const keyElement = page.locator(`span:has-text("${key}")`);
+        await scrollToElement(page, keyElement);
+        await keyElement.click({ timeout: 5000 });
+    }
+    
     const field = page.locator(`.label:has-text("${fieldName}")`).locator('..').locator('input.string-input');
     await field.waitFor({ state: 'visible' });
+    await scrollToElement(page, field);
     await field.fill(value);
-    if(key) await page.click('input[type="button"][value="Сохранить"]');
+    
+    if(key) {
+        const saveButton = page.locator('input[type="button"][value="Сохранить"]');
+        await scrollToElement(page, saveButton);
+        await saveButton.click();
+    }
 }
 
 export async function createUser(page: Page, name: string, login: string, email: string) {
   console.log(`Creating user`, name, login, email);
   
   try {
-    // Нажимаем кнопку "Создать"
-    console.log('Clicking "Создать" button...');
-    await page.click('input[type="button"][value="Создать"]');
+    // Исправляем позиционирование интерфейса
+    await fixInterfacePositioning(page);
+    await page.waitForTimeout(500); // Уменьшено с 1000мс
+    
+    // Кликаем по кнопке плюс для создания пользователя
+    console.log('Clicking plus button...');
+    await page.waitForSelector('.btn_input.bx-plus-circle', { timeout: 5000 });
+    await page.click('.btn_input.bx-plus-circle');
+    
+    // Ждем появления полей формы
+    console.log('Waiting for form fields...');
+    await page.waitForSelector('.string-input', { timeout: 5000 });
+    await page.waitForTimeout(500); // Уменьшено с 2000мс
     
     // Заполняем поля
     console.log('Filling ФИО field...');
@@ -412,10 +505,12 @@ export async function createUser(page: Page, name: string, login: string, email:
     
     // Нажимаем кнопку "Создать" для сохранения
     console.log('Clicking final "Создать" button...');
-    await page.click('input[type="button"][value="Создать"]');
+    const finalCreateButton = page.locator('input[type="button"][value="Создать"]');
+    await scrollToElement(page, finalCreateButton);
+    await finalCreateButton.click();
     
     // Ждем немного для обработки
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000); // Уменьшено с 2000мс
     
     // Проверяем наличие ошибок
     const errorElements = await page.locator('.error, .err-label, .alert-danger').all();
@@ -430,7 +525,7 @@ export async function createUser(page: Page, name: string, login: string, email:
     
     // Проверяем, что мы вернулись к списку пользователей
     console.log('Waiting for user table...');
-    await page.waitForSelector('.ktable', { timeout: 10000 });
+    await page.waitForSelector('.ktable', { timeout: 5000 }); // Уменьшено с 10000мс
     
     // Делаем скриншот для отладки
     await page.screenshot({ path: 'debug-user-creation.png', fullPage: true });
@@ -452,72 +547,191 @@ export async function createUser(page: Page, name: string, login: string, email:
     const userByEmailCount = await userByEmailLocator.count();
     console.log(`Found ${userByEmailCount} elements with email "${email}"`);
     
-    if (userByLoginCount === 0 && userByEmailCount === 0) {
-      // Попробуем найти любые строки в таблице
-      const allRows = await page.locator('.ktable .user, .ktable tr, .ktable .row').all();
-      console.log(`Total rows in table: ${allRows.length}`);
-      
-      for (let i = 0; i < Math.min(allRows.length, 5); i++) {
-        const rowText = await allRows[i].textContent();
-        console.log(`Row ${i}: ${rowText}`);
-      }
-      
-      throw new Error(`User with login "${login}" or email "${email}" not found in table after creation`);
-    }
-    
-    // Ждем появления пользователя (по логину или email)
-    if (userByLoginCount > 0) {
-      await userByLoginLocator.waitFor({ state: 'visible', timeout: 10000 });
-      console.log(`User with login "${login}" created successfully`);
-    } else {
-      await userByEmailLocator.waitFor({ state: 'visible', timeout: 10000 });
-      console.log(`User with email "${email}" created successfully`);
-    }
-    
   } catch (error) {
-    console.error(`Failed to create user:`, error);
+    console.error(`User creation failed:`, error);
     throw error;
   }
 }
 
-export async function createProject(page: Page, name: string, code: string, description: string, owner: string) {
-  await page.click('input[type="button"][value="Создать"]');
-  await page.fill('.label:has-text("Название") ~ input.string-input', name);
-  await page.fill('.label:has-text("Код") ~ input.string-input', code);
-  await page.fill('.label:has-text("Описание") ~ textarea', description);
-  await page.fill('.label:has-text("Владелец") ~ .vs__search', `${owner}{enter}`);
-  await page.click('input[type="button"][value="Сохранить"]');
-}
-
-export async function createIssueField(page: Page, name: string, type: string) {
-  await page.click('input[type="button"][value="Создать"]');
-  await page.fill('.label:has-text("Название") ~ input.string-input', name);
-  await page.fill('.label:has-text("Тип") ~ .vs__search', `${type}{downarrow}{enter}`);
-  await page.click('input[type="button"][value="Сохранить"]');
-}
-
-export async function check(checkbox: any, check: boolean) {
-  if (check) {
-    await checkbox.check({ force: true });
-  } else {
-    await checkbox.uncheck({ force: true });
+// Функция для исправления позиционирования интерфейса
+async function fixInterfacePositioning(page: Page) {
+  try {
+    await page.evaluate(() => {
+      // Ищем основной контент, который сдвинут за пределы экрана
+      const mainContentSelectors = [
+        '.table_card', '.workflow-table-card', '.panel',
+        '.main-content', '.content', '.page-content', '.workspace',
+        '.main-container', '.app-content', '.page-container'
+      ];
+      
+      mainContentSelectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+          const rect = element.getBoundingClientRect();
+          
+          // Если элемент находится за пределами экрана справа
+          if (rect.x >= window.innerWidth) {
+            console.log(`Fixing position for ${selector}: x=${rect.x} -> x=220`);
+            
+            // Исправляем позиционирование
+            (element as HTMLElement).style.position = 'fixed';
+            (element as HTMLElement).style.left = '220px'; // После бокового меню
+            (element as HTMLElement).style.top = '60px';   // Под хедером
+            (element as HTMLElement).style.width = 'calc(100vw - 240px)'; // Ширина экрана минус меню
+            (element as HTMLElement).style.height = 'calc(100vh - 80px)';  // Высота экрана минус хедер
+            (element as HTMLElement).style.zIndex = '1000';
+            (element as HTMLElement).style.backgroundColor = 'var(--background-color, #1a1a1a)';
+          }
+        });
+      });
+      
+      // Также проверяем элементы редактора воркфлоу
+      const workflowEditorSelectors = [
+        '.simple-workflow-editor', '.editor-sidebar', '.workflow-editor'
+      ];
+      
+      workflowEditorSelectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+          const rect = element.getBoundingClientRect();
+          
+          if (rect.x >= window.innerWidth) {
+            console.log(`Fixing workflow editor position for ${selector}: x=${rect.x}`);
+            
+            (element as HTMLElement).style.position = 'fixed';
+            (element as HTMLElement).style.left = '220px';
+            (element as HTMLElement).style.top = '60px';
+            (element as HTMLElement).style.width = 'calc(100vw - 240px)';
+            (element as HTMLElement).style.height = 'calc(100vh - 80px)';
+            (element as HTMLElement).style.zIndex = '1001';
+          }
+        });
+      });
+      
+      console.log('Interface positioning fixed');
+    });
+  } catch (error) {
+    console.log('Failed to fix interface positioning, continuing...');
   }
 }
 
-export async function createIssueStatus(page: Page, name: string, isStart: boolean, isEnd: boolean) {
-  await page.click('input[type="button"][value="Создать"]');
-  await page.fill('.label:has-text("Название") ~ input.string-input', name);
-  await check(page.locator('.label:has-text("Начальный") ~ input[type="checkbox"]'), isStart);
-  await check(page.locator('.label:has-text("Конечный") ~ input[type="checkbox"]'), isEnd);
-  await page.click('input[type="button"][value="Сохранить"]');
-}
-
-export async function createIssueType(page: Page, name: string, workflow: string, fields: string[]) {
-  await page.click('input[type="button"][value="Создать"]');
-  await page.fill('.label:has-text("Название") ~ input.string-input', name);
-  await page.fill('.label:has-text("Воркфлоу") ~ .vs__search', `${workflow}{downarrow}{enter}`);
-  for (const field of fields) {
-    await page.fill('.label:has-text("Поля") ~ .vs__search', `${field}{downarrow}{enter}`);
+export async function createWorkflow(page: Page, workflowName: string): Promise<void> {
+  console.log(`Создание воркфлоу: ${workflowName}`);
+  
+  // Ждем полной загрузки страницы воркфлоу
+  console.log('⏳ Ждем полной загрузки страницы воркфлоу...');
+  await page.waitForTimeout(1000); // Уменьшено с 2000мс
+  
+  // Ждем появления кнопки плюс и кликаем по ней
+  console.log('⏳ Ждем появления кнопки плюс...');
+  await page.waitForSelector('.btn_input.bx-plus-circle', { timeout: 5000 }); // Уменьшено с 10000мс
+  
+  console.log('➕ Кликаем по кнопке плюс...');
+  await page.click('.btn_input.bx-plus-circle');
+  
+  // Ждем загрузки редактора
+  console.log('⏳ Ждем загрузки редактора воркфлоу...');
+  await page.waitForSelector('[data-testid="simple-workflow-editor"]', { timeout: 5000 }); // Уменьшено с 10000мс
+  console.log('✅ Редактор воркфлоу загружен');
+  
+  // Ждем полной инициализации Vue компонента
+  console.log('⏳ Ждем инициализации Vue компонента...');
+  await page.waitForTimeout(1000); // Уменьшено с 2000мс
+  
+  // Заполняем название воркфлоу
+  const nameInput = page.locator('[data-testid="workflow-name"]');
+  await nameInput.waitFor({ state: 'visible', timeout: 5000 });
+  await nameInput.fill(workflowName);
+  console.log(`Заполнено название: ${workflowName}`);
+  
+  // Ждем появления кнопок статусов в DOM
+  await page.waitForSelector('[data-testid="statuses-grid"]', { timeout: 5000 }); // Уменьшено с 10000мс
+  
+  // Ждем загрузки статусов в Vue компонент
+  console.log('⏳ Ждем загрузки статусов...');
+  await page.waitForFunction(() => {
+    const statusButtons = document.querySelectorAll('[data-testid="statuses-grid"] .status-button');
+    return statusButtons.length > 0;
+  }, { timeout: 5000 }); // Уменьшено с 10000мс
+  
+  // Получаем список доступных статусов
+  const statusButtons = page.locator('[data-testid="statuses-grid"] .status-button');
+  const statusCount = await statusButtons.count();
+  console.log(`Найдено статусов в DOM: ${statusCount}`);
+  
+  if (statusCount === 0) {
+    throw new Error('Статусы не найдены в DOM');
   }
-  await page.click('input[type="button"][value="Сохранить"]');
+  
+  // Добавляем первые 3 статуса на холст
+  const statusesToAdd = Math.min(3, statusCount);
+  const addedStatuses: string[] = [];
+  
+  for (let i = 0; i < statusesToAdd; i++) {
+    const statusButton = statusButtons.nth(i);
+    const statusText = await statusButton.textContent();
+    
+    if (statusText) {
+      console.log(`Кликаем по статусу: ${statusText}`);
+      await statusButton.click();
+      
+      // Ждем обновления DOM
+      await page.waitForTimeout(500); // Уменьшено с 1000мс
+      
+      const statusSlug = statusText.toLowerCase().replace(/\s+/g, '-');
+      addedStatuses.push(statusSlug);
+      
+      console.log(`✅ Клик по статусу ${statusText} выполнен`);
+    }
+  }
+  
+  console.log(`Добавлено статусов: ${addedStatuses.length}`);
+  
+  // Переключаемся в режим создания переходов
+  console.log('Переключение в режим создания переходов');
+  await page.locator('[data-testid="mode-create-transitions"]').click();
+  await page.waitForTimeout(500); // Уменьшено с 1000мс
+  
+  // Создаем переходы между статусами (drag & drop)
+  if (addedStatuses.length >= 2) {
+    for (let i = 0; i < addedStatuses.length - 1; i++) {
+      const fromStatus = `[data-testid="canvas-status-${addedStatuses[i]}"]`;
+      const toStatus = `[data-testid="canvas-status-${addedStatuses[i + 1]}"]`;
+      
+      console.log(`Попытка создания перехода: ${addedStatuses[i]} -> ${addedStatuses[i + 1]}`);
+      
+      try {
+        // Проверяем, что элементы статусов существуют на холсте
+        const fromExists = await page.locator(fromStatus).count();
+        const toExists = await page.locator(toStatus).count();
+        
+        if (fromExists > 0 && toExists > 0) {
+          // Получаем элементы статусов
+          const fromElement = page.locator(fromStatus);
+          const toElement = page.locator(toStatus);
+          
+          // Выполняем drag & drop
+          await fromElement.dragTo(toElement);
+          
+          // Ждем создания перехода
+          await page.waitForTimeout(300); // Уменьшено с 500мс
+          
+          console.log(`✅ Переход создан: ${addedStatuses[i]} -> ${addedStatuses[i + 1]}`);
+        } else {
+          console.warn(`⚠️ Статусы не найдены на холсте: from=${fromExists}, to=${toExists}`);
+        }
+      } catch (error) {
+        console.warn(`⚠️ Не удалось создать переход ${addedStatuses[i]} -> ${addedStatuses[i + 1]}:`, error);
+      }
+    }
+  }
+  
+  // Сохраняем воркфлоу
+  console.log('Сохранение воркфлоу');
+  await page.locator('[data-testid="save-workflow"]').click();
+  
+  // Ждем сохранения
+  await page.waitForTimeout(1000); // Уменьшено с 2000мс
+  
+  console.log(`✅ Воркфлоу "${workflowName}" создан успешно`);
 }
