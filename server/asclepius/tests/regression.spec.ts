@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createWorkflow } from '../helpers';
+import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createWorkflow, createStatus } from '../helpers';
 
 test.describe.serial('Регресионный тест', () => {
   const startTime = new Date().getTime();
@@ -184,6 +184,27 @@ test.describe.serial('Регресионный тест', () => {
       
     } catch (error) {
       console.error('❌ Ошибка в тесте создания пользователя:', error);
+      throw error;
+    }
+  });
+
+  test('Создание статуса', async ({ page }) => {
+    console.log('🚀 Начинаем тест создания статуса...');
+    
+    try {
+      console.log('📊 Переходим к статусам...');
+      await navigateMainMenu(page, 'issue_statuses');
+      
+      console.log('⏳ Ждем загрузки таблицы...');
+      await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+      
+      console.log('📝 Создаем тестовый статус...');
+      await createStatus(page, 'Тестовый статус', false, false);
+      
+      console.log('✅ Тест создания статуса завершен успешно');
+      
+    } catch (error) {
+      console.error('❌ Ошибка в тесте создания статуса:', error);
       throw error;
     }
   });

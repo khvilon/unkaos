@@ -4,7 +4,8 @@ const config: PlaywrightTestConfig = {
   timeout: 0,
   use: {
     headless: false,
-    browserName: 'chromium', // Can be 'chromium', 'firefox', or 'webkit'
+    browserName: 'chromium', // Используем chromium с каналом chrome
+    channel: 'chrome', // Указываем использовать установленный Chrome
     baseURL: 'https://localhost:3000',
     viewport: { width: 1920, height: 1080 }, // Стандартное Full HD разрешение
     ignoreHTTPSErrors: true, // Игнорировать ошибки SSL
@@ -17,17 +18,18 @@ const config: PlaywrightTestConfig = {
   // Настройки для всех проектов
   projects: [
     {
-      name: 'chromium',
+      name: 'chrome',
       use: {
         headless: false,
         browserName: 'chromium',
+        channel: 'chrome', // Используем установленный Chrome
         baseURL: 'https://localhost:3000',
         viewport: { width: 1920, height: 1080 }, // Стандартное Full HD разрешение
         ignoreHTTPSErrors: true,
         actionTimeout: 30000,
         navigationTimeout: 30000,
         deviceScaleFactor: 1, // Принудительно устанавливаем масштаб 1:1
-        // Дополнительные настройки для Chromium
+        // Дополнительные настройки для Chrome
         launchOptions: {
           args: [
             '--window-size=1920,1080', // Стандартное Full HD разрешение

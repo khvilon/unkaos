@@ -495,13 +495,13 @@ export async function createUser(page: Page, name: string, login: string, email:
     
     // Заполняем поля
     console.log('Filling ФИО field...');
-    await changeField(page, "ФИО", name);
+  await changeField(page, "ФИО", name);
     
     console.log('Filling Логин field...');
-    await changeField(page, "Логин", login);
+  await changeField(page, "Логин", login);
     
     console.log('Filling Адрес почты field...');
-    await changeField(page, "Адрес почты", email);
+  await changeField(page, "Адрес почты", email);
     
     // Нажимаем кнопку "Создать" для сохранения
     console.log('Clicking final "Создать" button...');
@@ -734,4 +734,85 @@ export async function createWorkflow(page: Page, workflowName: string): Promise<
   await page.waitForTimeout(1000); // Уменьшено с 2000мс
   
   console.log(`✅ Воркфлоу "${workflowName}" создан успешно`);
+}
+
+export async function createStatus(page: Page, name: string, isInitial: boolean = false, isFinal: boolean = false) {
+  console.log(`Creating status`, name, `initial: ${isInitial}, final: ${isFinal}`);
+  
+  try {
+    // Исправляем позиционирование интерфейса
+    await fixInterfacePositioning(page);
+    await page.waitForTimeout(500);
+    
+    // Кликаем по кнопке плюс для создания статуса
+    console.log('Clicking plus button...');
+    await page.waitForSelector('.btn_input.bx-plus-circle', { timeout: 5000 });
+    await page.click('.btn_input.bx-plus-circle');
+    
+    // Ждем появления полей формы
+    console.log('Waiting for form fields...');
+    await page.waitForSelector('.string-input', { timeout: 5000 });
+    await page.waitForTimeout(500);
+    
+    // Заполняем название статуса
+    console.log('Filling Название field...');
+    await changeField(page, "Название", name);
+    
+    // Устанавливаем чекбоксы если нужно
+    if (isInitial) {
+      console.log('Setting Начальный checkbox...');
+      const initialCheckbox = page.locator('.label:has-text("Начальный")').locator('..').locator('input[type="checkbox"]');
+      await scrollToElement(page, initialCheckbox);
+      await initialCheckbox.check();
+    }
+    
+    if (isFinal) {
+      console.log('Setting Конечный checkbox...');
+      const finalCheckbox = page.locator('.label:has-text("Конечный")').locator('..').locator('input[type="checkbox"]');
+      await scrollToElement(page, finalCheckbox);
+      await finalCheckbox.check();
+    }
+    
+    // Нажимаем кнопку "Создать" для сохранения
+    console.log('Clicking final "Создать" button...');
+    const finalCreateButton = page.locator('input[type="button"][value="Создать"]');
+    await scrollToElement(page, finalCreateButton);
+    await finalCreateButton.click();
+    
+    // Ждем немного для обработки
+    await page.waitForTimeout(1000);
+    
+    // Проверяем наличие ошибок
+    const errorElements = await page.locator('.error, .err-label, .alert-danger').all();
+    if (errorElements.length > 0) {
+      for (const errorEl of errorElements) {
+        const errorText = await errorEl.textContent();
+        if (errorText && errorText.trim()) {
+          console.error(`Status creation error: ${errorText}`);
+        }
+      }
+    }
+    
+    // Проверяем, что мы вернулись к списку статусов
+    console.log('Waiting for status table...');
+    await page.waitForSelector('.ktable', { timeout: 5000 });
+    
+    // Делаем скриншот для отладки
+    await page.screenshot({ path: 'debug-status-creation.png', fullPage: true });
+    console.log('📸 Скриншот создания статуса сохранен: debug-status-creation.png');
+    
+    // Проверяем содержимое таблицы
+    const tableContent = await page.locator('.ktable').textContent();
+    console.log('Table content:', tableContent);
+    
+    // Ищем статус по названию
+    console.log(`Looking for status with name: "${name}"`);
+    const statusByNameLocator = page.locator(`.ktable :text("${name}")`);
+    const statusByNameCount = await statusByNameLocator.count();
+    console.log(`Found ${statusByNameCount} elements with name "${name}"`);
+    
+  } catch (error) {
+    console.error(`Status creation failed:`, error);
+    throw error;
+  }
 }
