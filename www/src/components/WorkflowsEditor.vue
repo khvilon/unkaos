@@ -159,12 +159,15 @@ export default {
           node.x += event.movementX;
           node.y += event.movementY;
 
-          let el = this.$refs[tr.status_from_uuid + "," + tr.status_to_uuid];
+          const el = this.$refs[node.issue_statuses[0].uuid]
+            ? this.$refs[node.issue_statuses[0].uuid][0]
+            : undefined;
 
-          node.el.setAttribute(
-            "transform",
-            "translate(" + node.x + "," + node.y + ")"
-          );
+          if (el)
+            el.setAttribute(
+              "transform",
+              "translate(" + node.x + "," + node.y + ")"
+            );
         }
 
         this.update_edges();
