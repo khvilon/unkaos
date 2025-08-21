@@ -997,7 +997,8 @@ crud.get_uuids = function (obj:any) {
     obj
   });
 
-  if(!obj.table_name) return null
+  // Если нет table_name, пропускаем этот объект, чтобы не удалять родителя по ошибке
+  if(!obj.table_name) return {}
   let ans:any = {};
   if (obj.uuid !== undefined) ans[obj.uuid] = obj.table_name;
 
@@ -1044,7 +1045,7 @@ crud.get_uuids = function (obj:any) {
 
     for (let j in obj[i]) {
       let ch_uuids = crud.get_uuids(obj[i][j])
-      if(ch_uuids == null) return null
+      if(!ch_uuids) continue
       ans = { ...ans, ...ch_uuids };
     }
   }

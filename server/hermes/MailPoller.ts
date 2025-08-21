@@ -158,7 +158,8 @@ export class MailPoller {
     const lock = await client.getMailboxLock('INBOX');
     try {
       const messages = Array<FetchMessageObject>();
-      const maxUid = (await this.getLastMessage(client)).uid
+      const lastMessage = await this.getLastMessage(client)
+      const maxUid = lastMessage?.uid ?? 0
       let maxQueryUid = ((uid+51) < maxUid) ? (uid+51) : maxUid
       while (maxUid > maxQueryUid && messages.length < 50) {
         for await (let message of client.fetch(
@@ -208,8 +209,9 @@ export class MailPoller {
     }
   }
 
-  private async getLastMessage(client: ImapFlow) : Promise<FetchMessageObject> {
-    return await client.fetchOne('*',{ uid: true },{ uid: true } )
+  private async getLastMessage(client: ImapFlow) : Promise<FetchMessageObject | null> {
+    const result = await client.fetchOne('*',{ uid: true },{ uid: true } )
+    return result === false ? null : result
   }
 
   private async fetchParts(client: ImapFlow, message: FetchMessageObject): Promise<MessagePart[]> {
@@ -242,7 +244,7 @@ export class MailPoller {
   // Parse body structure as array of parts
   private stripParts(part: MessageStructureObject, parts: MessageStructureObject[]) {
     if (part.type.includes("multipart")) {
-      for (let childNode of part.childNodes) {
+      for (let childNode of (part.childNodes ?? [])) {
         this.stripParts(childNode, parts)
       }
     } else {

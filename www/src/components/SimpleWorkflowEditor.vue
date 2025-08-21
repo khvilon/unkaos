@@ -303,7 +303,9 @@ function createTransitionBetweenNodes(fromUuid: string, toUuid: string) {
     uuid: crypto.randomUUID(),
     name: `${fromNode.issue_statuses[0].name} → ${toNode.issue_statuses[0].name}`,
     status_from_uuid: fromUuid,
-    status_to_uuid: toUuid
+    status_to_uuid: toUuid,
+    table_name: 'transitions',
+    workflows_uuid: props.wdata.uuid
   }
   
   props.wdata.transitions.push(newTransition)
@@ -331,7 +333,14 @@ function addStatusToWorkflow(statusUuid: string) {
     uuid: crypto.randomUUID(),
     x: Math.random() * 400 + 100,
     y: Math.random() * 300 + 100,
-    issue_statuses: [status]
+    issue_statuses: [status],
+    // для апсерта
+    // @ts-ignore
+    table_name: 'workflow_nodes',
+    // @ts-ignore
+    workflows_uuid: props.wdata.uuid,
+    // @ts-ignore
+    issue_statuses_uuid: status.uuid
   }
   
   props.wdata.workflow_nodes.push(newNode)
