@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, watch, onMounted, defineProps, defineEmits, computed, onBeforeMount, nextTick } from 'vue'
 import * as d3 from 'd3'
 import { useD3Graph } from './d3/useD3Graph'
@@ -29,6 +29,10 @@ const selected = ref<Selected>({
 })
 const isTransitionCreationMode = ref(false)
 const draggedNode = ref<D3Node | null>(null)
+const searchQuery = ref('')
+const zoomLevel = ref(100)
+let d3Zoom: any = null
+let d3Svg: any = null
 
 // Computed
 const issueStatuses = computed(() => store.getters.get_issue_statuses || [])
@@ -45,6 +49,15 @@ const availableStatuses = computed(() => {
   return issueStatuses.value.filter(status => 
     !usedStatusUuids.includes(status.uuid)
   )
+})
+
+const filteredStatuses = computed(() => {
+  let statuses = availableStatuses.value
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    statuses = statuses.filter(s => s.name.toLowerCase().includes(query))
+  }
+  return statuses
 })
 
 // Initialize store module for issue_statuses if not exists
@@ -121,13 +134,15 @@ function renderGraph() {
   )
 
   // Add zoom behavior
-  const zoom = d3.zoom()
+  d3Svg = svg
+  d3Zoom = d3.zoom()
     .scaleExtent([0.1, 4])
-    .on('zoom', (event) => {
+    .on('zoom', (event: any) => {
       g.attr('transform', event.transform)
+      zoomLevel.value = Math.round(event.transform.k * 100)
     })
 
-  svg.call(zoom)
+  svg.call(d3Zoom)
 
   // Add transition creation behavior if in transition mode
   if (isTransitionCreationMode.value) {
@@ -454,18 +469,36 @@ function formatDate(dateStr: string): string {
   })
 }
 
-function handleSave(result: any) {
-  // Результат операции сохранения из store
+async function handleSave() {
+  // Вызываем экшен без параметров, так как данные уже в сторе (обновляются через watcher)
+  const result = await store.dispatch('save_workflows')
   console.log('Save result:', result)
+  emit('cancel')
 }
 
-function handleDelete(result: any) {
-  // Результат операции удаления из store
+async function handleDelete() {
+  const result = await store.dispatch('delete_workflows')
   console.log('Delete result:', result)
+  emit('cancel')
 }
 
 function handleCancel() {
   emit('cancel')
+}
+
+function zoomIn() {
+  if (!d3Svg || !d3Zoom) return
+  d3Svg.transition().duration(300).call(d3Zoom.scaleBy, 1.2)
+}
+
+function zoomOut() {
+  if (!d3Svg || !d3Zoom) return
+  d3Svg.transition().duration(300).call(d3Zoom.scaleBy, 0.8)
+}
+
+function zoomFit() {
+  if (!d3Svg || !d3Zoom) return
+  d3Svg.transition().duration(750).call(d3Zoom.transform, d3.zoomIdentity)
 }
 </script>
 
@@ -473,11 +506,15 @@ function handleCancel() {
   <div class="simple-workflow-editor" data-testid="simple-workflow-editor">
     <!-- Левая панель с инструментами -->
     <div class="editor-sidebar" data-testid="editor-sidebar">
+      <div class="sidebar-header">
+        <h3>Редактор воркфлоу</h3>
+      </div>
+
       <div class="sidebar-content">
-        <!-- Основные параметры -->
-        <div class="sidebar-section" v-if="inputs && inputs.length > 0">
+        <!-- Свойства воркфлоу -->
+        <div class="sidebar-section">
           <div class="form-group" v-for="(input, index) in inputs" :key="index">
-            <label v-if="input.type === 'String'">{{ input.label }}:</label>
+            <label v-if="input.type === 'String'">{{ input.label }}</label>
             <input 
               v-if="input.type === 'String'"
               type="text" 
@@ -486,114 +523,161 @@ function handleCancel() {
               class="form-input"
               :disabled="input.disabled"
               :data-testid="`workflow-${input.id}`"
+              placeholder="Введите название..."
             />
           </div>
         </div>
 
-        <!-- Добавление статусов -->
-        <div class="sidebar-section" v-if="availableStatuses.length > 0">
-          <div class="statuses-grid" data-testid="statuses-grid">
-            <button 
-              v-for="status in availableStatuses" 
-              :key="status.uuid"
-              @click="addStatusToWorkflow(status.uuid)"
-              class="status-button"
-              :data-testid="`status-${status.name.toLowerCase().replace(/\s+/g, '-')}`"
-            >
-              {{ status.name }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Режим редактирования -->
-        <div class="sidebar-section">
-          <h4>Режим редактирования</h4>
-          <div class="mode-selector">
-            <label class="radio-label">
-              <input 
-                type="radio" 
-                :value="false"
-                v-model="isTransitionCreationMode"
-                @change="renderGraph"
-                data-testid="mode-drag-statuses"
-              />
-              <span class="radio-mark"></span>
-              Перетаскивание статусов
-            </label>
-            <label class="radio-label">
-              <input 
-                type="radio" 
-                :value="true"
-                v-model="isTransitionCreationMode"
-                @change="renderGraph"
-                data-testid="mode-create-transitions"
-              />
-              <span class="radio-mark"></span>
-              Создание переходов
-            </label>
-          </div>
-          <p class="section-hint" v-if="isTransitionCreationMode">
-            Перетащите от одного статуса к другому для создания перехода
-          </p>
-          <p class="section-hint" v-else>
-            Перетаскивайте статусы для изменения их расположения на схеме
-          </p>
-        </div>
+        <div class="sidebar-divider"></div>
 
         <!-- Редактирование выбранного элемента -->
-        <div v-if="selected.node || selected.edge" class="sidebar-section">
-          <h4>Редактирование</h4>
+        <div v-if="selected.node || selected.edge" class="sidebar-section selected-element-section">
+          <div class="section-header">
+            <h4>{{ selected.node ? 'Статус' : 'Переход' }}</h4>
+            <button class="icon-btn danger" @click="deleteSelected" title="Удалить">
+              <i class='bx bx-trash'></i>
+            </button>
+          </div>
+          
           <div class="form-group">
-            <label>Название:</label>
-            <input 
-              type="text" 
-              :value="selected.node?.issue_statuses[0].name || selected.edge?.name"
-              @input="updateName($event.target.value)"
-              class="form-input"
-              :disabled="!!selected.node"
-              data-testid="selected-element-name"
-            />
+            <label>Название</label>
+            <div class="input-with-icon">
+              <input 
+                type="text" 
+                :value="selected.node?.issue_statuses[0].name || selected.edge?.name"
+                @input="updateName($event.target.value)"
+                class="form-input"
+                :disabled="!!selected.node"
+                data-testid="selected-element-name"
+              />
+              <i v-if="selected.node" class='bx bx-lock-alt' title="Изменяется в настройках статусов"></i>
+              <i v-else class='bx bx-edit-alt'></i>
+            </div>
             <p class="input-hint" v-if="selected.node">
-              Название статуса можно изменить только на странице "Статусы задач"
+              Имя статуса меняется в справочнике статусов
             </p>
           </div>
-          <KButton 
-            :name="selected.node ? 'Удалить из схемы' : 'Удалить переход'"
-            @click="deleteSelected"
-            class="delete-btn"
-            data-testid="delete-selected-element"
-          />
+        </div>
+
+        <!-- Палитра статусов -->
+        <div class="sidebar-section statuses-section" v-else>
+          <div class="section-header">
+            <h4>Добавить статус</h4>
+            <span class="badge" v-if="availableStatuses.length">{{ availableStatuses.length }}</span>
+          </div>
+          
+          <div class="search-box" v-if="availableStatuses.length > 5 || searchQuery">
+            <i class='bx bx-search'></i>
+            <input 
+              type="text" 
+              v-model="searchQuery" 
+              placeholder="Найти статус..."
+              class="search-input"
+            />
+            <i v-if="searchQuery" class='bx bx-x' @click="searchQuery = ''" style="cursor: pointer"></i>
+          </div>
+
+          <div class="statuses-list" data-testid="statuses-grid">
+            <div 
+              v-for="status in filteredStatuses" 
+              :key="status.uuid"
+              @click="addStatusToWorkflow(status.uuid)"
+              class="status-item"
+              :data-testid="`status-${status.name.toLowerCase().replace(/\s+/g, '-')}`"
+            >
+              <div class="status-icon">
+                <i class='bx bx-circle'></i>
+              </div>
+              <span class="status-name">{{ status.name }}</span>
+              <i class='bx bx-plus'></i>
+            </div>
+            
+            <div v-if="filteredStatuses.length === 0 && availableStatuses.length > 0" class="empty-state">
+              Ничего не найдено
+            </div>
+            <div v-if="availableStatuses.length === 0" class="empty-state">
+              Все статусы добавлены
+            </div>
+          </div>
         </div>
       </div>
       
       <!-- Футер с кнопками -->
       <div class="sidebar-footer">
-        <KButton 
-          :name="workflowSelected ? 'Сохранить' : 'Создать'"
-          :func="'save_workflows'"
-          @button_ans="handleSave"
-          class="footer-btn primary"
-          data-testid="save-workflow"
-        />
-        <KButton 
+        <div class="footer-actions">
+          <button 
+            class="action-btn primary"
+            @click="handleSave"
+            data-testid="save-workflow"
+          >
+            <i class='bx bx-save'></i>
+            {{ workflowSelected ? 'Сохранить' : 'Создать' }}
+          </button>
+          
+          <button 
+            class="action-btn secondary"
+            @click="handleCancel"
+            data-testid="cancel-workflow"
+          >
+            Отмена
+          </button>
+        </div>
+        
+        <button 
           v-if="workflowSelected"
-          :name="'Удалить'"
-          :func="'delete_workflows'"
-          @button_ans="handleDelete"
-          class="footer-btn danger"
+          class="action-btn danger-text"
+          @click="handleDelete"
           data-testid="delete-workflow"
-        />
-        <KButton 
-          :name="'Отменить'"
-          @click="handleCancel"
-          class="footer-btn secondary"
-          data-testid="cancel-workflow"
-        />
+        >
+          <i class='bx bx-trash'></i> Удалить воркфлоу
+        </button>
       </div>
     </div>
 
     <!-- Правая панель с графом -->
     <div class="editor-canvas" data-testid="editor-canvas">
+      <!-- Тулбар инструментов -->
+      <div class="canvas-toolbar">
+        <div class="toolbar-group mode-group">
+          <button 
+            class="tool-btn" 
+            :class="{ active: !isTransitionCreationMode }"
+            @click="isTransitionCreationMode = false; renderGraph()"
+            title="Перемещение (V)"
+          >
+            <i class='bx bx-move'></i>
+          </button>
+          <button 
+            class="tool-btn" 
+            :class="{ active: isTransitionCreationMode }"
+            @click="isTransitionCreationMode = true; renderGraph()"
+            title="Связи (C)"
+          >
+            <i class='bx bx-share-alt'></i>
+          </button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-group zoom-group">
+          <button class="tool-btn" @click="zoomOut" title="Zoom Out">
+            <i class='bx bx-zoom-out'></i>
+          </button>
+          <span class="zoom-level">{{ zoomLevel }}%</span>
+          <button class="tool-btn" @click="zoomIn" title="Zoom In">
+            <i class='bx bx-zoom-in'></i>
+          </button>
+          <button class="tool-btn" @click="zoomFit" title="Reset Zoom">
+            <i class='bx bx-reset'></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="canvas-info" v-if="isTransitionCreationMode">
+        <i class='bx bx-info-circle'></i>
+        Перетащите от одного статуса к другому для создания связи
+      </div>
+
       <div class="canvas-container" ref="svgContainer" data-testid="workflow-canvas">
         <!-- D3 SVG будет вставлен сюда -->
       </div>
@@ -609,119 +693,294 @@ function handleCancel() {
   min-height: 500px;
   background: var(--bg-color);
   overflow: hidden;
+  color: var(--text-color);
 }
 
 .editor-sidebar {
-  width: 320px;
-  min-width: 320px;
+  width: 300px;
+  min-width: 300px;
   background: var(--panel-bg-color);
-  border-right: 2px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   height: 100%;
+  z-index: 10;
+  
+  .sidebar-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+  }
   
   .sidebar-content {
     flex: 1;
-    padding: 20px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sidebar-section {
+    padding: 20px;
     
-    .sidebar-section {
-      margin-bottom: 30px;
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
       
       h4 {
-        margin: 0 0 18px 0;
-        font-size: 16px;
+        margin: 0;
+        font-size: 14px;
         font-weight: 600;
-        color: var(--text-color);
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 8px;
+        color: var(--text-secondary-color);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
       
-      .section-hint {
-        font-size: 14px;
+      .badge {
+        background: var(--border-color);
         color: var(--text-secondary-color);
-        margin-bottom: 16px;
-        line-height: 1.4;
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      
+      .icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        color: var(--text-secondary-color);
+        transition: all 0.2s;
+        
+        &:hover {
+          background: rgba(0,0,0,0.05);
+          color: var(--text-color);
+        }
+        
+        &.danger:hover {
+          color: #dc3545;
+          background: rgba(220, 53, 69, 0.1);
+        }
+        
+        i {
+          font-size: 18px;
+        }
       }
     }
   }
   
-  .sidebar-footer {
-    flex-shrink: 0;
-    padding: 20px;
-    border-top: 1px solid var(--border-color);
-    background: var(--panel-bg-color);
+  .sidebar-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 0;
+  }
+  
+  .statuses-section {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
     
-    .footer-btn {
-      width: 100% !important;
+    .search-box {
+      position: relative;
+      margin-bottom: 12px;
       
-      .btn {
-        width: 100% !important;
+      i {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary-color);
+        font-size: 16px;
         
-        .btn_input {
-          width: 100% !important;
-          margin-bottom: 0 !important;
-          height: 36px !important;
-          display: block !important;
-          box-sizing: border-box !important;
+        &:first-child {
+          left: 10px;
+        }
+        
+        &:last-child {
+          right: 10px;
+          cursor: pointer;
         }
       }
       
-      &.primary .btn .btn_input {
-        background: var(--primary-color) !important;
-        color: white !important;
-        border-color: var(--primary-color) !important;
+      .search-input {
+        width: 100%;
+        padding: 8px 32px 8px 34px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--input-bg-color);
+        color: var(--text-color);
+        font-size: 13px;
         
-        &:hover {
-          opacity: 0.9;
+        &:focus {
+          outline: none;
+          border-color: var(--primary-color);
         }
-      }
-      
-      &.danger .btn .btn_input {
-        background: #dc3545 !important;
-        color: white !important;
-        border-color: #dc3545 !important;
-        
-        &:hover {
-          background: #c82333 !important;
-        }
-      }
-      
-      &.secondary .btn .btn_input {
-        background: var(--bg-color) !important;
-        border-color: var(--border-color) !important;
-        color: var(--text-color) !important;
       }
     }
     
-    // Дополнительное переопределение для KButton
-    :deep(.btn .btn_input) {
-      width: 100% !important;
+    .statuses-list {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 4px; // space for scrollbar
+      
+      .status-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        margin-bottom: 6px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: var(--panel-bg-color);
+        
+        &:hover {
+          background: var(--hover-color);
+          transform: translateX(2px);
+          
+          .bx-plus {
+            opacity: 1;
+            color: var(--primary-color);
+          }
+        }
+        
+        .status-icon {
+          margin-right: 10px;
+          color: var(--text-secondary-color);
+          font-size: 16px;
+          display: flex;
+        }
+        
+        .status-name {
+          flex: 1;
+          font-size: 13px;
+          font-weight: 500;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        .bx-plus {
+          opacity: 0;
+          transition: opacity 0.2s;
+          font-size: 16px;
+        }
+      }
+      
+      .empty-state {
+        text-align: center;
+        padding: 20px;
+        color: var(--text-secondary-color);
+        font-size: 13px;
+        font-style: italic;
+      }
+    }
+  }
+  
+  .selected-element-section {
+    background: rgba(var(--primary-rgb), 0.05);
+    border-left: 3px solid var(--primary-color);
+  }
+  
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border-color);
+    background: var(--panel-bg-color);
+    
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      
+      .action-btn {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+        
+        &.primary {
+          background: var(--primary-color);
+          color: white;
+          
+          &:hover {
+            opacity: 0.9;
+          }
+        }
+        
+        &.secondary {
+          background: transparent;
+          border-color: var(--border-color);
+          color: var(--text-color);
+          
+          &:hover {
+            background: var(--hover-color);
+          }
+        }
+      }
+    }
+    
+    .action-btn.danger-text {
+      width: 100%;
+      display: block;
+      padding: 8px 16px;
+      color: var(--text-secondary-color);
+      font-size: 12px;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+      background: transparent;
+      border: none;
+      
+      &:hover {
+        color: #dc3545;
+        background: rgba(220, 53, 69, 0.05);
+        border-radius: 4px;
+      }
     }
   }
   
   .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     
     label {
       display: block;
-      margin-bottom: 5px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-color);
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary-color);
+      text-transform: uppercase;
     }
     
     .form-input {
       width: 100%;
-      padding: 8px 12px;
+      padding: 8px 10px;
       border: 1px solid var(--border-color);
-      border-radius: 4px;
+      border-radius: 6px;
       background: var(--input-bg-color);
       color: var(--text-color);
       font-size: 14px;
+      transition: border-color 0.2s;
       
       &:focus {
         outline: none;
@@ -729,130 +988,34 @@ function handleCancel() {
       }
       
       &:disabled {
-        opacity: 0.6;
+        background: var(--bg-color);
+        color: var(--text-secondary-color);
         cursor: not-allowed;
       }
     }
     
+    .input-with-icon {
+      position: relative;
+      
+      .form-input {
+        padding-right: 30px;
+      }
+      
+      i {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary-color);
+        font-size: 16px;
+      }
+    }
+    
     .input-hint {
-      font-size: 12px;
+      margin-top: 6px;
+      font-size: 11px;
       color: var(--text-secondary-color);
-      margin-top: 4px;
       font-style: italic;
-    }
-  }
-  
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    margin-bottom: 10px;
-    
-    input[type="checkbox"] {
-      margin-right: 8px;
-      width: 16px;
-      height: 16px;
-    }
-    
-    .checkmark {
-      font-weight: 500;
-      color: var(--text-color);
-    }
-  }
-  
-  .mode-selector {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  
-  .radio-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    padding: 8px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      background: var(--hover-color);
-    }
-    
-    input[type="radio"] {
-      margin-right: 8px;
-      width: 16px;
-      height: 16px;
-    }
-    
-    .radio-mark {
-      font-weight: 500;
-      color: var(--text-color);
-      flex: 1;
-    }
-    
-    &:has(input:checked) {
-      background: var(--primary-color);
-      border-color: var(--primary-color);
-      color: white;
-      
-      .radio-mark {
-        color: white;
-      }
-    }
-  }
-  
-  .statuses-grid {
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 2px 0;
-    
-    .status-button {
-      display: block;
-      width: 100%;
-      margin-bottom: 8px;
-      padding: 8px 16px;
-      background: transparent;
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      color: var(--text-color);
-      font-size: 13px;
-      font-weight: 400;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      
-      &:hover {
-        background: var(--primary-color);
-        border-color: var(--primary-color);
-        color: white;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      
-      &:active {
-        transform: translateY(0);
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-      }
-      
-      &:focus {
-        outline: none;
-        border-color: var(--primary-color);
-      }
-    }
-  }
-  
-  .delete-btn {
-    .btn_input {
-      width: 100% !important;
-      background: #dc3545 !important;
-      color: white !important;
-      border-color: #dc3545 !important;
-      
-      &:hover {
-        background: #c82333 !important;
-      }
     }
   }
 }
@@ -861,11 +1024,103 @@ function handleCancel() {
   flex: 1;
   background: var(--input-bg-color);
   position: relative;
+  overflow: hidden;
+  
+  // Сетка на фоне
+  background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+  background-size: 20px 20px;
   
   .canvas-container {
     width: 100%;
     height: 100%;
-    position: relative;
+  }
+  
+  .canvas-toolbar {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    z-index: 100;
+    gap: 6px;
+    
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .toolbar-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border-color);
+      margin: 0 6px;
+    }
+    
+    .tool-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      i {
+        font-size: 20px;
+      }
+      
+      &:hover {
+        background: var(--hover-color);
+      }
+      
+      &.active {
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.3);
+      }
+    }
+    
+    .zoom-level {
+      font-size: 12px;
+      font-weight: 600;
+      min-width: 40px;
+      text-align: center;
+      color: var(--text-secondary-color);
+      user-select: none;
+    }
+  }
+  
+  .canvas-info {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+    z-index: 90;
+    backdrop-filter: blur(4px);
+    
+    i {
+      font-size: 16px;
+    }
   }
 }
 
@@ -976,104 +1231,5 @@ function handleCancel() {
     }
   }
 }
+</style>
 
-// Специфичные стили для кнопок в футере - переопределяем фиксированную ширину KButton
-:deep(.sidebar-footer .footer-btn) {
-  width: 100% !important;
-}
-
-:deep(.sidebar-footer .footer-btn .btn) {
-  width: 100% !important;
-}
-
-:deep(.sidebar-footer .footer-btn .btn .btn_input) {
-  width: 100% !important;
-  margin-bottom: 0 !important;
-  height: 36px !important;
-  display: block !important;
-  box-sizing: border-box !important;
-}
-
-:deep(.sidebar-footer .footer-btn.primary .btn .btn_input) {
-  background: var(--primary-color) !important;
-  color: white !important;
-  border-color: var(--primary-color) !important;
-}
-
-:deep(.sidebar-footer .footer-btn.danger .btn .btn_input) {
-  background: #dc3545 !important;
-  color: white !important;
-  border-color: #dc3545 !important;
-}
-
-:deep(.sidebar-footer .footer-btn.secondary .btn .btn_input) {
-  background: var(--bg-color) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-color) !important;
-}
-
-/* Максимально специфичные стили для кнопок статусов */
-.simple-workflow-editor .editor-sidebar .sidebar-content .statuses-grid .status-button {
-  /* Полный сброс браузерных стилей */
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  
-  /* Размеры */
-  width: 100% !important;
-  height: auto !important;
-  min-height: 32px !important;
-  margin: 0 !important;
-  padding: 8px 16px !important;
-  box-sizing: border-box !important;
-  
-  /* Фон и границы */
-  background: transparent !important;
-  background-color: transparent !important;
-  border: 1px solid var(--border-color) !important;
-  border-style: solid !important;
-  border-width: 1px !important;
-  border-radius: 20px !important;
-  
-  /* Текст */
-  color: var(--text-color) !important;
-  font-size: 13px !important;
-  font-weight: 400 !important;
-  text-align: center !important;
-  text-decoration: none !important;
-  white-space: nowrap !important;
-  
-  /* Интерактивность */
-  cursor: pointer !important;
-  outline: none !important;
-  user-select: none !important;
-  
-  /* Анимации */
-  transition: all 0.2s ease !important;
-  
-  /* Сброс дополнительных браузерных стилей */
-  border-image: none !important;
-  padding-block: 8px !important;
-  padding-inline: 16px !important;
-}
-
-.simple-workflow-editor .editor-sidebar .sidebar-content .statuses-grid .status-button:hover {
-  background: var(--primary-color) !important;
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
-  color: white !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-}
-
-.simple-workflow-editor .editor-sidebar .sidebar-content .statuses-grid .status-button:active {
-  border-style: solid !important;
-  transform: translateY(0) !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
-}
-
-.simple-workflow-editor .editor-sidebar .sidebar-content .statuses-grid .status-button:focus {
-  outline: none !important;
-  border-color: var(--primary-color) !important;
-}
-</style> 

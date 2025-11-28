@@ -295,18 +295,13 @@ html {
 
 * {
   color: var(--text-color);
-  //font-family: 'Segoe UI Local';//segoiui;//var(--font-family);
   font-size: $font-size;
-  font-family: Inter, system-ui, Roboto, sans-serif;
+  font-family: "Inter Variable", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Open Sans", "Helvetica Neue", sans-serif;
 
-  //margin: 0;
-  //padding: 0;
   box-sizing: border-box;
   transition: all 0.2s ease;
   opacity: 1;
   font-weight: var(--text-weight);
-
-  // font-family: 'Poppins', sans-serif;
 }
 
 [draggable] {

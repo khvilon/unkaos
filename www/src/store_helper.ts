@@ -248,7 +248,7 @@ store_helper.create_module = function (name) {
     )
       this.commit("unselect_" + name);
     else {
-      rest.run_method("delete_" + name, state.state["selected_" + name]);
+      await rest.run_method("delete_" + name, state.state["selected_" + name]);
       this.commit("delete_" + name);
     }
   };
