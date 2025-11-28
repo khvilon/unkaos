@@ -103,12 +103,12 @@ function renderGraph() {
     selectNode,
     selectEdge,
     (node) => {
-      // Обновляем позицию узла в исходных данных
+      // Обновляем позицию узла в исходных данных (округляем до целых для PostgreSQL INTEGER)
       const originalNode = props.wdata.workflow_nodes.find(n => n.uuid === node.uuid)
       if (originalNode) {
-        originalNode.x = node.x
-        originalNode.y = node.y
-        console.log('Updated node position:', originalNode.uuid, node.x, node.y)
+        originalNode.x = Math.round(node.x)
+        originalNode.y = Math.round(node.y)
+        console.log('Updated node position:', originalNode.uuid, originalNode.x, originalNode.y)
       }
       
       emit('update:node-position', {
@@ -331,8 +331,8 @@ function addStatusToWorkflow(statusUuid: string) {
   
   const newNode: D3Node = {
     uuid: crypto.randomUUID(),
-    x: Math.random() * 400 + 100,
-    y: Math.random() * 300 + 100,
+    x: Math.round(Math.random() * 400 + 100),
+    y: Math.round(Math.random() * 300 + 100),
     issue_statuses: [status],
     // для апсерта
     // @ts-ignore
@@ -343,7 +343,19 @@ function addStatusToWorkflow(statusUuid: string) {
     issue_statuses_uuid: status.uuid
   }
   
+  console.log('ADD_STATUS debug:', {
+    newNode,
+    wdata_uuid: props.wdata.uuid,
+    workflow_nodes_before: props.wdata.workflow_nodes.length
+  })
+  
   props.wdata.workflow_nodes.push(newNode)
+  
+  console.log('ADD_STATUS after push:', {
+    workflow_nodes_after: props.wdata.workflow_nodes.length,
+    workflow_nodes: props.wdata.workflow_nodes
+  })
+  
   renderGraph()
 }
 

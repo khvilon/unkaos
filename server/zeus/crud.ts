@@ -858,6 +858,23 @@ crud.make_query = {
 
   upsert: function (table_name:string, params:any) {
     if (table_name == undefined) return ["", []];
+    
+    // Логирование входных данных для отладки
+    if (table_name === 'workflows') {
+      logger.info({
+        msg: 'UPSERT workflows - input params',
+        uuid: params?.uuid,
+        name: params?.name,
+        workflow_nodes_count: params?.workflow_nodes?.length || 0,
+        transitions_count: params?.transitions?.length || 0,
+        workflow_nodes_sample: params?.workflow_nodes?.[0] ? {
+          uuid: params.workflow_nodes[0].uuid,
+          table_name: params.workflow_nodes[0].table_name,
+          workflows_uuid: params.workflow_nodes[0].workflows_uuid
+        } : null
+      });
+    }
+    
     let [query_create, params_create] = crud.make_query.create(
       table_name,
       params
@@ -924,25 +941,44 @@ crud.make_query = {
     let subquerys = "";
     let subparams:any[] = [];
 
-    for (let i in params) {
+    // Получаем список fks для текущей таблицы
+    const tableFks = data_model.model[table_name]?.fks || [];
 
-      
+    for (let i in params) {
 
       if (
         !params[i] ||
         params[i][0] === undefined ||
         typeof params[i][0] !== "object"
       ) {
-
         continue;
       }
 
+      // Пропускаем массивы которые не являются fks для этой таблицы
+      // (например issue_statuses внутри workflow_nodes)
+      const childTableName = params[i][0]?.table_name;
+      if (childTableName && !tableFks.includes(childTableName)) {
+        logger.debug({
+          msg: 'Skipping non-fks child array in upsert',
+          parentTable: table_name,
+          childTable: childTableName,
+          tableFks
+        });
+        continue;
+      }
 
       for (let j in params[i]) {
         let child = params[i][j];
 
         if(table_name == "roles" && child.table_name == 'permissions') continue;
         else if(table_name == "users" && child.table_name == 'roles') continue;
+
+        logger.debug({
+          msg: 'Processing child in upsert',
+          parentTable: table_name,
+          childTable: child.table_name,
+          childUuid: child.uuid
+        });
 
         let [new_subqyery, new_subparams] = crud.make_query.upsert(
           child.table_name,

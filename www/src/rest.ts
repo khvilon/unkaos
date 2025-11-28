@@ -144,6 +144,15 @@ export default class rest {
               body.values[i].uuid = tools.uuidv4();
           }
         }
+        // Debug logging for workflows
+        if (method_array[1] == "workflows") {
+          console.log("REST: sending workflows request", {
+            method: method_array[0],
+            workflow_nodes_count: body?.workflow_nodes?.length || 0,
+            transitions_count: body?.transitions?.length || 0,
+            body_keys: Object.keys(body || {})
+          });
+        }
         options.body = JSON.stringify(body);
       }
     }

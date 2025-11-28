@@ -211,6 +211,20 @@ store_helper.create_module = function (name) {
       state.state["selected_" + name].is_new;
     //console.log('is_new', is_new)
     state.state["selected_" + name].is_new = false;
+    
+    // Debug logging for workflows
+    if (name === 'workflows') {
+      const selected = state.state["selected_" + name];
+      console.log('SAVE_WORKFLOWS debug:', {
+        uuid: selected?.uuid,
+        name: selected?.name,
+        is_new,
+        workflow_nodes_count: selected?.workflow_nodes?.length || 0,
+        transitions_count: selected?.transitions?.length || 0,
+        workflow_nodes: selected?.workflow_nodes,
+        transitions: selected?.transitions
+      });
+    }
 
   if(name=='fields' && tools.isValidJSON('[' + state.state["selected_" + name].available_values + ']')){
     let av = state.state["selected_" + name].available_values
