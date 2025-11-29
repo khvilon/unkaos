@@ -55,6 +55,23 @@ services:
       - postgres
       - ossa
 
+  zeus2:
+    build:
+      context: .
+      dockerfile: server/docker/zeus2
+    restart: always
+    ports:
+      - '3007:3007'
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+      - ZEUS2_PORT=3007
+    depends_on:
+      - postgres
+
   eileithyia:
     build:
       context: .
@@ -81,11 +98,13 @@ services:
       - '3001'
     environment:
       - ZEUS_URL=${ZEUS_URL}
+      - ZEUS2_URL=${ZEUS2_URL}
       - CERBERUS_URL=${CERBERUS_URL}
       - ATHENA_URL=${ATHENA_URL}
       - DOMAIN=${DOMAIN}
     depends_on:
       - zeus
+      - zeus2
       - cerberus
       - athena
 

@@ -34,7 +34,8 @@ export default class rest {
     console.log('Sending request to:', conf.base_url + "get_token", 'with options:', options);
     const resp = await fetch(conf.base_url + "get_token", options);
     console.log('Response status:', resp.status);
-    if (resp.status != 200) {
+    // Accept all 2xx status codes as success
+    if (resp.status < 200 || resp.status >= 300) {
       console.log('Error response:', await resp.text());
       return null;
     }
@@ -177,12 +178,20 @@ export default class rest {
       window.location.href = '/' + rest.workspace + '/login';
     }
     //console.log('resp.status', resp  )
-    if (resp.status != 200) {
+    // Accept all 2xx status codes as success
+    if (resp.status < 200 || resp.status >= 300) {
       console.log('>>>rest err', resp)
       store.state["alerts"][alert_id].text = resp.statusText + " >>";
       store.state["alerts"][alert_id].type = "error";
       return null;
     }
+    
+    // Handle 204 No Content (e.g., successful DELETE)
+    if (resp.status === 204) {
+      store.state["alerts"][alert_id].type = "ok";
+      return [];
+    }
+    
     //console.log('respppppppp', resp)
     const data = await resp.json();
     if (data[1] != undefined) return data[1].rows;

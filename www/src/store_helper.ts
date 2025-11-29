@@ -186,8 +186,10 @@ store_helper.create_module = function (name) {
       state.state["selected_" + name]
     );
 
-    state.state["updated_" + name] = ans[0];
-    this.commit("update_" + name);
+    if (ans && ans[0]) {
+      state.state["updated_" + name] = ans[0];
+      this.commit("update_" + name);
+    }
 
     return ans;
   };
@@ -226,15 +228,17 @@ store_helper.create_module = function (name) {
       });
     }
 
-  if(name=='fields' && tools.isValidJSON('[' + state.state["selected_" + name].available_values + ']')){
+  if(name=='fields' && state.state["selected_" + name].available_values && tools.isValidJSON('[' + state.state["selected_" + name].available_values + ']')){
     let av = state.state["selected_" + name].available_values
-    if(av[0] != '[') av = '[' + av + ']'
+    if(av && av[0] != '[') av = '[' + av + ']'
+    if(av) {
       let available_values = JSON.parse(av)
       for(let i in available_values){
         if(!available_values[i].uuid) available_values[i].uuid = tools.uuidv4();
       }
       state.state["selected_" + name].available_values = JSON.stringify(available_values, null, 4);
     }
+  }
 
     console.log('>>>save', name,  state.state["selected_" + name])
     if (is_new) return this.dispatch("create_" + name);

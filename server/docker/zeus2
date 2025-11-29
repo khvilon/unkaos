@@ -1,0 +1,26 @@
+FROM node:23.5.0-alpine
+
+WORKDIR /app
+
+# Копируем common и устанавливаем его зависимости
+COPY ./server/common ./server/common
+WORKDIR /app/server/common
+RUN yarn install
+
+# Копируем сначала только файлы для установки зависимостей zeus2
+WORKDIR /app
+COPY ./server/zeus2/package.json ./zeus2/
+COPY ./server/zeus2/prisma ./zeus2/prisma/
+WORKDIR /app/zeus2
+RUN yarn install
+
+# Генерируем Prisma клиент
+RUN npx prisma generate
+
+# Затем копируем файлы сервиса
+COPY ./server/zeus2 .
+
+USER node
+
+CMD [ "npx", "ts-node", "index.ts" ]
+
