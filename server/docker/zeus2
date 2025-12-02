@@ -1,26 +1,36 @@
 FROM node:23.5.0-alpine
 
-WORKDIR /app
+WORKDIR /app/server/zeus2
 
 # Копируем common и устанавливаем его зависимости
-COPY ./server/common ./server/common
+COPY ./server/common ../common
 WORKDIR /app/server/common
 RUN yarn install
 
-# Копируем сначала только файлы для установки зависимостей zeus2
+# Копируем query-lang (только исходники, без node_modules)
 WORKDIR /app
-COPY ./server/zeus2/package.json ./zeus2/
-COPY ./server/zeus2/prisma ./zeus2/prisma/
-WORKDIR /app/zeus2
+COPY ./libs/query-lang/package.json ./libs/query-lang/
+COPY ./libs/query-lang/tsconfig.json ./libs/query-lang/
+COPY ./libs/query-lang/src ./libs/query-lang/src/
+WORKDIR /app/libs/query-lang
+RUN yarn install
+RUN yarn build
+
+# Копируем сначала только файлы для установки зависимостей zeus2
+WORKDIR /app/server/zeus2
+COPY ./server/zeus2/package.json ./
+COPY ./server/zeus2/prisma ./prisma/
 RUN yarn install
 
 # Генерируем Prisma клиент
 RUN npx prisma generate
 
-# Затем копируем файлы сервиса
-COPY ./server/zeus2 .
+# Затем копируем файлы сервиса (без node_modules)
+COPY ./server/zeus2/index.ts ./
+COPY ./server/zeus2/routes ./routes/
+COPY ./server/zeus2/utils ./utils/
+COPY ./server/zeus2/tsconfig.json ./
 
 USER node
 
 CMD [ "npx", "ts-node", "index.ts" ]
-

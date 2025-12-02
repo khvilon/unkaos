@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { createLogger } from '../../server/common/logging';
+import { createLogger } from '../../common/logging';
 import { randomUUID } from 'crypto';
 
 const logger = createLogger('zeus2:roles');

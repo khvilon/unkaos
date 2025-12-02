@@ -187,8 +187,8 @@ store_helper.create_module = function (name) {
     );
 
     if (ans && ans[0]) {
-      state.state["updated_" + name] = ans[0];
-      this.commit("update_" + name);
+    state.state["updated_" + name] = ans[0];
+    this.commit("update_" + name);
     }
 
     return ans;
@@ -213,7 +213,7 @@ store_helper.create_module = function (name) {
       state.state["selected_" + name].is_new;
     //console.log('is_new', is_new)
     state.state["selected_" + name].is_new = false;
-    
+
     // Debug logging for workflows
     if (name === 'workflows') {
       const selected = state.state["selected_" + name];
@@ -238,7 +238,7 @@ store_helper.create_module = function (name) {
       }
       state.state["selected_" + name].available_values = JSON.stringify(available_values, null, 4);
     }
-  }
+    }
 
     console.log('>>>save', name,  state.state["selected_" + name])
     if (is_new) return this.dispatch("create_" + name);

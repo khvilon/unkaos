@@ -537,19 +537,19 @@ function zoomFit() {
             <button class="icon-btn danger" @click="deleteSelected" title="Удалить">
               <i class='bx bx-trash'></i>
             </button>
-          </div>
-          
+        </div>
+
           <div class="form-group">
             <label>Название</label>
             <div class="input-with-icon">
-              <input 
-                type="text" 
-                :value="selected.node?.issue_statuses[0].name || selected.edge?.name"
-                @input="updateName($event.target.value)"
-                class="form-input"
-                :disabled="!!selected.node"
-                data-testid="selected-element-name"
-              />
+            <input 
+              type="text" 
+              :value="selected.node?.issue_statuses[0].name || selected.edge?.name"
+              @input="updateName($event.target.value)"
+              class="form-input"
+              :disabled="!!selected.node"
+              data-testid="selected-element-name"
+            />
               <i v-if="selected.node" class='bx bx-lock-alt' title="Изменяется в настройках статусов"></i>
               <i v-else class='bx bx-edit-alt'></i>
             </div>
@@ -608,7 +608,7 @@ function zoomFit() {
           <button 
             class="action-btn primary"
             @click="handleSave"
-            data-testid="save-workflow"
+          data-testid="save-workflow"
           >
             <i class='bx bx-save'></i>
             {{ workflowSelected ? 'Сохранить' : 'Создать' }}
@@ -616,8 +616,8 @@ function zoomFit() {
           
           <button 
             class="action-btn secondary"
-            @click="handleCancel"
-            data-testid="cancel-workflow"
+          @click="handleCancel"
+          data-testid="cancel-workflow"
           >
             Отмена
           </button>
@@ -709,12 +709,12 @@ function zoomFit() {
   .sidebar-header {
     padding: 16px 20px;
     border-bottom: 1px solid var(--border-color);
-    
+      
     h3 {
       margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-color);
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-color);
     }
   }
   
@@ -724,10 +724,10 @@ function zoomFit() {
     display: flex;
     flex-direction: column;
   }
-  
+    
   .sidebar-section {
     padding: 20px;
-    
+      
     .section-header {
       display: flex;
       justify-content: space-between;
@@ -750,7 +750,7 @@ function zoomFit() {
         padding: 2px 6px;
         border-radius: 10px;
         font-weight: 600;
-      }
+        }
       
       .icon-btn {
         background: none;
@@ -808,21 +808,21 @@ function zoomFit() {
           right: 10px;
           cursor: pointer;
         }
-      }
-      
+    }
+    
       .search-input {
-        width: 100%;
+      width: 100%;
         padding: 8px 32px 8px 34px;
-        border: 1px solid var(--border-color);
+      border: 1px solid var(--border-color);
         border-radius: 6px;
-        background: var(--input-bg-color);
-        color: var(--text-color);
+      background: var(--input-bg-color);
+      color: var(--text-color);
         font-size: 13px;
-        
-        &:focus {
-          outline: none;
-          border-color: var(--primary-color);
-        }
+      
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color);
+      }
       }
     }
     
@@ -832,13 +832,13 @@ function zoomFit() {
       padding-right: 4px; // space for scrollbar
       
       .status-item {
-        display: flex;
-        align-items: center;
+    display: flex;
+    align-items: center;
         padding: 8px 12px;
         margin-bottom: 6px;
         border: 1px solid var(--border-color);
         border-radius: 6px;
-        cursor: pointer;
+    cursor: pointer;
         transition: all 0.2s ease;
         background: var(--panel-bg-color);
         
@@ -857,12 +857,12 @@ function zoomFit() {
           color: var(--text-secondary-color);
           font-size: 16px;
           display: flex;
-        }
-        
+    }
+    
         .status-name {
           flex: 1;
           font-size: 13px;
-          font-weight: 500;
+      font-weight: 500;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -872,9 +872,9 @@ function zoomFit() {
           opacity: 0;
           transition: opacity 0.2s;
           font-size: 16px;
-        }
-      }
-      
+    }
+  }
+  
       .empty-state {
         text-align: center;
         padding: 20px;
@@ -896,7 +896,7 @@ function zoomFit() {
     background: var(--panel-bg-color);
     
     .footer-actions {
-      display: flex;
+    display: flex;
       gap: 10px;
       margin-bottom: 10px;
       
@@ -904,10 +904,10 @@ function zoomFit() {
         flex: 1;
         display: flex;
         justify-content: center;
-        align-items: center;
+    align-items: center;
         gap: 6px;
         padding: 8px 16px;
-        border-radius: 6px;
+    border-radius: 6px;
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
@@ -917,24 +917,24 @@ function zoomFit() {
         &.primary {
           background: var(--primary-color);
           color: white;
-          
-          &:hover {
+    
+    &:hover {
             opacity: 0.9;
-          }
-        }
-        
+    }
+    }
+    
         &.secondary {
           background: transparent;
           border-color: var(--border-color);
-          color: var(--text-color);
-          
+      color: var(--text-color);
+    
           &:hover {
             background: var(--hover-color);
           }
-        }
       }
     }
-    
+  }
+  
     .action-btn.danger-text {
       width: 100%;
       display: block;

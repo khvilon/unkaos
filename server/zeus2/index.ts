@@ -1,7 +1,7 @@
 import cors from 'cors';
 import express, { Request, Response, NextFunction } from 'express';
 import { Server } from 'socket.io';
-import { createLogger } from '../server/common/logging';
+import { createLogger } from '../common/logging';
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import axios from 'axios';
@@ -102,6 +102,7 @@ import { registerFieldsRoutes } from './routes/fields';
 import { registerRolesRoutes } from './routes/roles';
 import { registerUsersRoutes } from './routes/users';
 import { registerIssueTypesRoutes } from './routes/issue-types';
+import { registerIssuesRoutes } from './routes/issues';
 
 // ==================== INITIALIZATION ====================
 
@@ -118,6 +119,20 @@ async function init() {
     registerRolesRoutes(app, prisma, listeners, API_PREFIX);
     registerUsersRoutes(app, prisma, listeners, API_PREFIX);
     registerIssueTypesRoutes(app, prisma, listeners, API_PREFIX);
+    
+    // Issues routes (with complex query support)
+    registerIssuesRoutes(app, prisma);
+    // Add issues to listeners for gateway
+    listeners.push({ method: 'get', func: 'read_issues', entity: 'issues' });
+    listeners.push({ method: 'get', func: 'read_issue', entity: 'issue' });
+    listeners.push({ method: 'post', func: 'create_issues', entity: 'issues' });
+    listeners.push({ method: 'post', func: 'upsert_issues', entity: 'issues' });
+    listeners.push({ method: 'post', func: 'upsert_issue', entity: 'issue' });
+    listeners.push({ method: 'put', func: 'update_issues', entity: 'issues' });
+    listeners.push({ method: 'put', func: 'update_issue', entity: 'issue' });
+    listeners.push({ method: 'delete', func: 'delete_issues', entity: 'issues' });
+    listeners.push({ method: 'delete', func: 'delete_issue', entity: 'issue' });
+    listeners.push({ method: 'get', func: 'read_issues_count', entity: 'issues-count' });
 
     // Endpoint to return registered listeners (for gateway compatibility)
     app.get('/read_listeners', (req: Request, res: Response) => {

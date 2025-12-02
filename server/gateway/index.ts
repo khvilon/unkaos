@@ -166,6 +166,15 @@ function convertToRestRequest(func: string, method: string, body: any, query: an
       if (body?.uuid || query?.uuid) {
         restPath = `/api/v2/${entity}/${body?.uuid || query?.uuid}`;
       }
+      // Pass query params for issues filtering
+      const filterQuery = body?.query || query?.query;
+      if (filterQuery) {
+        restPath += `?query=${encodeURIComponent(filterQuery)}`;
+        const offsetVal = body?.offset || query?.offset;
+        const limitVal = body?.limit || query?.limit;
+        if (offsetVal) restPath += `&offset=${offsetVal}`;
+        if (limitVal) restPath += `&limit=${limitVal}`;
+      }
       break;
     
     case 'create':
