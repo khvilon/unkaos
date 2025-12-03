@@ -14,6 +14,7 @@
 import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import { FieldMapping } from '@unkaos/query-lang';
 import { createLogger } from '../../common/logging';
 import { decodeQuery, parseIssueQuery } from '../utils/issue-query-parser';
 import {
@@ -75,6 +76,50 @@ function formatIssue(item: any): any {
   };
 }
 
+// Cache for custom fields: subdomain -> { timestamp, fields }
+const fieldsCache: Record<string, { ts: number, fields: FieldMapping[] }> = {};
+const CACHE_TTL = 60 * 1000; // 1 minute
+
+function mapFieldType(code: string): string {
+  switch (code) {
+    case 'Numeric': return 'number';
+    case 'Boolean': return 'boolean';
+    case 'Date': 
+    case 'Timestamp': return 'date';
+    default: return 'string';
+  }
+}
+
+async function getCustomFields(subdomain: string): Promise<FieldMapping[]> {
+  const now = Date.now();
+  if (fieldsCache[subdomain] && (now - fieldsCache[subdomain].ts < CACHE_TTL)) {
+    return fieldsCache[subdomain].fields;
+  }
+
+  try {
+    const fields: any[] = await prisma.$queryRawUnsafe(`
+      SELECT F.name, F.uuid, FT.code as type_code
+      FROM "${subdomain}".fields F
+      JOIN "${subdomain}".field_types FT ON F.type_uuid = FT.uuid
+      WHERE F.is_custom = true
+    `);
+
+    const mappedFields: FieldMapping[] = fields.map(f => ({
+      name: f.name,
+      field: 'value', // Custom fields value is stored in 'value' column of field_values
+      type: mapFieldType(f.type_code),
+      source: 'custom',
+      uuid: f.uuid
+    }));
+
+    fieldsCache[subdomain] = { ts: now, fields: mappedFields };
+    return mappedFields;
+  } catch (e: any) {
+    logger.error({ msg: 'Error fetching custom fields', error: e.message });
+    return [];
+  }
+}
+
 /**
  * GET /api/v2/issues - Список issues с фильтрацией
  */
@@ -94,7 +139,8 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     // Декодируем и парсим запрос фильтрации
     const userQuery = decodeQuery(encodedQuery as string);
-    const parsedQuery = parseIssueQuery(userQuery, subdomain);
+    const customFields = await getCustomFields(subdomain);
+    const parsedQuery = parseIssueQuery(userQuery, subdomain, customFields);
 
     // Проверяем ошибки валидации
     if (parsedQuery.validationErrors && parsedQuery.validationErrors.length > 0) {
@@ -382,7 +428,8 @@ export function registerIssuesCountRoutes(app: any) {
 
     try {
       const userQuery = decodeQuery(encodedQuery as string);
-      const parsedQuery = parseIssueQuery(userQuery, subdomain);
+      const customFields = await getCustomFields(subdomain);
+      const parsedQuery = parseIssueQuery(userQuery, subdomain, customFields);
 
       // Проверяем ошибки валидации
       if (parsedQuery.validationErrors && parsedQuery.validationErrors.length > 0) {

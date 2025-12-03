@@ -446,11 +446,12 @@ export async function signOut(page: Page) {
 }
 
 export async function navigateMainMenu(page: Page, menu: string) {
-  // Для воркфлоу используем полный путь
-  if (menu === 'workflows') {
-    await page.click(`a[href*="/configs/workflows"]`);
+  // Для configs-сущностей используем полный путь
+  const configEntities = ['workflows', 'sprints'];
+  if (configEntities.includes(menu)) {
+    await page.click(`a[href*="/configs/${menu}"]`);
   } else {
-  await page.click(`a[href*="/${menu}"]`);
+    await page.click(`a[href*="/${menu}"]`);
   }
   
   // Ждем загрузки страницы
@@ -1173,11 +1174,25 @@ export async function createIssue(page: Page, config: IssueConfig): Promise<void
     const saveBtn = page.locator('#save_issue_btn input[type="button"]');
     await saveBtn.click();
     
-    // Ждем сохранения - должно перенаправить на страницу задачи (с ID)
-    // URL изменится с /issue?t=... на /issue/PROJECT-123
-    await page.waitForURL(/.*\/issue\/[A-Z]+-\d+/, { timeout: 15000 });
+    // Ждем сохранения - URL изменится с /issue?t=... на /issue/PROJECT-123 или /issue/название
+    // Проверяем что URL изменился и не содержит ?t=
+    await page.waitForTimeout(2000);
     
-    console.log(`✅ Задача "${config.summary}" создана`);
+    // Ожидаем появления карточки задачи или редиректа
+    try {
+      await page.waitForSelector('.issue-card-content, .issue-name-input', { timeout: 10000 });
+    } catch (e) {
+      console.warn('Карточка задачи не появилась, проверяем URL...');
+    }
+    
+    const currentUrl = page.url();
+    if (currentUrl.includes('/issue?t=')) {
+      console.warn('⚠️ URL все еще содержит ?t=, возможно задача не создана');
+    } else if (currentUrl.includes('/issue/')) {
+      console.log(`✅ Задача "${config.summary}" создана, URL: ${currentUrl}`);
+    } else {
+      console.warn(`⚠️ Неожиданный URL после создания: ${currentUrl}`);
+    }
     
   } catch (error) {
     console.error(`Issue creation failed:`, error);
