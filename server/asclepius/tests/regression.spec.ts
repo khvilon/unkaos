@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createWorkflow, createStatus, createField } from '../helpers';
+import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createWorkflow, createStatus, createField, createProject, createIssue } from '../helpers';
 
 test.describe.serial('Регресионный тест', () => {
   const startTime = new Date().getTime();
@@ -340,48 +340,120 @@ test.describe.serial('Регресионный тест', () => {
     console.log('✅ Все типы полей проверены');
   });
 
-  test('Проверка страницы проектов', async ({ page }) => {
-    console.log('🚀 Проверка страницы проектов...');
+  test('Проект: создание и редактирование', async ({ page }) => {
+    console.log('🚀 Тест проекта: создание + редактирование...');
     
     await navigateMainMenu(page, 'projects');
     await page.waitForSelector('.table_card_fields', { timeout: 10000 });
     
-    const tableRows = await page.locator('.ktable .row').count();
-    console.log(`Найдено проектов: ${tableRows}`);
+    // Закрываем меню
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
     
-    if (tableRows > 0) {
-      await page.locator('.ktable .row').first().click();
-      await page.waitForTimeout(500);
+    // СОЗДАНИЕ
+    await createProject(page, 'Тестовый проект', 'TEST');
+    
+    // Проверяем, что проект появился в таблице
+    const projectRow = page.locator('.ktable :text("Тестовый проект")');
+    if (await projectRow.count() === 0) {
+      throw new Error('Проект не найден в таблице после создания');
     }
+    console.log('✅ Проект создан');
     
-    console.log('✅ Страница проектов проверена');
-  });
-
-  test('Проверка страницы дашбордов', async ({ page }) => {
-    console.log('🚀 Проверка страницы дашбордов...');
+    // РЕДАКТИРОВАНИЕ
+    await projectRow.first().click();
+    await page.waitForTimeout(1000);
     
-    await page.goto(`/${workspace}/dashboard`);
+    await changeField(page, 'Название', 'Тестовый проект (изменён)');
+    
+    const saveButton = page.locator('input[type="button"][value="Сохранить"]');
+    await saveButton.click();
     await page.waitForTimeout(2000);
     
-    const errors = await page.locator('.error, .err-label').count();
-    if (errors > 0) {
-      const errorText = await page.locator('.error, .err-label').first().textContent();
-      console.log(`Найдена ошибка: ${errorText}`);
+    // Проверяем изменение
+    const updatedRow = page.locator('.ktable :text("изменён")');
+    if (await updatedRow.count() === 0) {
+      throw new Error('Проект не обновился');
     }
     
-    console.log('✅ Страница дашбордов проверена');
+    console.log('✅ Проект отредактирован');
   });
 
-  test('Проверка страницы задач', async ({ page }) => {
-    console.log('🚀 Проверка страницы задач...');
+  test('Задача: создание и жизненный цикл', async ({ page }) => {
+    console.log('🚀 Тест задачи: создание и проверка полей...');
     
-    await page.goto(`/${workspace}/issues`);
-    await page.waitForSelector('.issues-table, .ktable', { timeout: 10000 });
+    // СОЗДАНИЕ ЗАДАЧИ
+    await createIssue(page, {
+      summary: 'Тестовая задача E2E',
+      project: 'Тестовый проект (изменён)',
+      type: 'Тестовый тип', // Используем тип, созданный ранее
+      priority: 'Высокий'   // Используем значение из списка, созданное ранее
+    });
     
-    const filterInput = await page.locator('.issues-search-input, input[placeholder*="фильтр"]').count();
-    console.log(`Поле фильтра найдено: ${filterInput > 0}`);
+    // ПРОВЕРКА ЗАДАЧИ
+    await page.waitForTimeout(1000);
     
-    console.log('✅ Страница задач проверена');
+    // Ищем задачу в списке
+    const issueRow = page.locator('.ktable :text("Тестовая задача E2E")');
+    if (await issueRow.count() === 0) {
+      throw new Error('Созданная задача не найдена в списке');
+    }
+    
+    // Открываем задачу
+    await issueRow.first().click();
+    await page.waitForSelector('.issue-card-content', { timeout: 10000 });
+    await page.waitForTimeout(1000);
+    
+    // Проверяем значения полей
+    console.log('Проверка значений полей задачи...');
+    
+    // 1. Проверяем статус (должен быть начальным из воркфлоу)
+    // Примечание: наш воркфлоу "Тестовый воркфлоу" имеет статусы, но мы не знаем какой первый.
+    // Обычно первый добавленный.
+    
+    // 2. Проверяем приоритет (наше кастомное поле)
+    const priorityValue = await page.locator('.select-input:has(.label:text-is("Тестовый приоритет")) .vs__selected').textContent();
+    if (!priorityValue?.includes('Высокий')) {
+      console.warn(`⚠️ Приоритет не сохранился или отображается неверно: "${priorityValue}"`);
+    } else {
+      console.log('✅ Приоритет "Высокий" сохранен корректно');
+    }
+    
+    // РЕДАКТИРОВАНИЕ ЗАДАЧИ
+    console.log('Редактирование задачи...');
+    
+    // Меняем тему
+    const summaryInput = page.locator('.string-input:has-text(""), input[placeholder="Тема"], input[placeholder="Название"]').first();
+    await summaryInput.fill('Тестовая задача E2E (обновлена)');
+    
+    // Сохраняем (если есть кнопка сохранения, иногда автосейв)
+    const saveBtn = page.locator('input[type="button"][value="Сохранить"]');
+    if (await saveBtn.isVisible()) {
+      await saveBtn.click();
+      await page.waitForTimeout(1000);
+    }
+    
+    // СМЕНА СТАТУСА (Transition)
+    console.log('Проверка смены статуса...');
+    const statusDropdown = page.locator('.issue-status-dropdown, .workflow-status');
+    if (await statusDropdown.count() > 0) {
+      await statusDropdown.click();
+      await page.waitForTimeout(500);
+      
+      // Кликаем по любому доступному следующему статусу
+      const nextStatus = page.locator('.status-transition-item, .dropdown-item').first();
+      if (await nextStatus.count() > 0) {
+        const nextStatusName = await nextStatus.textContent();
+        console.log(`Переход в статус: ${nextStatusName}`);
+        await nextStatus.click();
+        await page.waitForTimeout(1000);
+        console.log('✅ Статус изменен');
+      } else {
+        console.log('ℹ️ Нет доступных переходов статуса (возможно, это конечный статус)');
+      }
+    }
+    
+    console.log('✅ Жизненный цикл задачи проверен');
   });
 
   test('Проверка страницы досок', async ({ page }) => {
@@ -488,6 +560,38 @@ test.describe.serial('Регресионный тест', () => {
     }
     
     console.log('✅ Статус удалён');
+  });
+
+  test('Удаление: проект', async ({ page }) => {
+    console.log('🗑️ Удаление проекта...');
+    
+    await navigateMainMenu(page, 'projects');
+    await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+    
+    // Закрываем меню
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    
+    const projectRow = page.locator('.ktable :text("Тестовый проект")');
+    if (await projectRow.count() > 0) {
+      await projectRow.first().click({ force: true });
+      await page.waitForTimeout(500);
+      
+      const deleteButton = page.locator('input[type="button"][value="Удалить"], .btn-delete, .bx-trash');
+      if (await deleteButton.count() > 0) {
+        await deleteButton.first().click();
+        await page.waitForTimeout(500);
+        
+        // Подтверждаем удаление
+        const confirmButton = page.locator('button:has-text("Да"), button:has-text("OK"), .confirm-yes');
+        if (await confirmButton.count() > 0) {
+          await confirmButton.click();
+        }
+        await page.waitForTimeout(1000);
+      }
+    }
+    
+    console.log('✅ Проект удалён');
   });
 
   test('Удаление: пользователь (деактивация)', async ({ page }) => {

@@ -912,16 +912,17 @@ export async function createField(page: Page, config: FieldConfig): Promise<void
       console.log('Adding available values for Select field...');
       
       // Ждём появления TagInput (он появляется когда выбран тип Select)
-      await page.waitForTimeout(1000);
-      
-      // Проверяем наличие TagInput (он появляется только после выбора типа Select)
+      console.log('Waiting for TagInput to appear...');
       const tagInputContainer = page.locator('.tag-input');
+      try {
+          await tagInputContainer.first().waitFor({ state: 'visible', timeout: 5000 });
+          console.log('✅ TagInput appeared');
+      } catch (e) {
+          console.error('⚠️ TagInput did not appear within timeout');
+      }
+      
       const tagInputCount = await tagInputContainer.count();
       console.log(`TagInput containers found: ${tagInputCount}`);
-      
-      if (tagInputCount === 0) {
-        console.log('⚠️ TagInput не появился - возможно тип не выбран');
-      }
       
       for (const val of config.availableValues) {
         console.log(`Adding value: ${val.name}`);
@@ -996,6 +997,190 @@ export async function createField(page: Page, config: FieldConfig): Promise<void
     
   } catch (error) {
     console.error(`Field creation failed:`, error);
+    throw error;
+  }
+}
+
+export async function createProject(page: Page, name: string, prefix: string, description?: string): Promise<void> {
+  console.log(`Creating project: ${name} (${prefix})`);
+  
+  try {
+    await fixInterfacePositioning(page);
+    await page.waitForTimeout(500);
+    
+    // Кликаем по кнопке плюс
+    console.log('Clicking plus button...');
+    await page.waitForSelector('.btn_input.bx-plus-circle', { timeout: 5000 });
+    await page.click('.btn_input.bx-plus-circle');
+    
+    // Ждем появления формы
+    console.log('Waiting for form fields...');
+    await page.waitForSelector('.table_card_fields', { timeout: 5000 });
+    await page.waitForTimeout(500);
+    
+    // Заполняем поля
+    console.log('Filling fields...');
+    await changeField(page, "Название", name);
+    await changeField(page, "Код", prefix);
+    
+    if (description) {
+      await changeField(page, "Описание", description);
+    }
+
+    // Выбираем владельца (текущего пользователя)
+    const ownerSelect = page.locator('.user-input:has(.label:text-is("Владелец")) .vs__dropdown-toggle');
+    if (await ownerSelect.count() > 0) {
+        console.log('Selecting owner...');
+        await ownerSelect.click();
+        await page.waitForTimeout(500); // Ждем загрузки списка
+        // Выбираем первый вариант
+        const firstOption = page.locator('.vs__dropdown-option').first();
+        if (await firstOption.count() > 0) {
+            await firstOption.click();
+        } else {
+            // Если список пуст, пробуем нажать Enter (возможно, поиск)
+            await page.keyboard.press('Enter');
+        }
+    }
+    
+    // Нажимаем кнопку "Создать"
+    console.log('Clicking "Создать" button...');
+    const createButton = page.locator('input[type="button"][value="Создать"]');
+    await scrollToElement(page, createButton);
+    await createButton.click();
+    
+    // Ждем сохранения и обновления таблицы
+    await page.waitForTimeout(1000);
+    await page.waitForSelector('.ktable', { timeout: 5000 });
+    
+    console.log(`✅ Проект "${name}" создан`);
+    
+  } catch (error) {
+    console.error(`Project creation failed:`, error);
+    throw error;
+  }
+}
+
+export interface IssueConfig {
+  summary: string;
+  description?: string;
+  project?: string;
+  type?: string;
+  priority?: string; // Для нашего кастомного поля
+  customFields?: { [key: string]: string };
+}
+
+export async function createIssue(page: Page, config: IssueConfig): Promise<void> {
+  console.log(`Creating issue: ${config.summary}`);
+  
+  try {
+    await fixInterfacePositioning(page);
+    
+    // Кликаем по кнопке создания задачи в сайдбаре
+    console.log('Clicking create issue button in sidebar...');
+    const createBtn = page.locator('a.new-issue-button');
+    await createBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await createBtn.click();
+    
+    // Ждем навигации на страницу создания задачи
+    await page.waitForURL(/.*\/issue/, { timeout: 10000 });
+    
+    // Ждем загрузки страницы и появления основных полей
+    console.log('Waiting for issue create form...');
+    await page.waitForSelector('#issue_top_panel', { timeout: 10000 });
+    await page.waitForSelector('.issue-name-input input', { timeout: 10000 });
+    
+    // Заполняем Название (Summary)
+    console.log('Filling summary...');
+    const summaryInput = page.locator('.issue-name-input input');
+    await summaryInput.fill(config.summary);
+    
+    // Выбор Проекта
+    if (config.project) {
+      console.log(`Selecting project: ${config.project}`);
+      const projectSelect = page.locator('.issue-project-input .vs__dropdown-toggle');
+      if (await projectSelect.count() > 0) {
+        await projectSelect.click();
+        await page.waitForTimeout(300);
+        
+        // Ищем опцию в выпадающем списке
+        const option = page.locator(`.vs__dropdown-option:has-text("${config.project}")`);
+        if (await option.count() > 0) {
+           await option.first().click();
+        } else {
+           console.log(`⚠️ Project "${config.project}" not found in list`);
+        }
+        await page.waitForTimeout(500); // Ждем подгрузки типов
+      }
+    }
+    
+    // Выбор Типа
+    if (config.type) {
+      console.log(`Selecting type: ${config.type}`);
+      // Тип находится в #issue_card
+      const typeSelect = page.locator('.issue-type-input .vs__dropdown-toggle');
+      await typeSelect.waitFor({ state: 'visible' });
+      
+      if (await typeSelect.count() > 0) {
+        await typeSelect.click();
+        await page.waitForTimeout(300);
+        
+        const option = page.locator(`.vs__dropdown-option:has-text("${config.type}")`);
+         if (await option.count() > 0) {
+           await option.first().click();
+        } else {
+           console.log(`⚠️ Type "${config.type}" not found in list`);
+        }
+        await page.waitForTimeout(500); // Ждем подгрузки полей
+      }
+    }
+    
+    // Заполнение кастомных полей
+    if (config.priority) {
+      console.log(`Setting custom priority: ${config.priority}`);
+      // Ищем наше поле "Тестовый приоритет" - это SelectInput с лейблом
+      // Т.к. это динамическое поле, оно рендерится через component :is
+      
+      // Ищем контейнер с лейблом
+      const priorityContainer = page.locator('.select-input:has(.label:text-is("Тестовый приоритет"))');
+      if (await priorityContainer.count() > 0) {
+        const dropdown = priorityContainer.locator('.vs__dropdown-toggle');
+        await dropdown.click();
+        await page.waitForTimeout(300);
+        const option = page.locator(`.vs__dropdown-option:has-text("${config.priority}")`);
+        if (await option.count() > 0) {
+          await option.first().click();
+        } else {
+          console.warn(`Priority option "${config.priority}" not found`);
+          await page.keyboard.press('Escape');
+        }
+      } else {
+          console.log('⚠️ Custom field "Тестовый приоритет" not found');
+      }
+    }
+    
+    // Заполнение описания
+    if (config.description) {
+        console.log('Filling description...');
+        const descriptionInput = page.locator('#issue_description_textarea');
+        if (await descriptionInput.count() > 0) {
+            await descriptionInput.fill(config.description);
+        }
+    }
+    
+    // Нажимаем Создать
+    console.log('Clicking Create...');
+    const saveBtn = page.locator('#save_issue_btn input[type="button"]');
+    await saveBtn.click();
+    
+    // Ждем сохранения - должно перенаправить на страницу задачи (с ID)
+    // URL изменится с /issue?t=... на /issue/PROJECT-123
+    await page.waitForURL(/.*\/issue\/[A-Z]+-\d+/, { timeout: 15000 });
+    
+    console.log(`✅ Задача "${config.summary}" создана`);
+    
+  } catch (error) {
+    console.error(`Issue creation failed:`, error);
     throw error;
   }
 }

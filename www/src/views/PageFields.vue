@@ -34,7 +34,8 @@ const data = {
       type: "Select",
       clearable: false,
       disabled: false,
-      required: true
+      required: true,
+      reduce: (opt) => opt.uuid
     },
     {
       label: "Зарегистрировано",
@@ -53,6 +54,18 @@ const mod = await page_helper.create_module(data);
 
 mod.methods.updateSelectVal = function(){
   console.log('>>>>>>upd')
+}
+
+mod.watch = {
+  "selected_fields.type_uuid": function(val) {
+      if(!val) return;
+      let types = this.$store.state.dicts.field_types;
+      if(!types) return;
+      let type = types.find(t => t.uuid == val);
+      if(type) {
+          this.selected_fields.type_code = type.code;
+      }
+  }
 }
 
 
