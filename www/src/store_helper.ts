@@ -212,7 +212,8 @@ store_helper.create_module = function (name) {
       state.state["selected_" + name].uuid == undefined ||
       state.state["selected_" + name].is_new;
     //console.log('is_new', is_new)
-    state.state["selected_" + name].is_new = false;
+    // Keep is_new in body for REST API v2 to determine POST vs PUT
+    // It will be reset after the request completes
 
     // Debug logging for workflows
     if (name === 'workflows') {
@@ -241,8 +242,17 @@ store_helper.create_module = function (name) {
     }
 
     console.log('>>>save', name,  state.state["selected_" + name])
-    if (is_new) return this.dispatch("create_" + name);
-    return this.dispatch("update_" + name);
+    let result;
+    if (is_new) {
+      result = await this.dispatch("create_" + name);
+    } else {
+      result = await this.dispatch("update_" + name);
+    }
+    // Reset is_new after successful request
+    if (state.state["selected_" + name]) {
+      state.state["selected_" + name].is_new = false;
+    }
+    return result;
   };
   actions["delete_" + name] = async function (state) {
     //console.log(state.state['selected_' + name])

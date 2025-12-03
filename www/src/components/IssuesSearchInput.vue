@@ -1076,8 +1076,8 @@ export default {
         case 'logic':
           // Предлагаем логические операторы
           this.suggestions = [...this.logic_operators];
-          break;
-      }
+                break;
+              }
       
       // Фильтруем по текущему вводу
       if (currentToken) {
@@ -1169,7 +1169,7 @@ export default {
           if (this.vals_dict.Project) {
             this.vals_dict.Project.forEach(p => suggestions.push(p.name));
           }
-          break;
+              break;
           
         case 'Status':
           suggestions.unshift('Решенные'); // Специальное значение
@@ -1184,7 +1184,7 @@ export default {
           if (this.vals_dict.Type) {
             this.vals_dict.Type.forEach(t => suggestions.push(t.name));
           }
-          break;
+                break;
           
         case 'Sprint':
           if (this.vals_dict.Sprint) {
@@ -1211,7 +1211,7 @@ export default {
           // Для неизвестных типов - базовые подсказки
           if (isLike) {
             suggestions.unshift("'%%'");
-          } else {
+        } else {
             suggestions.unshift("''");
           }
       }

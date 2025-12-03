@@ -212,7 +212,7 @@ export class SQLGenerator {
           return `${fieldSql} IN ${lookupSubquery}`;
         } else if (node.operator === 'neq') {
           return `${fieldSql} NOT IN ${lookupSubquery}`;
-        }
+  }
       }
     }
 
@@ -229,15 +229,15 @@ export class SQLGenerator {
    */
   private generateField(field: FieldNode, mapping?: FieldMapping): string {
     this.usedFields.push(field);
-    
-    if (mapping) {
-      if (mapping.source === 'custom') {
-        this.hasCustomFields = true;
+
+        if (mapping) {
+          if (mapping.source === 'custom') {
+            this.hasCustomFields = true;
         // Кастомное поле - обращаемся по UUID
-        return `${this.context.tableAlias}."${mapping.uuid}"`;
-      }
-      return `${this.context.tableAlias}.${mapping.field}`;
-    }
+            return `${this.context.tableAlias}."${mapping.uuid}"`;
+          }
+          return `${this.context.tableAlias}.${mapping.field}`;
+        }
     
     // Если не нашли маппинг - возможно это кастомное поле по имени
     // Ищем в customFields по имени
@@ -248,8 +248,8 @@ export class SQLGenerator {
     if (customField && customField.uuid) {
       this.hasCustomFields = true;
       return `${this.context.tableAlias}."${customField.uuid}"`;
-    }
-    
+  }
+
     // Проверяем, похоже ли на UUID
     if (this.isUUID(field.name)) {
       this.hasCustomFields = true;

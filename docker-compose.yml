@@ -38,22 +38,23 @@ services:
     depends_on:
       - postgres
 
-  zeus:
-    build:
-      context: .
-      dockerfile: server/docker/zeus
-    restart: always
-    ports:
-      - '3006:3006'
-    environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_DATABASE=${DB_DATABASE}
-    depends_on:
-      - postgres
-      - ossa
+  # Zeus v1 - ОТКЛЮЧЕН, заменён на Zeus2
+  # zeus:
+  #   build:
+  #     context: .
+  #     dockerfile: server/docker/zeus
+  #   restart: always
+  #   ports:
+  #     - '3006:3006'
+  #   environment:
+  #     - DB_HOST=${DB_HOST}
+  #     - DB_PORT=${DB_PORT}
+  #     - DB_USER=${DB_USER}
+  #     - DB_PASSWORD=${DB_PASSWORD}
+  #     - DB_DATABASE=${DB_DATABASE}
+  #   depends_on:
+  #     - postgres
+  #     - ossa
 
   zeus2:
     build:
@@ -97,13 +98,14 @@ services:
     expose:
       - '3001'
     environment:
-      - ZEUS_URL=${ZEUS_URL}
+      # Zeus v1 отключён - оставляем переменную пустой или убираем
+      # - ZEUS_URL=${ZEUS_URL}
       - ZEUS2_URL=${ZEUS2_URL}
       - CERBERUS_URL=${CERBERUS_URL}
       - ATHENA_URL=${ATHENA_URL}
       - DOMAIN=${DOMAIN}
     depends_on:
-      - zeus
+      # - zeus  # Zeus v1 отключён
       - zeus2
       - cerberus
       - athena

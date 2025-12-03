@@ -72,7 +72,14 @@ let execModifSqlFile = async function(file: string, name: string, workspace: str
     .replaceAll(name + ' ', workspace + ' ').replaceAll(name + ';', workspace + ';')
     .replaceAll(name + '_', workspace + '_').replaceAll(name + "'", workspace + "'")
     .replaceAll('root@unkaos.org', email).replaceAll('rootpass', pass);
-    await sql.unsafe(sqlFileContentStr);
+    
+    try {
+        await sql.unsafe(sqlFileContentStr);
+        logger.info({ msg: 'SQL file executed successfully', file, workspace });
+    } catch (error: any) {
+        logger.error({ msg: 'SQL file execution failed', file, workspace, error: error.message });
+        throw error;
+    }
 }
 
 let createWorkspace = async function(workspace: string, email: string, pass: string){

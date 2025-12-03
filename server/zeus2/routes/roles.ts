@@ -1,34 +1,14 @@
-import { Request, Response } from 'express';
+/**
+ * Roles Routes - с permissions и projects_permissions
+ */
+
+import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { createErrorResponse, isValidUuid, escapeIdentifier, Listener } from '../utils/crud-factory';
 import { createLogger } from '../../common/logging';
-import { randomUUID } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 const logger = createLogger('zeus2:roles');
-
-interface Listener {
-  method: string;
-  func: string;
-  entity: string;
-}
-
-function formatItem(item: any) {
-  return {
-    uuid: item.uuid,
-    name: item.name,
-    is_custom: item.is_custom,
-    created_at: item.created_at,
-    updated_at: item.updated_at
-  };
-}
-
-function errorResponse(req: Request, code: string, message: string, details: any[] = []) {
-  return {
-    code,
-    message,
-    trace_id: req.headers['x-trace-id'] as string,
-    details
-  };
-}
 
 export function registerRolesRoutes(
   app: any,
@@ -36,241 +16,262 @@ export function registerRolesRoutes(
   listeners: Listener[],
   apiPrefix: string
 ) {
-  const entityName = 'roles';
-  const basePath = `${apiPrefix}/${entityName}`;
+  const router = Router();
 
-  // GET /api/v2/roles - Получение списка
-  app.get(basePath, async (req: Request, res: Response) => {
+  async function getRolesWithPermissions(schema: string, uuid?: string): Promise<any[]> {
+    const whereClause = uuid 
+      ? `WHERE r.uuid = $1::uuid AND r.deleted_at IS NULL`
+      : `WHERE r.deleted_at IS NULL`;
+
+    // Получаем роли
+    const query = `
+      SELECT 
+        'roles' AS table_name,
+        r.uuid, r.name, r.created_at, r.updated_at,
+        COALESCE(
+          (SELECT json_agg(
+            json_build_object(
+              'uuid', p.uuid,
+              'name', p.name,
+              'code', p.code
+            )
+          )
+          FROM ${escapeIdentifier(schema)}.roles_to_permissions rtp
+          JOIN ${escapeIdentifier(schema)}.permissions p ON p.uuid = rtp.permissions_uuid
+          WHERE rtp.roles_uuid = r.uuid
+          ), '[]'
+        ) AS permissions,
+        COALESCE(
+          (SELECT json_agg(
+            json_build_object(
+              'uuid', pp.uuid,
+              'roles_uuid', pp.roles_uuid,
+              'projects_uuid', pp.projects_uuid,
+              'allow', pp.allow,
+              'table_name', 'projects_permissions'
+            )
+          )
+          FROM ${escapeIdentifier(schema)}.projects_permissions pp
+          WHERE pp.roles_uuid = r.uuid
+          ), '[]'
+        ) AS projects_permissions
+      FROM ${escapeIdentifier(schema)}.roles r
+      ${whereClause}
+      ORDER BY r.name ASC
+    `;
+
+    return uuid 
+      ? await prisma.$queryRawUnsafe(query, uuid)
+      : await prisma.$queryRawUnsafe(query.replace('$1::uuid', "'dummy'"));
+  }
+
+  // GET /api/v2/roles
+  router.get('/', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { page = '1', limit = '20', sort, is_custom } = req.query;
+      const items = await getRolesWithPermissions(schema);
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting roles', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения ролей'));
+    }
+  });
 
-      logger.info({ msg: 'GET roles', subdomain, page, limit });
+  // GET /api/v2/roles/:uuid
+  router.get('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
 
-      const pageNum = Math.max(1, parseInt(page as string));
-      const limitNum = Math.min(100, Math.max(1, parseInt(limit as string)));
-      const skip = (pageNum - 1) * limitNum;
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
 
-      let whereClause = 'WHERE deleted_at IS NULL';
-      if (is_custom !== undefined) {
-        whereClause += ` AND is_custom = ${is_custom === 'true'}`;
+    try {
+      const items: any[] = await getRolesWithPermissions(schema, uuid);
+      if (items.length === 0) {
+        return res.status(404).json(createErrorResponse(req, 'NOT_FOUND', 'Роль не найдена'));
       }
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting role', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения роли'));
+    }
+  });
 
-      let orderClause = 'ORDER BY name ASC';
-      if (sort) {
-        const [field, direction] = (sort as string).split(',');
-        const validFields = ['name', 'is_custom', 'created_at', 'updated_at'];
-        if (validFields.includes(field)) {
-          orderClause = `ORDER BY ${field} ${direction === 'desc' ? 'DESC' : 'ASC'}`;
+  // POST /api/v2/roles
+  router.post('/', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { name, permissions, projects_permissions } = req.body;
+    const uuid = req.body.uuid && isValidUuid(req.body.uuid) ? req.body.uuid : uuidv4();
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!name) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'name required'));
+    }
+
+    try {
+      // Создаём роль
+      await prisma.$executeRawUnsafe(`
+        INSERT INTO ${escapeIdentifier(schema)}.roles (uuid, name, created_at, updated_at)
+        VALUES ($1::uuid, $2, NOW(), NOW())
+      `, uuid, name);
+
+      // Добавляем permissions
+      // Поддерживаем оба формата: массив UUID строк или массив объектов {uuid: '...'}
+      if (permissions && Array.isArray(permissions)) {
+        for (const perm of permissions) {
+          const permUuid = typeof perm === 'string' ? perm : perm?.uuid;
+          if (permUuid && isValidUuid(permUuid)) {
+            await prisma.$executeRawUnsafe(`
+              INSERT INTO ${escapeIdentifier(schema)}.roles_to_permissions (roles_uuid, permissions_uuid)
+              VALUES ($1::uuid, $2::uuid)
+              ON CONFLICT DO NOTHING
+            `, uuid, permUuid);
+          }
         }
       }
 
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, is_custom, created_at, updated_at
-        FROM "${subdomain}".roles
-        ${whereClause}
-        ${orderClause}
-        LIMIT ${limitNum} OFFSET ${skip}
-      `);
-
-      const totalResult: any[] = await prisma.$queryRawUnsafe(`
-        SELECT COUNT(*) as count FROM "${subdomain}".roles ${whereClause}
-      `);
-      const total = Number(totalResult[0]?.count || 0);
-
-      res.status(200).json({
-        items: items.map(formatItem),
-        page: pageNum,
-        limit: limitNum,
-        total
-      });
-
-    } catch (error) {
-      logger.error({ msg: 'Error getting roles', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
-    }
-  });
-  listeners.push({ method: 'get', func: basePath, entity: entityName });
-
-  // GET /api/v2/roles/:uuid
-  app.get(`${basePath}/:uuid`, async (req: Request, res: Response) => {
-    try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-
-      logger.info({ msg: 'GET role by UUID', subdomain, uuid });
-
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, is_custom, created_at, updated_at
-        FROM "${subdomain}".roles
-        WHERE uuid = '${uuid}' AND deleted_at IS NULL
-      `);
-
-      if (items.length === 0) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Роль не найдена'));
+      // Добавляем projects_permissions
+      if (projects_permissions && Array.isArray(projects_permissions)) {
+        for (const pp of projects_permissions) {
+          if (pp.projects_uuid && isValidUuid(pp.projects_uuid)) {
+            const ppUuid = pp.uuid && isValidUuid(pp.uuid) ? pp.uuid : uuidv4();
+            await prisma.$executeRawUnsafe(`
+              INSERT INTO ${escapeIdentifier(schema)}.projects_permissions (uuid, roles_uuid, projects_uuid, allow)
+              VALUES ($1::uuid, $2::uuid, $3::uuid, $4)
+              ON CONFLICT DO NOTHING
+            `, ppUuid, uuid, pp.projects_uuid, pp.allow || 'R');
+          }
+        }
       }
 
-      res.status(200).json(formatItem(items[0]));
-
-    } catch (error) {
-      logger.error({ msg: 'Error getting role', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      const items = await getRolesWithPermissions(schema, uuid);
+      res.status(201).json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error creating role', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка создания роли'));
     }
   });
-  listeners.push({ method: 'get', func: `${basePath}/:uuid`, entity: entityName });
 
-  // POST /api/v2/roles
-  app.post(basePath, async (req: Request, res: Response) => {
-    try {
-      const subdomain = req.headers.subdomain as string;
-      const { name, is_custom = true } = req.body;
+  // PUT /api/v2/roles/:uuid
+  router.put('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
+    const { name, permissions, projects_permissions } = req.body;
 
-      if (!name) {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поле name обязательно'));
-      }
-
-      logger.info({ msg: 'POST role', subdomain, name });
-
-      const newUuid = randomUUID();
-      const now = new Date().toISOString();
-
-      await prisma.$executeRawUnsafe(`
-        INSERT INTO "${subdomain}".roles (uuid, name, is_custom, created_at, updated_at)
-        VALUES ('${newUuid}', '${name}', ${is_custom}, '${now}', '${now}')
-      `);
-
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, is_custom, created_at, updated_at
-        FROM "${subdomain}".roles WHERE uuid = '${newUuid}'
-      `);
-
-      res.status(201).json(formatItem(items[0]));
-
-    } catch (error) {
-      logger.error({ msg: 'Error creating role', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
     }
-  });
-  listeners.push({ method: 'post', func: basePath, entity: entityName });
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
 
-  // PUT /api/v2/roles/:uuid - Upsert
-  app.put(`${basePath}/:uuid`, async (req: Request, res: Response) => {
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-      const { name, is_custom = true } = req.body;
-
-      if (!name) {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поле name обязательно'));
-      }
-
-      logger.info({ msg: 'PUT role (upsert)', subdomain, uuid });
-
-      const now = new Date().toISOString();
-      const existing: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid FROM "${subdomain}".roles WHERE uuid = '${uuid}'
-      `);
-
-      if (existing.length === 0) {
+      // Обновляем роль
+      if (name !== undefined) {
         await prisma.$executeRawUnsafe(`
-          INSERT INTO "${subdomain}".roles (uuid, name, is_custom, created_at, updated_at)
-          VALUES ('${uuid}', '${name}', ${is_custom}, '${now}', '${now}')
-        `);
-      } else {
+          UPDATE ${escapeIdentifier(schema)}.roles
+          SET name = $1, updated_at = NOW()
+          WHERE uuid = $2::uuid
+        `, name, uuid);
+      }
+
+      // Обновляем permissions если переданы
+      // По парадигме Full Replace: undefined = не трогаем, [] = удаляем все, [...] = заменяем
+      // Поддерживаем оба формата: массив UUID строк или массив объектов {uuid: '...'}
+      if (permissions !== undefined && Array.isArray(permissions)) {
+        // Удаляем старые
         await prisma.$executeRawUnsafe(`
-          UPDATE "${subdomain}".roles 
-          SET name = '${name}', is_custom = ${is_custom}, updated_at = '${now}', deleted_at = NULL
-          WHERE uuid = '${uuid}'
-        `);
+          DELETE FROM ${escapeIdentifier(schema)}.roles_to_permissions
+          WHERE roles_uuid = $1::uuid
+        `, uuid);
+
+        // Добавляем новые
+        for (const perm of permissions) {
+          const permUuid = typeof perm === 'string' ? perm : perm?.uuid;
+          if (permUuid && isValidUuid(permUuid)) {
+            await prisma.$executeRawUnsafe(`
+              INSERT INTO ${escapeIdentifier(schema)}.roles_to_permissions (roles_uuid, permissions_uuid)
+              VALUES ($1::uuid, $2::uuid)
+              ON CONFLICT DO NOTHING
+            `, uuid, permUuid);
+          }
+        }
       }
 
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, is_custom, created_at, updated_at
-        FROM "${subdomain}".roles WHERE uuid = '${uuid}'
-      `);
+      // Обновляем projects_permissions если переданы
+      // По парадигме Full Replace: undefined = не трогаем, [] = удаляем все, [...] = заменяем
+      if (projects_permissions !== undefined && Array.isArray(projects_permissions)) {
+        // Удаляем старые
+        await prisma.$executeRawUnsafe(`
+          DELETE FROM ${escapeIdentifier(schema)}.projects_permissions
+          WHERE roles_uuid = $1::uuid
+        `, uuid);
 
-      res.status(existing.length === 0 ? 201 : 200).json(formatItem(items[0]));
+        // Добавляем новые
+        for (const pp of projects_permissions) {
+          if (pp.projects_uuid && isValidUuid(pp.projects_uuid)) {
+            const ppUuid = pp.uuid && isValidUuid(pp.uuid) ? pp.uuid : uuidv4();
+            await prisma.$executeRawUnsafe(`
+              INSERT INTO ${escapeIdentifier(schema)}.projects_permissions (uuid, roles_uuid, projects_uuid, allow)
+              VALUES ($1::uuid, $2::uuid, $3::uuid, $4)
+              ON CONFLICT DO NOTHING
+            `, ppUuid, uuid, pp.projects_uuid, pp.allow || 'R');
+          }
+        }
+      }
 
-    } catch (error) {
-      logger.error({ msg: 'Error upserting role', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      const items = await getRolesWithPermissions(schema, uuid);
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error updating role', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка обновления роли'));
     }
   });
-  listeners.push({ method: 'put', func: `${basePath}/:uuid`, entity: entityName });
-
-  // PATCH /api/v2/roles/:uuid
-  app.patch(`${basePath}/:uuid`, async (req: Request, res: Response) => {
-    try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-
-      const updates: string[] = [];
-      if (req.body.name !== undefined) updates.push(`name = '${req.body.name}'`);
-      if (req.body.is_custom !== undefined) updates.push(`is_custom = ${req.body.is_custom}`);
-
-      if (updates.length === 0) {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Нет полей для обновления'));
-      }
-
-      logger.info({ msg: 'PATCH role', subdomain, uuid });
-
-      const existing: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid FROM "${subdomain}".roles WHERE uuid = '${uuid}' AND deleted_at IS NULL
-      `);
-
-      if (existing.length === 0) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Роль не найдена'));
-      }
-
-      updates.push(`updated_at = '${new Date().toISOString()}'`);
-
-      await prisma.$executeRawUnsafe(`
-        UPDATE "${subdomain}".roles SET ${updates.join(', ')} WHERE uuid = '${uuid}'
-      `);
-
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, is_custom, created_at, updated_at
-        FROM "${subdomain}".roles WHERE uuid = '${uuid}'
-      `);
-
-      res.status(200).json(formatItem(items[0]));
-
-    } catch (error) {
-      logger.error({ msg: 'Error patching role', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
-    }
-  });
-  listeners.push({ method: 'patch', func: `${basePath}/:uuid`, entity: entityName });
 
   // DELETE /api/v2/roles/:uuid
-  app.delete(`${basePath}/:uuid`, async (req: Request, res: Response) => {
+  router.delete('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-
-      logger.info({ msg: 'DELETE role', subdomain, uuid });
-
-      const existing: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid FROM "${subdomain}".roles WHERE uuid = '${uuid}' AND deleted_at IS NULL
-      `);
-
-      if (existing.length === 0) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Роль не найдена'));
-      }
-
       await prisma.$executeRawUnsafe(`
-        UPDATE "${subdomain}".roles SET deleted_at = '${new Date().toISOString()}' WHERE uuid = '${uuid}'
-      `);
-
+        UPDATE ${escapeIdentifier(schema)}.roles
+        SET deleted_at = NOW()
+        WHERE uuid = $1::uuid
+      `, uuid);
       res.status(204).send();
-
-    } catch (error) {
-      logger.error({ msg: 'Error deleting role', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+    } catch (error: any) {
+      logger.error({ msg: 'Error deleting role', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка удаления роли'));
     }
   });
-  listeners.push({ method: 'delete', func: `${basePath}/:uuid`, entity: entityName });
 
-  logger.info({ msg: `Registered ${entityName} routes`, basePath });
+  app.use(`${apiPrefix}/roles`, router);
+
+  listeners.push({ method: 'get', func: 'read_roles', entity: 'roles' });
+  listeners.push({ method: 'get', func: 'read_role', entity: 'role' });
+  listeners.push({ method: 'post', func: 'create_roles', entity: 'roles' });
+  listeners.push({ method: 'post', func: 'upsert_roles', entity: 'roles' });
+  listeners.push({ method: 'put', func: 'update_roles', entity: 'roles' });
+  listeners.push({ method: 'delete', func: 'delete_roles', entity: 'roles' });
+
+  logger.info({ msg: 'Roles routes registered' });
 }
-

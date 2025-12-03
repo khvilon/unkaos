@@ -130,7 +130,7 @@ router.get('/', async (req: Request, res: Response) => {
 
     logger.debug({ msg: 'Executing SQL', sql: sql.substring(0, 500) + '...' });
 
-    const items = await prisma.$queryRawUnsafe<any[]>(sql);
+    const items: any[] = await prisma.$queryRawUnsafe(sql);
 
     logger.info({ msg: 'Issues found', subdomain, count: items.length });
 
@@ -157,7 +157,7 @@ router.get('/:uuid', async (req: Request, res: Response) => {
 
   try {
     const sql = buildIssueByUuidQuery(subdomain, uuid);
-    const items = await prisma.$queryRawUnsafe<any[]>(sql);
+    const items: any[] = await prisma.$queryRawUnsafe(sql);
 
     if (items.length === 0) {
       return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Issue не найдена'));
@@ -203,7 +203,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     // Получаем следующий номер для проекта
     const numQuery = buildGetNextIssueNumQuery(subdomain, data.project_uuid);
-    const numResult = await prisma.$queryRawUnsafe<any[]>(numQuery);
+    const numResult: any[] = await prisma.$queryRawUnsafe(numQuery);
     const nextNum = numResult[0]?.next_num || 1;
 
     // Подготавливаем данные для вставки
@@ -240,7 +240,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     // Возвращаем созданную issue
     const sql = buildIssueByUuidQuery(subdomain, issueUuid);
-    const items = await prisma.$queryRawUnsafe<any[]>(sql);
+    const items: any[] = await prisma.$queryRawUnsafe(sql);
 
     res.status(201).json(formatIssue(items[0]));
   } catch (error: any) {
@@ -262,7 +262,7 @@ router.put('/:uuid', async (req: Request, res: Response) => {
   try {
     // Проверяем существование
     const checkSql = `SELECT uuid FROM "${subdomain}".issues WHERE uuid = '${uuid}'`;
-    const existing = await prisma.$queryRawUnsafe<any[]>(checkSql);
+    const existing: any[] = await prisma.$queryRawUnsafe(checkSql);
 
     if (existing.length === 0) {
       // Создаём новую issue если не существует
@@ -271,7 +271,7 @@ router.put('/:uuid', async (req: Request, res: Response) => {
       // Получаем следующий номер если нет
       if (!insertData.num && insertData.project_uuid) {
         const numQuery = buildGetNextIssueNumQuery(subdomain, insertData.project_uuid);
-        const numResult = await prisma.$queryRawUnsafe<any[]>(numQuery);
+        const numResult: any[] = await prisma.$queryRawUnsafe(numQuery);
         insertData.num = numResult[0]?.next_num || 1;
       }
 
@@ -279,7 +279,7 @@ router.put('/:uuid', async (req: Request, res: Response) => {
       await prisma.$executeRawUnsafe(insertSql);
 
       const sql = buildIssueByUuidQuery(subdomain, uuid);
-      const items = await prisma.$queryRawUnsafe<any[]>(sql);
+      const items: any[] = await prisma.$queryRawUnsafe(sql);
       return res.status(201).json(formatIssue(items[0]));
     }
 
@@ -303,7 +303,7 @@ router.put('/:uuid', async (req: Request, res: Response) => {
 
     // Возвращаем обновлённую issue
     const sql = buildIssueByUuidQuery(subdomain, uuid);
-    const items = await prisma.$queryRawUnsafe<any[]>(sql);
+    const items: any[] = await prisma.$queryRawUnsafe(sql);
 
     res.status(200).json(formatIssue(items[0]));
   } catch (error: any) {
@@ -325,7 +325,7 @@ router.patch('/:uuid', async (req: Request, res: Response) => {
   try {
     // Проверяем существование
     const checkSql = `SELECT uuid FROM "${subdomain}".issues WHERE uuid = '${uuid}' AND deleted_at IS NULL`;
-    const existing = await prisma.$queryRawUnsafe<any[]>(checkSql);
+    const existing: any[] = await prisma.$queryRawUnsafe(checkSql);
 
     if (existing.length === 0) {
       return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Issue не найдена'));
@@ -337,7 +337,7 @@ router.patch('/:uuid', async (req: Request, res: Response) => {
 
     // Возвращаем обновлённую issue
     const sql = buildIssueByUuidQuery(subdomain, uuid);
-    const items = await prisma.$queryRawUnsafe<any[]>(sql);
+    const items: any[] = await prisma.$queryRawUnsafe(sql);
 
     res.status(200).json(formatIssue(items[0]));
   } catch (error: any) {
@@ -357,7 +357,7 @@ router.delete('/:uuid', async (req: Request, res: Response) => {
 
   try {
     const deleteSql = buildDeleteIssueQuery(subdomain, uuid);
-    const result = await prisma.$queryRawUnsafe<any[]>(deleteSql);
+    const result: any[] = await prisma.$queryRawUnsafe(deleteSql);
 
     if (result.length === 0) {
       return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Issue не найдена'));
@@ -404,7 +404,7 @@ export function registerIssuesCountRoutes(app: any) {
       }
 
       const sql = buildIssuesCountQuery(subdomain, parsedQuery);
-      const result = await prisma.$queryRawUnsafe<any[]>(sql);
+      const result: any[] = await prisma.$queryRawUnsafe(sql);
 
       res.status(200).json({
         count: Number(result[0]?.count || 0)
@@ -412,6 +412,116 @@ export function registerIssuesCountRoutes(app: any) {
     } catch (error: any) {
       logger.error({ msg: 'Error counting issues', error: error.message });
       res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+    }
+  });
+}
+
+/**
+ * Регистрация специальных эндпоинтов для поиска issues
+ */
+export function registerSpecialIssuesRoutes(app: any) {
+  // short_issue_info - поиск задач по номеру/названию (для автодополнения)
+  app.get('/read_short_issue_info', async (req: Request, res: Response) => {
+    const subdomain = req.headers.subdomain as string;
+    const like = req.query.like as string || '';
+
+    logger.info({ msg: 'GET short_issue_info', subdomain, like });
+
+    try {
+      const items = await prisma.$queryRawUnsafe(`
+        SELECT 
+          I.UUID, 
+          P.SHORT_NAME || '-' || I.NUM || ' ' || I.TITLE AS name
+        FROM "${subdomain}".ISSUES I
+        JOIN "${subdomain}".PROJECTS P ON P.UUID = I.PROJECT_UUID 
+        WHERE I.DELETED_AT IS NULL 
+          AND (P.SHORT_NAME || '-' || I.NUM || ' ' || I.TITLE) ILIKE '%${like.replace(/'/g, "''")}%'
+        LIMIT 20
+      `);
+
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting short_issue_info', error: error.message });
+      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Ошибка поиска задач'));
+    }
+  });
+
+  // short_issue_info_for_imort - для импорта
+  app.get('/read_short_issue_info_for_imort', async (req: Request, res: Response) => {
+    const subdomain = req.headers.subdomain as string;
+
+    logger.info({ msg: 'GET short_issue_info_for_imort', subdomain });
+
+    try {
+      const items = await prisma.$queryRawUnsafe(`
+        SELECT 
+          I.UUID, 
+          P.SHORT_NAME || '-' || I.NUM AS full_num,
+          I.CREATED_AT, 
+          I.UUID
+        FROM "${subdomain}".ISSUES I
+        JOIN "${subdomain}".PROJECTS P ON P.UUID = I.PROJECT_UUID 
+        WHERE I.DELETED_AT IS NULL
+      `);
+
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting short_issue_info_for_imort', error: error.message });
+      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения задач для импорта'));
+    }
+  });
+
+  // issue_uuid - получить UUID задачи по фильтру
+  app.get('/read_issue_uuid', async (req: Request, res: Response) => {
+    const subdomain = req.headers.subdomain as string;
+    const { num, project_uuid } = req.query;
+
+    logger.info({ msg: 'GET issue_uuid', subdomain, num, project_uuid });
+
+    try {
+      let whereClause = `WHERE DELETED_AT IS NULL`;
+      if (num) {
+        whereClause += ` AND num = ${num}`;
+      }
+      if (project_uuid) {
+        whereClause += ` AND project_uuid = '${project_uuid}'`;
+      }
+
+      const items = await prisma.$queryRawUnsafe(`
+        SELECT UUID FROM "${subdomain}".ISSUES ${whereClause} LIMIT 1
+      `);
+
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting issue_uuid', error: error.message });
+      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения UUID задачи'));
+    }
+  });
+
+  // old_issue_uuid - для старых номеров задач (миграция)
+  app.get('/read_old_issue_uuid', async (req: Request, res: Response) => {
+    const subdomain = req.headers.subdomain as string;
+    const { num, project_uuid } = req.query;
+
+    logger.info({ msg: 'GET old_issue_uuid', subdomain, num, project_uuid });
+
+    try {
+      let whereClause = `WHERE DELETED_AT IS NULL`;
+      if (num) {
+        whereClause += ` AND num = ${num}`;
+      }
+      if (project_uuid) {
+        whereClause += ` AND project_uuid = '${project_uuid}'`;
+      }
+
+      const items = await prisma.$queryRawUnsafe(`
+        SELECT ISSUE_UUID AS UUID FROM "${subdomain}".OLD_ISSUES_NUM ${whereClause} LIMIT 1
+      `);
+
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting old_issue_uuid', error: error.message });
+      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения старого UUID задачи'));
     }
   });
 }
@@ -426,6 +536,7 @@ export function registerIssuesRoutes(app: any, sharedPrisma?: PrismaClient) {
   
   app.use(basePath, router);
   registerIssuesCountRoutes(app);
+  registerSpecialIssuesRoutes(app);
   
   logger.info({ msg: 'Issues routes registered', basePath });
 }

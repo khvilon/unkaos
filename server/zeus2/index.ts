@@ -25,7 +25,7 @@ const httpServer = require('http').createServer(app);
 const port = process.env.ZEUS2_PORT || 3007;
 
 // Prisma client
-const prisma = new PrismaClient({
+export const prisma = new PrismaClient({
   datasources: {
     db: {
       url: `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_DATABASE}`
@@ -54,26 +54,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Schema middleware for multi-tenancy
-async function setSchemaMiddleware(req: Request, res: Response, next: NextFunction) {
-  const subdomain = req.headers.subdomain as string;
-  if (subdomain) {
-    try {
-      await prisma.$executeRawUnsafe(`SET search_path TO "${subdomain}", public`);
-    } catch (error) {
-      logger.error({ msg: 'Failed to set schema', subdomain, error });
-      return res.status(500).json({
-        code: 'SCHEMA_ERROR',
-        message: 'Ошибка установки схемы базы данных',
-        trace_id: req.headers['x-trace-id'],
-        details: []
-      });
-    }
-  }
-  next();
-}
-
-app.use(API_PREFIX, setSchemaMiddleware);
+// NOTE: setSchemaMiddleware удалён - он бесполезен, т.к. все запросы
+// используют явное указание схемы в SQL (escapeIdentifier(schema).tablename)
 
 // ==================== ERROR HELPERS ====================
 
@@ -103,6 +85,19 @@ import { registerRolesRoutes } from './routes/roles';
 import { registerUsersRoutes } from './routes/users';
 import { registerIssueTypesRoutes } from './routes/issue-types';
 import { registerIssuesRoutes } from './routes/issues';
+import { registerSprintsRoutes } from './routes/sprints';
+import { registerBoardsRoutes } from './routes/boards';
+import { registerDashboardsRoutes } from './routes/dashboards';
+import { registerIssueActionsRoutes } from './routes/issue-actions';
+import { registerRelationsRoutes } from './routes/relations';
+import { registerAttachmentsRoutes } from './routes/attachments';
+import { registerFieldValuesRoutes } from './routes/field-values';
+import { registerTimeEntriesRoutes } from './routes/time-entries';
+import { registerWatchersRoutes } from './routes/watchers';
+import { registerIssueTagsRoutes } from './routes/issue-tags';
+import { registerFavouritesRoutes } from './routes/favourites';
+import { registerDictionariesRoutes } from './routes/dictionaries';
+import { registerConfigsRoutes } from './routes/configs';
 
 // ==================== INITIALIZATION ====================
 
@@ -122,6 +117,21 @@ async function init() {
     
     // Issues routes (with complex query support)
     registerIssuesRoutes(app, prisma);
+    
+    // Additional entity routes
+    registerSprintsRoutes(app, prisma, listeners, API_PREFIX);
+    registerBoardsRoutes(app, prisma, listeners, API_PREFIX);
+    registerDashboardsRoutes(app, prisma, listeners, API_PREFIX);
+    registerIssueActionsRoutes(app, prisma, listeners, API_PREFIX);
+    registerRelationsRoutes(app, prisma, listeners, API_PREFIX);
+    registerAttachmentsRoutes(app, prisma, listeners, API_PREFIX);
+    registerFieldValuesRoutes(app, prisma, listeners, API_PREFIX);
+    registerTimeEntriesRoutes(app, prisma, listeners, API_PREFIX);
+    registerWatchersRoutes(app, prisma, listeners, API_PREFIX);
+    registerIssueTagsRoutes(app, prisma, listeners, API_PREFIX);
+    registerFavouritesRoutes(app, prisma, listeners, API_PREFIX);
+    registerDictionariesRoutes(app, prisma, listeners, API_PREFIX);
+    registerConfigsRoutes(app, prisma, listeners, API_PREFIX);
     // Add issues to listeners for gateway
     listeners.push({ method: 'get', func: 'read_issues', entity: 'issues' });
     listeners.push({ method: 'get', func: 'read_issue', entity: 'issue' });
@@ -133,6 +143,11 @@ async function init() {
     listeners.push({ method: 'delete', func: 'delete_issues', entity: 'issues' });
     listeners.push({ method: 'delete', func: 'delete_issue', entity: 'issue' });
     listeners.push({ method: 'get', func: 'read_issues_count', entity: 'issues-count' });
+    // Special issue endpoints
+    listeners.push({ method: 'get', func: 'read_short_issue_info', entity: 'short_issue_info' });
+    listeners.push({ method: 'get', func: 'read_short_issue_info_for_imort', entity: 'short_issue_info_for_imort' });
+    listeners.push({ method: 'get', func: 'read_issue_uuid', entity: 'issue_uuid' });
+    listeners.push({ method: 'get', func: 'read_old_issue_uuid', entity: 'old_issue_uuid' });
 
     // Endpoint to return registered listeners (for gateway compatibility)
     app.get('/read_listeners', (req: Request, res: Response) => {
@@ -256,4 +271,4 @@ process.on('SIGTERM', async () => {
 
 init();
 
-export { prisma, listeners, API_PREFIX, errorResponse };
+export { listeners, API_PREFIX, errorResponse };

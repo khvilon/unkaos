@@ -6,7 +6,7 @@ const config: PlaywrightTestConfig = {
     headless: false,
     browserName: 'chromium', // Используем chromium с каналом chrome
     channel: 'chrome', // Указываем использовать установленный Chrome
-    baseURL: 'https://localhost:3000',
+    baseURL: 'https://unkaos.local',
     viewport: { width: 1920, height: 1080 }, // Стандартное Full HD разрешение
     ignoreHTTPSErrors: true, // Игнорировать ошибки SSL
     // Дополнительные настройки для стабильности
@@ -23,7 +23,7 @@ const config: PlaywrightTestConfig = {
         headless: false,
         browserName: 'chromium',
         channel: 'chrome', // Используем установленный Chrome
-        baseURL: 'https://localhost:3000',
+        baseURL: 'https://unkaos.local',
         viewport: { width: 1920, height: 1080 }, // Стандартное Full HD разрешение
         ignoreHTTPSErrors: true,
         actionTimeout: 30000,

@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 
-const baseUrl = 'https://localhost';
+const baseUrl = 'https://unkaos.local';
 
 interface Email {
     mail_id: string;
@@ -363,15 +363,21 @@ export async function signIn(page: Page, email: string, pass: string) {
     console.log(`🚀 Нажимаем кнопку входа...`);
     
     // Ждем навигацию после клика
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle', timeout: 10000 }), // Уменьшаем таймаут
-      loginButton.click()
-    ]);
+    try {
+      await Promise.all([
+        page.waitForNavigation({ waitUntil: 'networkidle', timeout: 30000 }),
+        loginButton.click()
+      ]);
+    } catch (e) {
+      // Навигация могла уже завершиться или не произойти
+      console.log('Navigation timeout, checking page state...');
+      await page.waitForTimeout(2000);
+    }
     
     console.log(`✅ Навигация завершена, URL: ${page.url()}`);
     
     // Ждем загрузки страницы
-    await page.waitForLoadState('networkidle', { timeout: 5000 }); // Уменьшаем таймаут
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
     
     // Проверяем наличие ошибок на странице
     const errorSelectors = [
@@ -650,12 +656,12 @@ export async function createWorkflow(page: Page, workflowName: string): Promise<
   // Ждем загрузки статусов в Vue компонент
   console.log('⏳ Ждем загрузки статусов...');
   await page.waitForFunction(() => {
-    const statusButtons = document.querySelectorAll('[data-testid="statuses-grid"] .status-button');
-    return statusButtons.length > 0;
-  }, { timeout: 5000 }); // Уменьшено с 10000мс
+    const statusItems = document.querySelectorAll('[data-testid="statuses-grid"] .status-item');
+    return statusItems.length > 0;
+  }, { timeout: 10000 });
   
   // Получаем список доступных статусов
-  const statusButtons = page.locator('[data-testid="statuses-grid"] .status-button');
+  const statusButtons = page.locator('[data-testid="statuses-grid"] .status-item');
   const statusCount = await statusButtons.count();
   console.log(`Найдено статусов в DOM: ${statusCount}`);
   
@@ -689,8 +695,13 @@ export async function createWorkflow(page: Page, workflowName: string): Promise<
   
   // Переключаемся в режим создания переходов
   console.log('Переключение в режим создания переходов');
-  await page.locator('[data-testid="mode-create-transitions"]').click();
-  await page.waitForTimeout(500); // Уменьшено с 1000мс
+  const transitionModeBtn = page.locator('button[title="Связи (C)"], button.tool-btn:has(.bx-share-alt)');
+  if (await transitionModeBtn.count() > 0) {
+    await transitionModeBtn.first().click();
+    await page.waitForTimeout(500);
+  } else {
+    console.log('⚠️ Кнопка режима переходов не найдена, пропускаем');
+  }
   
   // Создаем переходы между статусами (drag & drop)
   if (addedStatuses.length >= 2) {

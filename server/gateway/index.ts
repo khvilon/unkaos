@@ -61,28 +61,34 @@ socket.on('connect_error', (error) => {
   logger.error({ msg: 'Cerberus connection error', error: error.message });
 });
 
-// Zeus v1 Socket
-const zeusSocket = io(conf.zeusUrl, {
-  reconnection: true,
-  reconnectionAttempts: Infinity,
-  reconnectionDelay: 1000,
-  transports: ['polling', 'websocket'],
-  path: '/socket.io',
-  autoConnect: true,
-  forceNew: true
-});
+// Zeus v1 Socket (опционально - может быть отключён)
+let zeusSocket: Socket | null = null;
 
-zeusSocket.on('connect', () => {
-  logger.info({ msg: 'Connected to Zeus v1', socketId: zeusSocket.id });
-});
+if (conf.zeusUrl) {
+  zeusSocket = io(conf.zeusUrl, {
+    reconnection: true,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 1000,
+    transports: ['polling', 'websocket'],
+    path: '/socket.io',
+    autoConnect: true,
+    forceNew: true
+  });
 
-zeusSocket.on('disconnect', () => {
-  logger.warn({ msg: 'Disconnected from Zeus v1' });
-});
+  zeusSocket.on('connect', () => {
+    logger.info({ msg: 'Connected to Zeus v1', socketId: zeusSocket?.id });
+  });
 
-zeusSocket.on('connect_error', (error) => {
-  logger.error({ msg: 'Zeus v1 connection error', error: error.message });
-});
+  zeusSocket.on('disconnect', () => {
+    logger.warn({ msg: 'Disconnected from Zeus v1' });
+  });
+
+  zeusSocket.on('connect_error', (error) => {
+    logger.error({ msg: 'Zeus v1 connection error', error: error.message });
+  });
+} else {
+  logger.info({ msg: 'Zeus v1 is disabled - all requests will go to Zeus2' });
+}
 
 // Zeus2 Socket
 let zeus2Socket: Socket | null = null;
@@ -115,10 +121,10 @@ if (conf.zeus2Url) {
   });
 }
 
-app.use(cors());
-app.use(express.json({ limit: "150mb" }));
-app.use(express.raw({ limit: "150mb" }));
-app.use(express.urlencoded({ limit: "150mb", extended: true }));
+  app.use(cors());
+  app.use(express.json({ limit: "150mb" }));
+  app.use(express.raw({ limit: "150mb" }));
+  app.use(express.urlencoded({ limit: "150mb", extended: true }));
 
 // Auth endpoint
 app.get("/get_token", async (req: any, res: any) => {
@@ -166,14 +172,16 @@ function convertToRestRequest(func: string, method: string, body: any, query: an
       if (body?.uuid || query?.uuid) {
         restPath = `/api/v2/${entity}/${body?.uuid || query?.uuid}`;
       }
-      // Pass query params for issues filtering
-      const filterQuery = body?.query || query?.query;
-      if (filterQuery) {
-        restPath += `?query=${encodeURIComponent(filterQuery)}`;
-        const offsetVal = body?.offset || query?.offset;
-        const limitVal = body?.limit || query?.limit;
-        if (offsetVal) restPath += `&offset=${offsetVal}`;
-        if (limitVal) restPath += `&limit=${limitVal}`;
+      // Pass all query params from body and query object
+      const queryParams: string[] = [];
+      const allParams = { ...body, ...query };
+      for (const [key, value] of Object.entries(allParams)) {
+        if (value !== undefined && value !== null && key !== 'uuid') {
+          queryParams.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
+        }
+      }
+      if (queryParams.length > 0) {
+        restPath += `?${queryParams.join('&')}`;
       }
       break;
     
@@ -283,14 +291,14 @@ async function loadZeus2Entities(retries = 5, delay = 2000): Promise<void> {
         }
       }
       
-      logger.info({
+  logger.info({
         msg: 'Loaded Zeus2 entities',
         entities: Array.from(zeus2Entities),
         attempt
-      });
+  });
       return;
     } catch (error) {
-      logger.warn({ 
+  logger.warn({
         msg: `Failed to load Zeus2 entities (attempt ${attempt}/${retries})`, 
         error: (error as any).code || (error as any).message 
       });
@@ -308,13 +316,22 @@ async function init() {
   // Load Zeus2 entities with retry
   await loadZeus2Entities();
 
-  // Load Zeus v1 listeners
-  const zeus_listeners = await axios.get(conf.zeusUrl + "/read_listeners");
+  // Load Zeus v1 listeners (only if Zeus v1 is configured)
+  let zeus_listeners: any = { data: [] };
+  if (conf.zeusUrl) {
+    try {
+      zeus_listeners = await axios.get(conf.zeusUrl + "/read_listeners");
+    } catch (error: any) {
+      logger.warn({ msg: 'Zeus v1 not available', error: error.message });
+    }
+  } else {
+    logger.info({ msg: 'Zeus v1 is disabled, using Zeus2 only' });
+  }
 
   for (let i = 0; i < zeus_listeners.data.length; i++) {
     const method = zeus_listeners.data[i].method;
     const func = zeus_listeners.data[i].func;
-    
+
     logger.debug({
       msg: 'Registering handler',
       function: func,
@@ -391,8 +408,8 @@ async function init() {
                 res.send(convertedResponse);
               });
 
-            } else {
-              // Use Zeus v1
+            } else if (zeusSocket) {
+              // Use Zeus v1 (if available)
               zeusSocket.emit('request', {
                 method: method,
                 url: req.url,
@@ -404,12 +421,20 @@ async function init() {
                 body: req.body
               }, (zeus_ans: any) => {
                 logger.debug({
-                  msg: 'Zeus v1 response',
+                    msg: 'Zeus v1 response',
                   status: zeus_ans.status,
                   url: req.url
                 });
                 res.status(zeus_ans.status);
                 res.send(zeus_ans.data);
+              });
+            } else {
+              // Zeus v1 отключён и сущность не найдена в Zeus2
+              logger.error({ msg: 'No backend available for entity', func });
+              res.status(503).json({
+                code: 'SERVICE_UNAVAILABLE',
+                message: 'Сервис временно недоступен. Zeus v1 отключён, сущность не найдена в Zeus2.',
+                details: [{ entity: func }]
               });
             }
 
@@ -588,6 +613,94 @@ app.get("/health", (req: any, res: any) => {
     status: 'ok',
     service: 'gateway',
     zeus2_entities: Array.from(zeus2Entities)
+  });
+});
+
+/**
+ * REST API v2 password endpoint - routes to Cerberus
+ */
+app.post("/api/v2/password", async (req: any, res: any) => {
+  logger.info({
+    msg: 'REST API v2 password request',
+    subdomain: req.headers.subdomain
+  });
+
+  socket.emit('upsert_password', {
+    subdomain: req.headers.subdomain,
+    token: req.headers.token,
+    password: req.body.password,
+    user: req.body.user
+  }, (response: any) => {
+    res.status(response.status);
+    res.send(response.data);
+  });
+});
+
+/**
+ * REST API v2 proxy handler
+ * All /api/v2/* requests go through Gateway for auth check, then to Zeus2
+ */
+app.all("/api/v2/*", async (req: any, res: any) => {
+  const requestId = randomUUID();
+  const traceId = req.headers['x-trace-id'] || requestId;
+  
+  logger.info({
+    msg: 'REST API v2 request',
+    method: req.method,
+    path: req.path,
+    subdomain: req.headers.subdomain
+  });
+
+  // Check authorization via Cerberus
+  socket.emit('check_session', {
+    token: req.headers.token,
+    subdomain: req.headers.subdomain,
+    request_function: 'api_v2' // Generic function name for auth check
+  }, async (authResponse: any) => {
+    if (authResponse.status !== 200) {
+      logger.warn({
+        msg: 'REST API v2 auth failed',
+        status: authResponse.status,
+        path: req.path
+      });
+      res.status(authResponse.status);
+      res.send(authResponse.data);
+      return;
+    }
+
+    // Auth passed - forward to Zeus2
+    if (!zeus2Socket) {
+      logger.error({ msg: 'Zeus2 not connected' });
+      res.status(503).json({ message: 'Zeus2 service unavailable' });
+      return;
+    }
+
+    try {
+      zeus2Socket.emit('request', {
+        method: req.method.toLowerCase(),
+        url: req.path + (req._parsedUrl?.search || ''),
+        headers: {
+          subdomain: req.headers.subdomain,
+          user_uuid: authResponse.data.uuid,
+          is_admin: authResponse.data.is_admin,
+          'x-request-id': requestId,
+          'x-trace-id': traceId
+        },
+        body: req.body
+      }, (zeus2Response: any) => {
+        logger.debug({
+          msg: 'REST API v2 response',
+          status: zeus2Response.status,
+          path: req.path
+        });
+        
+        res.status(zeus2Response.status);
+        res.send(zeus2Response.data);
+      });
+    } catch (error: any) {
+      logger.error({ msg: 'REST API v2 Zeus2 error', error: error.message });
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
   });
 });
 

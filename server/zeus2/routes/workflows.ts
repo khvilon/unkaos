@@ -1,91 +1,14 @@
 /**
- * Workflows REST API
- * 
- * Endpoints:
- *   GET    /api/v2/workflows          - Получение списка воркфлоу
- *   GET    /api/v2/workflows/:uuid    - Получение воркфлоу по UUID (с nodes и transitions)
- *   POST   /api/v2/workflows          - Создание воркфлоу
- *   PUT    /api/v2/workflows/:uuid    - Полное обновление воркфлоу (включая nodes и transitions)
- *   PATCH  /api/v2/workflows/:uuid    - Частичное обновление воркфлоу
- *   DELETE /api/v2/workflows/:uuid    - Удаление воркфлоу (soft delete)
- * 
- * Nested resources:
- *   GET    /api/v2/workflows/:uuid/nodes       - Получение нод воркфлоу
- *   POST   /api/v2/workflows/:uuid/nodes       - Добавление ноды
- *   DELETE /api/v2/workflows/:uuid/nodes/:node_uuid - Удаление ноды
- * 
- *   GET    /api/v2/workflows/:uuid/transitions - Получение переходов
- *   POST   /api/v2/workflows/:uuid/transitions - Добавление перехода
- *   DELETE /api/v2/workflows/:uuid/transitions/:transition_uuid - Удаление перехода
+ * Workflows Routes - со вложенными workflow_nodes и transitions
  */
 
-import { Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { createErrorResponse, isValidUuid, escapeIdentifier, Listener } from '../utils/crud-factory';
 import { createLogger } from '../../common/logging';
-import { randomUUID } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 const logger = createLogger('zeus2:workflows');
-
-interface Listener {
-  method: string;
-  func: string;
-  entity: string;
-}
-
-// Response formatters
-function formatWorkflow(wf: any, includeRelations = true) {
-  const result: any = {
-    uuid: wf.uuid,
-    name: wf.name,
-    created_at: wf.created_at,
-    updated_at: wf.updated_at
-  };
-
-  if (includeRelations && wf.workflow_nodes) {
-    result.workflow_nodes = wf.workflow_nodes.map((node: any) => ({
-      uuid: node.uuid,
-      x: node.x,
-      y: node.y,
-      issue_statuses_uuid: node.issue_statuses_uuid,
-      issue_status: node.issue_statuses ? {
-        uuid: node.issue_statuses.uuid,
-        name: node.issue_statuses.name,
-        is_start: node.issue_statuses.is_start,
-        is_end: node.issue_statuses.is_end
-      } : null
-    }));
-  }
-
-  if (includeRelations && wf.transitions) {
-    result.transitions = wf.transitions.map((tr: any) => ({
-      uuid: tr.uuid,
-      from_uuid: tr.from_uuid,
-      to_uuid: tr.to_uuid
-    }));
-  }
-
-  return result;
-}
-
-function formatWorkflowListItem(wf: any) {
-  return {
-    uuid: wf.uuid,
-    name: wf.name,
-    created_at: wf.created_at,
-    updated_at: wf.updated_at,
-    nodes_count: wf._count?.workflow_nodes || 0,
-    transitions_count: wf._count?.transitions || 0
-  };
-}
-
-function errorResponse(req: Request, code: string, message: string, details: any[] = []) {
-  return {
-    code,
-    message,
-    trace_id: req.headers['x-trace-id'] as string,
-    details
-  };
-}
 
 export function registerWorkflowsRoutes(
   app: any,
@@ -93,523 +16,296 @@ export function registerWorkflowsRoutes(
   listeners: Listener[],
   apiPrefix: string
 ) {
-  const entityName = 'workflows';
-  const basePath = `${apiPrefix}/${entityName}`;
+  const router = Router();
 
-  // GET /api/v2/workflows - Получение списка
-  app.get(basePath, async (req: Request, res: Response) => {
-    try {
-      const subdomain = req.headers.subdomain as string;
-      const { page = '1', limit = '20', sort } = req.query;
+  async function getWorkflowWithNodes(schema: string, uuid?: string) {
+    const whereClause = uuid 
+      ? `WHERE w.uuid = $1::uuid AND w.deleted_at IS NULL`
+      : `WHERE w.deleted_at IS NULL`;
 
-      logger.info({ msg: 'GET workflows', subdomain, page, limit });
+    // Получаем workflows с nodes
+    // Формат issue_statuses как массив для совместимости с фронтендом
+    const query = `
+      SELECT 
+        'workflows' AS table_name,
+        w.uuid, w.name, w.created_at, w.updated_at,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'uuid', wn.uuid,
+              'workflow_uuid', wn.workflows_uuid,
+              'issue_statuses_uuid', wn.issue_statuses_uuid,
+              'issue_statuses', json_build_array(
+                json_build_object(
+                  'uuid', ist.uuid,
+                  'name', ist.name,
+                  'is_start', ist.is_start,
+                  'is_end', ist.is_end
+                )
+              ),
+              'x', wn.x,
+              'y', wn.y
+            )
+          ) FILTER (WHERE wn.uuid IS NOT NULL), '[]'
+        ) AS workflow_nodes
+      FROM ${escapeIdentifier(schema)}.workflows w
+      LEFT JOIN ${escapeIdentifier(schema)}.workflow_nodes wn ON wn.workflows_uuid = w.uuid AND wn.deleted_at IS NULL
+      LEFT JOIN ${escapeIdentifier(schema)}.issue_statuses ist ON ist.uuid = wn.issue_statuses_uuid
+      ${whereClause}
+      GROUP BY w.uuid, w.name, w.created_at, w.updated_at
+      ORDER BY w.name ASC
+    `;
 
-      const pageNum = Math.max(1, parseInt(page as string));
-      const limitNum = Math.min(100, Math.max(1, parseInt(limit as string)));
-      const skip = (pageNum - 1) * limitNum;
+    const workflows: any[] = uuid 
+      ? await prisma.$queryRawUnsafe(query, uuid)
+      : await prisma.$queryRawUnsafe(query.replace('$1::uuid', "'dummy'"));
 
-      let orderBy: any = { name: 'asc' };
-      if (sort) {
-        const [field, direction] = (sort as string).split(',');
-        orderBy = { [field]: direction === 'desc' ? 'desc' : 'asc' };
-      }
-
-      // Use raw SQL with search_path for multi-tenancy
-      // Prisma ORM doesn't respect SET search_path, so we use raw queries with explicit schema
-      const items: any[] = await prisma.$queryRawUnsafe(`
+    // Получаем transitions для каждого workflow
+    for (const workflow of workflows) {
+      const transitions = await prisma.$queryRawUnsafe(`
         SELECT 
-          w.uuid, w.name, w.created_at, w.updated_at,
-          (SELECT COUNT(*) FROM "${subdomain}".workflow_nodes wn WHERE wn.workflows_uuid = w.uuid AND wn.deleted_at IS NULL) as nodes_count,
-          (SELECT COUNT(*) FROM "${subdomain}".transitions t WHERE t.workflows_uuid = w.uuid AND t.deleted_at IS NULL) as transitions_count
-        FROM "${subdomain}".workflows w
-        WHERE w.deleted_at IS NULL
-        ORDER BY w.name ASC
-        LIMIT ${limitNum} OFFSET ${skip}
-      `);
+          t.uuid, t.status_from_uuid, t.status_to_uuid, t.name, t.workflows_uuid
+        FROM ${escapeIdentifier(schema)}.transitions t
+        WHERE t.workflows_uuid = $1::uuid AND t.deleted_at IS NULL
+      `, workflow.uuid);
+      workflow.transitions = transitions;
+    }
 
-      const totalResult: any[] = await prisma.$queryRawUnsafe(`
-        SELECT COUNT(*) as count FROM "${subdomain}".workflows WHERE deleted_at IS NULL
-      `);
-      const total = Number(totalResult[0]?.count || 0);
+    return workflows;
+  }
 
-      logger.info({ msg: 'Workflows found', count: items.length, total });
+  // GET /api/v2/workflows
+  router.get('/', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
 
-      logger.info({ msg: 'Workflows found', count: items.length, total });
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
 
-      res.status(200).json({
-        items: items.map(item => ({
-          uuid: item.uuid,
-          name: item.name,
-          created_at: item.created_at,
-          updated_at: item.updated_at,
-          nodes_count: Number(item.nodes_count || 0),
-          transitions_count: Number(item.transitions_count || 0)
-        })),
-        page: pageNum,
-        limit: limitNum,
-        total
-      });
-
-    } catch (error) {
-      logger.error({ msg: 'Error getting workflows', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+    try {
+      const items = await getWorkflowWithNodes(schema);
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting workflows', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения воркфлоу'));
     }
   });
-  listeners.push({ method: 'get', func: basePath, entity: entityName });
 
-  // GET /api/v2/workflows/:uuid - Получение по UUID с relations
-  app.get(`${basePath}/:uuid`, async (req: Request, res: Response) => {
+  // GET /api/v2/workflows/:uuid
+  router.get('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-
-      logger.info({ msg: 'GET workflow', subdomain, uuid });
-
-      await prisma.$executeRawUnsafe(`SET search_path TO "${subdomain}", public`);
-
-      const item = await prisma.workflows.findFirst({
-        where: { uuid, deleted_at: null },
-        include: {
-          workflow_nodes: {
-            where: { deleted_at: null },
-            include: { issue_statuses: true }
-          },
-          transitions: {
-            where: { deleted_at: null }
-          }
-        }
-      });
-
-      if (!item) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Воркфлоу не найден'));
+      const items: any[] = await getWorkflowWithNodes(schema, uuid);
+      if (items.length === 0) {
+        return res.status(404).json(createErrorResponse(req, 'NOT_FOUND', 'Воркфлоу не найден'));
       }
-
-      res.status(200).json(formatWorkflow(item));
-
-    } catch (error) {
-      logger.error({ msg: 'Error getting workflow', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting workflow', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения воркфлоу'));
     }
   });
-  listeners.push({ method: 'get', func: `${basePath}/:uuid`, entity: entityName });
 
-  // POST /api/v2/workflows - Создание
-  app.post(basePath, async (req: Request, res: Response) => {
+  // POST /api/v2/workflows
+  router.post('/', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { name, workflow_nodes, transitions } = req.body;
+    const uuid = req.body.uuid && isValidUuid(req.body.uuid) ? req.body.uuid : uuidv4();
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!name) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'name required'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const authorUuid = req.headers.user_uuid as string;
-      const { name, workflow_nodes, transitions } = req.body;
+      // Create workflow
+      await prisma.$executeRawUnsafe(`
+        INSERT INTO ${escapeIdentifier(schema)}.workflows 
+        (uuid, name, created_at, updated_at)
+        VALUES ($1::uuid, $2, NOW(), NOW())
+      `, uuid, name);
 
-      // Validation
-      if (!name || typeof name !== 'string') {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Ошибка валидации', [
-          { field: 'name', message: 'Поле name обязательно' }
-        ]));
+      // Create nodes
+      if (workflow_nodes && Array.isArray(workflow_nodes)) {
+        for (const node of workflow_nodes) {
+          const nodeUuid = node.uuid && isValidUuid(node.uuid) ? node.uuid : uuidv4();
+          const statusUuid = node.status_uuid || node.issue_statuses_uuid;
+          await prisma.$executeRawUnsafe(`
+            INSERT INTO ${escapeIdentifier(schema)}.workflow_nodes 
+            (uuid, workflows_uuid, issue_statuses_uuid, x, y, created_at, updated_at)
+            VALUES ($1::uuid, $2::uuid, $3::uuid, $4, $5, NOW(), NOW())
+          `, nodeUuid, uuid, statusUuid, node.x ?? 0, node.y ?? 0);
+        }
       }
 
-      logger.info({ msg: 'POST workflow', subdomain, name });
-
-      await prisma.$executeRawUnsafe(`SET search_path TO "${subdomain}", public`);
-
-      const workflowUuid = randomUUID();
-
-      const result = await prisma.$transaction(async (tx) => {
-        // Create workflow
-        const workflow = await tx.workflows.create({
-          data: {
-            uuid: workflowUuid,
-            name
-          }
-        });
-
-        // Create nodes if provided
-        if (workflow_nodes && Array.isArray(workflow_nodes)) {
-          for (const node of workflow_nodes) {
-            await tx.workflow_nodes.create({
-              data: {
-                uuid: node.uuid || randomUUID(),
-                x: Math.round(node.x || 0),
-                y: Math.round(node.y || 0),
-                workflows_uuid: workflowUuid,
-                issue_statuses_uuid: node.issue_statuses_uuid
-              }
-            });
-          }
+      // Create transitions
+      if (transitions && Array.isArray(transitions)) {
+        for (const trans of transitions) {
+          const transUuid = trans.uuid && isValidUuid(trans.uuid) ? trans.uuid : uuidv4();
+          await prisma.$executeRawUnsafe(`
+            INSERT INTO ${escapeIdentifier(schema)}.transitions 
+            (uuid, workflows_uuid, status_from_uuid, status_to_uuid, name, created_at, updated_at)
+            VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, $5, NOW(), NOW())
+          `, transUuid, uuid, trans.status_from_uuid, trans.status_to_uuid, trans.name ?? '');
         }
+      }
 
-        // Create transitions if provided
-        if (transitions && Array.isArray(transitions)) {
-          for (const tr of transitions) {
-            await tx.transitions.create({
-              data: {
-                uuid: tr.uuid || randomUUID(),
-                workflows_uuid: workflowUuid,
-                from_uuid: tr.from_uuid,
-                to_uuid: tr.to_uuid
-              }
-            });
-          }
-        }
-
-        // Return with relations
-        return await tx.workflows.findUnique({
-          where: { uuid: workflowUuid },
-          include: {
-            workflow_nodes: {
-              where: { deleted_at: null },
-              include: { issue_statuses: true }
-            },
-            transitions: {
-              where: { deleted_at: null }
-            }
-          }
-        });
-      });
-
-      res.status(201).json(formatWorkflow(result));
-
-    } catch (error) {
-      logger.error({ msg: 'Error creating workflow', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      const items = await getWorkflowWithNodes(schema, uuid);
+      res.status(201).json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error creating workflow', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка создания воркфлоу'));
     }
   });
-  listeners.push({ method: 'post', func: basePath, entity: entityName });
 
-  // PUT /api/v2/workflows/:uuid - Полное обновление
-  app.put(`${basePath}/:uuid`, async (req: Request, res: Response) => {
+  // PUT /api/v2/workflows/:uuid
+  router.put('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
+    const { name, workflow_nodes, transitions } = req.body;
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-      const { name, workflow_nodes, transitions } = req.body;
-
-      if (!name || typeof name !== 'string') {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Ошибка валидации', [
-          { field: 'name', message: 'Поле name обязательно' }
-        ]));
+      // Update workflow name
+      if (name !== undefined) {
+        await prisma.$executeRawUnsafe(`
+          UPDATE ${escapeIdentifier(schema)}.workflows 
+          SET name = $1, updated_at = NOW()
+          WHERE uuid = $2::uuid
+        `, name, uuid);
       }
 
-      logger.info({ 
-        msg: 'PUT workflow', 
-        subdomain, 
-        uuid,
-        nodes_count: workflow_nodes?.length,
-        transitions_count: transitions?.length
-      });
+      // Update nodes if provided
+      // По парадигме Full Replace: undefined = не трогаем, [] = удаляем все, [...] = полная замена
+      if (workflow_nodes !== undefined && Array.isArray(workflow_nodes)) {
+        // Get existing nodes
+        const existingNodes: any[] = await prisma.$queryRawUnsafe(`
+          SELECT uuid FROM ${escapeIdentifier(schema)}.workflow_nodes 
+          WHERE workflows_uuid = $1::uuid AND deleted_at IS NULL
+        `, uuid);
+        const existingNodeUuids = new Set(existingNodes.map((n: any) => n.uuid));
+        const newNodeUuids = new Set(workflow_nodes.map((n: any) => n.uuid).filter(Boolean));
 
-      await prisma.$executeRawUnsafe(`SET search_path TO "${subdomain}", public`);
+        // Delete nodes not in new list
+        for (const existing of existingNodes) {
+          if (!newNodeUuids.has(existing.uuid)) {
+            await prisma.$executeRawUnsafe(`
+              UPDATE ${escapeIdentifier(schema)}.workflow_nodes 
+              SET deleted_at = NOW() WHERE uuid = $1::uuid
+            `, existing.uuid);
+          }
+        }
 
-      // Check exists
-      const existing = await prisma.workflows.findFirst({
-        where: { uuid, deleted_at: null }
-      });
-
-      if (!existing) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Воркфлоу не найден'));
+        // Create/update nodes
+        for (const node of workflow_nodes) {
+          const nodeUuid = node.uuid && isValidUuid(node.uuid) ? node.uuid : uuidv4();
+          const statusUuid = node.status_uuid || node.issue_statuses_uuid;
+          
+          if (existingNodeUuids.has(nodeUuid)) {
+            await prisma.$executeRawUnsafe(`
+              UPDATE ${escapeIdentifier(schema)}.workflow_nodes 
+              SET issue_statuses_uuid = $1::uuid, x = $2, y = $3, updated_at = NOW()
+              WHERE uuid = $4::uuid
+            `, statusUuid, node.x ?? 0, node.y ?? 0, nodeUuid);
+          } else {
+            await prisma.$executeRawUnsafe(`
+              INSERT INTO ${escapeIdentifier(schema)}.workflow_nodes 
+              (uuid, workflows_uuid, issue_statuses_uuid, x, y, created_at, updated_at)
+              VALUES ($1::uuid, $2::uuid, $3::uuid, $4, $5, NOW(), NOW())
+            `, nodeUuid, uuid, statusUuid, node.x ?? 0, node.y ?? 0);
+          }
+        }
       }
 
-      const result = await prisma.$transaction(async (tx) => {
-        // Update workflow
-        await tx.workflows.update({
-          where: { uuid },
-          data: { name, updated_at: new Date() }
-        });
+      // Update transitions if provided
+      // По парадигме Full Replace: undefined = не трогаем, [] = удаляем все, [...] = полная замена
+      if (transitions !== undefined && Array.isArray(transitions)) {
+        // Delete old transitions
+        await prisma.$executeRawUnsafe(`
+          UPDATE ${escapeIdentifier(schema)}.transitions 
+          SET deleted_at = NOW() WHERE workflows_uuid = $1::uuid
+        `, uuid);
 
-        // Get existing nodes and transitions
-        const existingNodes = await tx.workflow_nodes.findMany({
-          where: { workflows_uuid: uuid, deleted_at: null }
-        });
-        const existingTransitions = await tx.transitions.findMany({
-          where: { workflows_uuid: uuid, deleted_at: null }
-        });
-
-        // Process nodes
-        const newNodeUuids = new Set((workflow_nodes || []).map((n: any) => n.uuid));
-        
-        // Soft delete removed nodes
-        for (const node of existingNodes) {
-          if (!newNodeUuids.has(node.uuid)) {
-            await tx.workflow_nodes.update({
-              where: { uuid: node.uuid },
-              data: { deleted_at: new Date() }
-            });
-          }
+        // Create new transitions
+        for (const trans of transitions) {
+          const transUuid = trans.uuid && isValidUuid(trans.uuid) ? trans.uuid : uuidv4();
+          await prisma.$executeRawUnsafe(`
+            INSERT INTO ${escapeIdentifier(schema)}.transitions 
+            (uuid, workflows_uuid, status_from_uuid, status_to_uuid, name, created_at, updated_at)
+            VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, $5, NOW(), NOW())
+          `, transUuid, uuid, trans.status_from_uuid, trans.status_to_uuid, trans.name ?? '');
         }
+      }
 
-        // Upsert nodes
-        for (const node of workflow_nodes || []) {
-          await tx.workflow_nodes.upsert({
-            where: { uuid: node.uuid || randomUUID() },
-            update: {
-              x: Math.round(node.x),
-              y: Math.round(node.y),
-              issue_statuses_uuid: node.issue_statuses_uuid,
-              updated_at: new Date(),
-              deleted_at: null
-            },
-            create: {
-              uuid: node.uuid || randomUUID(),
-              x: Math.round(node.x),
-              y: Math.round(node.y),
-              workflows_uuid: uuid,
-              issue_statuses_uuid: node.issue_statuses_uuid
-            }
-          });
-        }
-
-        // Process transitions
-        const newTransitionUuids = new Set((transitions || []).map((t: any) => t.uuid));
-        
-        // Soft delete removed transitions
-        for (const tr of existingTransitions) {
-          if (!newTransitionUuids.has(tr.uuid)) {
-            await tx.transitions.update({
-              where: { uuid: tr.uuid },
-              data: { deleted_at: new Date() }
-            });
-          }
-        }
-
-        // Upsert transitions
-        for (const tr of transitions || []) {
-          await tx.transitions.upsert({
-            where: { uuid: tr.uuid || randomUUID() },
-            update: {
-              from_uuid: tr.from_uuid,
-              to_uuid: tr.to_uuid,
-              updated_at: new Date(),
-              deleted_at: null
-            },
-            create: {
-              uuid: tr.uuid || randomUUID(),
-              workflows_uuid: uuid,
-              from_uuid: tr.from_uuid,
-              to_uuid: tr.to_uuid
-            }
-          });
-        }
-
-        return await tx.workflows.findUnique({
-          where: { uuid },
-          include: {
-            workflow_nodes: {
-              where: { deleted_at: null },
-              include: { issue_statuses: true }
-            },
-            transitions: {
-              where: { deleted_at: null }
-            }
-          }
-        });
-      });
-
-      res.status(200).json(formatWorkflow(result));
-
-    } catch (error) {
-      logger.error({ msg: 'Error updating workflow', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      const items = await getWorkflowWithNodes(schema, uuid);
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error updating workflow', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка обновления воркфлоу'));
     }
   });
-  listeners.push({ method: 'put', func: `${basePath}/:uuid`, entity: entityName });
 
-  // PATCH /api/v2/workflows/:uuid - Частичное обновление (только name)
-  app.patch(`${basePath}/:uuid`, async (req: Request, res: Response) => {
-    try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-      const { name } = req.body;
+  // DELETE /api/v2/workflows/:uuid
+  router.delete('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
 
-      if (name === undefined) {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Нет полей для обновления'));
-      }
-
-      logger.info({ msg: 'PATCH workflow', subdomain, uuid });
-
-      await prisma.$executeRawUnsafe(`SET search_path TO "${subdomain}", public`);
-
-      const existing = await prisma.workflows.findFirst({
-        where: { uuid, deleted_at: null }
-      });
-
-      if (!existing) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Воркфлоу не найден'));
-      }
-
-      const item = await prisma.workflows.update({
-        where: { uuid },
-        data: { name, updated_at: new Date() },
-        include: {
-          workflow_nodes: {
-            where: { deleted_at: null },
-            include: { issue_statuses: true }
-          },
-          transitions: {
-            where: { deleted_at: null }
-          }
-        }
-      });
-
-      res.status(200).json(formatWorkflow(item));
-
-    } catch (error) {
-      logger.error({ msg: 'Error patching workflow', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
     }
-  });
-  listeners.push({ method: 'patch', func: `${basePath}/:uuid`, entity: entityName });
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
 
-  // DELETE /api/v2/workflows/:uuid - Удаление
-  app.delete(`${basePath}/:uuid`, async (req: Request, res: Response) => {
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-
-      logger.info({ msg: 'DELETE workflow', subdomain, uuid });
-
-      await prisma.$executeRawUnsafe(`SET search_path TO "${subdomain}", public`);
-
-      const existing = await prisma.workflows.findFirst({
-        where: { uuid, deleted_at: null }
-      });
-
-      if (!existing) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Воркфлоу не найден'));
-      }
-
-      // Check if workflow is used by issue types
-      const usedByIssueType = await prisma.issue_types.findFirst({
-        where: { workflow_uuid: uuid, deleted_at: null }
-      });
-
-      if (usedByIssueType) {
-        return res.status(409).json(errorResponse(req, 'WORKFLOW_IN_USE', 'Воркфлоу используется типом задачи и не может быть удалён'));
-      }
-
-      await prisma.$transaction(async (tx) => {
-        const now = new Date();
-        await tx.transitions.updateMany({
-          where: { workflows_uuid: uuid },
-          data: { deleted_at: now }
-        });
-        await tx.workflow_nodes.updateMany({
-          where: { workflows_uuid: uuid },
-          data: { deleted_at: now }
-        });
-        await tx.workflows.update({
-          where: { uuid },
-          data: { deleted_at: now }
-        });
-      });
-
+      // Delete transitions
+      await prisma.$executeRawUnsafe(`
+        UPDATE ${escapeIdentifier(schema)}.transitions 
+        SET deleted_at = NOW() WHERE workflows_uuid = $1::uuid
+      `, uuid);
+      // Delete nodes
+      await prisma.$executeRawUnsafe(`
+        UPDATE ${escapeIdentifier(schema)}.workflow_nodes 
+        SET deleted_at = NOW() WHERE workflows_uuid = $1::uuid
+      `, uuid);
+      // Delete workflow
+      await prisma.$executeRawUnsafe(`
+        UPDATE ${escapeIdentifier(schema)}.workflows 
+        SET deleted_at = NOW() WHERE uuid = $1::uuid
+      `, uuid);
       res.status(204).send();
-
-    } catch (error) {
-      logger.error({ msg: 'Error deleting workflow', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+    } catch (error: any) {
+      logger.error({ msg: 'Error deleting workflow', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка удаления воркфлоу'));
     }
   });
-  listeners.push({ method: 'delete', func: `${basePath}/:uuid`, entity: entityName });
 
-  // ==================== NESTED RESOURCES ====================
+  app.use(`${apiPrefix}/workflows`, router);
 
-  // POST /api/v2/workflows/:uuid/nodes - Добавление ноды
-  app.post(`${basePath}/:uuid/nodes`, async (req: Request, res: Response) => {
-    try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid: workflowUuid } = req.params;
-      const { x, y, issue_statuses_uuid } = req.body;
+  listeners.push({ method: 'get', func: 'read_workflows', entity: 'workflows' });
+  listeners.push({ method: 'get', func: 'read_workflow', entity: 'workflow' });
+  listeners.push({ method: 'post', func: 'create_workflows', entity: 'workflows' });
+  listeners.push({ method: 'post', func: 'upsert_workflows', entity: 'workflows' });
+  listeners.push({ method: 'post', func: 'upsert_workflow', entity: 'workflow' });
+  listeners.push({ method: 'put', func: 'update_workflows', entity: 'workflows' });
+  listeners.push({ method: 'delete', func: 'delete_workflows', entity: 'workflows' });
 
-      if (!issue_statuses_uuid) {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Ошибка валидации', [
-          { field: 'issue_statuses_uuid', message: 'Поле issue_statuses_uuid обязательно' }
-        ]));
-      }
-
-      await prisma.$executeRawUnsafe(`SET search_path TO "${subdomain}", public`);
-
-      // Check workflow exists
-      const workflow = await prisma.workflows.findFirst({
-        where: { uuid: workflowUuid, deleted_at: null }
-      });
-
-      if (!workflow) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Воркфлоу не найден'));
-      }
-
-      const node = await prisma.workflow_nodes.create({
-        data: {
-          uuid: randomUUID(),
-          x: Math.round(x || 100),
-          y: Math.round(y || 100),
-          workflows_uuid: workflowUuid,
-          issue_statuses_uuid
-        },
-        include: { issue_statuses: true }
-      });
-
-      res.status(201).json({
-        uuid: node.uuid,
-        x: node.x,
-        y: node.y,
-        issue_statuses_uuid: node.issue_statuses_uuid,
-        issue_status: node.issue_statuses ? {
-          uuid: node.issue_statuses.uuid,
-          name: node.issue_statuses.name
-        } : null
-      });
-
-    } catch (error) {
-      logger.error({ msg: 'Error adding workflow node', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
-    }
-  });
-  listeners.push({ method: 'post', func: `${basePath}/:uuid/nodes`, entity: entityName });
-
-  // POST /api/v2/workflows/:uuid/transitions - Добавление перехода
-  app.post(`${basePath}/:uuid/transitions`, async (req: Request, res: Response) => {
-    try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid: workflowUuid } = req.params;
-      const { from_uuid, to_uuid } = req.body;
-
-      const validationErrors: any[] = [];
-      if (!from_uuid) validationErrors.push({ field: 'from_uuid', message: 'Поле from_uuid обязательно' });
-      if (!to_uuid) validationErrors.push({ field: 'to_uuid', message: 'Поле to_uuid обязательно' });
-
-      if (validationErrors.length > 0) {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Ошибка валидации', validationErrors));
-      }
-
-      await prisma.$executeRawUnsafe(`SET search_path TO "${subdomain}", public`);
-
-      const workflow = await prisma.workflows.findFirst({
-        where: { uuid: workflowUuid, deleted_at: null }
-      });
-
-      if (!workflow) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Воркфлоу не найден'));
-      }
-
-      const transition = await prisma.transitions.create({
-        data: {
-          uuid: randomUUID(),
-          workflows_uuid: workflowUuid,
-          from_uuid,
-          to_uuid
-        }
-      });
-
-      res.status(201).json({
-        uuid: transition.uuid,
-        from_uuid: transition.from_uuid,
-        to_uuid: transition.to_uuid
-      });
-
-    } catch (error) {
-      logger.error({ msg: 'Error adding workflow transition', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
-    }
-  });
-  listeners.push({ method: 'post', func: `${basePath}/:uuid/transitions`, entity: entityName });
-
-  logger.info({ msg: `Registered ${entityName} routes`, basePath });
+  logger.info({ msg: 'Workflows routes registered' });
 }

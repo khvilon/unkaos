@@ -12,7 +12,7 @@ const data = {
     },
     {
       name: "Тип",
-      id: "type.0.name",
+      id: "type_name",
     },
     {
       name: "Зарегистрирован",
@@ -104,40 +104,28 @@ export default mod;
               :class="{'error-field': try_done && input.required && !is_input_valid(input)}"
             ></component>
             <NumericInput
-              v-if="
-                selected_fields.type != undefined &&
-                selected_fields.type[0].code == 'Numeric'
-              "
+              v-if="selected_fields.type_code == 'Numeric'"
               label="Минимальное значение"
               id="min_value"
               :value="get_json_val(selected_fields, 'min_value') || 'NULL'"
               :parent_name="'fields'"
             ></NumericInput>
             <NumericInput
-              v-if="
-                selected_fields.type != undefined &&
-                selected_fields.type[0].code == 'Numeric'
-              "
+              v-if="selected_fields.type_code == 'Numeric'"
               label="Максимальное значение"
               id="max_value"
               :value="get_json_val(selected_fields, 'max_value') || 'NULL'"
               :parent_name="'fields'"
             ></NumericInput>
             <NumericInput
-              v-if="
-                selected_fields.type != undefined &&
-                selected_fields.type[0].code == 'Numeric'
-              "
+              v-if="selected_fields.type_code == 'Numeric'"
               label="Знаков после запятой"
               id="presision"
               :value="get_json_val(selected_fields, 'presision') || 'NULL'"
               :parent_name="'fields'"
             ></NumericInput>
             <TagInput
-              v-if="
-                selected_fields.type != undefined &&
-                selected_fields.type[0].code == 'Select'
-              "
+              v-if="selected_fields.type_code == 'Select'"
               label="Список значений"
               id="available_values"
               :value="get_json_val(selected_fields, 'available_values') || []"

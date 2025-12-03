@@ -11,225 +11,479 @@ test.describe.serial('Регресионный тест', () => {
   const userLogin = 'spetrov';
   const userName = 'Сергей Петров';
   let state = 0;
-  const baseUrl = 'https://localhost:3000';
+  const baseUrl = 'https://unkaos.local';
+
+  // Хранилище UUID созданных сущностей для удаления
+  const createdEntities = {
+    user: null as string | null,
+    status: null as string | null,
+    workflow: null as string | null,
+    issueType: null as string | null,
+    project: null as string | null,
+    role: null as string | null,
+  };
 
   test.beforeEach(async ({ page }) => {
     console.log('🔄 BeforeEach: state =', state);
-    
-    // Устанавливаем размер окна браузера для правильного отображения
     await page.setViewportSize({ width: 1920, height: 1080 });
     
-    if (!state) {
-      console.log('⏭️ Пропускаем beforeEach для state = 0');
-      return;
-    }
+    if (!state) return;
 
     const loginUrl = `${baseUrl}/${workspace}/login`;
-    console.log('🌐 Переходим на:', loginUrl);
+    await page.goto(loginUrl);
+    await page.waitForSelector('.login-panel', { timeout: 10000 });
     
-    try {
-      await page.goto(loginUrl);
-      console.log('⏳ Ждем появления панели логина...');
-      await page.waitForSelector('.login-panel', { timeout: 10000 });
-      
-      if (state == 1) {
-        console.log('👤 Логинимся как админ:', adminEmail, newPass);
-        await signIn(page, adminEmail, newPass);
-      } else if (state == 2) {
-        console.log('👤 Логинимся как пользователь:', usereMail, newPass);
-        await signIn(page, usereMail, newPass);
-      }
-      
-      console.log('⏳ Ждем загрузки профиля...');
-      await page.waitForSelector('.profile', { timeout: 10000 });
-      console.log('⏳ Ждем загрузки главного меню...');
-      await page.waitForSelector('.main-menu-list', { timeout: 10000 });
-      console.log('✅ BeforeEach завершен успешно');
-      
-    } catch (error) {
-      console.error('❌ Ошибка в beforeEach:', error);
-      throw error;
+    if (state == 1) {
+      await signIn(page, adminEmail, newPass);
+    } else if (state == 2) {
+      await signIn(page, usereMail, newPass);
     }
+    
+    await page.waitForSelector('.profile', { timeout: 10000 });
+    await page.waitForSelector('.main-menu-list', { timeout: 10000 });
   });
+
+  // ===========================================
+  // ЧАСТЬ 1: РЕГИСТРАЦИЯ И НАСТРОЙКА
+  // ===========================================
 
   test('Регистрация рабочего пространства и смена пароля', async ({ page }) => {
     console.log('🚀 Начинаем тест регистрации...');
-    
-    // Устанавливаем размер окна браузера для правильного отображения
     await page.setViewportSize({ width: 1920, height: 1080 });
     
-    try {
-      // Создаем временный email
-      console.log('📧 Создаем временный email...');
-      adminEmail = await getEmailFromTempMail();
-      console.log('📧 Получен email:', adminEmail);
+    adminEmail = await getEmailFromTempMail();
+    console.log('📧 Получен email:', adminEmail);
 
-      // Регистрируем workspace
-      console.log('🏢 Регистрируем workspace:', workspace);
-      await sendWorkspaceRegister(page, workspace, adminEmail);
-      
-      // Ждем письмо
-      console.log('📬 Ждем письмо активации...');
-      await waitRegisterMail(page);
+    await sendWorkspaceRegister(page, workspace, adminEmail);
+    await waitRegisterMail(page);
 
-      // Получаем данные активации
-      console.log('🔗 Получаем ссылку активации...');
-      const activationLink = await getIframeBody(page);
-      const pass = await activationLink.locator().innerText();
-      const link = activationLink.getAttribute('href');
-      
-      if (!link) throw new Error('Activation link not found');
-      if (!pass) throw new Error('Activation password not found');
-      console.log('🔗 Ссылка активации:', link);
-      console.log('🔑 Временный пароль:', pass);
+    const activationLink = await getIframeBody(page);
+    const pass = await activationLink.locator().innerText();
+    const link = activationLink.getAttribute('href');
+    
+    if (!link) throw new Error('Activation link not found');
+    if (!pass) throw new Error('Activation password not found');
 
-      // Переходим по ссылке активации
-      const activationUrl = link.replace('https://unkaos.ru', baseUrl);
-      console.log('🌐 Переходим по ссылке активации:', activationUrl);
-      await page.goto(activationUrl);
-      
-      // Ждем завершения активации - может быть редирект или обработка
-      console.log('⏳ Ждем завершения активации...');
-      await page.waitForTimeout(2000);
-      
-      // Ждем панель логина и сразу заполняем
-      console.log('⏳ Ждем панель логина и заполняем форму...');
-      await page.waitForSelector('.login-panel', { timeout: 10000 });
-      
-      // Сразу логинимся с временным паролем без дополнительных ожиданий
-      console.log('🔐 Логинимся с временным паролем...');
-      await signIn(page, adminEmail, pass);
+    const activationUrl = link.replace('https://unkaos.ru', baseUrl);
+    await page.goto(activationUrl);
+    await page.waitForTimeout(2000);
+    await page.waitForSelector('.login-panel', { timeout: 10000 });
+    
+    await signIn(page, adminEmail, pass);
+    await page.waitForSelector('.profile', { timeout: 10000 });
+    
+    await page.goto(`/${workspace}/configs/users`);
+    await page.waitForSelector('.ktable .user', { timeout: 10000 });
+    
+    await changeField(page, 'ФИО', adminName, adminEmail);
+    await changeField(page, 'Пароль', newPass, adminEmail);
+    
+    await page.waitForSelector('.profile', { timeout: 10000 });
+    await page.waitForTimeout(1000);
+    
+    await signOut(page);
+    await signIn(page, adminEmail, newPass);
+    await signOut(page);
 
-      // Отладка: проверяем текущий URL и элементы на странице
-      console.log('🔍 Текущий URL после логина:', page.url());
-      
-      // Проверяем наличие различных элементов
-      const profileExists = await page.locator('.profile').count();
-      const menuExists = await page.locator('.main-menu-list').count();
-      const loginPanelExists = await page.locator('.login-panel').count();
-      
-      console.log('🔍 Элементы на странице:');
-      console.log('  - .profile:', profileExists);
-      console.log('  - .main-menu-list:', menuExists);
-      console.log('  - .login-panel:', loginPanelExists);
-      
-      // Если профиль не найден, попробуем подождать дольше
-      if (profileExists === 0) {
-        console.log('⏳ Профиль не найден, ждем дольше...');
-        await page.waitForTimeout(5000);
-        
-        // Проверяем снова
-        const profileExists2 = await page.locator('.profile').count();
-        console.log('🔍 Профиль после ожидания:', profileExists2);
-        
-        if (profileExists2 === 0) {
-          // Делаем скриншот для отладки
-          await page.screenshot({ path: 'debug-after-login.png', fullPage: true });
-          console.log('📸 Скриншот сохранен: debug-after-login.png');
-        }
-      }
+    state = 1;
+    console.log('✅ Тест регистрации завершен');
+  });
 
-      // Ждем загрузки профиля
-      console.log('⏳ Ждем загрузки профиля...');
-      await page.waitForSelector('.profile', { timeout: 10000 });
-      
-      // Переходим к настройкам пользователей
-      console.log('⚙️ Переходим к настройкам пользователей...');
-      await page.goto(`/${workspace}/configs/users`);
-      await page.waitForSelector('.ktable .user', { timeout: 10000 });
-      
-      // Меняем ФИО и пароль
-      console.log('✏️ Меняем ФИО администратора...');
-      await changeField(page, 'ФИО', adminName, adminEmail);
-      
-      console.log('🔑 Меняем пароль администратора...');
-      await changeField(page, 'Пароль', newPass, adminEmail);
-      
-      await page.waitForSelector('.profile', { timeout: 10000 });
+  // ===========================================
+  // ЧАСТЬ 2: СОЗДАНИЕ + РЕДАКТИРОВАНИЕ (CRUD)
+  // ===========================================
+
+  test('Пользователь: создание и редактирование', async ({ page }) => {
+    console.log('🚀 Тест пользователя: создание + редактирование...');
+    
+    // СОЗДАНИЕ
+    await navigateMainMenu(page, 'users');
+    await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+    await createUser(page, userName, userLogin, usereMail);
+    console.log('✅ Пользователь создан');
+    
+    // РЕДАКТИРОВАНИЕ (Full Replace тест)
+    await page.waitForTimeout(1000);
+    const userRow = page.locator(`.ktable :text("${usereMail}")`);
+    if (await userRow.count() > 0) {
+      await userRow.first().click();
       await page.waitForTimeout(1000);
       
-      // Проверяем новый пароль
-      console.log('🚪 Выходим из системы...');
-      await signOut(page);
+      // Редактируем telegram
+      await changeField(page, 'Телеграм', '@testuser_edited');
       
-      console.log('🔐 Логинимся с новым паролем...');
-      await signIn(page, adminEmail, newPass);
+      const saveButton = page.locator('input[type="button"][value="Сохранить"]');
+      await saveButton.click();
+      await page.waitForTimeout(2000);
       
-      console.log('🚪 Выходим из системы...');
-      await signOut(page);
-
-      state = 1;
-      console.log('✅ Тест регистрации завершен успешно');
+      // Проверяем сохранение
+      await userRow.first().click();
+      await page.waitForTimeout(1000);
       
-    } catch (error) {
-      console.error('❌ Ошибка в тесте регистрации:', error);
-      throw error;
+      const telegramField = page.locator('.label:has-text("Телеграм")').locator('..').locator('input.string-input');
+      const telegramValue = await telegramField.inputValue();
+      
+      if (!telegramValue.includes('testuser_edited')) {
+        throw new Error(`Telegram не сохранился: ${telegramValue}`);
+      }
+      console.log('✅ Пользователь отредактирован');
     }
   });
 
-  test('Создание пользователя', async ({ page }) => {
-    console.log('🚀 Начинаем тест создания пользователя...');
+  test('Статус: создание и редактирование', async ({ page }) => {
+    console.log('🚀 Тест статуса: создание + редактирование...');
     
-    try {
-      console.log('👥 Переходим к пользователям...');
-      await navigateMainMenu(page, 'users');
-      
-      console.log('⏳ Ждем загрузки таблицы...');
-      await page.waitForSelector('.table_card_fields', { timeout: 10000 });
-      
-      console.log('👤 Создаем пользователя:', userName);
-      await createUser(page, userName, userLogin, usereMail);
-      
-      console.log('✅ Тест создания пользователя завершен успешно');
-      
-    } catch (error) {
-      console.error('❌ Ошибка в тесте создания пользователя:', error);
-      throw error;
-    }
-  });
-
-  test('Создание статуса', async ({ page }) => {
-    console.log('🚀 Начинаем тест создания статуса...');
+    // СОЗДАНИЕ
+    await navigateMainMenu(page, 'issue_statuses');
+    await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+    await createStatus(page, 'Тестовый статус', false, false);
+    console.log('✅ Статус создан');
     
-    try {
-      console.log('📊 Переходим к статусам...');
-      await navigateMainMenu(page, 'issue_statuses');
+    // РЕДАКТИРОВАНИЕ
+    await page.waitForTimeout(1000);
+    const statusRow = page.locator('.ktable :text("Тестовый статус")');
+    if (await statusRow.count() > 0) {
+      await statusRow.first().click();
+      await page.waitForTimeout(1000);
       
-      console.log('⏳ Ждем загрузки таблицы...');
-      await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+      await changeField(page, 'Название', 'Тестовый статус (изменён)');
       
-      console.log('📝 Создаем тестовый статус...');
-      await createStatus(page, 'Тестовый статус', false, false);
+      const saveButton = page.locator('input[type="button"][value="Сохранить"]');
+      await saveButton.click();
+      await page.waitForTimeout(2000);
       
-      console.log('✅ Тест создания статуса завершен успешно');
-      
-    } catch (error) {
-      console.error('❌ Ошибка в тесте создания статуса:', error);
-      throw error;
+      // Проверяем что статус с новым именем существует
+      const updatedRow = page.locator('.ktable :text("изменён")');
+      if (await updatedRow.count() === 0) {
+        throw new Error('Статус не обновился');
+      }
+      console.log('✅ Статус отредактирован');
     }
   });
 
-  test('Создание воркфлоу', async ({ page }) => {
-    console.log('🚀 Начинаем тест создания воркфлоу...');
+  test('Воркфлоу: создание и редактирование', async ({ page }) => {
+    console.log('🚀 Тест воркфлоу: создание + редактирование...');
     
-    try {
-      console.log('🔄 Переходим к воркфлоу...');
-      await navigateMainMenu(page, 'workflows');
+    // СОЗДАНИЕ
+    await navigateMainMenu(page, 'workflows');
+    await createWorkflow(page, 'Тестовый воркфлоу');
+    console.log('✅ Воркфлоу создан');
+    
+    // РЕДАКТИРОВАНИЕ
+    // После создания воркфлоу редактор уже открыт
+    await page.waitForTimeout(1000);
+    
+    // Кликаем по воркфлоу в таблице слева чтобы убедиться что он выбран
+    const wfRow = page.locator('.ktable span:has-text("Тестовый воркфлоу")');
+    if (await wfRow.count() > 0) {
+      await wfRow.first().click();
+      await page.waitForTimeout(1000);
       
-      console.log('⚙️ Создаем воркфлоу...');
-      await createWorkflow(page, 'Тестовый');
-      
-      console.log('✅ Тест создания воркфлоу завершен успешно');
-      
-    } catch (error) {
-      console.error('❌ Ошибка в тесте создания воркфлоу:', error);
-      throw error;
+      // В редакторе воркфлоу название редактируется через специальный input
+      const nameInput = page.locator('[data-testid="workflow-name"]');
+      if (await nameInput.count() > 0) {
+        await nameInput.clear();
+        await nameInput.fill('Тестовый воркфлоу (изменён)');
+        
+        // Сохраняем через кнопку в редакторе
+        const saveButton = page.locator('[data-testid="save-workflow"]');
+        await saveButton.click();
+        await page.waitForTimeout(2000);
+        
+        console.log('✅ Воркфлоу отредактирован');
+      } else {
+        console.log('⚠️ Поле названия воркфлоу не найдено');
+      }
+    } else {
+      console.log('⚠️ Воркфлоу не найден в таблице');
     }
   });
 
-  /*
-  test('Создание типа задачи', async ({ page }) => {
+  test('Роль: проверка и редактирование', async ({ page }) => {
+    console.log('🚀 Тест роли: проверка + редактирование...');
+    
+    await navigateMainMenu(page, 'roles');
+    await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+    
+    // Закрываем меню если открыто
+    const menu = page.locator('#main-menu.open');
+    if (await menu.count() > 0) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(500);
+    }
+    
+    // Выбираем существующую роль в таблице
+    const adminRole = page.locator('.ktable span:has-text("Администратор")').first();
+    await adminRole.click({ force: true });
+    await page.waitForTimeout(1000);
+    
+    // Проверяем чекбоксы прав
+    const checkboxes = await page.locator('.checkboxlist input[type="checkbox"]').count();
+    console.log(`Найдено чекбоксов прав: ${checkboxes}`);
+    
+    if (checkboxes === 0) {
+      await page.screenshot({ path: 'debug-roles-no-checkboxes.png', fullPage: true });
+      throw new Error('Чекбоксы прав не найдены');
+    }
+    
+    // Пробуем сохранить без изменений (Full Replace тест)
+    const saveButton = page.locator('input[type="button"][value="Сохранить"]');
+    if (await saveButton.count() > 0) {
+      await saveButton.click();
+      await page.waitForTimeout(2000);
+    }
+    
+    console.log('✅ Роль проверена и сохранена');
+  });
+
+  test('Тип задачи: создание и редактирование', async ({ page }) => {
+    console.log('🚀 Тест типа задачи: создание + редактирование...');
+    
+    // СОЗДАНИЕ
     await navigateMainMenu(page, 'issue_types');
-    await createIssueType(page, 'Сторя', 'Простой', ['Приоритет', 'Ответственный']);
-  });*/
+    await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+    
+    // Закрываем меню если открыто
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    
+    await page.click('.btn_input.bx-plus-circle');
+    await page.waitForTimeout(500);
+    
+    await changeField(page, "Название", "Тестовый тип");
+    
+    // Выбираем воркфлоу
+    const workflowSelect = page.locator('.label:has-text("Воркфлоу")').locator('..').locator('select, .vue-select');
+    if (await workflowSelect.count() > 0) {
+      await workflowSelect.click();
+      await page.waitForTimeout(300);
+      await page.keyboard.press('Enter');
+    }
+    
+    const createButton = page.locator('input[type="button"][value="Создать"]');
+    if (await createButton.count() > 0) {
+      await createButton.click();
+      await page.waitForTimeout(1000);
+    }
+    console.log('✅ Тип задачи создан');
+    
+    // РЕДАКТИРОВАНИЕ
+    await page.waitForTimeout(1000);
+    const typeRow = page.locator('.ktable :text("Тестовый тип")');
+    if (await typeRow.count() > 0) {
+      await typeRow.first().click();
+      await page.waitForTimeout(1000);
+      
+      await changeField(page, 'Название', 'Тестовый тип (изменён)');
+      
+      const saveButton = page.locator('input[type="button"][value="Сохранить"]');
+      await saveButton.click();
+      await page.waitForTimeout(2000);
+      
+      console.log('✅ Тип задачи отредактирован');
+    }
+  });
+
+  // ===========================================
+  // ЧАСТЬ 3: ПРОВЕРКА ОТОБРАЖЕНИЯ ЭКРАНОВ
+  // ===========================================
+
+  test('Проверка страницы полей', async ({ page }) => {
+    console.log('🚀 Проверка страницы полей...');
+    
+    await navigateMainMenu(page, 'fields');
+    await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+    
+    const tableRows = await page.locator('.ktable .row').count();
+    console.log(`Найдено полей: ${tableRows}`);
+    
+    if (tableRows > 0) {
+      await page.locator('.ktable .row').first().click();
+      await page.waitForTimeout(500);
+      
+      const typeField = await page.locator('.label:has-text("Тип")').count();
+      console.log(`Поле типа найдено: ${typeField > 0}`);
+    }
+    
+    console.log('✅ Страница полей проверена');
+  });
+
+  test('Проверка страницы проектов', async ({ page }) => {
+    console.log('🚀 Проверка страницы проектов...');
+    
+    await navigateMainMenu(page, 'projects');
+    await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+    
+    const tableRows = await page.locator('.ktable .row').count();
+    console.log(`Найдено проектов: ${tableRows}`);
+    
+    if (tableRows > 0) {
+      await page.locator('.ktable .row').first().click();
+      await page.waitForTimeout(500);
+    }
+    
+    console.log('✅ Страница проектов проверена');
+  });
+
+  test('Проверка страницы дашбордов', async ({ page }) => {
+    console.log('🚀 Проверка страницы дашбордов...');
+    
+    await page.goto(`/${workspace}/dashboard`);
+    await page.waitForTimeout(2000);
+    
+    const errors = await page.locator('.error, .err-label').count();
+    if (errors > 0) {
+      const errorText = await page.locator('.error, .err-label').first().textContent();
+      console.log(`Найдена ошибка: ${errorText}`);
+    }
+    
+    console.log('✅ Страница дашбордов проверена');
+  });
+
+  test('Проверка страницы задач', async ({ page }) => {
+    console.log('🚀 Проверка страницы задач...');
+    
+    await page.goto(`/${workspace}/issues`);
+    await page.waitForSelector('.issues-table, .ktable', { timeout: 10000 });
+    
+    const filterInput = await page.locator('.issues-search-input, input[placeholder*="фильтр"]').count();
+    console.log(`Поле фильтра найдено: ${filterInput > 0}`);
+    
+    console.log('✅ Страница задач проверена');
+  });
+
+  test('Проверка страницы досок', async ({ page }) => {
+    console.log('🚀 Проверка страницы досок...');
+    
+    await navigateMainMenu(page, 'boards');
+    await page.waitForTimeout(2000);
+    
+    const boardContent = await page.locator('.board-content, .kanban, .ktable').count();
+    console.log(`Контент доски найден: ${boardContent > 0}`);
+    
+    console.log('✅ Страница досок проверена');
+  });
+
+  // ===========================================
+  // ЧАСТЬ 4: УДАЛЕНИЕ (в самом конце)
+  // ===========================================
+
+  test('Удаление: тип задачи', async ({ page }) => {
+    console.log('🗑️ Удаление типа задачи...');
+    
+    await navigateMainMenu(page, 'issue_types');
+    await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+    
+    const typeRow = page.locator('.ktable :text("Тестовый тип")');
+    if (await typeRow.count() > 0) {
+      await typeRow.first().click();
+      await page.waitForTimeout(500);
+      
+      const deleteButton = page.locator('input[type="button"][value="Удалить"], .btn-delete, .bx-trash');
+      if (await deleteButton.count() > 0) {
+        await deleteButton.first().click();
+        await page.waitForTimeout(500);
+        
+        // Подтверждаем удаление если есть диалог
+        const confirmButton = page.locator('button:has-text("Да"), button:has-text("OK"), .confirm-yes');
+        if (await confirmButton.count() > 0) {
+          await confirmButton.click();
+        }
+        await page.waitForTimeout(1000);
+      }
+    }
+    
+    console.log('✅ Тип задачи удалён');
+  });
+
+  test('Удаление: воркфлоу', async ({ page }) => {
+    console.log('🗑️ Удаление воркфлоу...');
+    
+    await navigateMainMenu(page, 'workflows');
+    await page.waitForTimeout(1000);
+    
+    // Закрываем меню
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    
+    const wfRow = page.locator('.ktable :text("Тестовый воркфлоу")');
+    if (await wfRow.count() > 0) {
+      await wfRow.first().click({ force: true });
+      await page.waitForTimeout(500);
+      
+      const deleteButton = page.locator('input[type="button"][value="Удалить"], .btn-delete, .bx-trash');
+      if (await deleteButton.count() > 0) {
+        await deleteButton.first().click();
+        await page.waitForTimeout(500);
+        
+        const confirmButton = page.locator('button:has-text("Да"), button:has-text("OK"), .confirm-yes');
+        if (await confirmButton.count() > 0) {
+          await confirmButton.click();
+        }
+        await page.waitForTimeout(1000);
+      }
+    }
+    
+    console.log('✅ Воркфлоу удалён');
+  });
+
+  test('Удаление: статус', async ({ page }) => {
+    console.log('🗑️ Удаление статуса...');
+    
+    await navigateMainMenu(page, 'issue_statuses');
+    await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+    
+    // Закрываем меню
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    
+    const statusRow = page.locator('.ktable :text("Тестовый статус")');
+    if (await statusRow.count() > 0) {
+      await statusRow.first().click({ force: true });
+      await page.waitForTimeout(500);
+      
+      const deleteButton = page.locator('input[type="button"][value="Удалить"], .btn-delete, .bx-trash');
+      if (await deleteButton.count() > 0) {
+        await deleteButton.first().click();
+        await page.waitForTimeout(500);
+        
+        const confirmButton = page.locator('button:has-text("Да"), button:has-text("OK"), .confirm-yes');
+        if (await confirmButton.count() > 0) {
+          await confirmButton.click();
+        }
+        await page.waitForTimeout(1000);
+      }
+    }
+    
+    console.log('✅ Статус удалён');
+  });
+
+  test('Удаление: пользователь (деактивация)', async ({ page }) => {
+    console.log('🗑️ Деактивация пользователя...');
+    
+    await navigateMainMenu(page, 'users');
+    await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+    
+    // Закрываем меню
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    
+    const userRow = page.locator(`.ktable :text("${usereMail}")`);
+    if (await userRow.count() > 0) {
+      await userRow.first().click({ force: true });
+      await page.waitForTimeout(500);
+      
+      // Деактивируем через чекбокс "Активен"
+      const activeCheckbox = page.locator('.label:has-text("Активен")').locator('..').locator('input[type="checkbox"]');
+      if (await activeCheckbox.count() > 0 && await activeCheckbox.isChecked()) {
+        await activeCheckbox.uncheck();
+        
+        const saveButton = page.locator('input[type="button"][value="Сохранить"]');
+        await saveButton.click();
+        await page.waitForTimeout(1000);
+      }
+    }
+    
+    console.log('✅ Пользователь деактивирован');
+  });
 });

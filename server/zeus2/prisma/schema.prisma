@@ -290,3 +290,114 @@ model gadgets {
   @@index([dashboard_uuid])
 }
 
+model gadget_types {
+  uuid           String    @id @db.Uuid
+  name           String
+  code           String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+}
+
+// ==================== RELATIONS ====================
+
+model relations {
+  uuid           String    @id @db.Uuid
+  issue0_uuid    String    @db.Uuid
+  issue1_uuid    String    @db.Uuid
+  type_uuid      String    @db.Uuid
+  author_uuid    String?   @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@index([issue0_uuid])
+  @@index([issue1_uuid])
+}
+
+model relation_types {
+  uuid           String    @id @db.Uuid
+  name           String
+  revert_name    String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+}
+
+// ==================== ATTACHMENTS ====================
+
+model attachments {
+  uuid           String    @id @db.Uuid
+  issue_uuid     String    @db.Uuid
+  name           String
+  path           String
+  size           Int       @default(0)
+  mime_type      String?
+  author_uuid    String?   @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  
+  @@index([issue_uuid])
+}
+
+// ==================== ISSUE ACTIONS (HISTORY) ====================
+
+model issue_actions {
+  uuid           String    @id @db.Uuid
+  issue_uuid     String    @db.Uuid
+  author_uuid    String    @db.Uuid
+  type_uuid      String    @db.Uuid
+  value          String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  archived_at    DateTime?
+  
+  @@index([issue_uuid])
+}
+
+model issue_actions_types {
+  uuid           String    @id @db.Uuid
+  name           String
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+}
+
+// ==================== WATCHERS ====================
+
+model watchers {
+  user_uuid      String    @db.Uuid
+  issue_uuid     String    @db.Uuid
+  
+  @@id([user_uuid, issue_uuid])
+}
+
+// ==================== ISSUE TAGS SELECTED ====================
+
+model issue_tags_selected {
+  uuid           String    @id @db.Uuid
+  issue_uuid     String    @db.Uuid
+  issue_tags_uuid String   @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@unique([issue_uuid, issue_tags_uuid])
+  @@index([issue_uuid])
+}
+
+// ==================== FAVOURITES ====================
+
+model favourites {
+  uuid           String    @id @db.Uuid
+  name           String
+  query          String?
+  author_uuid    String    @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@index([author_uuid])
+}
+

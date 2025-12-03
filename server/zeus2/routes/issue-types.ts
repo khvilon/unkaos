@@ -1,45 +1,14 @@
-import { Request, Response } from 'express';
+/**
+ * Issue Types Routes - с fields и workflow
+ */
+
+import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { createErrorResponse, isValidUuid, escapeIdentifier, Listener } from '../utils/crud-factory';
 import { createLogger } from '../../common/logging';
-import { randomUUID } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 const logger = createLogger('zeus2:issue-types');
-
-interface Listener {
-  method: string;
-  func: string;
-  entity: string;
-}
-
-function formatItem(item: any) {
-  return {
-    uuid: item.uuid,
-    name: item.name,
-    workflow_uuid: item.workflow_uuid,
-    created_at: item.created_at,
-    updated_at: item.updated_at
-  };
-}
-
-function formatItemWithWorkflow(item: any) {
-  return {
-    uuid: item.uuid,
-    name: item.name,
-    workflow_uuid: item.workflow_uuid,
-    workflow_name: item.workflow_name,
-    created_at: item.created_at,
-    updated_at: item.updated_at
-  };
-}
-
-function errorResponse(req: Request, code: string, message: string, details: any[] = []) {
-  return {
-    code,
-    message,
-    trace_id: req.headers['x-trace-id'] as string,
-    details
-  };
-}
 
 export function registerIssueTypesRoutes(
   app: any,
@@ -47,311 +16,263 @@ export function registerIssueTypesRoutes(
   listeners: Listener[],
   apiPrefix: string
 ) {
-  const entityName = 'issue-types';
-  const basePath = `${apiPrefix}/${entityName}`;
+  const router = Router();
 
-  // GET /api/v2/issue-types - Получение списка
-  app.get(basePath, async (req: Request, res: Response) => {
+  async function getIssueTypesWithFields(schema: string, uuid?: string) {
+    const whereClause = uuid 
+      ? `WHERE it.uuid = $1::uuid AND it.deleted_at IS NULL`
+      : `WHERE it.deleted_at IS NULL`;
+
+    const query = `
+      SELECT 
+        'issue_types' AS table_name,
+        it.uuid, it.name, it.workflow_uuid, it.created_at, it.updated_at,
+        w.name AS workflow_name,
+        COALESCE(
+          (SELECT json_agg(
+            json_build_object(
+              'uuid', f.uuid,
+              'name', f.name,
+              'type_uuid', f.type_uuid,
+              'is_custom', f.is_custom,
+              'available_values', f.available_values,
+              'type', json_build_array(
+                json_build_object(
+                  'uuid', ft.uuid,
+                  'name', ft.name,
+                  'code', ft.code
+                )
+              )
+            )
+          )
+          FROM ${escapeIdentifier(schema)}.issue_types_to_fields itf
+          JOIN ${escapeIdentifier(schema)}.fields f ON f.uuid = itf.fields_uuid AND f.deleted_at IS NULL
+          LEFT JOIN ${escapeIdentifier(schema)}.field_types ft ON ft.uuid = f.type_uuid
+          WHERE itf.issue_types_uuid = it.uuid
+          ), '[]'
+        ) AS fields
+      FROM ${escapeIdentifier(schema)}.issue_types it
+      LEFT JOIN ${escapeIdentifier(schema)}.workflows w ON w.uuid = it.workflow_uuid
+      ${whereClause}
+      ORDER BY it.name ASC
+    `;
+
+    return uuid 
+      ? await prisma.$queryRawUnsafe(query, uuid)
+      : await prisma.$queryRawUnsafe(query.replace('$1::uuid', "'dummy'"));
+  }
+
+  // GET /api/v2/issue-types
+  router.get('/', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { page = '1', limit = '20', sort, include_workflow } = req.query;
-
-      logger.info({ msg: 'GET issue-types', subdomain, page, limit });
-
-      const pageNum = Math.max(1, parseInt(page as string));
-      const limitNum = Math.min(100, Math.max(1, parseInt(limit as string)));
-      const skip = (pageNum - 1) * limitNum;
-
-      let orderClause = 'ORDER BY it.name ASC';
-      if (sort) {
-        const [field, direction] = (sort as string).split(',');
-        const validFields = ['name', 'created_at', 'updated_at'];
-        if (validFields.includes(field)) {
-          orderClause = `ORDER BY it.${field} ${direction === 'desc' ? 'DESC' : 'ASC'}`;
-        }
-      }
-
-      let selectClause = 'it.uuid, it.name, it.workflow_uuid, it.created_at, it.updated_at';
-      let joinClause = '';
+      const items = await getIssueTypesWithFields(schema);
       
-      if (include_workflow === 'true') {
-        selectClause += ', w.name as workflow_name';
-        joinClause = `LEFT JOIN "${subdomain}".workflows w ON w.uuid = it.workflow_uuid`;
-      }
-
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT ${selectClause}
-        FROM "${subdomain}".issue_types it
-        ${joinClause}
-        WHERE it.deleted_at IS NULL
-        ${orderClause}
-        LIMIT ${limitNum} OFFSET ${skip}
-      `);
-
-      const totalResult: any[] = await prisma.$queryRawUnsafe(`
-        SELECT COUNT(*) as count FROM "${subdomain}".issue_types WHERE deleted_at IS NULL
-      `);
-      const total = Number(totalResult[0]?.count || 0);
-
-      const formatter = include_workflow === 'true' ? formatItemWithWorkflow : formatItem;
-
-      res.status(200).json({
-        items: items.map(formatter),
-        page: pageNum,
-        limit: limitNum,
-        total
-      });
-
-    } catch (error) {
-      logger.error({ msg: 'Error getting issue-types', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      // Parse available_values JSON
+      const result = (items as any[]).map((item: any) => ({
+        ...item,
+        fields: item.fields.map((f: any) => ({
+          ...f,
+          available_values: f.available_values ? 
+            (typeof f.available_values === 'string' ? JSON.parse(f.available_values) : f.available_values) 
+            : null
+        }))
+      }));
+      
+      res.json({ rows: result });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting issue types', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения типов задач'));
     }
   });
-  listeners.push({ method: 'get', func: basePath, entity: entityName });
 
   // GET /api/v2/issue-types/:uuid
-  app.get(`${basePath}/:uuid`, async (req: Request, res: Response) => {
+  router.get('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-
-      logger.info({ msg: 'GET issue-type by UUID', subdomain, uuid });
-
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT it.uuid, it.name, it.workflow_uuid, it.created_at, it.updated_at, w.name as workflow_name
-        FROM "${subdomain}".issue_types it
-        LEFT JOIN "${subdomain}".workflows w ON w.uuid = it.workflow_uuid
-        WHERE it.uuid = '${uuid}' AND it.deleted_at IS NULL
-      `);
-
-      if (items.length === 0) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Тип задачи не найден'));
+      const items = await getIssueTypesWithFields(schema, uuid);
+      if ((items as any[]).length === 0) {
+        return res.status(404).json(createErrorResponse(req, 'NOT_FOUND', 'Тип задачи не найден'));
       }
-
-      // Get associated fields
-      const fields: any[] = await prisma.$queryRawUnsafe(`
-        SELECT f.uuid, f.name, f.type_uuid, f.is_custom
-        FROM "${subdomain}".issue_types_to_fields itf
-        JOIN "${subdomain}".fields f ON f.uuid = itf.fields_uuid
-        WHERE itf.issue_types_uuid = '${uuid}' AND f.deleted_at IS NULL
-      `);
-
-      res.status(200).json({
-        ...formatItemWithWorkflow(items[0]),
-        fields: fields.map(f => ({
-          uuid: f.uuid,
-          name: f.name,
-          type_uuid: f.type_uuid,
-          is_custom: f.is_custom
+      
+      const result = (items as any[]).map((item: any) => ({
+        ...item,
+        fields: item.fields.map((f: any) => ({
+          ...f,
+          available_values: f.available_values ? 
+            (typeof f.available_values === 'string' ? JSON.parse(f.available_values) : f.available_values) 
+            : null
         }))
-      });
-
-    } catch (error) {
-      logger.error({ msg: 'Error getting issue-type', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      }));
+      
+      res.json({ rows: result });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting issue type', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения типа задачи'));
     }
   });
-  listeners.push({ method: 'get', func: `${basePath}/:uuid`, entity: entityName });
 
   // POST /api/v2/issue-types
-  app.post(basePath, async (req: Request, res: Response) => {
+  router.post('/', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { name, workflow_uuid, fields } = req.body;
+    const uuid = req.body.uuid && isValidUuid(req.body.uuid) ? req.body.uuid : uuidv4();
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!name) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'name required'));
+    }
+    if (!workflow_uuid || !isValidUuid(workflow_uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'workflow_uuid required'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { name, workflow_uuid, fields } = req.body;
-
-      if (!name || !workflow_uuid) {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поля name и workflow_uuid обязательны'));
-      }
-
-      logger.info({ msg: 'POST issue-type', subdomain, name, workflow_uuid });
-
-      const newUuid = randomUUID();
-      const now = new Date().toISOString();
-
+      // Создаём тип задачи
       await prisma.$executeRawUnsafe(`
-        INSERT INTO "${subdomain}".issue_types (uuid, name, workflow_uuid, created_at, updated_at)
-        VALUES ('${newUuid}', '${name}', '${workflow_uuid}', '${now}', '${now}')
-      `);
+        INSERT INTO ${escapeIdentifier(schema)}.issue_types (uuid, name, workflow_uuid, created_at, updated_at)
+        VALUES ($1::uuid, $2, $3::uuid, NOW(), NOW())
+      `, uuid, name, workflow_uuid);
 
-      // Add field associations if provided
-      if (fields && Array.isArray(fields) && fields.length > 0) {
-        const values = fields.map((f: any) => `('${newUuid}', '${f.uuid || f}')`).join(', ');
-        await prisma.$executeRawUnsafe(`
-          INSERT INTO "${subdomain}".issue_types_to_fields (issue_types_uuid, fields_uuid) VALUES ${values}
-        `);
-      }
-
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, workflow_uuid, created_at, updated_at
-        FROM "${subdomain}".issue_types WHERE uuid = '${newUuid}'
-      `);
-
-      res.status(201).json(formatItem(items[0]));
-
-    } catch (error) {
-      logger.error({ msg: 'Error creating issue-type', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
-    }
-  });
-  listeners.push({ method: 'post', func: basePath, entity: entityName });
-
-  // PUT /api/v2/issue-types/:uuid - Upsert
-  app.put(`${basePath}/:uuid`, async (req: Request, res: Response) => {
-    try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-      const { name, workflow_uuid, fields } = req.body;
-
-      if (!name || !workflow_uuid) {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поля name и workflow_uuid обязательны'));
-      }
-
-      logger.info({ msg: 'PUT issue-type (upsert)', subdomain, uuid });
-
-      const now = new Date().toISOString();
-      const existing: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid FROM "${subdomain}".issue_types WHERE uuid = '${uuid}'
-      `);
-
-      if (existing.length === 0) {
-        await prisma.$executeRawUnsafe(`
-          INSERT INTO "${subdomain}".issue_types (uuid, name, workflow_uuid, created_at, updated_at)
-          VALUES ('${uuid}', '${name}', '${workflow_uuid}', '${now}', '${now}')
-        `);
-      } else {
-        await prisma.$executeRawUnsafe(`
-          UPDATE "${subdomain}".issue_types 
-          SET name = '${name}', workflow_uuid = '${workflow_uuid}', updated_at = '${now}', deleted_at = NULL
-          WHERE uuid = '${uuid}'
-        `);
-      }
-
-      // Update field associations if provided
-      if (fields !== undefined) {
-        await prisma.$executeRawUnsafe(`
-          DELETE FROM "${subdomain}".issue_types_to_fields WHERE issue_types_uuid = '${uuid}'
-        `);
-        
-        if (Array.isArray(fields) && fields.length > 0) {
-          const values = fields.map((f: any) => `('${uuid}', '${f.uuid || f}')`).join(', ');
-          await prisma.$executeRawUnsafe(`
-            INSERT INTO "${subdomain}".issue_types_to_fields (issue_types_uuid, fields_uuid) VALUES ${values}
-          `);
+      // Добавляем fields
+      // Поддерживаем оба формата: массив UUID строк или массив объектов {uuid: '...'}
+      if (fields && Array.isArray(fields)) {
+        for (const field of fields) {
+          const fieldUuid = typeof field === 'string' ? field : field?.uuid;
+          if (fieldUuid && isValidUuid(fieldUuid)) {
+            await prisma.$executeRawUnsafe(`
+              INSERT INTO ${escapeIdentifier(schema)}.issue_types_to_fields (issue_types_uuid, fields_uuid)
+              VALUES ($1::uuid, $2::uuid)
+              ON CONFLICT DO NOTHING
+            `, uuid, fieldUuid);
+          }
         }
       }
 
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, workflow_uuid, created_at, updated_at
-        FROM "${subdomain}".issue_types WHERE uuid = '${uuid}'
-      `);
-
-      res.status(existing.length === 0 ? 201 : 200).json(formatItem(items[0]));
-
-    } catch (error) {
-      logger.error({ msg: 'Error upserting issue-type', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      const items = await getIssueTypesWithFields(schema, uuid);
+      res.status(201).json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error creating issue type', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка создания типа задачи'));
     }
   });
-  listeners.push({ method: 'put', func: `${basePath}/:uuid`, entity: entityName });
 
-  // PATCH /api/v2/issue-types/:uuid
-  app.patch(`${basePath}/:uuid`, async (req: Request, res: Response) => {
+  // PUT /api/v2/issue-types/:uuid
+  router.put('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
+    const { name, workflow_uuid, fields } = req.body;
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
+      // Обновляем тип задачи
+      const setClauses: string[] = ['updated_at = NOW()'];
+      const values: any[] = [];
+      let paramIndex = 1;
 
-      const updates: string[] = [];
-      if (req.body.name !== undefined) updates.push(`name = '${req.body.name}'`);
-      if (req.body.workflow_uuid !== undefined) updates.push(`workflow_uuid = '${req.body.workflow_uuid}'`);
-
-      logger.info({ msg: 'PATCH issue-type', subdomain, uuid });
-
-      const existing: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid FROM "${subdomain}".issue_types WHERE uuid = '${uuid}' AND deleted_at IS NULL
-      `);
-
-      if (existing.length === 0) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Тип задачи не найден'));
+      if (name !== undefined) {
+        setClauses.push(`name = $${paramIndex}`);
+        values.push(name);
+        paramIndex++;
+      }
+      if (workflow_uuid !== undefined && isValidUuid(workflow_uuid)) {
+        setClauses.push(`workflow_uuid = $${paramIndex}::uuid`);
+        values.push(workflow_uuid);
+        paramIndex++;
       }
 
-      if (updates.length > 0) {
-        updates.push(`updated_at = '${new Date().toISOString()}'`);
-        await prisma.$executeRawUnsafe(`
-          UPDATE "${subdomain}".issue_types SET ${updates.join(', ')} WHERE uuid = '${uuid}'
-        `);
-      }
+      values.push(uuid);
+      await prisma.$executeRawUnsafe(`
+        UPDATE ${escapeIdentifier(schema)}.issue_types
+        SET ${setClauses.join(', ')}
+        WHERE uuid = $${paramIndex}::uuid
+      `, ...values);
 
-      // Update field associations if provided
-      if (req.body.fields !== undefined) {
+      // Обновляем fields если переданы
+      // По парадигме Full Replace: undefined = не трогаем, [] = удаляем все, [...] = заменяем
+      // Поддерживаем оба формата: массив UUID строк или массив объектов {uuid: '...'}
+      if (fields !== undefined && Array.isArray(fields)) {
+        // Удаляем старые
         await prisma.$executeRawUnsafe(`
-          DELETE FROM "${subdomain}".issue_types_to_fields WHERE issue_types_uuid = '${uuid}'
-        `);
-        
-        if (Array.isArray(req.body.fields) && req.body.fields.length > 0) {
-          const values = req.body.fields.map((f: any) => `('${uuid}', '${f.uuid || f}')`).join(', ');
-          await prisma.$executeRawUnsafe(`
-            INSERT INTO "${subdomain}".issue_types_to_fields (issue_types_uuid, fields_uuid) VALUES ${values}
-          `);
+          DELETE FROM ${escapeIdentifier(schema)}.issue_types_to_fields
+          WHERE issue_types_uuid = $1::uuid
+        `, uuid);
+
+        // Добавляем новые
+        for (const field of fields) {
+          const fieldUuid = typeof field === 'string' ? field : field?.uuid;
+          if (fieldUuid && isValidUuid(fieldUuid)) {
+            await prisma.$executeRawUnsafe(`
+              INSERT INTO ${escapeIdentifier(schema)}.issue_types_to_fields (issue_types_uuid, fields_uuid)
+              VALUES ($1::uuid, $2::uuid)
+              ON CONFLICT DO NOTHING
+            `, uuid, fieldUuid);
+          }
         }
       }
 
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, workflow_uuid, created_at, updated_at
-        FROM "${subdomain}".issue_types WHERE uuid = '${uuid}'
-      `);
-
-      res.status(200).json(formatItem(items[0]));
-
-    } catch (error) {
-      logger.error({ msg: 'Error patching issue-type', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      const items = await getIssueTypesWithFields(schema, uuid);
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error updating issue type', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка обновления типа задачи'));
     }
   });
-  listeners.push({ method: 'patch', func: `${basePath}/:uuid`, entity: entityName });
 
   // DELETE /api/v2/issue-types/:uuid
-  app.delete(`${basePath}/:uuid`, async (req: Request, res: Response) => {
+  router.delete('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-
-      logger.info({ msg: 'DELETE issue-type', subdomain, uuid });
-
-      const existing: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid FROM "${subdomain}".issue_types WHERE uuid = '${uuid}' AND deleted_at IS NULL
-      `);
-
-      if (existing.length === 0) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Тип задачи не найден'));
-      }
-
-      // Check if type is used in issues
-      const usedInIssues: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid FROM "${subdomain}".issues WHERE type_uuid = '${uuid}' AND deleted_at IS NULL LIMIT 1
-      `);
-
-      if (usedInIssues.length > 0) {
-        return res.status(409).json(errorResponse(req, 'TYPE_IN_USE', 'Тип задачи используется в задачах и не может быть удалён'));
-      }
-
-      // Remove field associations
       await prisma.$executeRawUnsafe(`
-        DELETE FROM "${subdomain}".issue_types_to_fields WHERE issue_types_uuid = '${uuid}'
-      `);
-
-      await prisma.$executeRawUnsafe(`
-        UPDATE "${subdomain}".issue_types SET deleted_at = '${new Date().toISOString()}' WHERE uuid = '${uuid}'
-      `);
-
+        UPDATE ${escapeIdentifier(schema)}.issue_types
+        SET deleted_at = NOW()
+        WHERE uuid = $1::uuid
+      `, uuid);
       res.status(204).send();
-
-    } catch (error) {
-      logger.error({ msg: 'Error deleting issue-type', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+    } catch (error: any) {
+      logger.error({ msg: 'Error deleting issue type', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка удаления типа задачи'));
     }
   });
-  listeners.push({ method: 'delete', func: `${basePath}/:uuid`, entity: entityName });
 
-  logger.info({ msg: `Registered ${entityName} routes`, basePath });
+  app.use(`${apiPrefix}/issue-types`, router);
+
+  listeners.push({ method: 'get', func: 'read_issue_types', entity: 'issue_types' });
+  listeners.push({ method: 'get', func: 'read_issue_type', entity: 'issue_type' });
+  listeners.push({ method: 'post', func: 'create_issue_types', entity: 'issue_types' });
+  listeners.push({ method: 'post', func: 'upsert_issue_types', entity: 'issue_types' });
+  listeners.push({ method: 'put', func: 'update_issue_types', entity: 'issue_types' });
+  listeners.push({ method: 'delete', func: 'delete_issue_types', entity: 'issue_types' });
+
+  logger.info({ msg: 'Issue types routes registered' });
 }
-

@@ -1,40 +1,14 @@
-import { Request, Response } from 'express';
+/**
+ * Fields Routes - с available_values (JSON)
+ */
+
+import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { createErrorResponse, isValidUuid, escapeIdentifier, Listener } from '../utils/crud-factory';
 import { createLogger } from '../../common/logging';
-import { randomUUID } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 const logger = createLogger('zeus2:fields');
-
-interface Listener {
-  method: string;
-  func: string;
-  entity: string;
-}
-
-// Response formatters
-function formatItem(item: any) {
-  return {
-    uuid: item.uuid,
-    name: item.name,
-    type_uuid: item.type_uuid,
-    is_custom: item.is_custom,
-    min_value: item.min_value ? Number(item.min_value) : null,
-    max_value: item.max_value ? Number(item.max_value) : null,
-    presision: item.presision,
-    available_values: item.available_values,
-    created_at: item.created_at,
-    updated_at: item.updated_at
-  };
-}
-
-function errorResponse(req: Request, code: string, message: string, details: any[] = []) {
-  return {
-    code,
-    message,
-    trace_id: req.headers['x-trace-id'] as string,
-    details
-  };
-}
 
 export function registerFieldsRoutes(
   app: any,
@@ -42,282 +16,248 @@ export function registerFieldsRoutes(
   listeners: Listener[],
   apiPrefix: string
 ) {
-  const entityName = 'fields';
-  const basePath = `${apiPrefix}/${entityName}`;
+  const router = Router();
 
-  // GET /api/v2/fields - Получение списка
-  app.get(basePath, async (req: Request, res: Response) => {
+  // GET /api/v2/fields
+  router.get('/', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { is_custom } = req.query;
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { page = '1', limit = '20', sort, is_custom } = req.query;
-
-      logger.info({ msg: 'GET fields', subdomain, page, limit });
-
-      const pageNum = Math.max(1, parseInt(page as string));
-      const limitNum = Math.min(100, Math.max(1, parseInt(limit as string)));
-      const skip = (pageNum - 1) * limitNum;
-
-      // Build WHERE clause
-      let whereClause = 'WHERE deleted_at IS NULL';
+      const conditions: string[] = ['f.deleted_at IS NULL'];
       if (is_custom !== undefined) {
-        whereClause += ` AND is_custom = ${is_custom === 'true'}`;
+        conditions.push(`f.is_custom = ${is_custom === 'true'}`);
       }
 
-      // Determine sort order
-      let orderClause = 'ORDER BY name ASC';
-      if (sort) {
-        const [field, direction] = (sort as string).split(',');
-        const validFields = ['name', 'is_custom', 'created_at', 'updated_at'];
-        if (validFields.includes(field)) {
-          orderClause = `ORDER BY ${field} ${direction === 'desc' ? 'DESC' : 'ASC'}`;
-        }
-      }
-
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, type_uuid, is_custom, min_value, max_value, presision, available_values, created_at, updated_at
-        FROM "${subdomain}".fields
-        ${whereClause}
-        ${orderClause}
-        LIMIT ${limitNum} OFFSET ${skip}
+      const items = await prisma.$queryRawUnsafe(`
+        SELECT 
+          'fields' AS table_name,
+          f.uuid, f.name, f.type_uuid, f.is_custom, f.available_values,
+          f.created_at, f.updated_at,
+          ft.name AS type_name, ft.code AS type_code
+        FROM ${escapeIdentifier(schema)}.fields f
+        LEFT JOIN ${escapeIdentifier(schema)}.field_types ft ON ft.uuid = f.type_uuid
+        WHERE ${conditions.join(' AND ')}
+        ORDER BY f.name ASC
       `);
 
-      const totalResult: any[] = await prisma.$queryRawUnsafe(`
-        SELECT COUNT(*) as count FROM "${subdomain}".fields ${whereClause}
-      `);
-      const total = Number(totalResult[0]?.count || 0);
+      // Parse available_values JSON and add type array for frontend compatibility
+      const result = (items as any[]).map((item: any) => ({
+        ...item,
+        available_values: item.available_values ? 
+          (typeof item.available_values === 'string' ? JSON.parse(item.available_values) : item.available_values) 
+          : null,
+        // Добавляем type как массив для совместимости с фронтендом
+        type: item.type_uuid ? [{
+          uuid: item.type_uuid,
+          name: item.type_name,
+          code: item.type_code
+        }] : []
+      }));
 
-      logger.info({ msg: 'Fields found', count: items.length, total });
-
-      res.status(200).json({
-        items: items.map(formatItem),
-        page: pageNum,
-        limit: limitNum,
-        total
-      });
-
-    } catch (error) {
-      logger.error({ msg: 'Error getting fields', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      res.json({ rows: result });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting fields', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения полей'));
     }
   });
-  listeners.push({ method: 'get', func: basePath, entity: entityName });
 
-  // GET /api/v2/fields/:uuid - Получение по UUID
-  app.get(`${basePath}/:uuid`, async (req: Request, res: Response) => {
+  // GET /api/v2/fields/:uuid
+  router.get('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
+      const items = await prisma.$queryRawUnsafe(`
+        SELECT 
+          'fields' AS table_name,
+          f.uuid, f.name, f.type_uuid, f.is_custom, f.available_values,
+          f.created_at, f.updated_at,
+          ft.name AS type_name, ft.code AS type_code
+        FROM ${escapeIdentifier(schema)}.fields f
+        LEFT JOIN ${escapeIdentifier(schema)}.field_types ft ON ft.uuid = f.type_uuid
+        WHERE f.uuid = $1::uuid AND f.deleted_at IS NULL
+      `, uuid);
 
-      logger.info({ msg: 'GET field by UUID', subdomain, uuid });
-
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, type_uuid, is_custom, min_value, max_value, presision, available_values, created_at, updated_at
-        FROM "${subdomain}".fields
-        WHERE uuid = '${uuid}' AND deleted_at IS NULL
-      `);
-
-      if (items.length === 0) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Поле не найдено'));
+      if ((items as any[]).length === 0) {
+        return res.status(404).json(createErrorResponse(req, 'NOT_FOUND', 'Поле не найдено'));
       }
 
-      res.status(200).json(formatItem(items[0]));
+      const result = (items as any[]).map((item: any) => ({
+        ...item,
+        available_values: item.available_values ? 
+          (typeof item.available_values === 'string' ? JSON.parse(item.available_values) : item.available_values) 
+          : null,
+        // Добавляем type как массив для совместимости с фронтендом
+        type: item.type_uuid ? [{
+          uuid: item.type_uuid,
+          name: item.type_name,
+          code: item.type_code
+        }] : []
+      }));
 
-    } catch (error) {
-      logger.error({ msg: 'Error getting field', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      res.json({ rows: result });
+    } catch (error: any) {
+      logger.error({ msg: 'Error getting field', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения поля'));
     }
   });
-  listeners.push({ method: 'get', func: `${basePath}/:uuid`, entity: entityName });
 
-  // POST /api/v2/fields - Создание
-  app.post(basePath, async (req: Request, res: Response) => {
+  // POST /api/v2/fields
+  router.post('/', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { name, type_uuid, is_custom, available_values } = req.body;
+    const uuid = req.body.uuid && isValidUuid(req.body.uuid) ? req.body.uuid : uuidv4();
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!name) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'name required'));
+    }
+    if (!type_uuid || !isValidUuid(type_uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'type_uuid required'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid, name, type_uuid, is_custom = true, min_value, max_value, presision, available_values } = req.body;
-
-      if (!name || !type_uuid) {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поля name и type_uuid обязательны'));
-      }
-
-      logger.info({ msg: 'POST field', subdomain, name, type_uuid });
-
-      const newUuid = uuid || randomUUID();
-      const now = new Date().toISOString();
-
-      const availableValuesStr = available_values 
-        ? `'${typeof available_values === 'string' ? available_values : JSON.stringify(available_values).replace(/'/g, "''")}'` 
-        : 'NULL';
+      const avJson = available_values ? JSON.stringify(available_values) : null;
 
       await prisma.$executeRawUnsafe(`
-        INSERT INTO "${subdomain}".fields (uuid, name, type_uuid, is_custom, min_value, max_value, presision, available_values, created_at, updated_at)
-        VALUES ('${newUuid}', '${name}', '${type_uuid}', ${is_custom}, 
-                ${min_value !== undefined ? min_value : 'NULL'}, 
-                ${max_value !== undefined ? max_value : 'NULL'}, 
-                ${presision !== undefined ? presision : 'NULL'}, 
-                ${availableValuesStr}, 
-                '${now}', '${now}')
-      `);
+        INSERT INTO ${escapeIdentifier(schema)}.fields 
+        (uuid, name, type_uuid, is_custom, available_values, created_at, updated_at)
+        VALUES ($1::uuid, $2, $3::uuid, $4, $5::json, NOW(), NOW())
+      `, uuid, name, type_uuid, is_custom ?? false, avJson);
 
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, type_uuid, is_custom, min_value, max_value, presision, available_values, created_at, updated_at
-        FROM "${subdomain}".fields WHERE uuid = '${newUuid}'
-      `);
+      // Return created field
+      const items = await prisma.$queryRawUnsafe(`
+        SELECT 
+          'fields' AS table_name,
+          f.uuid, f.name, f.type_uuid, f.is_custom, f.available_values,
+          f.created_at, f.updated_at,
+          ft.name AS type_name, ft.code AS type_code
+        FROM ${escapeIdentifier(schema)}.fields f
+        LEFT JOIN ${escapeIdentifier(schema)}.field_types ft ON ft.uuid = f.type_uuid
+        WHERE f.uuid = $1::uuid
+      `, uuid);
 
-      res.status(201).json(formatItem(items[0]));
-
-    } catch (error) {
-      logger.error({ msg: 'Error creating field', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      res.status(201).json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error creating field', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка создания поля'));
     }
   });
-  listeners.push({ method: 'post', func: basePath, entity: entityName });
 
-  // PUT /api/v2/fields/:uuid - Upsert (создаёт если не существует)
-  app.put(`${basePath}/:uuid`, async (req: Request, res: Response) => {
-    try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-      const { name, type_uuid, is_custom = true, min_value, max_value, presision, available_values } = req.body;
+  // PUT /api/v2/fields/:uuid
+  router.put('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
+    const { name, type_uuid, is_custom, available_values } = req.body;
 
-      if (!name || !type_uuid) {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поля name и type_uuid обязательны'));
-      }
-
-      logger.info({ msg: 'PUT field (upsert)', subdomain, uuid });
-
-      const now = new Date().toISOString();
-      const availableValuesStr = available_values 
-        ? `'${typeof available_values === 'string' ? available_values : JSON.stringify(available_values).replace(/'/g, "''")}'` 
-        : 'NULL';
-
-      // Check exists
-      const existing: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid FROM "${subdomain}".fields WHERE uuid = '${uuid}'
-      `);
-
-      if (existing.length === 0) {
-        // Create new record
-        await prisma.$executeRawUnsafe(`
-          INSERT INTO "${subdomain}".fields (uuid, name, type_uuid, is_custom, min_value, max_value, presision, available_values, created_at, updated_at)
-          VALUES ('${uuid}', '${name}', '${type_uuid}', ${is_custom}, 
-                  ${min_value !== undefined ? min_value : 'NULL'}, 
-                  ${max_value !== undefined ? max_value : 'NULL'}, 
-                  ${presision !== undefined ? presision : 'NULL'}, 
-                  ${availableValuesStr}, 
-                  '${now}', '${now}')
-        `);
-      } else {
-        // Update existing record
-        await prisma.$executeRawUnsafe(`
-          UPDATE "${subdomain}".fields 
-          SET name = '${name}', type_uuid = '${type_uuid}', is_custom = ${is_custom},
-              min_value = ${min_value !== undefined ? min_value : 'NULL'},
-              max_value = ${max_value !== undefined ? max_value : 'NULL'},
-              presision = ${presision !== undefined ? presision : 'NULL'},
-              available_values = ${availableValuesStr},
-              updated_at = '${now}', deleted_at = NULL
-          WHERE uuid = '${uuid}'
-        `);
-      }
-
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, type_uuid, is_custom, min_value, max_value, presision, available_values, created_at, updated_at
-        FROM "${subdomain}".fields WHERE uuid = '${uuid}'
-      `);
-
-      res.status(existing.length === 0 ? 201 : 200).json(formatItem(items[0]));
-
-    } catch (error) {
-      logger.error({ msg: 'Error upserting field', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
     }
-  });
-  listeners.push({ method: 'put', func: `${basePath}/:uuid`, entity: entityName });
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
 
-  // PATCH /api/v2/fields/:uuid - Частичное обновление
-  app.patch(`${basePath}/:uuid`, async (req: Request, res: Response) => {
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-
-      const updates: string[] = [];
-      if (req.body.name !== undefined) updates.push(`name = '${req.body.name}'`);
-      if (req.body.type_uuid !== undefined) updates.push(`type_uuid = '${req.body.type_uuid}'`);
-      if (req.body.is_custom !== undefined) updates.push(`is_custom = ${req.body.is_custom}`);
-      if (req.body.min_value !== undefined) updates.push(`min_value = ${req.body.min_value !== null ? req.body.min_value : 'NULL'}`);
-      if (req.body.max_value !== undefined) updates.push(`max_value = ${req.body.max_value !== null ? req.body.max_value : 'NULL'}`);
-      if (req.body.presision !== undefined) updates.push(`presision = ${req.body.presision !== null ? req.body.presision : 'NULL'}`);
-      if (req.body.available_values !== undefined) {
-        const av = req.body.available_values;
-        const avStr = av ? `'${typeof av === 'string' ? av : JSON.stringify(av).replace(/'/g, "''")}'` : 'NULL';
-        updates.push(`available_values = ${avStr}`);
+      const setClauses: string[] = ['updated_at = NOW()'];
+      const values: any[] = [];
+      let paramIndex = 1;
+      
+      if (name !== undefined) {
+        setClauses.push(`name = $${paramIndex}`);
+        values.push(name);
+        paramIndex++;
+      }
+      if (type_uuid !== undefined && isValidUuid(type_uuid)) {
+        setClauses.push(`type_uuid = $${paramIndex}::uuid`);
+        values.push(type_uuid);
+        paramIndex++;
+      }
+      if (is_custom !== undefined) {
+        setClauses.push(`is_custom = $${paramIndex}`);
+        values.push(is_custom);
+        paramIndex++;
+      }
+      if (available_values !== undefined) {
+        const avJson = available_values ? JSON.stringify(available_values) : null;
+        setClauses.push(`available_values = $${paramIndex}::json`);
+        values.push(avJson);
+        paramIndex++;
       }
 
-      if (updates.length === 0) {
-        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Нет полей для обновления'));
-      }
-
-      logger.info({ msg: 'PATCH field', subdomain, uuid, fields: updates.length });
-
-      // Check exists
-      const existing: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid FROM "${subdomain}".fields WHERE uuid = '${uuid}' AND deleted_at IS NULL
-      `);
-
-      if (existing.length === 0) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Поле не найдено'));
-      }
-
-      updates.push(`updated_at = '${new Date().toISOString()}'`);
-
+      values.push(uuid);
       await prisma.$executeRawUnsafe(`
-        UPDATE "${subdomain}".fields SET ${updates.join(', ')} WHERE uuid = '${uuid}'
-      `);
+        UPDATE ${escapeIdentifier(schema)}.fields
+        SET ${setClauses.join(', ')}
+        WHERE uuid = $${paramIndex}::uuid
+      `, ...values);
 
-      const items: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid, name, type_uuid, is_custom, min_value, max_value, presision, available_values, created_at, updated_at
-        FROM "${subdomain}".fields WHERE uuid = '${uuid}'
-      `);
+      // Return updated field
+      const items = await prisma.$queryRawUnsafe(`
+        SELECT 
+          'fields' AS table_name,
+          f.uuid, f.name, f.type_uuid, f.is_custom, f.available_values,
+          f.created_at, f.updated_at,
+          ft.name AS type_name, ft.code AS type_code
+        FROM ${escapeIdentifier(schema)}.fields f
+        LEFT JOIN ${escapeIdentifier(schema)}.field_types ft ON ft.uuid = f.type_uuid
+        WHERE f.uuid = $1::uuid
+      `, uuid);
 
-      res.status(200).json(formatItem(items[0]));
-
-    } catch (error) {
-      logger.error({ msg: 'Error patching field', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+      res.json({ rows: items });
+    } catch (error: any) {
+      logger.error({ msg: 'Error updating field', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка обновления поля'));
     }
   });
-  listeners.push({ method: 'patch', func: `${basePath}/:uuid`, entity: entityName });
 
-  // DELETE /api/v2/fields/:uuid - Удаление (soft delete)
-  app.delete(`${basePath}/:uuid`, async (req: Request, res: Response) => {
+  // DELETE /api/v2/fields/:uuid
+  router.delete('/:uuid', async (req: Request, res: Response) => {
+    const schema = req.headers.subdomain as string;
+    const { uuid } = req.params;
+
+    if (!schema) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
+    }
+    if (!isValidUuid(uuid)) {
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Invalid UUID'));
+    }
+
     try {
-      const subdomain = req.headers.subdomain as string;
-      const { uuid } = req.params;
-
-      logger.info({ msg: 'DELETE field', subdomain, uuid });
-
-      // Check exists
-      const existing: any[] = await prisma.$queryRawUnsafe(`
-        SELECT uuid FROM "${subdomain}".fields WHERE uuid = '${uuid}' AND deleted_at IS NULL
-      `);
-
-      if (existing.length === 0) {
-        return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Поле не найдено'));
-      }
-
       await prisma.$executeRawUnsafe(`
-        UPDATE "${subdomain}".fields SET deleted_at = '${new Date().toISOString()}' WHERE uuid = '${uuid}'
-      `);
-
+        UPDATE ${escapeIdentifier(schema)}.fields
+        SET deleted_at = NOW()
+        WHERE uuid = $1::uuid
+      `, uuid);
       res.status(204).send();
-
-    } catch (error) {
-      logger.error({ msg: 'Error deleting field', error });
-      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+    } catch (error: any) {
+      logger.error({ msg: 'Error deleting field', error: error.message });
+      res.status(500).json(createErrorResponse(req, 'INTERNAL_ERROR', 'Ошибка удаления поля'));
     }
   });
-  listeners.push({ method: 'delete', func: `${basePath}/:uuid`, entity: entityName });
 
-  logger.info({ msg: `Registered ${entityName} routes`, basePath });
+  app.use(`${apiPrefix}/fields`, router);
+
+  listeners.push({ method: 'get', func: 'read_fields', entity: 'fields' });
+  listeners.push({ method: 'get', func: 'read_field', entity: 'field' });
+  listeners.push({ method: 'post', func: 'create_fields', entity: 'fields' });
+  listeners.push({ method: 'post', func: 'upsert_fields', entity: 'fields' });
+  listeners.push({ method: 'post', func: 'upsert_field', entity: 'field' });
+  listeners.push({ method: 'put', func: 'update_fields', entity: 'fields' });
+  listeners.push({ method: 'delete', func: 'delete_fields', entity: 'fields' });
+
+  logger.info({ msg: 'Fields routes registered' });
 }
-
