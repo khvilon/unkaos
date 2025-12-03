@@ -237,20 +237,44 @@ export function registerWorkflowsRoutes(
       // Update transitions if provided
       // По парадигме Full Replace: undefined = не трогаем, [] = удаляем все, [...] = полная замена
       if (transitions !== undefined && Array.isArray(transitions)) {
-        // Delete old transitions
-        await prisma.$executeRawUnsafe(`
-          UPDATE ${escapeIdentifier(schema)}.transitions 
-          SET deleted_at = NOW() WHERE workflows_uuid = $1::uuid
+        // Get existing transitions
+        const existingTrans: any[] = await prisma.$queryRawUnsafe(`
+          SELECT uuid FROM ${escapeIdentifier(schema)}.transitions 
+          WHERE workflows_uuid = $1::uuid AND deleted_at IS NULL
         `, uuid);
+        const existingTransUuids = new Set(existingTrans.map((t: any) => t.uuid));
+        const newTransUuids = new Set(transitions.map((t: any) => t.uuid).filter(Boolean));
 
-        // Create new transitions
+        // Delete transitions not in new list
+        for (const existing of existingTrans) {
+          if (!newTransUuids.has(existing.uuid)) {
+            await prisma.$executeRawUnsafe(`
+              UPDATE ${escapeIdentifier(schema)}.transitions 
+              SET deleted_at = NOW() WHERE uuid = $1::uuid
+            `, existing.uuid);
+          }
+        }
+
+        // Create/update transitions
         for (const trans of transitions) {
           const transUuid = trans.uuid && isValidUuid(trans.uuid) ? trans.uuid : uuidv4();
-          await prisma.$executeRawUnsafe(`
-            INSERT INTO ${escapeIdentifier(schema)}.transitions 
-            (uuid, workflows_uuid, status_from_uuid, status_to_uuid, name, created_at, updated_at)
-            VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, $5, NOW(), NOW())
-          `, transUuid, uuid, trans.status_from_uuid, trans.status_to_uuid, trans.name ?? '');
+          
+          if (existingTransUuids.has(transUuid)) {
+            // Restore deleted transition and update
+            await prisma.$executeRawUnsafe(`
+              UPDATE ${escapeIdentifier(schema)}.transitions 
+              SET status_from_uuid = $1::uuid, status_to_uuid = $2::uuid, name = $3, updated_at = NOW(), deleted_at = NULL
+              WHERE uuid = $4::uuid
+            `, trans.status_from_uuid, trans.status_to_uuid, trans.name ?? '', transUuid);
+          } else {
+            await prisma.$executeRawUnsafe(`
+              INSERT INTO ${escapeIdentifier(schema)}.transitions 
+              (uuid, workflows_uuid, status_from_uuid, status_to_uuid, name, created_at, updated_at)
+              VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, $5, NOW(), NOW())
+              ON CONFLICT (uuid) DO UPDATE SET 
+                status_from_uuid = $3::uuid, status_to_uuid = $4::uuid, name = $5, updated_at = NOW(), deleted_at = NULL
+            `, transUuid, uuid, trans.status_from_uuid, trans.status_to_uuid, trans.name ?? '');
+          }
         }
       }
 

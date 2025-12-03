@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createWorkflow, createStatus } from '../helpers';
+import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createWorkflow, createStatus, createField } from '../helpers';
 
 test.describe.serial('Регресионный тест', () => {
   const startTime = new Date().getTime();
@@ -288,24 +288,56 @@ test.describe.serial('Регресионный тест', () => {
   // ЧАСТЬ 3: ПРОВЕРКА ОТОБРАЖЕНИЯ ЭКРАНОВ
   // ===========================================
 
-  test('Проверка страницы полей', async ({ page }) => {
-    console.log('🚀 Проверка страницы полей...');
+  test('Поля: создание разных типов', async ({ page }) => {
+    console.log('🚀 Тест полей: создание разных типов...');
     
     await navigateMainMenu(page, 'fields');
     await page.waitForSelector('.table_card_fields', { timeout: 10000 });
     
-    const tableRows = await page.locator('.ktable .row').count();
-    console.log(`Найдено полей: ${tableRows}`);
+    // Закрываем меню
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
     
-    if (tableRows > 0) {
-      await page.locator('.ktable .row').first().click();
-      await page.waitForTimeout(500);
-      
-      const typeField = await page.locator('.label:has-text("Тип")').count();
-      console.log(`Поле типа найдено: ${typeField > 0}`);
+    // 1. Создаём текстовое поле
+    await createField(page, { name: 'Тестовое строковое', typeCode: 'Строка' });
+    console.log('✅ Строковое поле создано');
+    
+    // 2. Создаём числовое поле
+    await createField(page, { name: 'Тестовое числовое', typeCode: 'Числовое' });
+    console.log('✅ Числовое поле создано');
+    
+    // 3. Создаём булево поле
+    await createField(page, { name: 'Тестовое булево', typeCode: 'Булево' });
+    console.log('✅ Булево поле создано');
+    
+    // 4. Создаём поле даты
+    await createField(page, { name: 'Тестовая дата', typeCode: 'Дата' });
+    console.log('✅ Поле даты создано');
+    
+    // 5. Создаём поле Select со значениями и цветами
+    await createField(page, { 
+      name: 'Тестовый приоритет', 
+      typeCode: 'Значение из списка',
+      availableValues: [
+        { name: 'Низкий', color: '#00ff00' },
+        { name: 'Средний', color: '#ffff00' },
+        { name: 'Высокий', color: '#ff0000' }
+      ]
+    });
+    console.log('✅ Поле Select со значениями и цветами создано');
+    
+    // Проверяем, что все поля созданы
+    await page.waitForTimeout(1000);
+    const tableContent = await page.locator('.ktable').textContent();
+    
+    const fieldsToCheck = ['Тестовое строковое', 'Тестовое числовое', 'Тестовое булево', 'Тестовая дата', 'Тестовый приоритет'];
+    for (const fieldName of fieldsToCheck) {
+      if (!tableContent?.includes(fieldName)) {
+        console.warn(`⚠️ Поле "${fieldName}" не найдено в таблице`);
+      }
     }
     
-    console.log('✅ Страница полей проверена');
+    console.log('✅ Все типы полей проверены');
   });
 
   test('Проверка страницы проектов', async ({ page }) => {

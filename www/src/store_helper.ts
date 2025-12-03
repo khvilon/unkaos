@@ -229,17 +229,42 @@ store_helper.create_module = function (name) {
       });
     }
 
-  if(name=='fields' && state.state["selected_" + name].available_values && tools.isValidJSON('[' + state.state["selected_" + name].available_values + ']')){
-    let av = state.state["selected_" + name].available_values
-    if(av && av[0] != '[') av = '[' + av + ']'
-    if(av) {
-      let available_values = JSON.parse(av)
-      for(let i in available_values){
-        if(!available_values[i].uuid) available_values[i].uuid = tools.uuidv4();
+  // Обработка available_values для fields - добавляем uuid если нет
+  if(name=='fields' && state.state["selected_" + name].available_values) {
+    let av = state.state["selected_" + name].available_values;
+    let available_values: any[] = [];
+    
+    // Если это уже массив (от vue-select с taggable)
+    if (Array.isArray(av)) {
+      available_values = av;
+    }
+    // Если это строка JSON
+    else if (typeof av === 'string') {
+      try {
+        // Пробуем распарсить как есть
+        if (av.trim().startsWith('[')) {
+          available_values = JSON.parse(av);
+        } else {
+          // Оборачиваем в массив
+          available_values = JSON.parse('[' + av + ']');
+        }
+      } catch (e) {
+        console.error('Failed to parse available_values:', av, e);
+        available_values = [];
       }
-      state.state["selected_" + name].available_values = JSON.stringify(available_values, null, 4);
     }
+    
+    // Добавляем uuid к каждому значению если нет
+    for (let i in available_values) {
+      if (!available_values[i].uuid) {
+        available_values[i].uuid = tools.uuidv4();
+      }
     }
+    
+    // Сохраняем как массив (бэкенд сам сериализует в JSON)
+    state.state["selected_" + name].available_values = available_values;
+    console.log('>>>available_values processed:', available_values);
+  }
 
     console.log('>>>save', name,  state.state["selected_" + name])
     let result;

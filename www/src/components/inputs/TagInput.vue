@@ -94,6 +94,8 @@ export default {
     :parameters="{ multiple: true, reduce: this.isIssueTag ? (obj) => obj.uuid : undefined}"
     :value="value"
     :values="values"
+    :parent_name="parent_name"
+    :id="id"
     class="tag-input"
     @tag_clicked="tag_clicked"
     @value_selected="tag_selected"

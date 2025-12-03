@@ -827,3 +827,175 @@ export async function createStatus(page: Page, name: string, isInitial: boolean 
     throw error;
   }
 }
+
+export interface FieldConfig {
+  name: string;
+  typeCode: string; // String, Text, Numeric, Boolean, Date, Time, Timestamp, User, Select
+  availableValues?: { name: string; color?: string }[];
+}
+
+export async function createField(page: Page, config: FieldConfig): Promise<void> {
+  console.log(`Creating field: ${config.name} (type: ${config.typeCode})`);
+  
+  try {
+    await fixInterfacePositioning(page);
+    await page.waitForTimeout(500);
+    
+    // Закрываем меню если открыто
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    
+    // Кликаем по кнопке плюс для создания поля
+    console.log('Clicking plus button...');
+    await page.waitForSelector('.btn_input.bx-plus-circle', { timeout: 5000 });
+    await page.click('.btn_input.bx-plus-circle');
+    
+    // Ждем появления полей формы
+    console.log('Waiting for form fields...');
+    await page.waitForSelector('.table_card_fields', { timeout: 5000 });
+    await page.waitForTimeout(500);
+    
+    // Заполняем название поля
+    console.log('Filling Название field...');
+    await changeField(page, "Название", config.name);
+    
+    // Выбираем тип поля
+    console.log(`Selecting type: ${config.typeCode}...`);
+    
+    // Находим select-input с лейблом "Тип"
+    const typeSelectInput = page.locator('.select-input:has(.label:text("Тип"))');
+    if (await typeSelectInput.count() > 0) {
+      console.log('✅ Найден контейнер типа');
+      // Кликаем на выпадающий список
+      const dropdown = typeSelectInput.locator('.vs__dropdown-toggle');
+      if (await dropdown.count() > 0) {
+        await dropdown.click();
+        await page.waitForTimeout(500);
+        
+        // Ждём появления меню
+        await page.waitForSelector('.vs__dropdown-menu', { timeout: 5000 });
+        
+        // Находим и кликаем по нужному типу в выпадающем списке
+        const typeOption = page.locator(`.vs__dropdown-menu .vs__dropdown-option:has-text("${config.typeCode}")`);
+        if (await typeOption.count() > 0) {
+          await typeOption.first().click();
+          await page.waitForTimeout(500);
+          console.log(`✅ Тип "${config.typeCode}" выбран`);
+        } else {
+          console.log(`⚠️ Тип "${config.typeCode}" не найден в списке`);
+        }
+      }
+    } else {
+      // Альтернативный поиск - ищем по точному тексту лейбла
+      const altContainer = page.locator('.input:has(.label:text-is("Тип"))');
+      if (await altContainer.count() > 0) {
+        console.log('✅ Найден альтернативный контейнер типа');
+        const dropdown = altContainer.locator('.vs__dropdown-toggle, .v-select');
+        if (await dropdown.count() > 0) {
+          await dropdown.first().click();
+          await page.waitForTimeout(500);
+          
+          const typeOption = page.locator(`.vs__dropdown-menu .vs__dropdown-option:has-text("${config.typeCode}")`);
+          if (await typeOption.count() > 0) {
+            await typeOption.first().click();
+            await page.waitForTimeout(500);
+            console.log(`✅ Тип "${config.typeCode}" выбран`);
+          }
+        }
+      } else {
+        console.log('⚠️ Контейнер типа не найден');
+      }
+    }
+    
+    // Если тип Select (Значение из списка) - добавляем значения списка
+    if ((config.typeCode === 'Select' || config.typeCode === 'Значение из списка') && config.availableValues && config.availableValues.length > 0) {
+      console.log('Adding available values for Select field...');
+      
+      // Ждём появления TagInput (он появляется когда выбран тип Select)
+      await page.waitForTimeout(1000);
+      
+      // Проверяем наличие TagInput (он появляется только после выбора типа Select)
+      const tagInputContainer = page.locator('.tag-input');
+      const tagInputCount = await tagInputContainer.count();
+      console.log(`TagInput containers found: ${tagInputCount}`);
+      
+      if (tagInputCount === 0) {
+        console.log('⚠️ TagInput не появился - возможно тип не выбран');
+      }
+      
+      for (const val of config.availableValues) {
+        console.log(`Adding value: ${val.name}`);
+        
+        // Находим input для добавления тега внутри tag-input
+        const tagSearchInput = page.locator('.tag-input input.vs__search, .tag-input .vs__search');
+        if (await tagSearchInput.count() > 0) {
+          // Кликаем на input чтобы активировать его
+          await tagSearchInput.first().click();
+          await page.waitForTimeout(200);
+          
+          // Вводим текст
+          await page.keyboard.type(val.name);
+          await page.waitForTimeout(200);
+          
+          // Нажимаем Enter для добавления
+          await page.keyboard.press('Enter');
+          await page.waitForTimeout(500);
+          
+          console.log(`✅ Value "${val.name}" added`);
+          
+          // Если указан цвет - кликаем по чипсе и выбираем цвет
+          if (val.color) {
+            console.log(`Setting color for value ${val.name}: ${val.color}`);
+            
+            // Ищем чип с нужным текстом
+            const chip = page.locator(`.tag-input .select-input-selected:has-text("${val.name}"), .tag-input .vs__selected:has-text("${val.name}")`);
+            if (await chip.count() > 0) {
+              await chip.first().click();
+              await page.waitForTimeout(500);
+              
+              // Ждём появления модального окна редактирования тега
+              const modal = page.locator('.edit-tag-modal, .modal:visible');
+              if (await modal.count() > 0) {
+                // Ищем поле цвета в модальном окне
+                const colorInput = page.locator('input[type="color"]');
+                if (await colorInput.count() > 0) {
+                  await colorInput.fill(val.color);
+                  await page.waitForTimeout(300);
+                  console.log(`✅ Color set to ${val.color}`);
+                }
+                
+                // Закрываем модальное окно - ищем кнопку сохранения
+                const saveBtn = page.locator('.edit-tag-modal button:has-text("Сохранить"), .modal button:has-text("ОК"), .modal button:has-text("OK"), .modal .btn:has-text("Сохранить")');
+                if (await saveBtn.count() > 0) {
+                  await saveBtn.first().click();
+                  await page.waitForTimeout(300);
+                } else {
+                  // Закрываем по Escape
+                  await page.keyboard.press('Escape');
+                  await page.waitForTimeout(200);
+                }
+              }
+            }
+          }
+        } else {
+          console.log('⚠️ TagInput search field not found');
+        }
+      }
+    }
+    
+    // Нажимаем кнопку "Создать" для сохранения
+    console.log('Clicking "Создать" button...');
+    const createButton = page.locator('input[type="button"][value="Создать"]');
+    await scrollToElement(page, createButton);
+    await createButton.click();
+    
+    // Ждем сохранения
+    await page.waitForTimeout(1000);
+    
+    console.log(`✅ Поле "${config.name}" создано`);
+    
+  } catch (error) {
+    console.error(`Field creation failed:`, error);
+    throw error;
+  }
+}

@@ -80,9 +80,9 @@ export function registerFieldValuesRoutes(
       await prisma.$executeRawUnsafe(`
         INSERT INTO ${escapeIdentifier(schema)}.field_values 
         (uuid, issue_uuid, field_uuid, value, created_at, updated_at)
-        VALUES (${uuid}::uuid, ${issue_uuid}::uuid, ${field_uuid}::uuid, ${value ?? null}, NOW(), NOW())
-        ON CONFLICT (issue_uuid, field_uuid) DO UPDATE SET value = ${value ?? null}, updated_at = NOW()
-      `);
+        VALUES ($1::uuid, $2::uuid, $3::uuid, $4, NOW(), NOW())
+        ON CONFLICT (issue_uuid, field_uuid) DO UPDATE SET value = $4, updated_at = NOW()
+      `, uuid, issue_uuid, field_uuid, value ?? null);
 
       const items = await prisma.$queryRawUnsafe(`
         SELECT 
@@ -92,8 +92,8 @@ export function registerFieldValuesRoutes(
         FROM ${escapeIdentifier(schema)}.field_values fv
         LEFT JOIN ${escapeIdentifier(schema)}.fields f ON f.uuid = fv.field_uuid
         LEFT JOIN ${escapeIdentifier(schema)}.field_types ft ON ft.uuid = f.type_uuid
-        WHERE fv.issue_uuid = ${issue_uuid}::uuid AND fv.field_uuid = ${field_uuid}::uuid
-      `);
+        WHERE fv.issue_uuid = $1::uuid AND fv.field_uuid = $2::uuid
+      `, issue_uuid, field_uuid);
 
       res.status(201).json({ rows: items });
     } catch (error: any) {
@@ -123,8 +123,8 @@ export function registerFieldValuesRoutes(
     try {
       // Проверяем что это не поле автора
       const existing: any[] = await prisma.$queryRawUnsafe(`
-        SELECT field_uuid FROM ${escapeIdentifier(schema)}.field_values WHERE uuid = ${uuid}::uuid
-      `);
+        SELECT field_uuid FROM ${escapeIdentifier(schema)}.field_values WHERE uuid = $1::uuid
+      `, uuid);
       
       if (existing.length > 0 && existing[0].field_uuid === AUTHOR_FIELD_UUID) {
         return res.status(403).json(createErrorResponse(req, 'FORBIDDEN', 'Нельзя изменять поле автора'));
@@ -132,9 +132,9 @@ export function registerFieldValuesRoutes(
 
       await prisma.$executeRawUnsafe(`
         UPDATE ${escapeIdentifier(schema)}.field_values
-        SET value = ${value ?? null}, updated_at = NOW()
-        WHERE uuid = ${uuid}::uuid
-      `);
+        SET value = $1, updated_at = NOW()
+        WHERE uuid = $2::uuid
+      `, value ?? null, uuid);
 
       const items = await prisma.$queryRawUnsafe(`
         SELECT 
@@ -144,8 +144,8 @@ export function registerFieldValuesRoutes(
         FROM ${escapeIdentifier(schema)}.field_values fv
         LEFT JOIN ${escapeIdentifier(schema)}.fields f ON f.uuid = fv.field_uuid
         LEFT JOIN ${escapeIdentifier(schema)}.field_types ft ON ft.uuid = f.type_uuid
-        WHERE fv.uuid = ${uuid}::uuid
-      `);
+        WHERE fv.uuid = $1::uuid
+      `, uuid);
 
       res.json({ rows: items });
     } catch (error: any) {
@@ -170,8 +170,8 @@ export function registerFieldValuesRoutes(
       await prisma.$executeRawUnsafe(`
         UPDATE ${escapeIdentifier(schema)}.field_values
         SET deleted_at = NOW()
-        WHERE uuid = ${uuid}::uuid
-      `);
+        WHERE uuid = $1::uuid
+      `, uuid);
       res.status(204).send();
     } catch (error: any) {
       logger.error({ msg: 'Error deleting field value', error: error.message });
