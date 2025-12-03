@@ -6,6 +6,8 @@ import { createLogger } from '../common/logging';
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import axios from 'axios';
+import { startGrpcServer, stopGrpcServer } from './grpc/server';
+import * as grpc from '@grpc/grpc-js';
 
 const logger = createLogger('zeus2');
 
@@ -23,7 +25,11 @@ const listeners: Listener[] = [];
 // Express app setup
 const app: express.Application = express();
 const httpServer = require('http').createServer(app);
-const port = process.env.ZEUS2_PORT || 3007;
+const port = parseInt(process.env.ZEUS2_PORT || '3007');
+const grpcPort = parseInt(process.env.ZEUS2_GRPC_PORT || '50051');
+
+// gRPC server reference
+let grpcServer: grpc.Server | null = null;
 
 // Prisma client
 export const prisma = new PrismaClient({
@@ -367,8 +373,17 @@ async function init() {
       });
     });
 
+    // Start gRPC server
+    try {
+      grpcServer = await startGrpcServer(grpcPort, port, listeners);
+      logger.info({ msg: 'gRPC server started', grpcPort });
+    } catch (grpcError: any) {
+      logger.error({ msg: 'Failed to start gRPC server', error: grpcError.message });
+      // Continue without gRPC - Socket.IO will still work
+    }
+
     httpServer.listen(port, () => {
-      logger.info({ msg: `Zeus2 running on port ${port}`, apiPrefix: API_PREFIX });
+      logger.info({ msg: `Zeus2 running on port ${port}`, apiPrefix: API_PREFIX, grpcPort });
       logger.info({ msg: 'Registered endpoints', count: listeners.length });
       listeners.forEach(l => {
         logger.debug({ msg: 'Endpoint', method: l.method.toUpperCase(), path: l.func, entity: l.entity });
@@ -384,6 +399,12 @@ async function init() {
 // Graceful shutdown
 async function gracefulShutdown(signal: string) {
   logger.info({ msg: `Received ${signal}, starting graceful shutdown` });
+  
+  // Закрываем gRPC сервер
+  if (grpcServer) {
+    await stopGrpcServer(grpcServer);
+    logger.info({ msg: 'gRPC server closed' });
+  }
   
   // Закрываем HTTP сервер (перестаём принимать новые соединения)
   httpServer.close(() => {

@@ -2,8 +2,9 @@ import axios from "axios";
 import cors from "cors";
 import express from "express";
 import { io, Socket } from "socket.io-client";
-import { createLogger } from '../server/common/logging';
+import { createLogger } from '../common/logging';
 import { randomUUID } from 'crypto';
+import { createZeus2Client, Zeus2GrpcClient, getZeus2Client } from './grpc-client';
 
 const logger = createLogger('gateway');
 const app: any = express();
@@ -26,8 +27,10 @@ try {
   conf = {
     zeusUrl: process.env.ZEUS_URL,
     zeus2Url: process.env.ZEUS2_URL,
+    zeus2GrpcUrl: process.env.ZEUS2_GRPC_URL || 'localhost:50051',
     cerberusUrl: process.env.CERBERUS_URL,
-    athenaUrl: process.env.ATHENA_URL
+    athenaUrl: process.env.ATHENA_URL,
+    useGrpc: process.env.USE_GRPC === 'true' || true  // Enable gRPC by default
   };
 }
 
@@ -35,10 +38,12 @@ logger.info({
   msg: 'Initializing Gateway',
   cerberusUrl: conf.cerberusUrl,
   zeusUrl: conf.zeusUrl,
-  zeus2Url: conf.zeus2Url
+  zeus2Url: conf.zeus2Url,
+  zeus2GrpcUrl: conf.zeus2GrpcUrl,
+  useGrpc: conf.useGrpc
 });
 
-// Cerberus Socket
+// Cerberus Socket (for authentication)
 const socket = io(conf.cerberusUrl, {
   reconnection: true,
   reconnectionAttempts: Infinity,
@@ -61,7 +66,7 @@ socket.on('connect_error', (error) => {
   logger.error({ msg: 'Cerberus connection error', error: error.message });
 });
 
-// Zeus v1 Socket (опционально - может быть отключён)
+// Zeus v1 Socket (optional - may be disabled)
 let zeusSocket: Socket | null = null;
 
 if (conf.zeusUrl) {
@@ -90,14 +95,21 @@ if (conf.zeusUrl) {
   logger.info({ msg: 'Zeus v1 is disabled - all requests will go to Zeus2' });
 }
 
-// Zeus2 Socket
+// Zeus2 gRPC Client (primary) or Socket.IO (fallback)
+let zeus2GrpcClient: Zeus2GrpcClient | null = null;
 let zeus2Socket: Socket | null = null;
 let zeus2Entities: Set<string> = new Set();
 
 // Mapping: entity name -> REST API base path
 const zeus2EntityMapping: Map<string, string> = new Map();
 
-if (conf.zeus2Url) {
+// Initialize Zeus2 connection
+if (conf.useGrpc && conf.zeus2GrpcUrl) {
+  logger.info({ msg: 'Using gRPC for Zeus2 communication', address: conf.zeus2GrpcUrl });
+  zeus2GrpcClient = createZeus2Client(conf.zeus2GrpcUrl);
+} else if (conf.zeus2Url) {
+  // Fallback to Socket.IO
+  logger.info({ msg: 'Using Socket.IO for Zeus2 communication (fallback)' });
   zeus2Socket = io(conf.zeus2Url, {
     reconnection: true,
     reconnectionAttempts: Infinity,
@@ -109,22 +121,22 @@ if (conf.zeus2Url) {
   });
 
   zeus2Socket.on('connect', () => {
-    logger.info({ msg: 'Connected to Zeus2 v2', socketId: zeus2Socket?.id });
+    logger.info({ msg: 'Connected to Zeus2 v2 (Socket.IO)', socketId: zeus2Socket?.id });
   });
 
   zeus2Socket.on('disconnect', () => {
-    logger.warn({ msg: 'Disconnected from Zeus2 v2' });
+    logger.warn({ msg: 'Disconnected from Zeus2 v2 (Socket.IO)' });
   });
 
   zeus2Socket.on('connect_error', (error) => {
-    logger.error({ msg: 'Zeus2 v2 connection error', error: error.message });
+    logger.error({ msg: 'Zeus2 v2 connection error (Socket.IO)', error: error.message });
   });
 }
 
-  app.use(cors());
-  app.use(express.json({ limit: "150mb" }));
-  app.use(express.raw({ limit: "150mb" }));
-  app.use(express.urlencoded({ limit: "150mb", extended: true }));
+app.use(cors());
+app.use(express.json({ limit: "150mb" }));
+app.use(express.raw({ limit: "150mb" }));
+app.use(express.urlencoded({ limit: "150mb", extended: true }));
 
 // Auth endpoint
 app.get("/get_token", async (req: any, res: any) => {
@@ -145,9 +157,6 @@ app.get("/get_token", async (req: any, res: any) => {
 
 /**
  * Converts old-style API call to REST format for Zeus2
- * 
- * Old format: read_workflows, upsert_workflows, delete_workflows
- * New format: GET /api/v2/workflows, PUT /api/v2/workflows/:uuid, DELETE /api/v2/workflows/:uuid
  */
 function convertToRestRequest(func: string, method: string, body: any, query: any): {
   restMethod: string;
@@ -155,11 +164,8 @@ function convertToRestRequest(func: string, method: string, body: any, query: an
   restBody: any;
 } {
   const parts = func.split('_');
-  const action = parts[0]; // read, create, update, delete, upsert
+  const action = parts[0];
   const entityParts = parts.slice(1);
-  
-  // Convert snake_case to kebab-case for entity name
-  // e.g., issue_statuses -> issue-statuses
   const entity = entityParts.join('-').replace(/_/g, '-');
   
   let restMethod = 'get';
@@ -172,7 +178,6 @@ function convertToRestRequest(func: string, method: string, body: any, query: an
       if (body?.uuid || query?.uuid) {
         restPath = `/api/v2/${entity}/${body?.uuid || query?.uuid}`;
       }
-      // Pass all query params from body and query object
       const queryParams: string[] = [];
       const allParams = { ...body, ...query };
       for (const [key, value] of Object.entries(allParams)) {
@@ -197,13 +202,9 @@ function convertToRestRequest(func: string, method: string, body: any, query: an
       break;
     
     case 'upsert':
-      // Upsert -> Check is_new flag or use PUT/POST accordingly
       if (body?.is_new === true || !body?.uuid) {
-        // New record = create via POST
         restMethod = 'post';
-        // Don't include uuid in path for POST
       } else {
-        // Existing record = update via PUT
         restMethod = 'put';
         if (body?.uuid) {
           restPath = `/api/v2/${entity}/${body.uuid}`;
@@ -226,7 +227,6 @@ function convertToRestRequest(func: string, method: string, body: any, query: an
  * Converts Zeus2 REST response to old Zeus v1 format
  */
 function convertFromRestResponse(restResponse: any): any {
-  // If response has 'items' array (collection), wrap in rows
   if (restResponse.items) {
     return {
       rows: restResponse.items.map((item: any) => ({
@@ -236,7 +236,6 @@ function convertFromRestResponse(restResponse: any): any {
     };
   }
   
-  // Single object response
   if (restResponse.uuid) {
     return {
       rows: [{
@@ -246,26 +245,18 @@ function convertFromRestResponse(restResponse: any): any {
     };
   }
   
-  // Error or other response
   return restResponse;
 }
 
 function extractTableName(obj: any): string {
-  // Try to determine table name from object structure
   if (obj.workflow_nodes !== undefined) return 'workflows';
   if (obj.is_start !== undefined || obj.is_end !== undefined) return 'issue_statuses';
   return 'unknown';
 }
 
-/**
- * Check if entity is handled by Zeus2
- * Converts: read_issue_statuses -> issue-statuses
- *           read_workflows -> workflows
- */
 function isZeus2Entity(func: string): boolean {
   const parts = func.split('_');
   const entityParts = parts.slice(1);
-  // Join with dash and also replace any remaining underscores
   const entity = entityParts.join('-').replace(/_/g, '-');
   const result = zeus2Entities.has(entity);
   
@@ -276,29 +267,88 @@ function isZeus2Entity(func: string): boolean {
   return result;
 }
 
+/**
+ * Send request to Zeus2 via gRPC or Socket.IO
+ */
+async function sendToZeus2(
+  restMethod: string,
+  restPath: string,
+  headers: Record<string, string>,
+  body: any
+): Promise<any> {
+  // Try gRPC first
+  if (zeus2GrpcClient && zeus2GrpcClient.isConnected()) {
+    logger.debug({ msg: 'Sending via gRPC', method: restMethod, path: restPath });
+    
+    const response = await zeus2GrpcClient.request({
+      method: restMethod,
+      url: restPath,
+      headers,
+      body
+    });
+    
+    return response;
+  }
+  
+  // Fallback to Socket.IO
+  if (zeus2Socket) {
+    logger.debug({ msg: 'Sending via Socket.IO (fallback)', method: restMethod, path: restPath });
+    
+    return new Promise((resolve) => {
+      zeus2Socket!.emit('request', {
+        method: restMethod,
+        url: restPath,
+        headers,
+        body
+      }, (response: any) => {
+        resolve(response);
+      });
+    });
+  }
+  
+  throw new Error('No Zeus2 connection available');
+}
+
 async function loadZeus2Entities(retries = 5, delay = 2000): Promise<void> {
-  if (!conf.zeus2Url) return;
+  if (!conf.zeus2Url && !conf.zeus2GrpcUrl) return;
   
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const zeus2_listeners = await axios.get(conf.zeus2Url + "/read_listeners", { timeout: 5000 });
+      let listeners: any[] = [];
+      
+      // Try gRPC first
+      if (zeus2GrpcClient) {
+        try {
+          listeners = await zeus2GrpcClient.getListeners();
+          logger.info({ msg: 'Loaded Zeus2 entities via gRPC', count: listeners.length });
+        } catch (grpcErr) {
+          logger.warn({ msg: 'gRPC getListeners failed, trying HTTP', error: (grpcErr as Error).message });
+        }
+      }
+      
+      // Fallback to HTTP if gRPC failed or not available
+      if (listeners.length === 0 && conf.zeus2Url) {
+        const zeus2_listeners = await axios.get(conf.zeus2Url + "/read_listeners", { timeout: 5000 });
+        listeners = zeus2_listeners.data;
+      }
       
       // Extract unique entities from listeners
-      for (const listener of zeus2_listeners.data) {
+      for (const listener of listeners) {
         if (listener.entity) {
           zeus2Entities.add(listener.entity);
           zeus2EntityMapping.set(listener.entity, listener.func);
         }
       }
       
-  logger.info({
+      logger.info({
         msg: 'Loaded Zeus2 entities',
         entities: Array.from(zeus2Entities),
-        attempt
-  });
+        attempt,
+        via: zeus2GrpcClient ? 'gRPC' : 'HTTP'
+      });
       return;
     } catch (error) {
-  logger.warn({
+      logger.warn({
         msg: `Failed to load Zeus2 entities (attempt ${attempt}/${retries})`, 
         error: (error as any).code || (error as any).message 
       });
@@ -363,11 +413,9 @@ async function init() {
           }
 
           try {
-            // Determine which backend to use (check at request time, not registration time)
             const useZeus2 = isZeus2Entity(func);
             
-            if (useZeus2 && zeus2Socket) {
-              // Convert to REST format and send to Zeus2
+            if (useZeus2 && (zeus2GrpcClient || zeus2Socket)) {
               const { restMethod, restPath, restBody } = convertToRestRequest(
                 func, 
                 method, 
@@ -380,36 +428,39 @@ async function init() {
                 function: func,
                 restMethod,
                 restPath,
-                subdomain: req.headers.subdomain
+                subdomain: req.headers.subdomain,
+                via: zeus2GrpcClient?.isConnected() ? 'gRPC' : 'Socket.IO'
               });
 
-              zeus2Socket.emit('request', {
-                method: restMethod,
-                url: restPath,
-                headers: {
-                  subdomain: req.headers.subdomain,
-                  user_uuid: response.data.uuid,
-                  is_admin: response.data.is_admin,
-                  'x-request-id': requestId,
-                  'x-trace-id': traceId
-                },
-                body: restBody
-              }, (zeus2_ans: any) => {
+              try {
+                const zeus2_ans = await sendToZeus2(
+                  restMethod,
+                  restPath,
+                  {
+                    subdomain: req.headers.subdomain,
+                    user_uuid: response.data.uuid,
+                    is_admin: String(response.data.is_admin),
+                    'x-request-id': requestId,
+                    'x-trace-id': traceId
+                  },
+                  restBody
+                );
+
                 logger.debug({
                   msg: 'Zeus2 response',
                   status: zeus2_ans.status,
                   path: restPath
                 });
                 
-                // Convert response back to old format for compatibility
                 const convertedResponse = convertFromRestResponse(zeus2_ans.data);
-                
                 res.status(zeus2_ans.status);
                 res.send(convertedResponse);
-              });
+              } catch (zeus2Error: any) {
+                logger.error({ msg: 'Zeus2 request failed', error: zeus2Error.message });
+                res.status(503).json({ message: 'Zeus2 service unavailable' });
+              }
 
             } else if (zeusSocket) {
-              // Use Zeus v1 (if available)
               zeusSocket.emit('request', {
                 method: method,
                 url: req.url,
@@ -421,7 +472,7 @@ async function init() {
                 body: req.body
               }, (zeus_ans: any) => {
                 logger.debug({
-                    msg: 'Zeus v1 response',
+                  msg: 'Zeus v1 response',
                   status: zeus_ans.status,
                   url: req.url
                 });
@@ -429,11 +480,10 @@ async function init() {
                 res.send(zeus_ans.data);
               });
             } else {
-              // Zeus v1 отключён и сущность не найдена в Zeus2
               logger.error({ msg: 'No backend available for entity', func });
               res.status(503).json({
                 code: 'SERVICE_UNAVAILABLE',
-                message: 'Сервис временно недоступен. Zeus v1 отключён, сущность не найдена в Zeus2.',
+                message: 'Сервис временно недоступен',
                 details: [{ entity: func }]
               });
             }
@@ -449,7 +499,6 @@ async function init() {
       }
     };
 
-    // Register handler
     if (method === 'get') app.get("/" + func, handler);
     else if (method === 'post') app.post("/" + func, handler);
     else if (method === 'put') app.put("/" + func, handler);
@@ -457,17 +506,14 @@ async function init() {
   }
   
   // Register Zeus2-only entity handlers
-  // These are entities that exist in Zeus2 but not in Zeus v1
   const registeredFuncs = new Set(zeus_listeners.data.map((l: any) => l.func));
   const zeus2OnlyMethods = ['read', 'create', 'update', 'upsert', 'delete'];
   
   for (const entity of zeus2Entities) {
     for (const action of zeus2OnlyMethods) {
-      // Convert kebab-case entity to snake_case for func name
       const entitySnake = entity.replace(/-/g, '_');
       const func = `${action}_${entitySnake}`;
       
-      // Skip if already registered from Zeus v1
       if (registeredFuncs.has(func)) continue;
       
       const method = action === 'read' ? 'get' : 'post';
@@ -505,7 +551,6 @@ async function init() {
             }
             
             try {
-              // Convert to REST format and send to Zeus2
               const { restMethod, restPath, restBody } = convertToRestRequest(
                 func,
                 method,
@@ -518,40 +563,37 @@ async function init() {
                 function: func,
                 restMethod,
                 restPath,
-                subdomain: req.headers.subdomain
+                subdomain: req.headers.subdomain,
+                via: zeus2GrpcClient?.isConnected() ? 'gRPC' : 'Socket.IO'
               });
               
-              if (!zeus2Socket) {
-                logger.error({ msg: 'Zeus2 socket not available' });
-                res.status(503).send({ message: 'Zeus2 service unavailable' });
-                return;
-              }
-              
-              zeus2Socket.emit('request', {
-                method: restMethod,
-                url: restPath,
-                headers: {
-                  subdomain: req.headers.subdomain,
-                  user_uuid: response.data.uuid,
-                  is_admin: response.data.is_admin,
-                  'x-request-id': requestId,
-                  'x-trace-id': traceId
-                },
-                body: restBody,
-                query: req.query
-              }, (zeus2_ans: any) => {
+              try {
+                const zeus2_ans = await sendToZeus2(
+                  restMethod,
+                  restPath,
+                  {
+                    subdomain: req.headers.subdomain,
+                    user_uuid: response.data.uuid,
+                    is_admin: String(response.data.is_admin),
+                    'x-request-id': requestId,
+                    'x-trace-id': traceId
+                  },
+                  restBody
+                );
+
                 logger.debug({
                   msg: 'Zeus2-only response',
                   status: zeus2_ans.status,
                   url: restPath
                 });
                 
-                // Convert response back to old format for compatibility
                 const convertedResponse = convertFromRestResponse(zeus2_ans.data);
-                
                 res.status(zeus2_ans.status);
                 res.send(convertedResponse);
-              });
+              } catch (zeus2Error: any) {
+                logger.error({ msg: 'Zeus2-only request failed', error: zeus2Error.message });
+                res.status(503).json({ message: 'Zeus2 service unavailable' });
+              }
               
             } catch (error) {
               logger.error({ msg: 'Zeus2-only backend request error', error });
@@ -564,7 +606,6 @@ async function init() {
         }
       };
       
-      // Register handler
       if (method === 'get') app.get("/" + func, handler);
       else app.post("/" + func, handler);
       
@@ -576,7 +617,8 @@ async function init() {
     msg: 'Gateway initialization complete',
     zeus1Methods: zeus_listeners.data.length,
     zeus2Entities: Array.from(zeus2Entities),
-    totalRegistered: registeredFuncs.size
+    totalRegistered: registeredFuncs.size,
+    zeus2Connection: zeus2GrpcClient?.isConnected() ? 'gRPC' : (zeus2Socket ? 'Socket.IO' : 'none')
   });
 }
 
@@ -608,11 +650,23 @@ app.post("/upsert_password_rand", async (req: any, res: any) => {
 });
 
 // Health check
-app.get("/health", (req: any, res: any) => {
+app.get("/health", async (req: any, res: any) => {
+  let zeus2Health = null;
+  
+  if (zeus2GrpcClient) {
+    try {
+      zeus2Health = await zeus2GrpcClient.healthCheck();
+    } catch (e) {
+      zeus2Health = { status: 'error', error: (e as Error).message };
+    }
+  }
+  
   res.json({
     status: 'ok',
     service: 'gateway',
-    zeus2_entities: Array.from(zeus2Entities)
+    zeus2_entities: Array.from(zeus2Entities),
+    zeus2_connection: zeus2GrpcClient?.isConnected() ? 'gRPC' : (zeus2Socket ? 'Socket.IO' : 'none'),
+    zeus2_health: zeus2Health
   });
 });
 
@@ -638,7 +692,6 @@ app.post("/api/v2/password", async (req: any, res: any) => {
 
 /**
  * REST API v2 proxy handler
- * All /api/v2/* requests go through Gateway for auth check, then to Zeus2
  */
 app.all("/api/v2/*", async (req: any, res: any) => {
   const requestId = randomUUID();
@@ -651,11 +704,10 @@ app.all("/api/v2/*", async (req: any, res: any) => {
     subdomain: req.headers.subdomain
   });
 
-  // Check authorization via Cerberus
   socket.emit('check_session', {
     token: req.headers.token,
     subdomain: req.headers.subdomain,
-    request_function: 'api_v2' // Generic function name for auth check
+    request_function: 'api_v2'
   }, async (authResponse: any) => {
     if (authResponse.status !== 200) {
       logger.warn({
@@ -668,35 +720,34 @@ app.all("/api/v2/*", async (req: any, res: any) => {
       return;
     }
 
-    // Auth passed - forward to Zeus2
-    if (!zeus2Socket) {
+    if (!zeus2GrpcClient && !zeus2Socket) {
       logger.error({ msg: 'Zeus2 not connected' });
       res.status(503).json({ message: 'Zeus2 service unavailable' });
       return;
     }
 
     try {
-      zeus2Socket.emit('request', {
-        method: req.method.toLowerCase(),
-        url: req.path + (req._parsedUrl?.search || ''),
-        headers: {
+      const zeus2Response = await sendToZeus2(
+        req.method.toLowerCase(),
+        req.path + (req._parsedUrl?.search || ''),
+        {
           subdomain: req.headers.subdomain,
           user_uuid: authResponse.data.uuid,
-          is_admin: authResponse.data.is_admin,
+          is_admin: String(authResponse.data.is_admin),
           'x-request-id': requestId,
           'x-trace-id': traceId
         },
-        body: req.body
-      }, (zeus2Response: any) => {
-        logger.debug({
-          msg: 'REST API v2 response',
-          status: zeus2Response.status,
-          path: req.path
-        });
-        
-        res.status(zeus2Response.status);
-        res.send(zeus2Response.data);
+        req.body
+      );
+
+      logger.debug({
+        msg: 'REST API v2 response',
+        status: zeus2Response.status,
+        path: req.path
       });
+      
+      res.status(zeus2Response.status);
+      res.send(zeus2Response.data);
     } catch (error: any) {
       logger.error({ msg: 'REST API v2 Zeus2 error', error: error.message });
       res.status(500).json({ message: 'Internal Server Error' });
@@ -709,3 +760,18 @@ app.listen(port, () => {
 });
 
 init();
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  logger.info({ msg: 'Shutting down Gateway' });
+  const client = getZeus2Client();
+  if (client) client.close();
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  logger.info({ msg: 'Shutting down Gateway' });
+  const client = getZeus2Client();
+  if (client) client.close();
+  process.exit(0);
+});

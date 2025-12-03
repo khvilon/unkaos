@@ -65,4 +65,3 @@ function createLogger(serviceName) {
 }
 // Экспортируем функцию создания логгера по умолчанию
 exports.default = createLogger;
-//# sourceMappingURL=index.js.map
