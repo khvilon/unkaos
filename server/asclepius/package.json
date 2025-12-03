@@ -9,6 +9,7 @@
     "test:ui": "npx playwright test --ui",
     "test:debug": "npx playwright test --debug",
     "test:regression": "npx playwright test tests/regression.spec.ts",
+    "test:all": "npx playwright test tests/",
     "install:browsers": "npx playwright install"
   },
   "keywords": ["playwright", "testing", "automation", "unkaos"],

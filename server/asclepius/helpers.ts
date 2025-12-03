@@ -447,7 +447,7 @@ export async function signOut(page: Page) {
 
 export async function navigateMainMenu(page: Page, menu: string) {
   // Для configs-сущностей используем полный путь
-  const configEntities = ['workflows', 'sprints'];
+  const configEntities = ['workflows', 'sprints', 'automations'];
   if (configEntities.includes(menu)) {
     await page.click(`a[href*="/configs/${menu}"]`);
   } else {
@@ -470,8 +470,35 @@ export async function changeField(page: Page, fieldName: string, value: string, 
         await keyElement.click({ timeout: 5000 });
     }
     
-    const field = page.locator(`.label:has-text("${fieldName}")`).locator('..').locator('input.string-input');
-    await field.waitFor({ state: 'visible' });
+    // Пробуем разные селекторы для поля ввода
+    // Структура: <div class="string input"><div class="label">...</div><input class="string-input">
+    const selectors = [
+        `.string.input:has(.label:text-is("${fieldName}")) input.string-input`,
+        `.string.input:has(.label:has-text("${fieldName}")) input.string-input`,
+        `.input:has(.label:text-is("${fieldName}")) input`,
+        `.input:has(.label:has-text("${fieldName}")) input`,
+    ];
+    
+    let field = null;
+    for (const selector of selectors) {
+        const candidate = page.locator(selector);
+        try {
+            await candidate.first().waitFor({ state: 'visible', timeout: 2000 });
+            field = candidate.first();
+            console.log(`Found field "${fieldName}" with selector: ${selector}`);
+            break;
+        } catch (e) {
+            // Пробуем следующий селектор
+        }
+    }
+    
+    if (!field) {
+        // Fallback: ищем input рядом с label
+        const label = page.locator(`.label:has-text("${fieldName}")`);
+        field = label.locator('..').locator('input').first();
+    }
+    
+    await field.waitFor({ state: 'visible', timeout: 10000 });
     await scrollToElement(page, field);
     await field.fill(value);
     
@@ -773,16 +800,26 @@ export async function createStatus(page: Page, name: string, isInitial: boolean 
     // Устанавливаем чекбоксы если нужно
     if (isInitial) {
       console.log('Setting Начальный checkbox...');
-      const initialCheckbox = page.locator('.label:has-text("Начальный")').locator('..').locator('input[type="checkbox"]');
-      await scrollToElement(page, initialCheckbox);
-      await initialCheckbox.check();
+      // Используем клик с force: true так как checkbox может быть скрыт кастомным стилем
+      const initialCheckboxContainer = page.locator('.boolean-input:has(.label:has-text("Начальный"))');
+      if (await initialCheckboxContainer.count() > 0) {
+        await initialCheckboxContainer.click({ force: true });
+      } else {
+        const initialCheckbox = page.locator('.label:has-text("Начальный")').locator('..').locator('input[type="checkbox"]');
+        await initialCheckbox.click({ force: true });
+      }
     }
     
     if (isFinal) {
       console.log('Setting Конечный checkbox...');
-      const finalCheckbox = page.locator('.label:has-text("Конечный")').locator('..').locator('input[type="checkbox"]');
-      await scrollToElement(page, finalCheckbox);
-      await finalCheckbox.check();
+      // Используем клик с force: true так как checkbox может быть скрыт кастомным стилем
+      const finalCheckboxContainer = page.locator('.boolean-input:has(.label:has-text("Конечный"))');
+      if (await finalCheckboxContainer.count() > 0) {
+        await finalCheckboxContainer.click({ force: true });
+      } else {
+        const finalCheckbox = page.locator('.label:has-text("Конечный")').locator('..').locator('input[type="checkbox"]');
+        await finalCheckbox.click({ force: true });
+      }
     }
     
     // Нажимаем кнопку "Создать" для сохранения
@@ -1022,6 +1059,12 @@ export async function createProject(page: Page, name: string, prefix: string, de
     // Заполняем поля
     console.log('Filling fields...');
     await changeField(page, "Название", name);
+    
+    // Скроллим вниз чтобы увидеть поле "Код"
+    const formContainer = page.locator('.table_card_fields');
+    await formContainer.evaluate(el => el.scrollTop = el.scrollHeight);
+    await page.waitForTimeout(300);
+    
     await changeField(page, "Код", prefix);
     
     if (description) {
@@ -1198,4 +1241,104 @@ export async function createIssue(page: Page, config: IssueConfig): Promise<void
     console.error(`Issue creation failed:`, error);
     throw error;
   }
+}
+
+export async function logWork(page: Page, hours: string, comment: string) {
+  console.log(`Logging work: ${hours}h, comment: ${comment}`);
+  
+  // Находим поле ввода времени (оно открывает модалку)
+  // Ищем NumericInput с лейблом "Затраченное время" или id spent_time
+  const spentTimeInput = page.locator('.issue-spent-time-input input');
+  
+  if (await spentTimeInput.count() > 0) {
+    await spentTimeInput.click();
+    await page.waitForTimeout(500);
+    
+    // Ждем модалку
+    const modal = page.locator('.time-entry-modal');
+    await modal.waitFor({ state: 'visible', timeout: 5000 });
+    
+    // Вводим время
+    const durationInput = modal.locator('.numeric-input:has(.label:has-text("Время, ч")) input');
+    await durationInput.fill(hours);
+    
+    // Вводим комментарий
+    const commentInput = modal.locator('.string-input:has(.label:has-text("Комментарий")) input');
+    await commentInput.fill(comment);
+    
+    // Сохраняем
+    const saveBtn = modal.locator('#time-entry-ok-btn');
+    await saveBtn.click();
+    
+    // Ждем закрытия модалки
+    await modal.waitFor({ state: 'hidden', timeout: 5000 });
+    await page.waitForTimeout(1000); // Ждем сохранения
+    
+    console.log('✅ Work logged');
+  } else {
+    console.warn('⚠️ Spent time input not found');
+    throw new Error('Spent time input not found');
+  }
+}
+
+export async function addDashboardGadget(page: Page, gadgetName: string) {
+  console.log(`Adding gadget: ${gadgetName}`);
+  
+  // Кнопка добавления гаджета
+  const addBtn = page.locator('.add-gadget-btn');
+  await addBtn.click();
+  
+  // Ждем модалку выбора типов
+  const modal = page.locator('.gadget-types-modal');
+  await modal.waitFor({ state: 'visible', timeout: 5000 });
+  
+  // Выбираем гаджет
+  const gadgetCell = modal.locator(`.gadget-types-cell:has-text("${gadgetName}")`);
+  if (await gadgetCell.count() > 0) {
+    await gadgetCell.click();
+    await page.waitForTimeout(1000); // Ждем добавления
+    console.log('✅ Gadget added');
+  } else {
+    console.warn(`⚠️ Gadget type "${gadgetName}" not found`);
+    // Закрываем модалку
+    await page.locator('.gadget-types-modal .btn:has-text("Отменить")').click();
+  }
+}
+
+export async function createAutomation(page: Page, name: string, workflowName: string) {
+  console.log(`Creating automation: ${name}`);
+  
+  await navigateMainMenu(page, 'automations');
+  await page.waitForSelector('.table_card, .ktable', { timeout: 10000 });
+  
+  // Кликаем плюс
+  const plusBtn = page.locator('.bx-plus-circle');
+  await plusBtn.waitFor({state: 'visible'});
+  await plusBtn.click();
+  
+  await page.waitForTimeout(500);
+  
+  // Заполняем имя
+  await changeField(page, 'Название', name);
+  
+  // Выбираем воркфлоу
+  const wfSelect = page.locator('.select-input:has(.label:has-text("Воркфлоу")) .vs__dropdown-toggle');
+  if (await wfSelect.count() > 0) {
+    await wfSelect.click();
+    await page.waitForTimeout(300);
+    const option = page.locator(`.vs__dropdown-option:has-text("${workflowName}")`);
+    if (await option.count() > 0) {
+      await option.first().click();
+    } else {
+      // Выбираем первый попавшийся если нет нужного
+      await page.locator('.vs__dropdown-option').first().click();
+    }
+  }
+  
+  // Сохраняем
+  const saveBtn = page.locator('input[type="button"][value="Сохранить"]');
+  await saveBtn.click();
+  await page.waitForTimeout(1000);
+  
+  console.log('✅ Automation created');
 }

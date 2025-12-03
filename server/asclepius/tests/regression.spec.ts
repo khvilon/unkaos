@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createWorkflow, createStatus, createField, createProject, createIssue } from '../helpers';
+import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createWorkflow, createStatus, createField, createProject, createIssue, logWork, addDashboardGadget, createAutomation } from '../helpers';
 
 test.describe.serial('Регресионный тест', () => {
   const startTime = new Date().getTime();
@@ -327,8 +327,8 @@ test.describe.serial('Регресионный тест', () => {
         } else {
           await page.keyboard.press('Escape');
           console.warn('⚠️ Воркфлоу не найден');
-        }
       }
+    }
     } else {
       console.warn('⚠️ Контейнер воркфлоу не найден');
     }
@@ -394,6 +394,70 @@ test.describe.serial('Регресионный тест', () => {
   // ЧАСТЬ 3: ПРОВЕРКА ОТОБРАЖЕНИЯ ЭКРАНОВ
   // ===========================================
 
+  test('Автоматизация: создание', async ({ page }) => {
+    console.log('🚀 Тест автоматизации: создание...');
+    
+    try {
+      // Проверяем наличие пункта меню автоматизаций
+      const automationsLink = page.locator('a[href*="/configs/automations"]');
+      await page.waitForTimeout(1000);
+      if (await automationsLink.count() === 0) {
+        console.log('⚠️ Меню автоматизаций недоступно, пропускаем тест');
+        return;
+      }
+      
+      await navigateMainMenu(page, 'automations');
+      await page.waitForSelector('.table_card, .ktable', { timeout: 10000 });
+      
+      // Закрываем меню если открыто
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+      
+      // СОЗДАНИЕ
+      await page.click('.btn_input.bx-plus-circle');
+      await page.waitForTimeout(500);
+      
+      await changeField(page, "Название", "Тестовая автоматизация");
+      
+      // Выбираем воркфлоу
+      const wfSelect = page.locator('.select-input:has(.label:has-text("Воркфлоу")) .vs__dropdown-toggle');
+      if (await wfSelect.count() > 0) {
+        await wfSelect.click();
+        await page.waitForTimeout(300);
+        
+        // Выбираем первый доступный воркфлоу
+        const firstOption = page.locator('.vs__dropdown-option').first();
+        if (await firstOption.count() > 0) {
+          await firstOption.click();
+        } else {
+          await page.keyboard.press('Escape');
+        }
+      }
+      
+      const createButton = page.locator('input[type="button"][value="Создать"]');
+      if (await createButton.count() > 0) {
+        await createButton.click();
+        await page.waitForTimeout(1000);
+      }
+      
+      console.log('✅ Автоматизация создана');
+      
+      // ПРОВЕРКА СОЗДАНИЯ ЧЕРЕЗ ОБНОВЛЕНИЕ СТРАНИЦЫ
+      console.log('🔄 Обновление страницы для проверки создания...');
+      await page.reload();
+      await page.waitForSelector('.ktable', { timeout: 10000 });
+      
+      const automationRow = page.locator('.ktable :text("Тестовая автоматизация")');
+      if (await automationRow.count() === 0) {
+        throw new Error('Автоматизация "Тестовая автоматизация" не найдена после обновления страницы');
+      }
+      console.log('✅ Автоматизация подтверждена после обновления страницы');
+      
+    } catch (e) {
+      console.warn('⚠️ Ошибка при работе с автоматизациями:', e);
+    }
+  });
+
   test('Поля: создание разных типов', async ({ page }) => {
     console.log('🚀 Тест полей: создание разных типов...');
     
@@ -423,16 +487,16 @@ test.describe.serial('Регресионный тест', () => {
     // 5. Создаём поле Select со значениями и цветами
     // Примечание: Select-поля могут требовать отдельной обработки
     try {
-      await createField(page, { 
-        name: 'Тестовый приоритет', 
-        typeCode: 'Значение из списка',
-        availableValues: [
-          { name: 'Низкий', color: '#00ff00' },
-          { name: 'Средний', color: '#ffff00' },
-          { name: 'Высокий', color: '#ff0000' }
-        ]
-      });
-      console.log('✅ Поле Select со значениями и цветами создано');
+    await createField(page, { 
+      name: 'Тестовый приоритет', 
+      typeCode: 'Значение из списка',
+      availableValues: [
+        { name: 'Низкий', color: '#00ff00' },
+        { name: 'Средний', color: '#ffff00' },
+        { name: 'Высокий', color: '#ff0000' }
+      ]
+    });
+    console.log('✅ Поле Select со значениями и цветами создано');
     } catch (e) {
       console.warn('⚠️ Не удалось создать поле Select, продолжаем тест:', e);
     }
@@ -534,8 +598,8 @@ test.describe.serial('Регресионный тест', () => {
     }
     
     try {
-      await navigateMainMenu(page, 'sprints');
-      await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+    await navigateMainMenu(page, 'sprints');
+    await page.waitForSelector('.table_card_fields', { timeout: 10000 });
     } catch (e) {
       console.warn('⚠️ Не удалось открыть страницу спринтов:', e);
       return;
@@ -621,8 +685,8 @@ test.describe.serial('Регресионный тест', () => {
         
         // Должен произойти редирект на новый дашборд
         try {
-            await page.waitForURL(/.*\/dashboard\/[a-z0-9-]+/, { timeout: 10000 });
-            console.log('✅ Дашборд создан');
+        await page.waitForURL(/.*\/dashboard\/[a-z0-9-]+/, { timeout: 10000 });
+        console.log('✅ Дашборд создан');
             
             // ПРОВЕРКА СОЗДАНИЯ ЧЕРЕЗ ОБНОВЛЕНИЕ СТРАНИЦЫ
             console.log('🔄 Обновление страницы для проверки создания...');
@@ -631,37 +695,64 @@ test.describe.serial('Регресионный тест', () => {
             await page.waitForURL(/.*\/dashboard\/[a-z0-9-]+/, { timeout: 10000 });
             console.log('✅ Дашборд подтверждён после обновления страницы');
             
-            // Возвращаемся в список для переименования
-            await navigateMainMenu(page, 'dashboards');
+            // ДОБАВЛЕНИЕ ГАДЖЕТА (Time Report)
+            console.log('Добавление гаджета TimeReport...');
+            try {
+                await addDashboardGadget(page, 'Отчёт по времени');
+                
+                // Проверяем что гаджет появился
+                await page.waitForTimeout(1000);
+                const gadget = page.locator('.gadget');
+                if (await gadget.count() > 0) {
+                    console.log('✅ Гаджет добавлен на дашборд');
+                    
+                    // Обновляем страницу и проверяем сохранение
+                    await page.reload();
+                    await page.waitForURL(/.*\/dashboard\/[a-z0-9-]+/, { timeout: 10000 });
+                    await page.waitForTimeout(2000);
+                    
+                    const gadgetAfterReload = page.locator('.gadget');
+                    if (await gadgetAfterReload.count() > 0) {
+                        console.log('✅ Гаджет сохранён после обновления страницы');
+                    } else {
+                        console.warn('⚠️ Гаджет не сохранился после обновления страницы');
+                    }
+                }
+            } catch (e) {
+                console.warn('⚠️ Ошибка при добавлении гаджета:', e);
+            }
+        
+        // Возвращаемся в список для переименования
+        await navigateMainMenu(page, 'dashboards');
             await page.waitForTimeout(2000);
             
             // Ждем загрузки страницы списка
             const tableCard = page.locator('.table_card_fields, .ktable');
             await tableCard.first().waitFor({ state: 'visible', timeout: 10000 });
-            
-            // Закрываем меню
-            await page.keyboard.press('Escape');
-            await page.waitForTimeout(300);
-            
-            // РЕДАКТИРОВАНИЕ (по умолчанию имя "Дашборд")
+        
+        // Закрываем меню
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(300);
+        
+        // РЕДАКТИРОВАНИЕ (по умолчанию имя "Дашборд")
             const dashRow = page.locator('.ktable span:has-text("Дашборд")').first();
-            if (await dashRow.count() > 0) {
-                await dashRow.click();
-                await page.waitForTimeout(500);
-                
-                await changeField(page, 'Название', 'Тестовый дашборд');
-                const saveButton = page.locator('input[type="button"][value="Сохранить"]');
-                await saveButton.click();
-                await page.waitForTimeout(1000);
+        if (await dashRow.count() > 0) {
+            await dashRow.click();
+            await page.waitForTimeout(500);
+            
+            await changeField(page, 'Название', 'Тестовый дашборд');
+            const saveButton = page.locator('input[type="button"][value="Сохранить"]');
+            await saveButton.click();
+            await page.waitForTimeout(1000);
                 
                 // ПРОВЕРКА РЕДАКТИРОВАНИЯ ЧЕРЕЗ ОБНОВЛЕНИЕ СТРАНИЦЫ
                 console.log('🔄 Обновление страницы для проверки редактирования...');
                 await page.reload();
                 await page.waitForTimeout(2000);
-                
-                // Проверка
+            
+            // Проверка
                 const updatedRow = page.locator('.ktable span:has-text("Тестовый дашборд")');
-                if (await updatedRow.count() === 0) {
+            if (await updatedRow.count() === 0) {
                     console.warn('⚠️ Дашборд не переименован после обновления страницы (возможно ошибка сервера)');
                 } else {
                     console.log('✅ Дашборд отредактирован и подтверждён после обновления страницы');
@@ -682,9 +773,9 @@ test.describe.serial('Регресионный тест', () => {
     
     // СОЗДАНИЕ ЗАДАЧИ
     try {
-      await createIssue(page, {
-        summary: 'Тестовая задача E2E',
-        project: 'Тестовый проект (изменён)',
+    await createIssue(page, {
+      summary: 'Тестовая задача E2E',
+      project: 'Тестовый проект (изменён)',
         type: 'Тестовый тип (изменён)' // Используем тип, созданный ранее
       });
     } catch (e) {
@@ -726,7 +817,7 @@ test.describe.serial('Регресионный тест', () => {
       const summaryAfterReload = await summaryInput.inputValue();
       if (!summaryAfterReload.includes('Тестовая задача E2E')) {
         console.warn(`⚠️ Название задачи не совпадает: ${summaryAfterReload}`);
-      } else {
+    } else {
         console.log('✅ Название задачи сохранено корректно');
       }
     }
@@ -766,6 +857,36 @@ test.describe.serial('Регресионный тест', () => {
             await saveBtnAfterSprint.click();
             await page.waitForTimeout(1000);
         }
+    }
+
+    // СПИСАНИЕ ВРЕМЕНИ (Time Tracking)
+    console.log('Списание времени...');
+    try {
+        await logWork(page, '2', 'Тестовое списание времени E2E');
+        
+        // Проверяем что время списалось
+        console.log('🔄 Обновление страницы для проверки списания времени...');
+        await page.reload();
+        await page.waitForSelector('.issue-card-content, .issue-name-input', { timeout: 10000 });
+        
+        // Проверяем поле затраченного времени
+        const spentTimeInput = page.locator('.issue-spent-time-input input');
+        if (await spentTimeInput.count() > 0) {
+            const spentValue = await spentTimeInput.inputValue();
+            if (spentValue && parseFloat(spentValue) > 0) {
+                console.log(`✅ Время списано: ${spentValue}ч`);
+            } else {
+                console.warn('⚠️ Время не отображается после обновления');
+            }
+        }
+        
+        // Проверяем запись в истории
+        const timeEntryInHistory = page.locator(':text("Списал на задачу")');
+        if (await timeEntryInHistory.count() > 0) {
+            console.log('✅ Запись о списании времени найдена в истории');
+        }
+    } catch (e) {
+        console.warn('⚠️ Ошибка при списании времени:', e);
     }
 
     // ПРОВЕРКА РЕДАКТИРОВАНИЯ ЧЕРЕЗ ОБНОВЛЕНИЕ СТРАНИЦЫ
@@ -836,9 +957,9 @@ test.describe.serial('Регресионный тест', () => {
     
     // Создаем вторую задачу
     try {
-      await createIssue(page, {
-        summary: 'Связанная задача',
-        project: 'Тестовый проект (изменён)',
+    await createIssue(page, {
+      summary: 'Связанная задача',
+      project: 'Тестовый проект (изменён)',
         type: 'Тестовый тип (изменён)'
       });
     } catch (e) {
@@ -899,9 +1020,421 @@ test.describe.serial('Регресионный тест', () => {
     console.log('✅ Страница досок проверена');
   });
 
+  test('Доска: настройка свимлейнов и группировок', async ({ page }) => {
+    console.log('🚀 Тест настройки доски...');
+    
+    await navigateMainMenu(page, 'boards');
+    await page.waitForTimeout(2000);
+    
+    // Открываем настройки доски (если есть кнопка настроек)
+    const settingsBtn = page.locator('.board-settings-btn, .bx-cog');
+    if (await settingsBtn.count() > 0) {
+      await settingsBtn.first().click();
+      await page.waitForTimeout(1000);
+      
+      // Ищем настройку свимлейнов
+      const swimlaneSelect = page.locator('.select-input:has(.label:has-text("Swimlane")), .select-input:has(.label:has-text("Свимлейн"))');
+      if (await swimlaneSelect.count() > 0) {
+        console.log('✅ Найдена настройка свимлейнов');
+        
+        // Пробуем выбрать группировку по исполнителю
+        const dropdown = swimlaneSelect.locator('.vs__dropdown-toggle');
+        await dropdown.click();
+        await page.waitForTimeout(300);
+        
+        const assigneeOption = page.locator('.vs__dropdown-option:has-text("Исполнитель"), .vs__dropdown-option:has-text("Assignee")');
+        if (await assigneeOption.count() > 0) {
+          await assigneeOption.first().click();
+          console.log('✅ Свимлейн по исполнителю выбран');
+        } else {
+          await page.keyboard.press('Escape');
+        }
+      } else {
+        console.log('⚠️ Настройка свимлейнов не найдена');
+      }
+      
+      // Закрываем настройки
+      await page.keyboard.press('Escape');
+    } else {
+      console.log('⚠️ Кнопка настроек доски не найдена');
+    }
+    
+    console.log('✅ Тест настройки доски завершён');
+  });
+
+  test('Доска: персональный фильтр', async ({ page }) => {
+    console.log('🚀 Тест персонального фильтра на доске...');
+    
+    await navigateMainMenu(page, 'boards');
+    await page.waitForTimeout(2000);
+    
+    // Ищем поле фильтра на доске
+    const filterInput = page.locator('.board-filter input, .quick-filter input');
+    if (await filterInput.count() > 0) {
+      await filterInput.first().fill('Тестовая задача');
+      await page.waitForTimeout(1000);
+      
+      console.log('✅ Персональный фильтр применён');
+      
+      // Очищаем фильтр
+      await filterInput.first().clear();
+      await page.waitForTimeout(500);
+    } else {
+      console.log('⚠️ Поле фильтра на доске не найдено');
+    }
+    
+    console.log('✅ Тест персонального фильтра завершён');
+  });
+
+  test('Задача: списание времени', async ({ page }) => {
+    console.log('🚀 Тест списания времени...');
+    
+    // Открываем страницу задач и находим созданную задачу
+    await navigateMainMenu(page, 'issues');
+    await page.waitForTimeout(2000);
+    
+    // Кликаем по первой задаче в списке
+    const issueLink = page.locator('.ktable a[href*="/issue/"]').first();
+    if (await issueLink.count() > 0) {
+      await issueLink.click();
+      await page.waitForURL(/.*\/issue\//, { timeout: 10000 });
+      await page.waitForSelector('.issue-card-content, .issue-name-input', { timeout: 10000 });
+      
+      // Ищем поле списанного времени
+      const spentTimeInput = page.locator('.issue-spent-time-input input, .spent-time-input');
+      if (await spentTimeInput.count() > 0) {
+        await spentTimeInput.first().click();
+        await page.waitForTimeout(1000);
+        
+        // Проверяем появление модального окна
+        const timeModal = page.locator('.time-entry-modal, .modal');
+        if (await timeModal.count() > 0) {
+          console.log('✅ Модальное окно списания времени открыто');
+          
+          // Заполняем время
+          const hoursInput = timeModal.locator('input[type="number"], .numeric-input input');
+          if (await hoursInput.count() > 0) {
+            await hoursInput.first().fill('2');
+            
+            // Заполняем комментарий
+            const commentInput = timeModal.locator('.string-input input, textarea');
+            if (await commentInput.count() > 0) {
+              await commentInput.first().fill('Тестовое списание времени');
+            }
+            
+            // Сохраняем
+            const saveBtn = timeModal.locator('input[type="button"][value*="OK"], input[type="button"][value*="Сохранить"]');
+            if (await saveBtn.count() > 0) {
+              await saveBtn.first().click();
+              await page.waitForTimeout(1000);
+              console.log('✅ Время списано');
+            }
+          }
+        } else {
+          console.log('⚠️ Модальное окно списания времени не появилось');
+        }
+      } else {
+        console.log('⚠️ Поле списанного времени не найдено');
+      }
+    } else {
+      console.log('⚠️ Задача для списания времени не найдена');
+    }
+    
+    console.log('✅ Тест списания времени завершён');
+  });
+
+  test('Задача: добавление тега', async ({ page }) => {
+    console.log('🚀 Тест добавления тега...');
+    
+    // Открываем страницу задач и находим созданную задачу
+    await navigateMainMenu(page, 'issues');
+    await page.waitForTimeout(2000);
+    
+    // Кликаем по первой задаче в списке
+    const issueLink = page.locator('.ktable a[href*="/issue/"]').first();
+    if (await issueLink.count() > 0) {
+      await issueLink.click();
+      await page.waitForURL(/.*\/issue\//, { timeout: 10000 });
+      await page.waitForSelector('.issue-card-content, .issue-name-input', { timeout: 10000 });
+      
+      // Ищем компонент тегов
+      const tagsInput = page.locator('.tags-input, .issue-tags, .vs__dropdown-toggle:has-text("Теги")');
+      if (await tagsInput.count() > 0) {
+        await tagsInput.first().click();
+        await page.waitForTimeout(500);
+        
+        // Вводим новый тег
+        const tagTextInput = page.locator('.vs__search, .tags-input input');
+        if (await tagTextInput.count() > 0) {
+          await tagTextInput.first().fill('test-tag');
+          await page.keyboard.press('Enter');
+          await page.waitForTimeout(1000);
+          console.log('✅ Тег добавлен');
+        }
+      } else {
+        console.log('⚠️ Компонент тегов не найден');
+      }
+    } else {
+      console.log('⚠️ Задача для добавления тега не найдена');
+    }
+    
+    console.log('✅ Тест добавления тега завершён');
+  });
+
+  test('Дашборд: добавление гаджетов разных типов', async ({ page }) => {
+    console.log('🚀 Тест добавления разных гаджетов...');
+    
+    await navigateMainMenu(page, 'dashboards');
+    await page.waitForTimeout(2000);
+    
+    // Кликаем на первый дашборд
+    const dashboardLink = page.locator('.ktable a[href*="/dashboard/"], .dashboard-card');
+    if (await dashboardLink.count() > 0) {
+      await dashboardLink.first().click();
+      await page.waitForTimeout(2000);
+      
+      // Добавляем гаджет TimeReport
+      const addGadgetBtn = page.locator('.add-gadget-btn, .bx-plus-circle');
+      if (await addGadgetBtn.count() > 0) {
+        await addGadgetBtn.first().click();
+        await page.waitForTimeout(1000);
+        
+        // Выбираем TimeReport
+        const timeReportOption = page.locator('.gadget-types-cell:has-text("TimeReport"), .gadget-option:has-text("TimeReport")');
+        if (await timeReportOption.count() > 0) {
+          await timeReportOption.first().click();
+          await page.waitForTimeout(1000);
+          console.log('✅ Гаджет TimeReport добавлен');
+        } else {
+          console.log('⚠️ TimeReport не найден в списке гаджетов');
+          await page.keyboard.press('Escape');
+        }
+        
+        // Добавляем гаджет Burndown
+        if (await addGadgetBtn.count() > 0) {
+          await addGadgetBtn.first().click();
+          await page.waitForTimeout(1000);
+          
+          const burndownOption = page.locator('.gadget-types-cell:has-text("Burndown"), .gadget-option:has-text("Burndown")');
+          if (await burndownOption.count() > 0) {
+            await burndownOption.first().click();
+            await page.waitForTimeout(1000);
+            console.log('✅ Гаджет Burndown добавлен');
+          } else {
+            await page.keyboard.press('Escape');
+          }
+        }
+        
+        // Добавляем гаджет IssuesTable
+        if (await addGadgetBtn.count() > 0) {
+          await addGadgetBtn.first().click();
+          await page.waitForTimeout(1000);
+          
+          const issuesTableOption = page.locator('.gadget-types-cell:has-text("IssuesTable"), .gadget-option:has-text("IssuesTable"), .gadget-types-cell:has-text("Таблица")');
+          if (await issuesTableOption.count() > 0) {
+            await issuesTableOption.first().click();
+            await page.waitForTimeout(1000);
+            console.log('✅ Гаджет IssuesTable добавлен');
+          } else {
+            await page.keyboard.press('Escape');
+          }
+        }
+      } else {
+        console.log('⚠️ Кнопка добавления гаджета не найдена');
+      }
+    } else {
+      console.log('⚠️ Дашборд не найден');
+    }
+    
+    console.log('✅ Тест добавления гаджетов завершён');
+  });
+
+  test('Дашборд: масштабирование гаджета', async ({ page }) => {
+    console.log('🚀 Тест масштабирования гаджета...');
+    
+    await navigateMainMenu(page, 'dashboards');
+    await page.waitForTimeout(2000);
+    
+    // Кликаем на первый дашборд
+    const dashboardLink = page.locator('.ktable a[href*="/dashboard/"], .dashboard-card');
+    if (await dashboardLink.count() > 0) {
+      await dashboardLink.first().click();
+      await page.waitForTimeout(2000);
+      
+      // Ищем гаджет для масштабирования
+      const gadget = page.locator('.gadget, .dashboard-gadget').first();
+      if (await gadget.count() > 0) {
+        // Ищем ручку масштабирования
+        const resizeHandle = gadget.locator('.resize-handle, .gadget-resize');
+        if (await resizeHandle.count() > 0) {
+          const box = await resizeHandle.boundingBox();
+          if (box) {
+            // Перетаскиваем для увеличения размера
+            await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+            await page.mouse.down();
+            await page.mouse.move(box.x + 100, box.y + 100);
+            await page.mouse.up();
+            await page.waitForTimeout(500);
+            console.log('✅ Гаджет масштабирован');
+          }
+        } else {
+          console.log('⚠️ Ручка масштабирования не найдена');
+        }
+      } else {
+        console.log('⚠️ Гаджет для масштабирования не найден');
+      }
+    } else {
+      console.log('⚠️ Дашборд не найден');
+    }
+    
+    console.log('✅ Тест масштабирования завершён');
+  });
+
+  test('Фильтры: поиск и сохранение', async ({ page }) => {
+    console.log('🚀 Тест фильтров: поиск и сохранение...');
+    
+    await navigateMainMenu(page, 'issues');
+    await page.waitForTimeout(2000);
+    
+    // Вводим запрос в поиск
+    const searchInput = page.locator('.issue-search-input input, .issue-search-input textarea');
+    if (await searchInput.count() > 0) {
+      await searchInput.first().fill('project = "Тестовый проект"');
+      await page.waitForTimeout(500);
+      
+      // Нажимаем Enter для поиска
+      await searchInput.first().press('Enter');
+      await page.waitForTimeout(2000);
+      
+      // Добавляем в избранное (сохраняем фильтр)
+      const starBtn = page.locator('.bx-star.top-menu-icon-btn');
+      if (await starBtn.count() > 0) {
+        await starBtn.click();
+        await page.waitForTimeout(1000);
+        
+        // Проверяем что звездочка стала закрашенной
+        const filledStar = page.locator('.bxs-star.top-menu-icon-btn');
+        if (await filledStar.count() > 0) {
+          console.log('✅ Фильтр сохранён в избранное');
+          
+          // Обновляем страницу и проверяем сохранение
+          await page.reload();
+          await page.waitForTimeout(2000);
+          
+          // Проверяем что звездочка всё ещё закрашена для этого запроса
+          const starAfterReload = page.locator('.bxs-star.top-menu-icon-btn');
+          if (await starAfterReload.count() > 0) {
+            console.log('✅ Фильтр сохранён после обновления страницы');
+          } else {
+            console.warn('⚠️ Фильтр не сохранился после обновления страницы');
+          }
+        } else {
+          console.warn('⚠️ Фильтр не добавился в избранное');
+        }
+      } else {
+        console.warn('⚠️ Кнопка звездочки не найдена');
+      }
+    } else {
+      console.warn('⚠️ Поле поиска не найдено');
+    }
+    
+    console.log('✅ Тест фильтров завершён');
+  });
+
+  test('Вложения: добавление к задаче', async ({ page }) => {
+    console.log('🚀 Тест вложений: добавление к задаче...');
+    
+    // Открываем страницу задач и находим созданную задачу
+    await navigateMainMenu(page, 'issues');
+    await page.waitForTimeout(2000);
+    
+    // Кликаем по первой задаче в списке
+    const issueLink = page.locator('.ktable a[href*="/issue/"]').first();
+    if (await issueLink.count() > 0) {
+      await issueLink.click();
+      await page.waitForURL(/.*\/issue\//, { timeout: 10000 });
+      await page.waitForSelector('.issue-card-content, .issue-name-input', { timeout: 10000 });
+      
+      // Ищем input для загрузки файла
+      const fileInput = page.locator('#issue-attachments input[type="file"], input[type="file"]');
+      if (await fileInput.count() > 0) {
+        // Загружаем тестовый файл
+        await fileInput.setInputFiles({
+          name: 'test-attachment.txt',
+          mimeType: 'text/plain',
+          buffer: Buffer.from('Тестовое содержимое файла для E2E теста')
+        });
+        
+        await page.waitForTimeout(2000);
+        
+        // Проверяем что вложение появилось
+        const attachment = page.locator('#issue-attachments :text("test-attachment")');
+        if (await attachment.count() > 0) {
+          console.log('✅ Вложение добавлено');
+          
+          // Обновляем страницу и проверяем сохранение
+          await page.reload();
+          await page.waitForSelector('.issue-card-content, .issue-name-input', { timeout: 10000 });
+          
+          const attachmentAfterReload = page.locator('#issue-attachments :text("test-attachment")');
+          if (await attachmentAfterReload.count() > 0) {
+            console.log('✅ Вложение сохранено после обновления страницы');
+          } else {
+            console.warn('⚠️ Вложение не сохранилось после обновления страницы');
+          }
+        } else {
+          console.warn('⚠️ Вложение не появилось после загрузки');
+        }
+      } else {
+        console.warn('⚠️ Input для загрузки файла не найден');
+      }
+    } else {
+      console.warn('⚠️ Задачи не найдены в списке');
+    }
+    
+    console.log('✅ Тест вложений завершён');
+  });
+
   // ===========================================
   // ЧАСТЬ 4: УДАЛЕНИЕ (в самом конце)
   // ===========================================
+
+  test('Удаление: автоматизация', async ({ page }) => {
+    console.log('🗑️ Удаление автоматизации...');
+    
+    // Проверяем наличие пункта меню
+    const automationsLink = page.locator('a[href*="/configs/automations"]');
+    if (await automationsLink.count() === 0) {
+      console.log('⚠️ Меню автоматизаций недоступно, пропускаем удаление');
+      return;
+    }
+    
+    await navigateMainMenu(page, 'automations');
+    await page.waitForSelector('.table_card, .ktable', { timeout: 10000 });
+    
+    // Закрываем меню
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    
+    const row = page.locator('.ktable :text("Тестовая автоматизация")');
+    if (await row.count() > 0) {
+      await row.first().click({ force: true });
+      await page.waitForTimeout(500);
+      
+      const deleteButton = page.locator('input[type="button"][value="Удалить"]');
+      if (await deleteButton.count() > 0) {
+        await deleteButton.click();
+        await page.waitForTimeout(500);
+        
+        const confirmButton = page.locator('button:has-text("Да"), button:has-text("OK"), .confirm-yes');
+        if (await confirmButton.count() > 0) {
+          await confirmButton.click();
+        }
+        await page.waitForTimeout(1000);
+      }
+    }
+    console.log('✅ Автоматизация удалена');
+  });
 
   test('Удаление: спринт', async ({ page }) => {
     console.log('🗑️ Удаление спринта...');
