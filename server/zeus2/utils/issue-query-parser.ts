@@ -20,6 +20,9 @@ import {
   SQLGeneratorContext,
   ValidationError 
 } from '@unkaos/query-lang';
+import { createLogger } from '../../common/logging';
+
+const logger = createLogger('zeus2:issue-query-parser');
 
 export interface ParsedQuery {
   whereClause: string;
@@ -57,13 +60,13 @@ export function parseIssueQuery(
   try {
     // Нормализуем запрос (убираем неразрывные пробелы и т.д.)
     const normalized = normalizeQuery(userQuery);
-    console.log('[IQL Parser] Normalized query:', JSON.stringify(normalized));
+    logger.debug({ msg: 'Normalized query', query: normalized });
     
     // Парсим в AST
     const parseResult = parseQuery(normalized);
     
     if (!parseResult.success || !parseResult.ast) {
-      console.error('[IQL Parser] Parse errors:', parseResult.errors);
+      logger.error({ msg: 'Parse errors', errors: parseResult.errors });
       // Возвращаем ошибки парсинга как ошибки валидации
       return { 
         whereClause: ' TRUE ', 
@@ -79,7 +82,7 @@ export function parseIssueQuery(
     const validation = validateQuery(parseResult.ast, customFields);
     
     if (!validation.valid) {
-      console.error('[IQL Parser] Validation errors:', validation.errors);
+      logger.error({ msg: 'Validation errors', errors: validation.errors });
       return {
         whereClause: ' TRUE ',
         orderByClause: '',
@@ -96,7 +99,8 @@ export function parseIssueQuery(
     
     const sql = generateSQL(parseResult.ast, context);
     
-    console.log('[IQL Parser] Query parsed successfully:', {
+    logger.debug({ 
+      msg: 'Query parsed successfully',
       input: normalized,
       whereClause: sql.whereClause,
       orderByClause: sql.orderByClause
@@ -108,8 +112,8 @@ export function parseIssueQuery(
       validationErrors: validation.warnings.length > 0 ? undefined : undefined // warnings не блокируют
     };
     
-  } catch (error) {
-    console.error('[IQL Parser] Exception:', error);
+  } catch (error: any) {
+    logger.error({ msg: 'Exception during query parsing', error: error.message, stack: error.stack });
     return { 
       whereClause: ' TRUE ', 
       orderByClause: '',
@@ -123,6 +127,7 @@ export function parseIssueQuery(
 
 /**
  * Экранирование строк для SQL (базовая защита от инъекций)
+ * @deprecated Используйте параметризованные запросы вместо экранирования
  */
 export function escapeSqlString(value: string): string {
   if (typeof value !== 'string') return value;

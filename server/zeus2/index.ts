@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express, { Request, Response, NextFunction } from 'express';
 import { Server } from 'socket.io';
+import rateLimit from 'express-rate-limit';
 import { createLogger } from '../common/logging';
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
@@ -20,7 +21,7 @@ interface Listener {
 const listeners: Listener[] = [];
 
 // Express app setup
-const app: any = express();
+const app: express.Application = express();
 const httpServer = require('http').createServer(app);
 const port = process.env.ZEUS2_PORT || 3007;
 
@@ -34,11 +35,33 @@ export const prisma = new PrismaClient({
   log: ['error', 'warn']
 });
 
+// ==================== MIDDLEWARE ====================
+
+// CORS
 app.use(cors());
+
+// Body parsers
 app.use(express.json({ limit: '150mb' }));
 app.use(express.urlencoded({ limit: '150mb', extended: true }));
 
-// ==================== MIDDLEWARE ====================
+// Rate Limiting - защита от DDoS и брутфорса
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 минут
+  max: 1000, // Максимум 1000 запросов на IP за 15 минут
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    code: 'RATE_LIMIT_EXCEEDED',
+    message: 'Превышен лимит запросов. Попробуйте позже.',
+    trace_id: '',
+    details: []
+  },
+  skip: (req) => {
+    // Пропускаем rate limit для health check и внутренних запросов
+    return req.path === '/health' || req.path === '/read_listeners';
+  }
+});
+app.use(API_PREFIX, apiLimiter);
 
 // Request ID and Trace ID middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -54,8 +77,25 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// NOTE: setSchemaMiddleware удалён - он бесполезен, т.к. все запросы
-// используют явное указание схемы в SQL (escapeIdentifier(schema).tablename)
+// Request logging middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const startTime = Date.now();
+  
+  res.on('finish', () => {
+    const duration = Date.now() - startTime;
+    logger.info({
+      msg: 'HTTP Request',
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      duration,
+      requestId: req.headers['x-request-id'],
+      subdomain: req.headers.subdomain
+    });
+  });
+  
+  next();
+});
 
 // ==================== ERROR HELPERS ====================
 
@@ -63,10 +103,10 @@ interface ApiError {
   code: string;
   message: string;
   trace_id: string;
-  details: any[];
+  details: { field?: string; message: string }[];
 }
 
-function errorResponse(req: Request, code: string, message: string, details: any[] = []): ApiError {
+function errorResponse(req: Request, code: string, message: string, details: { field?: string; message: string }[] = []): ApiError {
   return {
     code,
     message,
@@ -98,6 +138,40 @@ import { registerIssueTagsRoutes } from './routes/issue-tags';
 import { registerFavouritesRoutes } from './routes/favourites';
 import { registerDictionariesRoutes } from './routes/dictionaries';
 import { registerConfigsRoutes } from './routes/configs';
+
+// ==================== HEALTH CHECK ====================
+
+interface HealthStatus {
+  status: 'ok' | 'degraded' | 'error';
+  service: string;
+  version: string;
+  uptime: number;
+  endpoints: number;
+  database: {
+    status: 'connected' | 'disconnected';
+    latency?: number;
+  };
+  memory: {
+    heapUsed: number;
+    heapTotal: number;
+    external: number;
+    rss: number;
+  };
+  timestamp: string;
+}
+
+const startTime = Date.now();
+
+async function checkDatabaseHealth(): Promise<{ status: 'connected' | 'disconnected'; latency?: number }> {
+  const start = Date.now();
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return { status: 'connected', latency: Date.now() - start };
+  } catch (error) {
+    logger.error({ msg: 'Database health check failed', error });
+    return { status: 'disconnected' };
+  }
+}
 
 // ==================== INITIALIZATION ====================
 
@@ -132,6 +206,7 @@ async function init() {
     registerFavouritesRoutes(app, prisma, listeners, API_PREFIX);
     registerDictionariesRoutes(app, prisma, listeners, API_PREFIX);
     registerConfigsRoutes(app, prisma, listeners, API_PREFIX);
+    
     // Add issues to listeners for gateway
     listeners.push({ method: 'get', func: 'read_issues', entity: 'issues' });
     listeners.push({ method: 'get', func: 'read_issue', entity: 'issue' });
@@ -160,14 +235,44 @@ async function init() {
       res.json(gatewayListeners);
     });
 
-    // Health check
-    app.get('/health', (req: Request, res: Response) => {
-      res.json({ 
-        status: 'ok', 
+    // Health check with database connectivity
+    app.get('/health', async (req: Request, res: Response) => {
+      const dbHealth = await checkDatabaseHealth();
+      const memoryUsage = process.memoryUsage();
+      
+      const health: HealthStatus = {
+        status: dbHealth.status === 'connected' ? 'ok' : 'degraded',
         service: 'zeus2',
         version: 'v2',
-        endpoints: listeners.length
-      });
+        uptime: Math.floor((Date.now() - startTime) / 1000),
+        endpoints: listeners.length,
+        database: dbHealth,
+        memory: {
+          heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024),
+          heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024),
+          external: Math.round(memoryUsage.external / 1024 / 1024),
+          rss: Math.round(memoryUsage.rss / 1024 / 1024)
+        },
+        timestamp: new Date().toISOString()
+      };
+      
+      const statusCode = health.status === 'ok' ? 200 : 503;
+      res.status(statusCode).json(health);
+    });
+
+    // Liveness probe (для Kubernetes)
+    app.get('/health/live', (req: Request, res: Response) => {
+      res.json({ status: 'ok' });
+    });
+
+    // Readiness probe (для Kubernetes) - проверяет готовность принимать трафик
+    app.get('/health/ready', async (req: Request, res: Response) => {
+      const dbHealth = await checkDatabaseHealth();
+      if (dbHealth.status === 'connected') {
+        res.json({ status: 'ok', database: 'connected' });
+      } else {
+        res.status(503).json({ status: 'not_ready', database: 'disconnected' });
+      }
     });
 
     // OpenAPI spec endpoint (placeholder)
@@ -184,6 +289,24 @@ async function init() {
         ],
         paths: {}  // TODO: Generate from routes
       });
+    });
+
+    // Global error handler
+    app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+      logger.error({ 
+        msg: 'Unhandled error', 
+        error: err.message, 
+        stack: err.stack,
+        path: req.path,
+        method: req.method
+      });
+      
+      res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
+    });
+
+    // 404 handler
+    app.use((req: Request, res: Response) => {
+      res.status(404).json(errorResponse(req, 'NOT_FOUND', `Эндпоинт ${req.method} ${req.path} не найден`));
     });
 
     // Socket.IO for gateway communication
@@ -259,14 +382,35 @@ async function init() {
 }
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
+async function gracefulShutdown(signal: string) {
+  logger.info({ msg: `Received ${signal}, starting graceful shutdown` });
+  
+  // Закрываем HTTP сервер (перестаём принимать новые соединения)
+  httpServer.close(() => {
+    logger.info({ msg: 'HTTP server closed' });
+  });
+  
+  // Ждём завершения текущих запросов (максимум 30 секунд)
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  
+  // Отключаемся от БД
   await prisma.$disconnect();
+  logger.info({ msg: 'Database disconnected' });
+  
   process.exit(0);
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
+// Обработка необработанных ошибок
+process.on('uncaughtException', (error) => {
+  logger.error({ msg: 'Uncaught exception', error: error.message, stack: error.stack });
+  gracefulShutdown('uncaughtException');
 });
 
-process.on('SIGTERM', async () => {
-  await prisma.$disconnect();
-  process.exit(0);
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error({ msg: 'Unhandled rejection', reason, promise });
 });
 
 init();

@@ -13,7 +13,7 @@
 
 import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { FieldMapping } from '@unkaos/query-lang';
 import { createLogger } from '../../common/logging';
 import { decodeQuery, parseIssueQuery } from '../utils/issue-query-parser';
@@ -21,11 +21,11 @@ import {
   buildIssuesListQuery,
   buildIssueByUuidQuery,
   buildIssuesCountQuery,
-  buildInsertIssueQuery,
-  buildUpdateIssueQuery,
-  buildDeleteIssueQuery,
+  buildInsertIssueParams,
+  buildUpdateIssueParams,
   buildGetNextIssueNumQuery
 } from '../utils/issue-query-builder';
+import { escapeIdentifier } from '../utils/crud-factory';
 
 const logger = createLogger('zeus2:issues');
 
@@ -43,6 +43,11 @@ function errorResponse(req: Request, code: string, message: string, details: any
     trace_id: req.headers['x-trace-id'] || '',
     details
   };
+}
+
+// Валидация UUID
+function isValidUuid(value: string): boolean {
+  return uuidValidate(value);
 }
 
 // Форматирование issue для ответа
@@ -97,10 +102,11 @@ async function getCustomFields(subdomain: string): Promise<FieldMapping[]> {
   }
 
   try {
+    // Используем параметризованный запрос с безопасным экранированием схемы
     const fields: any[] = await prisma.$queryRawUnsafe(`
       SELECT F.name, F.uuid, FT.code as type_code
-      FROM "${subdomain}".fields F
-      JOIN "${subdomain}".field_types FT ON F.type_uuid = FT.uuid
+      FROM ${escapeIdentifier(subdomain)}.fields F
+      JOIN ${escapeIdentifier(subdomain)}.field_types FT ON F.type_uuid = FT.uuid
       WHERE F.is_custom = true
     `);
 
@@ -199,6 +205,11 @@ router.get('/:uuid', async (req: Request, res: Response) => {
   const subdomain = req.headers.subdomain as string;
   const { uuid } = req.params;
 
+  // Валидация UUID для защиты от SQL injection
+  if (!isValidUuid(uuid)) {
+    return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Некорректный формат UUID'));
+  }
+
   logger.info({ msg: 'GET issue by UUID', subdomain, uuid });
 
   try {
@@ -224,28 +235,39 @@ router.post('/', async (req: Request, res: Response) => {
   const userUuid = req.headers.user_uuid as string;
   const data = req.body;
 
-  logger.info({ msg: 'POST issue', subdomain, data });
+  logger.info({ msg: 'POST issue', subdomain });
 
   try {
     // Валидация обязательных полей
-    if (!data.type_uuid) {
-      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поле type_uuid обязательно', [
+    if (!data.type_uuid || !isValidUuid(data.type_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поле type_uuid обязательно и должно быть валидным UUID', [
         { field: 'type_uuid', message: 'Обязательное поле' }
       ]));
     }
-    if (!data.project_uuid) {
-      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поле project_uuid обязательно', [
+    if (!data.project_uuid || !isValidUuid(data.project_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поле project_uuid обязательно и должно быть валидным UUID', [
         { field: 'project_uuid', message: 'Обязательное поле' }
       ]));
     }
-    if (!data.status_uuid) {
-      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поле status_uuid обязательно', [
+    if (!data.status_uuid || !isValidUuid(data.status_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поле status_uuid обязательно и должно быть валидным UUID', [
         { field: 'status_uuid', message: 'Обязательное поле' }
       ]));
     }
 
+    // Валидация опциональных UUID полей
+    if (data.sprint_uuid && !isValidUuid(data.sprint_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'sprint_uuid должен быть валидным UUID'));
+    }
+    if (data.parent_uuid && !isValidUuid(data.parent_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'parent_uuid должен быть валидным UUID'));
+    }
+    if (data.author_uuid && !isValidUuid(data.author_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'author_uuid должен быть валидным UUID'));
+    }
+
     // Генерируем UUID если не передан
-    const issueUuid = data.uuid || uuidv4();
+    const issueUuid = data.uuid && isValidUuid(data.uuid) ? data.uuid : uuidv4();
 
     // Получаем следующий номер для проекта
     const numQuery = buildGetNextIssueNumQuery(subdomain, data.project_uuid);
@@ -267,26 +289,27 @@ router.post('/', async (req: Request, res: Response) => {
       parent_uuid: data.parent_uuid || null
     };
 
-    const insertSql = buildInsertIssueQuery(subdomain, insertData);
-    await prisma.$executeRawUnsafe(insertSql);
+    // Используем параметризованный запрос
+    const { sql, params } = buildInsertIssueParams(subdomain, insertData);
+    await prisma.$executeRawUnsafe(sql, ...params);
 
     // Обработка field_values если переданы
     if (data.values && Array.isArray(data.values)) {
       for (const fieldValue of data.values) {
-        if (fieldValue.field_uuid && fieldValue.value !== undefined) {
-          const fvUuid = fieldValue.uuid || uuidv4();
+        if (fieldValue.field_uuid && isValidUuid(fieldValue.field_uuid) && fieldValue.value !== undefined) {
+          const fvUuid = fieldValue.uuid && isValidUuid(fieldValue.uuid) ? fieldValue.uuid : uuidv4();
           await prisma.$executeRawUnsafe(`
-            INSERT INTO "${subdomain}".field_values (uuid, issue_uuid, field_uuid, value)
-            VALUES ('${fvUuid}', '${issueUuid}', '${fieldValue.field_uuid}', '${String(fieldValue.value).replace(/'/g, "''")}')
+            INSERT INTO ${escapeIdentifier(subdomain)}.field_values (uuid, issue_uuid, field_uuid, value)
+            VALUES ($1::uuid, $2::uuid, $3::uuid, $4)
             ON CONFLICT (issue_uuid, field_uuid) DO UPDATE SET value = EXCLUDED.value
-          `);
+          `, fvUuid, issueUuid, fieldValue.field_uuid, String(fieldValue.value));
         }
       }
     }
 
     // Возвращаем созданную issue
-    const sql = buildIssueByUuidQuery(subdomain, issueUuid);
-    const items: any[] = await prisma.$queryRawUnsafe(sql);
+    const selectSql = buildIssueByUuidQuery(subdomain, issueUuid);
+    const items: any[] = await prisma.$queryRawUnsafe(selectSql);
 
     res.status(201).json(formatIssue(items[0]));
   } catch (error: any) {
@@ -303,12 +326,39 @@ router.put('/:uuid', async (req: Request, res: Response) => {
   const { uuid } = req.params;
   const data = req.body;
 
-  logger.info({ msg: 'PUT issue', subdomain, uuid, data });
+  // Валидация UUID
+  if (!isValidUuid(uuid)) {
+    return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Некорректный формат UUID'));
+  }
+
+  logger.info({ msg: 'PUT issue', subdomain, uuid });
 
   try {
-    // Проверяем существование
-    const checkSql = `SELECT uuid FROM "${subdomain}".issues WHERE uuid = '${uuid}'`;
-    const existing: any[] = await prisma.$queryRawUnsafe(checkSql);
+    // Валидация UUID полей в данных
+    if (data.type_uuid && !isValidUuid(data.type_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'type_uuid должен быть валидным UUID'));
+    }
+    if (data.project_uuid && !isValidUuid(data.project_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'project_uuid должен быть валидным UUID'));
+    }
+    if (data.status_uuid && !isValidUuid(data.status_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'status_uuid должен быть валидным UUID'));
+    }
+    if (data.sprint_uuid && !isValidUuid(data.sprint_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'sprint_uuid должен быть валидным UUID'));
+    }
+    if (data.parent_uuid && !isValidUuid(data.parent_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'parent_uuid должен быть валидным UUID'));
+    }
+    if (data.author_uuid && !isValidUuid(data.author_uuid)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'author_uuid должен быть валидным UUID'));
+    }
+
+    // Проверяем существование с параметризованным запросом
+    const existing: any[] = await prisma.$queryRawUnsafe(
+      `SELECT uuid FROM ${escapeIdentifier(subdomain)}.issues WHERE uuid = $1::uuid`,
+      uuid
+    );
 
     if (existing.length === 0) {
       // Создаём новую issue если не существует
@@ -321,35 +371,35 @@ router.put('/:uuid', async (req: Request, res: Response) => {
         insertData.num = numResult[0]?.next_num || 1;
       }
 
-      const insertSql = buildInsertIssueQuery(subdomain, insertData);
-      await prisma.$executeRawUnsafe(insertSql);
+      const { sql, params } = buildInsertIssueParams(subdomain, insertData);
+      await prisma.$executeRawUnsafe(sql, ...params);
 
-      const sql = buildIssueByUuidQuery(subdomain, uuid);
-      const items: any[] = await prisma.$queryRawUnsafe(sql);
+      const selectSql = buildIssueByUuidQuery(subdomain, uuid);
+      const items: any[] = await prisma.$queryRawUnsafe(selectSql);
       return res.status(201).json(formatIssue(items[0]));
     }
 
-    // Обновляем существующую
-    const updateSql = buildUpdateIssueQuery(subdomain, uuid, data);
-    await prisma.$executeRawUnsafe(updateSql);
+    // Обновляем существующую с параметризованным запросом
+    const { sql: updateSql, params: updateParams } = buildUpdateIssueParams(subdomain, uuid, data);
+    await prisma.$executeRawUnsafe(updateSql, ...updateParams);
 
     // Обработка field_values если переданы
     if (data.values && Array.isArray(data.values)) {
       for (const fieldValue of data.values) {
-        if (fieldValue.field_uuid && fieldValue.value !== undefined) {
-          const fvUuid = fieldValue.uuid || uuidv4();
+        if (fieldValue.field_uuid && isValidUuid(fieldValue.field_uuid) && fieldValue.value !== undefined) {
+          const fvUuid = fieldValue.uuid && isValidUuid(fieldValue.uuid) ? fieldValue.uuid : uuidv4();
           await prisma.$executeRawUnsafe(`
-            INSERT INTO "${subdomain}".field_values (uuid, issue_uuid, field_uuid, value)
-            VALUES ('${fvUuid}', '${uuid}', '${fieldValue.field_uuid}', '${String(fieldValue.value).replace(/'/g, "''")}')
+            INSERT INTO ${escapeIdentifier(subdomain)}.field_values (uuid, issue_uuid, field_uuid, value)
+            VALUES ($1::uuid, $2::uuid, $3::uuid, $4)
             ON CONFLICT (issue_uuid, field_uuid) DO UPDATE SET value = EXCLUDED.value
-          `);
+          `, fvUuid, uuid, fieldValue.field_uuid, String(fieldValue.value));
         }
       }
     }
 
     // Возвращаем обновлённую issue
-    const sql = buildIssueByUuidQuery(subdomain, uuid);
-    const items: any[] = await prisma.$queryRawUnsafe(sql);
+    const selectSql = buildIssueByUuidQuery(subdomain, uuid);
+    const items: any[] = await prisma.$queryRawUnsafe(selectSql);
 
     res.status(200).json(formatIssue(items[0]));
   } catch (error: any) {
@@ -366,24 +416,31 @@ router.patch('/:uuid', async (req: Request, res: Response) => {
   const { uuid } = req.params;
   const data = req.body;
 
+  // Валидация UUID
+  if (!isValidUuid(uuid)) {
+    return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Некорректный формат UUID'));
+  }
+
   logger.info({ msg: 'PATCH issue', subdomain, uuid });
 
   try {
-    // Проверяем существование
-    const checkSql = `SELECT uuid FROM "${subdomain}".issues WHERE uuid = '${uuid}' AND deleted_at IS NULL`;
-    const existing: any[] = await prisma.$queryRawUnsafe(checkSql);
+    // Проверяем существование с параметризованным запросом
+    const existing: any[] = await prisma.$queryRawUnsafe(
+      `SELECT uuid FROM ${escapeIdentifier(subdomain)}.issues WHERE uuid = $1::uuid AND deleted_at IS NULL`,
+      uuid
+    );
 
     if (existing.length === 0) {
       return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Issue не найдена'));
     }
 
     // Обновляем только переданные поля
-    const updateSql = buildUpdateIssueQuery(subdomain, uuid, data);
-    await prisma.$executeRawUnsafe(updateSql);
+    const { sql: updateSql, params: updateParams } = buildUpdateIssueParams(subdomain, uuid, data);
+    await prisma.$executeRawUnsafe(updateSql, ...updateParams);
 
     // Возвращаем обновлённую issue
-    const sql = buildIssueByUuidQuery(subdomain, uuid);
-    const items: any[] = await prisma.$queryRawUnsafe(sql);
+    const selectSql = buildIssueByUuidQuery(subdomain, uuid);
+    const items: any[] = await prisma.$queryRawUnsafe(selectSql);
 
     res.status(200).json(formatIssue(items[0]));
   } catch (error: any) {
@@ -399,11 +456,21 @@ router.delete('/:uuid', async (req: Request, res: Response) => {
   const subdomain = req.headers.subdomain as string;
   const { uuid } = req.params;
 
+  // Валидация UUID
+  if (!isValidUuid(uuid)) {
+    return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Некорректный формат UUID'));
+  }
+
   logger.info({ msg: 'DELETE issue', subdomain, uuid });
 
   try {
-    const deleteSql = buildDeleteIssueQuery(subdomain, uuid);
-    const result: any[] = await prisma.$queryRawUnsafe(deleteSql);
+    // Soft delete с параметризованным запросом
+    const result: any[] = await prisma.$queryRawUnsafe(`
+      UPDATE ${escapeIdentifier(subdomain)}.issues
+      SET deleted_at = NOW()
+      WHERE uuid = $1::uuid AND deleted_at IS NULL
+      RETURNING uuid
+    `, uuid);
 
     if (result.length === 0) {
       return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Issue не найдена'));
@@ -475,16 +542,17 @@ export function registerSpecialIssuesRoutes(app: any) {
     logger.info({ msg: 'GET short_issue_info', subdomain, like });
 
     try {
+      // Параметризованный запрос для защиты от SQL injection
       const items = await prisma.$queryRawUnsafe(`
         SELECT 
           I.UUID, 
           P.SHORT_NAME || '-' || I.NUM || ' ' || I.TITLE AS name
-        FROM "${subdomain}".ISSUES I
-        JOIN "${subdomain}".PROJECTS P ON P.UUID = I.PROJECT_UUID 
+        FROM ${escapeIdentifier(subdomain)}.ISSUES I
+        JOIN ${escapeIdentifier(subdomain)}.PROJECTS P ON P.UUID = I.PROJECT_UUID 
         WHERE I.DELETED_AT IS NULL 
-          AND (P.SHORT_NAME || '-' || I.NUM || ' ' || I.TITLE) ILIKE '%${like.replace(/'/g, "''")}%'
+          AND (P.SHORT_NAME || '-' || I.NUM || ' ' || I.TITLE) ILIKE $1
         LIMIT 20
-      `);
+      `, `%${like}%`);
 
       res.json({ rows: items });
     } catch (error: any) {
@@ -506,8 +574,8 @@ export function registerSpecialIssuesRoutes(app: any) {
           P.SHORT_NAME || '-' || I.NUM AS full_num,
           I.CREATED_AT, 
           I.UUID
-        FROM "${subdomain}".ISSUES I
-        JOIN "${subdomain}".PROJECTS P ON P.UUID = I.PROJECT_UUID 
+        FROM ${escapeIdentifier(subdomain)}.ISSUES I
+        JOIN ${escapeIdentifier(subdomain)}.PROJECTS P ON P.UUID = I.PROJECT_UUID 
         WHERE I.DELETED_AT IS NULL
       `);
 
@@ -525,18 +593,39 @@ export function registerSpecialIssuesRoutes(app: any) {
 
     logger.info({ msg: 'GET issue_uuid', subdomain, num, project_uuid });
 
-    try {
-      let whereClause = `WHERE DELETED_AT IS NULL`;
-      if (num) {
-        whereClause += ` AND num = ${num}`;
-      }
-      if (project_uuid) {
-        whereClause += ` AND project_uuid = '${project_uuid}'`;
-      }
+    // Валидация project_uuid если передан
+    if (project_uuid && !isValidUuid(project_uuid as string)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Некорректный формат project_uuid'));
+    }
 
-      const items = await prisma.$queryRawUnsafe(`
-        SELECT UUID FROM "${subdomain}".ISSUES ${whereClause} LIMIT 1
-      `);
+    try {
+      let items: any[];
+      
+      if (num && project_uuid) {
+        items = await prisma.$queryRawUnsafe(`
+          SELECT UUID FROM ${escapeIdentifier(subdomain)}.ISSUES 
+          WHERE DELETED_AT IS NULL AND num = $1 AND project_uuid = $2::uuid
+          LIMIT 1
+        `, parseInt(num as string), project_uuid);
+      } else if (num) {
+        items = await prisma.$queryRawUnsafe(`
+          SELECT UUID FROM ${escapeIdentifier(subdomain)}.ISSUES 
+          WHERE DELETED_AT IS NULL AND num = $1
+          LIMIT 1
+        `, parseInt(num as string));
+      } else if (project_uuid) {
+        items = await prisma.$queryRawUnsafe(`
+          SELECT UUID FROM ${escapeIdentifier(subdomain)}.ISSUES 
+          WHERE DELETED_AT IS NULL AND project_uuid = $1::uuid
+          LIMIT 1
+        `, project_uuid);
+      } else {
+        items = await prisma.$queryRawUnsafe(`
+          SELECT UUID FROM ${escapeIdentifier(subdomain)}.ISSUES 
+          WHERE DELETED_AT IS NULL
+          LIMIT 1
+        `);
+      }
 
       res.json({ rows: items });
     } catch (error: any) {
@@ -552,18 +641,39 @@ export function registerSpecialIssuesRoutes(app: any) {
 
     logger.info({ msg: 'GET old_issue_uuid', subdomain, num, project_uuid });
 
-    try {
-      let whereClause = `WHERE DELETED_AT IS NULL`;
-      if (num) {
-        whereClause += ` AND num = ${num}`;
-      }
-      if (project_uuid) {
-        whereClause += ` AND project_uuid = '${project_uuid}'`;
-      }
+    // Валидация project_uuid если передан
+    if (project_uuid && !isValidUuid(project_uuid as string)) {
+      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Некорректный формат project_uuid'));
+    }
 
-      const items = await prisma.$queryRawUnsafe(`
-        SELECT ISSUE_UUID AS UUID FROM "${subdomain}".OLD_ISSUES_NUM ${whereClause} LIMIT 1
-      `);
+    try {
+      let items: any[];
+      
+      if (num && project_uuid) {
+        items = await prisma.$queryRawUnsafe(`
+          SELECT ISSUE_UUID AS UUID FROM ${escapeIdentifier(subdomain)}.OLD_ISSUES_NUM 
+          WHERE DELETED_AT IS NULL AND num = $1 AND project_uuid = $2::uuid
+          LIMIT 1
+        `, parseInt(num as string), project_uuid);
+      } else if (num) {
+        items = await prisma.$queryRawUnsafe(`
+          SELECT ISSUE_UUID AS UUID FROM ${escapeIdentifier(subdomain)}.OLD_ISSUES_NUM 
+          WHERE DELETED_AT IS NULL AND num = $1
+          LIMIT 1
+        `, parseInt(num as string));
+      } else if (project_uuid) {
+        items = await prisma.$queryRawUnsafe(`
+          SELECT ISSUE_UUID AS UUID FROM ${escapeIdentifier(subdomain)}.OLD_ISSUES_NUM 
+          WHERE DELETED_AT IS NULL AND project_uuid = $1::uuid
+          LIMIT 1
+        `, project_uuid);
+      } else {
+        items = await prisma.$queryRawUnsafe(`
+          SELECT ISSUE_UUID AS UUID FROM ${escapeIdentifier(subdomain)}.OLD_ISSUES_NUM 
+          WHERE DELETED_AT IS NULL
+          LIMIT 1
+        `);
+      }
 
       res.json({ rows: items });
     } catch (error: any) {
@@ -589,4 +699,3 @@ export function registerIssuesRoutes(app: any, sharedPrisma?: PrismaClient) {
 }
 
 export default router;
-
