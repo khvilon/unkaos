@@ -9,7 +9,7 @@ const logger = createLogger('cerberus');
 
 import Security from "./security";
 import Data from "./data";
-import User from "./types/User";
+import { User } from "./types/User";
 
 const conf = require('./conf.json')
 
