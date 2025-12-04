@@ -4,8 +4,8 @@ export interface UserSession {
     uuid?: string;
     user_uuid?: string;
     token: string;
-    user: User;
-    timestamp: number;
+    user?: User;
+    timestamp?: number;
     token_created_at?: Date;
     expires_at?: Date;
 }
