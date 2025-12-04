@@ -366,10 +366,27 @@ router.post('/', async (req: Request, res: Response) => {
         { field: 'project_uuid', message: 'Обязательное поле' }
       ]));
     }
-    if (!data.status_uuid || !isValidUuid(data.status_uuid)) {
-      return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Поле status_uuid обязательно и должно быть валидным UUID', [
-        { field: 'status_uuid', message: 'Обязательное поле' }
-      ]));
+    
+    // Если status_uuid не передан - получаем начальный статус из workflow
+    let statusUuid = data.status_uuid;
+    if (!statusUuid || !isValidUuid(statusUuid)) {
+      const initialStatusQuery = `
+        SELECT ist.uuid 
+        FROM ${escapeIdentifier(subdomain)}.issue_types it
+        JOIN ${escapeIdentifier(subdomain)}.workflow_nodes wn ON wn.workflows_uuid = it.workflow_uuid AND wn.deleted_at IS NULL
+        JOIN ${escapeIdentifier(subdomain)}.issue_statuses ist ON ist.uuid = wn.issue_statuses_uuid AND ist.is_start = true
+        WHERE it.uuid = $1::uuid AND it.deleted_at IS NULL
+        LIMIT 1
+      `;
+      const statusResult: any[] = await prisma.$queryRawUnsafe(initialStatusQuery, data.type_uuid);
+      
+      if (!statusResult || statusResult.length === 0 || !statusResult[0]?.uuid) {
+        return res.status(400).json(errorResponse(req, 'VALIDATION_ERROR', 'Не удалось определить начальный статус для данного типа задачи. Проверьте настройки workflow.', [
+          { field: 'status_uuid', message: 'Начальный статус не найден' }
+        ]));
+      }
+      statusUuid = statusResult[0].uuid;
+      logger.info({ msg: 'Auto-resolved initial status', subdomain, typeUuid: data.type_uuid, statusUuid });
     }
 
     // Валидация опциональных UUID полей
@@ -397,7 +414,7 @@ router.post('/', async (req: Request, res: Response) => {
       num: nextNum,
       type_uuid: data.type_uuid,
       project_uuid: data.project_uuid,
-      status_uuid: data.status_uuid,
+      status_uuid: statusUuid,
       sprint_uuid: data.sprint_uuid || null,
       author_uuid: userUuid || data.author_uuid || null,
       title: data.title || '',
