@@ -23,16 +23,30 @@ export default {
       default: "",
     },
   },
+  data() {
+    return {
+      localValue: this.value
+    }
+  },
+  computed: {
+    inputValue: {
+      get() {
+        return this.localValue;
+      },
+      set(val) {
+        this.localValue = val;
+        this.$store.commit("id_push_update_" + this.parent_name, {
+          id: this.id,
+          val: val,
+        });
+        this.$emit("update_parent_from_input", val);
+        this.$emit("updated", val);
+      }
+    }
+  },
   watch: {
-    value: function (val, oldVal) {
-      console.log(val, oldVal, this.id, this.parent_name);
-      this.$store.commit("id_push_update_" + this.parent_name, {
-        id: this.id,
-        val: val,
-      });
-      this.$emit("update_parent_from_input", val); //val_obj == undefined? val : val_obj)
-
-      this.$emit("updated", val);
+    value: function (newVal) {
+      this.localValue = newVal;
     },
   },
 };
@@ -41,7 +55,7 @@ export default {
 <template>
   <label class="boolean input">
     <div class="label" v-if="label != ''">{{ label }}</div>
-    <input type="checkbox" v-model="value" :disabled="disabled" style="display: none"/>
+    <input type="checkbox" v-model="inputValue" :disabled="disabled" style="display: none"/>
     <span class="boolean-input" v-bind:class="{ disabled: disabled }"> </span>
   </label>
 </template>

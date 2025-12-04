@@ -32,6 +32,32 @@ export default {
   },
 
   emits: ["update_parent_from_input", "updated"],
+
+  data() {
+    return {
+      localValue: this.value
+    }
+  },
+
+  computed: {
+    inputValue: {
+      get() {
+        return this.localValue;
+      },
+      set(val) {
+        this.localValue = val;
+        this.$emit("update_parent_from_input", val);
+        
+        if (this.parent_name == undefined || this.parent_name == "") return;
+        
+        this.$store.commit("id_push_update_" + this.parent_name, {
+          id: this.id,
+          val: val,
+        });
+      }
+    }
+  },
+
   methods: {
     blur() {
       this.$emit("updated");
@@ -39,39 +65,8 @@ export default {
   },
 
   watch: {
-    value: function (val, oldVal) {
-      console.log(val, oldVal, this.id, this.parent_name);
-
-      this.$emit("update_parent_from_input", val);
-
-      if (this.parent_name == undefined || this.parent_name == "") return;
-
-      /*
-        
-        let data = val
-
-        let id_parts = this.id.split('.')
-
-        let i = id_parts.length-1;
-        let id = id_parts[i]
-         
-        while (id != undefined)
-        {
-          let new_data = {}
-          new_data[id] = data
-          data = new_data
-          i--
-          id = id_parts[i]
-        }
-        */
-
-      this.$store.commit("id_push_update_" + this.parent_name, {
-        id: this.id,
-        val: val,
-      });
-
-      //data[this.id] = val
-      //this.$store.commit('push_update_' + this.parent_name, data)
+    value: function (newVal) {
+      this.localValue = newVal;
     },
   },
 };
@@ -83,7 +78,7 @@ export default {
     <input
       type="number"
       class="numeric-input"
-      v-model="value"
+      v-model="inputValue"
       :disabled="disabled"
       @blur="blur"
     />
