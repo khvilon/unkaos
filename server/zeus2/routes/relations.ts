@@ -44,13 +44,14 @@ export function registerRelationsRoutes(
   // Кастомный endpoint для форматированных связей
   app.get(`${apiPrefix}/formated-relations`, async (req: Request, res: Response) => {
     const schema = req.headers.subdomain as string;
-    const issue_uuid = req.query.issue_uuid as string;
+    // Поддержка обоих параметров: issue_uuid и current_uuid
+    const issue_uuid = (req.query.issue_uuid || req.query.current_uuid) as string;
 
     if (!schema) {
       return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain required'));
     }
     if (!issue_uuid || !isValidUuid(issue_uuid)) {
-      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'issue_uuid required'));
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'issue_uuid or current_uuid required'));
     }
 
     try {
@@ -80,7 +81,7 @@ export function registerRelationsRoutes(
           LEFT JOIN ${escapeIdentifier(schema)}.ISSUE_STATUSES IST ON I.STATUS_UUID = IST.UUID 
           LEFT JOIN ${escapeIdentifier(schema)}.PROJECTS P ON P.UUID = I.PROJECT_UUID
         ) T1 
-        WHERE DELETED_AT IS NULL AND CURRENT_UUID = ${issue_uuid}::uuid 
+        WHERE DELETED_AT IS NULL AND CURRENT_UUID = '${issue_uuid}'::uuid 
         LIMIT 50
       `);
 

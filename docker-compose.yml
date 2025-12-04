@@ -16,9 +16,12 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_DATABASE=${DB_DATABASE}
+      - REDIS_URL=redis://redis:6379
     depends_on:
-      - postgres
-      - memcached
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   cerberus:
     build:
@@ -70,8 +73,15 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_DATABASE=${DB_DATABASE}
       - ZEUS2_PORT=3007
+      - REDIS_URL=redis://redis:6379
+      - ATHENA_URL=http://athena:5010
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      athena:
+        condition: service_started
 
   eileithyia:
     build:
@@ -101,6 +111,7 @@ services:
       # Zeus v1 отключён - оставляем переменную пустой или убираем
       # - ZEUS_URL=${ZEUS_URL}
       - ZEUS2_URL=${ZEUS2_URL}
+      - ZEUS2_GRPC_URL=zeus2:50051
       - CERBERUS_URL=${CERBERUS_URL}
       - ATHENA_URL=${ATHENA_URL}
       - DOMAIN=${DOMAIN}
@@ -146,15 +157,24 @@ services:
     depends_on:
       - postgres
 
-  memcached:
-    image: memcached:latest
+  redis:
+    image: redis:7.4-alpine
     ports:
-      - "11211:11211"
-    command:
-      - memcached
-      - -v # Increase verbosity
-    depends_on:
-      - postgres
+      - "6379:6379"
+    volumes:
+      - redis_data:/var/lib/redis/data
+    command: >
+      redis-server 
+      --appendonly yes 
+      --maxmemory 512mb 
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
 
   nginx:
     build:
@@ -273,5 +293,6 @@ services:
 
 volumes:
   unkaos-pg-data:
+  redis_data:
   loki_data:
   grafana_data:

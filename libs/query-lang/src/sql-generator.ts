@@ -226,18 +226,21 @@ export class SQLGenerator {
 
   /**
    * Генерирует SQL для поля
+   * 
+   * ВАЖНО: Кастомные поля хранятся в таблице field_values, а не как колонки в issues!
+   * Для них генерируем подзапрос.
    */
   private generateField(field: FieldNode, mapping?: FieldMapping): string {
     this.usedFields.push(field);
 
-        if (mapping) {
-          if (mapping.source === 'custom') {
-            this.hasCustomFields = true;
-        // Кастомное поле - обращаемся по UUID
-            return `${this.context.tableAlias}."${mapping.uuid}"`;
-          }
-          return `${this.context.tableAlias}.${mapping.field}`;
-        }
+    if (mapping) {
+      if (mapping.source === 'custom') {
+        this.hasCustomFields = true;
+        // Кастомное поле - подзапрос к field_values
+        return `(SELECT FV.value FROM "${this.context.subdomain}".field_values FV WHERE FV.issue_uuid = ${this.context.tableAlias}.uuid AND FV.field_uuid = '${mapping.uuid}' LIMIT 1)`;
+      }
+      return `${this.context.tableAlias}.${mapping.field}`;
+    }
     
     // Если не нашли маппинг - возможно это кастомное поле по имени
     // Ищем в customFields по имени
@@ -247,13 +250,15 @@ export class SQLGenerator {
     
     if (customField && customField.uuid) {
       this.hasCustomFields = true;
-      return `${this.context.tableAlias}."${customField.uuid}"`;
-  }
+      // Кастомное поле - подзапрос к field_values
+      return `(SELECT FV.value FROM "${this.context.subdomain}".field_values FV WHERE FV.issue_uuid = ${this.context.tableAlias}.uuid AND FV.field_uuid = '${customField.uuid}' LIMIT 1)`;
+    }
 
-    // Проверяем, похоже ли на UUID
+    // Проверяем, похоже ли на UUID (напрямую указан UUID кастомного поля)
     if (this.isUUID(field.name)) {
       this.hasCustomFields = true;
-      return `${this.context.tableAlias}."${field.name}"`;
+      // Подзапрос к field_values
+      return `(SELECT FV.value FROM "${this.context.subdomain}".field_values FV WHERE FV.issue_uuid = ${this.context.tableAlias}.uuid AND FV.field_uuid = '${field.name}' LIMIT 1)`;
     }
     
     return `${this.context.tableAlias}.${field.name}`;

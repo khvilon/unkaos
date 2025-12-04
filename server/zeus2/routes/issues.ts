@@ -15,6 +15,7 @@ import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { FieldMapping } from '@unkaos/query-lang';
+import axios from 'axios';
 import { createLogger } from '../../common/logging';
 import { decodeQuery, parseIssueQuery } from '../utils/issue-query-parser';
 import {
@@ -28,6 +29,44 @@ import {
 import { escapeIdentifier } from '../utils/crud-factory';
 
 const logger = createLogger('zeus2:issues');
+
+// URL Athena для исправления запросов через ИИ
+const ATHENA_URL = process.env.ATHENA_URL || 'http://athena:5010';
+
+/**
+ * Попытка исправить невалидный запрос через ИИ (Athena)
+ * @returns исправленный запрос или null если ИИ не смог исправить
+ */
+async function tryFixQueryWithAI(userQuery: string, subdomain: string): Promise<string | null> {
+  try {
+    logger.info({ msg: 'Trying to fix query with AI', userQuery, subdomain });
+    
+    const response = await axios.post(`${ATHENA_URL}/gpt`, {
+      userInput: `Найди задачи ${userQuery}`,
+      command: 'find_issues'
+    }, {
+      timeout: 30000,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.data?.humanGpt?.filter) {
+      logger.info({ 
+        msg: 'AI fixed query successfully', 
+        original: userQuery, 
+        fixed: response.data.humanGpt.filter 
+      });
+      return response.data.humanGpt.filter;
+    }
+
+    logger.warn({ msg: 'AI could not fix query', userQuery });
+    return null;
+  } catch (error: any) {
+    logger.error({ msg: 'AI query fix failed', error: error.message, userQuery });
+    return null;
+  }
+}
 
 // Use shared prisma instance
 let prisma: PrismaClient;
@@ -81,9 +120,7 @@ function formatIssue(item: any): any {
   };
 }
 
-// Cache for custom fields: subdomain -> { timestamp, fields }
-const fieldsCache: Record<string, { ts: number, fields: FieldMapping[] }> = {};
-const CACHE_TTL = 60 * 1000; // 1 minute
+import { getCache } from '../index';
 
 function mapFieldType(code: string): string {
   switch (code) {
@@ -95,14 +132,33 @@ function mapFieldType(code: string): string {
   }
 }
 
+/**
+ * Получить кастомные поля (использует Redis кеш через Ossa)
+ */
 async function getCustomFields(subdomain: string): Promise<FieldMapping[]> {
-  const now = Date.now();
-  if (fieldsCache[subdomain] && (now - fieldsCache[subdomain].ts < CACHE_TTL)) {
-    return fieldsCache[subdomain].fields;
+  const cache = getCache();
+  
+  // Пробуем получить из кеша
+  if (cache) {
+    try {
+      const cachedFields = await cache.getFields(subdomain);
+      if (cachedFields && cachedFields.length > 0) {
+        const customFields = cachedFields.filter((f: any) => f.is_custom);
+        return customFields.map((f: any) => ({
+          name: f.name,
+          field: 'value',
+          type: mapFieldType(f.type_code),
+          source: 'custom',
+          uuid: f.uuid
+        }));
+      }
+    } catch (cacheErr) {
+      logger.warn({ msg: 'Cache miss for custom fields', error: cacheErr });
+    }
   }
 
+  // Fallback на БД
   try {
-    // Используем параметризованный запрос с безопасным экранированием схемы
     const fields: any[] = await prisma.$queryRawUnsafe(`
       SELECT F.name, F.uuid, FT.code as type_code
       FROM ${escapeIdentifier(subdomain)}.fields F
@@ -110,16 +166,13 @@ async function getCustomFields(subdomain: string): Promise<FieldMapping[]> {
       WHERE F.is_custom = true
     `);
 
-    const mappedFields: FieldMapping[] = fields.map(f => ({
+    return fields.map(f => ({
       name: f.name,
-      field: 'value', // Custom fields value is stored in 'value' column of field_values
+      field: 'value',
       type: mapFieldType(f.type_code),
       source: 'custom',
       uuid: f.uuid
     }));
-
-    fieldsCache[subdomain] = { ts: now, fields: mappedFields };
-    return mappedFields;
   } catch (e: any) {
     logger.error({ msg: 'Error fetching custom fields', error: e.message });
     return [];
@@ -144,27 +197,57 @@ router.get('/', async (req: Request, res: Response) => {
 
   try {
     // Декодируем и парсим запрос фильтрации
-    const userQuery = decodeQuery(encodedQuery as string);
+    let userQuery = decodeQuery(encodedQuery as string);
     const customFields = await getCustomFields(subdomain);
-    const parsedQuery = parseIssueQuery(userQuery, subdomain, customFields);
+    let parsedQuery = parseIssueQuery(userQuery, subdomain, customFields);
 
     // Проверяем ошибки валидации
     if (parsedQuery.validationErrors && parsedQuery.validationErrors.length > 0) {
       logger.warn({
-        msg: 'Query validation failed',
+        msg: 'Query validation failed, trying AI fix',
         userQuery,
         errors: parsedQuery.validationErrors
       });
-      return res.status(400).json(errorResponse(
-        req, 
-        'VALIDATION_ERROR', 
-        'Ошибка в запросе фильтрации',
-        parsedQuery.validationErrors.map(e => ({
-          field: e.field,
-          message: e.message,
-          code: e.code
-        }))
-      ));
+
+      // Пробуем исправить через ИИ
+      const fixedQuery = await tryFixQueryWithAI(userQuery, subdomain);
+      
+      if (fixedQuery) {
+        // ИИ вернул исправленный запрос — перевалидируем
+        const revalidatedQuery = parseIssueQuery(fixedQuery, subdomain, customFields);
+        
+        if (!revalidatedQuery.validationErrors || revalidatedQuery.validationErrors.length === 0) {
+          // Исправленный запрос валиден — используем его
+          logger.info({ msg: 'Using AI-fixed query', original: userQuery, fixed: fixedQuery });
+          userQuery = fixedQuery;
+          parsedQuery = revalidatedQuery;
+        } else {
+          // ИИ вернул невалидный запрос
+          logger.warn({ msg: 'AI-fixed query still invalid', fixedQuery, errors: revalidatedQuery.validationErrors });
+          return res.status(400).json(errorResponse(
+            req, 
+            'VALIDATION_ERROR', 
+            'Не удалось распознать запрос. Проверьте правильность написания полей и значений.',
+            parsedQuery.validationErrors.map(e => ({
+              field: e.field,
+              message: e.message,
+              code: e.code
+            }))
+          ));
+        }
+      } else {
+        // ИИ не смог исправить
+        return res.status(400).json(errorResponse(
+          req, 
+          'VALIDATION_ERROR', 
+          'Ошибка в запросе фильтрации. ИИ не смог исправить запрос автоматически.',
+          parsedQuery.validationErrors.map(e => ({
+            field: e.field,
+            message: e.message,
+            code: e.code
+          }))
+        ));
+      }
     }
 
     logger.debug({
@@ -194,6 +277,39 @@ router.get('/', async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     logger.error({ msg: 'Error getting issues', error: error.message, stack: error.stack });
+    
+    // Анализируем ошибку для понятного сообщения
+    const errorMsg = error.message || '';
+    
+    // Ошибки PostgreSQL связанные с запросом
+    if (errorMsg.includes('column') && errorMsg.includes('does not exist')) {
+      // Неизвестное поле в запросе
+      const columnMatch = errorMsg.match(/column "([^"]+)" does not exist/);
+      const fieldName = columnMatch ? columnMatch[1] : 'неизвестное поле';
+      return res.status(400).json(errorResponse(
+        req, 
+        'QUERY_ERROR', 
+        `Поле "${fieldName}" не найдено. Проверьте правильность написания.`
+      ));
+    }
+    
+    if (errorMsg.includes('syntax error') || errorMsg.includes('invalid input syntax')) {
+      return res.status(400).json(errorResponse(
+        req, 
+        'QUERY_ERROR', 
+        'Ошибка синтаксиса в запросе фильтрации. Проверьте правильность запроса.'
+      ));
+    }
+    
+    if (errorMsg.includes('invalid input value') || errorMsg.includes('invalid')) {
+      return res.status(400).json(errorResponse(
+        req, 
+        'QUERY_ERROR', 
+        'Некорректное значение в запросе фильтрации. Проверьте типы данных.'
+      ));
+    }
+    
+    // Общая ошибка
     res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
   }
 });
@@ -220,7 +336,8 @@ router.get('/:uuid', async (req: Request, res: Response) => {
       return res.status(404).json(errorResponse(req, 'NOT_FOUND', 'Issue не найдена'));
     }
 
-    res.status(200).json(formatIssue(items[0]));
+    // Возвращаем массив в rows для совместимости с фронтендом
+    res.status(200).json({ rows: [formatIssue(items[0])] });
   } catch (error: any) {
     logger.error({ msg: 'Error getting issue', error: error.message });
     res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Внутренняя ошибка сервера'));
@@ -586,8 +703,8 @@ export function registerSpecialIssuesRoutes(app: any) {
     }
   });
 
-  // issue_uuid - получить UUID задачи по фильтру
-  app.get('/read_issue_uuid', async (req: Request, res: Response) => {
+  // issue_uuid - получить UUID задачи по фильтру (REST и legacy пути)
+  const issueUuidHandler = async (req: Request, res: Response) => {
     const subdomain = req.headers.subdomain as string;
     const { num, project_uuid } = req.query;
 
@@ -632,10 +749,12 @@ export function registerSpecialIssuesRoutes(app: any) {
       logger.error({ msg: 'Error getting issue_uuid', error: error.message });
       res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения UUID задачи'));
     }
-  });
+  };
+  app.get('/api/v2/issue-uuid', issueUuidHandler);
+  app.get('/read_issue_uuid', issueUuidHandler);
 
-  // old_issue_uuid - для старых номеров задач (миграция)
-  app.get('/read_old_issue_uuid', async (req: Request, res: Response) => {
+  // old_issue_uuid - для старых номеров задач (миграция) (REST и legacy пути)
+  const oldIssueUuidHandler = async (req: Request, res: Response) => {
     const subdomain = req.headers.subdomain as string;
     const { num, project_uuid } = req.query;
 
@@ -680,7 +799,9 @@ export function registerSpecialIssuesRoutes(app: any) {
       logger.error({ msg: 'Error getting old_issue_uuid', error: error.message });
       res.status(500).json(errorResponse(req, 'INTERNAL_ERROR', 'Ошибка получения старого UUID задачи'));
     }
-  });
+  };
+  app.get('/api/v2/old-issue-uuid', oldIssueUuidHandler);
+  app.get('/read_old_issue_uuid', oldIssueUuidHandler);
 }
 
 export function registerIssuesRoutes(app: any, sharedPrisma?: PrismaClient) {
@@ -692,10 +813,12 @@ export function registerIssuesRoutes(app: any, sharedPrisma?: PrismaClient) {
   }
   
   app.use(basePath, router);
+  // Алиас для единственного числа (legacy compatibility)
+  app.use('/api/v2/issue', router);
   registerIssuesCountRoutes(app);
   registerSpecialIssuesRoutes(app);
   
-  logger.info({ msg: 'Issues routes registered', basePath });
+  logger.info({ msg: 'Issues routes registered', basePath, alias: '/api/v2/issue' });
 }
 
 export default router;

@@ -165,7 +165,7 @@ export function createCrudRoutes(
       return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'Subdomain header required'));
     }
     
-    logger.info({ msg: `GET ${entityName}`, schema });
+    logger.info({ msg: `GET ${entityName}`, schema, query: req.query });
     
     try {
       const selectFields = buildSelectFields(config, schema);
@@ -173,6 +173,27 @@ export function createCrudRoutes(
       
       const deletedAtCol = config.deletedAtColumn || 'deleted_at';
       let whereClause = config.softDelete !== false ? `WHERE ${escapeIdentifier('T')}.${escapeIdentifier(deletedAtCol)} IS NULL` : 'WHERE TRUE';
+      
+      // Фильтрация по query параметрам (только по полям из конфига)
+      const params: any[] = [];
+      let paramIndex = 1;
+      
+      for (const field of config.fields) {
+        const value = req.query[field];
+        if (value !== undefined && value !== null && value !== '') {
+          // Валидация UUID полей
+          if (config.uuidFields?.includes(field)) {
+            if (!isValidUuid(value as string)) {
+              return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', `Invalid UUID for field ${field}`));
+            }
+            whereClause += ` AND ${escapeIdentifier('T')}.${escapeIdentifier(field)} = $${paramIndex}::uuid`;
+          } else {
+            whereClause += ` AND ${escapeIdentifier('T')}.${escapeIdentifier(field)} = $${paramIndex}`;
+          }
+          params.push(value);
+          paramIndex++;
+        }
+      }
       
       // Добавляем кастомные условия
       if (config.listWhere) {
@@ -196,7 +217,7 @@ export function createCrudRoutes(
         ORDER BY ${orderByClause}
       `;
       
-      const items: any[] = await prisma.$queryRawUnsafe(sql);
+      const items: any[] = await prisma.$queryRawUnsafe(sql, ...params);
       
       res.json({ rows: items });
     } catch (error: any) {
@@ -299,11 +320,15 @@ export function createCrudRoutes(
         values.push(data[field] ?? null);
       }
       
-      // Генерируем placeholders с учётом UUID полей
+      // Генерируем placeholders с учётом UUID и date полей
+      const dateFields = ['work_date', 'due_date', 'start_date', 'end_date'];
       const placeholders = columns.map((col, i) => {
         if (i >= columns.length - 2) return 'NOW()'; // created_at, updated_at
         if (col === 'uuid' || config.uuidFields?.includes(col)) {
           return `$${i + 1}::uuid`;
+        }
+        if (dateFields.includes(col)) {
+          return `$${i + 1}::date`;
         }
         return `$${i + 1}`;
       }).join(', ');

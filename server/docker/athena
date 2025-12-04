@@ -8,9 +8,8 @@ WORKDIR /app/server/common
 RUN yarn install
 
 # Копируем сначала только файлы для установки зависимостей athena
-WORKDIR /app
-COPY ./server/athena/package.json ./athena/
-WORKDIR /app/athena
+WORKDIR /app/server/athena
+COPY ./server/athena/package.json ./
 RUN yarn install
 
 # Затем копируем файлы сервиса

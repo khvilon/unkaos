@@ -131,6 +131,8 @@ export function registerWatchersRoutes(
   });
 
   app.use(`${apiPrefix}/watchers`, router);
+  // Алиас для единственного числа (legacy compatibility)
+  app.use(`${apiPrefix}/watcher`, router);
 
   // Listeners для Gateway
   listeners.push({ method: 'get', func: 'read_watchers', entity: 'watchers' });

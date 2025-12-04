@@ -1,7 +1,11 @@
 import sql from './sql';
 import { randomUUID } from 'crypto';
-import { isNumber } from 'util';
-import { createLogger } from '../server/common/logging';
+import { createLogger } from '../common/logging';
+
+// Helper function to replace deprecated util.isNumber
+function isNumber(value: unknown): boolean {
+  return typeof value === 'number' && !isNaN(value);
+}
 
 const logger = createLogger('athena');
 

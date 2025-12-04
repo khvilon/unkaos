@@ -8,8 +8,12 @@ import { randomUUID } from 'crypto';
 import axios from 'axios';
 import { startGrpcServer, stopGrpcServer } from './grpc/server';
 import * as grpc from '@grpc/grpc-js';
+import { initCache, getCache, Zeus2Cache } from './utils/cache';
 
 const logger = createLogger('zeus2');
+
+// Cache instance
+let cache: Zeus2Cache | null = null;
 
 // API version prefix
 const API_PREFIX = '/api/v2';
@@ -157,6 +161,11 @@ interface HealthStatus {
     status: 'connected' | 'disconnected';
     latency?: number;
   };
+  cache: {
+    status: 'connected' | 'disconnected';
+    localCacheSize?: number;
+    redisKeys?: number;
+  };
   memory: {
     heapUsed: number;
     heapTotal: number;
@@ -185,6 +194,14 @@ async function init() {
   try {
     await prisma.$connect();
     logger.info({ msg: 'Connected to database via Prisma' });
+
+    // Инициализация Redis кеша
+    try {
+      cache = initCache(prisma);
+      logger.info({ msg: 'Redis cache initialized' });
+    } catch (cacheError: any) {
+      logger.warn({ msg: 'Cache initialization failed, running without cache', error: cacheError.message });
+    }
 
     // Register entity routes
     registerIssueStatusesRoutes(app, prisma, listeners, API_PREFIX);
@@ -241,10 +258,25 @@ async function init() {
       res.json(gatewayListeners);
     });
 
-    // Health check with database connectivity
+    // Health check with database and cache connectivity
     app.get('/health', async (req: Request, res: Response) => {
       const dbHealth = await checkDatabaseHealth();
       const memoryUsage = process.memoryUsage();
+      
+      // Cache health
+      let cacheHealth: HealthStatus['cache'] = { status: 'disconnected' };
+      if (cache) {
+        try {
+          const cacheStats = await cache.getStats();
+          cacheHealth = {
+            status: cacheStats.connected ? 'connected' : 'disconnected',
+            localCacheSize: cacheStats.localCacheSize,
+            redisKeys: cacheStats.redisKeys
+          };
+        } catch (err) {
+          logger.error({ msg: 'Cache health check failed', error: err });
+        }
+      }
       
       const health: HealthStatus = {
         status: dbHealth.status === 'connected' ? 'ok' : 'degraded',
@@ -253,6 +285,7 @@ async function init() {
         uptime: Math.floor((Date.now() - startTime) / 1000),
         endpoints: listeners.length,
         database: dbHealth,
+        cache: cacheHealth,
         memory: {
           heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024),
           heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024),
@@ -414,6 +447,12 @@ async function gracefulShutdown(signal: string) {
   // Ждём завершения текущих запросов (максимум 30 секунд)
   await new Promise(resolve => setTimeout(resolve, 5000));
   
+  // Закрываем кеш
+  if (cache) {
+    await cache.close();
+    logger.info({ msg: 'Cache connections closed' });
+  }
+  
   // Отключаемся от БД
   await prisma.$disconnect();
   logger.info({ msg: 'Database disconnected' });
@@ -436,4 +475,4 @@ process.on('unhandledRejection', (reason, promise) => {
 
 init();
 
-export { listeners, API_PREFIX, errorResponse };
+export { listeners, API_PREFIX, errorResponse, getCache };

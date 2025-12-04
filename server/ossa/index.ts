@@ -1,13 +1,13 @@
 const port = 3004
 
 import { WebSocketServer, WebSocket } from 'ws';
-import { createLogger } from '../server/common/logging';
+import { createLogger } from '../common/logging';
 
 const logger = createLogger('ossa');
 const wss = new WebSocketServer({ port: port });
 
 import sql from "./sql";
-import cache from "./cache";
+import Cache from "./cache";
 
 class MonType{
     readonly type: string
@@ -75,8 +75,25 @@ const handleNotify = async function(row:any, { command, relation, key, old }: an
     handleWatchers(relation.table, command, row.uuid)
 }
 
-let c = new cache();
-c.init();
+// Инициализация кеш-менеджера
+const cacheManager = new Cache();
+cacheManager.init().catch(err => {
+    logger.error({ msg: 'Failed to initialize cache manager', error: err });
+    process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    logger.info({ msg: 'Shutting down Ossa' });
+    await cacheManager.close();
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    logger.info({ msg: 'Shutting down Ossa' });
+    await cacheManager.close();
+    process.exit(0);
+});
 
 const handleSubscribeConnect = function(){ 
     logger.info({

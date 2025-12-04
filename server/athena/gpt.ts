@@ -1,7 +1,7 @@
 import sql from './sql';
 import axios from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { createLogger } from '../server/common/logging';
+import { createLogger } from '../common/logging';
 
 const logger = createLogger('athena');
 

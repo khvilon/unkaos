@@ -29,6 +29,8 @@ RUN npx prisma generate
 COPY ./server/zeus2/index.ts ./
 COPY ./server/zeus2/routes ./routes/
 COPY ./server/zeus2/utils ./utils/
+COPY ./server/zeus2/grpc ./grpc/
+COPY ./server/zeus2/proto ./proto/
 COPY ./server/zeus2/tsconfig.json ./
 
 USER node

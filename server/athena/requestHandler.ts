@@ -1,6 +1,6 @@
 import { Gpt } from './gpt_arch';
 import { Data } from './data';
-import { createLogger } from '../server/common/logging';
+import { createLogger } from '../common/logging';
 
 const logger = createLogger('athena:request');
 const gpt = new Gpt();

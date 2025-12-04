@@ -8,9 +8,8 @@ WORKDIR /app/server/common
 RUN yarn install
 
 # Копируем сначала только файлы для установки зависимостей gateway
-WORKDIR /app
-COPY ./server/gateway/package.json ./gateway/
-WORKDIR /app/gateway
+WORKDIR /app/server/gateway
+COPY ./server/gateway/package.json ./
 RUN yarn install
 
 # Затем копируем файлы сервиса

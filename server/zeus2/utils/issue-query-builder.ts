@@ -312,32 +312,56 @@ export function buildUpdateIssueParams(subdomain: string, uuid: string, data: an
   const params: any[] = [];
   let paramIndex = 1;
   
-  const columnConfig: { name: string; type: 'uuid' | 'text' | 'number' | 'timestamp' }[] = [
+  const columnConfig: { name: string; type: 'uuid' | 'text' | 'number' | 'timestamp'; nullable?: boolean }[] = [
     { name: 'type_uuid', type: 'uuid' },
     { name: 'project_uuid', type: 'uuid' },
     { name: 'status_uuid', type: 'uuid' },
-    { name: 'sprint_uuid', type: 'uuid' },
+    { name: 'sprint_uuid', type: 'uuid', nullable: true },
     { name: 'author_uuid', type: 'uuid' },
+    { name: 'assignee_uuid', type: 'uuid', nullable: true },
     { name: 'title', type: 'text' },
     { name: 'description', type: 'text' },
     { name: 'spent_time', type: 'number' },
-    { name: 'parent_uuid', type: 'uuid' },
-    { name: 'resolved_at', type: 'timestamp' }
+    { name: 'priority', type: 'number' },
+    { name: 'parent_uuid', type: 'uuid', nullable: true },
+    { name: 'resolved_at', type: 'timestamp', nullable: true }
   ];
   
   for (const col of columnConfig) {
     if (data[col.name] !== undefined) {
+      // Обработка nullable полей
+      let value = data[col.name];
+      
+      // Для текстовых полей: null -> пустая строка
+      if (col.type === 'text' && value === null) {
+        value = '';
+      }
+      
+      // Для nullable UUID полей: null -> null (не добавляем в запрос если не nullable)
+      if (col.type === 'uuid' && value === null && !col.nullable) {
+        continue;
+      }
+      
       if (col.type === 'uuid') {
+        if (value === null) {
+          setClauses.push(`${col.name} = NULL`);
+          // Не добавляем параметр для NULL
+          continue;
+        }
         setClauses.push(`${col.name} = $${paramIndex}::uuid`);
       } else if (col.type === 'number') {
         setClauses.push(`${col.name} = $${paramIndex}::numeric`);
       } else if (col.type === 'timestamp') {
+        if (value === null) {
+          setClauses.push(`${col.name} = NULL`);
+          continue;
+        }
         setClauses.push(`${col.name} = $${paramIndex}::timestamp`);
       } else {
         setClauses.push(`${col.name} = $${paramIndex}`);
       }
       
-      params.push(data[col.name]);
+      params.push(value);
       paramIndex++;
     }
   }

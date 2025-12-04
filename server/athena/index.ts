@@ -10,7 +10,7 @@ import cors from 'cors';
 import { json, urlencoded } from 'body-parser';
 import Gpt from "./gpt";
 import Data from "./data";
-import { createLogger } from '../server/common/logging';
+import { createLogger } from '../common/logging';
 
 const logger = createLogger('athena');
 

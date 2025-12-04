@@ -8,9 +8,8 @@ WORKDIR /app/server/common
 RUN yarn install
 
 # Копируем сначала только файлы для установки зависимостей ossa
-WORKDIR /app
-COPY ./server/ossa/package.json ./ossa/
-WORKDIR /app/ossa
+WORKDIR /app/server/ossa
+COPY ./server/ossa/package.json ./
 RUN yarn install
 
 # Затем копируем файлы сервиса

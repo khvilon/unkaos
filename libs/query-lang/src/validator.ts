@@ -127,13 +127,13 @@ export class QueryValidator {
       this.validateFilter(ast.filter, errors, warnings);
     }
     
-    // Валидация ORDER BY
+    // Валидация ORDER BY - неизвестное поле = ошибка
     for (const orderBy of ast.orderBy) {
       const mapping = this.findFieldMapping(orderBy.field.name);
       if (!mapping) {
-        warnings.push({
+        errors.push({
           code: 'UNKNOWN_FIELD',
-          message: `Неизвестное поле для сортировки: "${orderBy.field.name}"`,
+          message: `Неизвестное поле для сортировки: "${orderBy.field.name}". Проверьте правильность написания.`,
           field: orderBy.field.name
         });
       }
@@ -175,11 +175,12 @@ export class QueryValidator {
     const fieldName = comparison.field.name;
     const mapping = this.findFieldMapping(fieldName);
     
-    // Проверка существования поля
+    // Проверка существования поля - неизвестное поле = ошибка
+    // Запрос с неизвестным полем не должен отправляться в SQL
     if (!mapping) {
-      warnings.push({
+      errors.push({
         code: 'UNKNOWN_FIELD',
-        message: `Неизвестное поле: "${fieldName}"`,
+        message: `Неизвестное поле: "${fieldName}". Проверьте правильность написания или обратитесь к ИИ для помощи.`,
         field: fieldName
       });
       return;

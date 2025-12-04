@@ -15,13 +15,13 @@ export function registerTimeEntriesRoutes(
     entity: 'time_entries',
     singular: 'time_entry',
     fields: [
-      'uuid', 'issue_uuid', 'user_uuid', 'spent_time', 'description',
+      'uuid', 'issue_uuid', 'author_uuid', 'work_date', 'duration', 'comment',
       'created_at', 'updated_at'
     ],
-    requiredFields: ['issue_uuid', 'user_uuid', 'spent_time'],
-    uuidFields: ['issue_uuid', 'user_uuid'],
-    updatableFields: ['spent_time', 'description'],
-    defaultOrder: 'created_at DESC',
+    requiredFields: ['issue_uuid', 'author_uuid', 'work_date', 'duration'],
+    uuidFields: ['issue_uuid', 'author_uuid'],
+    updatableFields: ['work_date', 'duration', 'comment'],
+    defaultOrder: 'work_date DESC',
     softDelete: true
   });
 }

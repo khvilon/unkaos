@@ -1,6 +1,6 @@
 import { Configuration, OpenAIApi } from 'openai';
 import { sql } from "./Sql";
-import { createLogger } from '../server/common/logging';
+import { createLogger } from '../common/logging';
 
 const logger = createLogger('athena:gpt');
 

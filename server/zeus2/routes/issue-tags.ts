@@ -50,16 +50,16 @@ export function registerIssueTagsRoutes(
       }
       if (tag_uuid && isValidUuid(tag_uuid as string)) {
         params.push(tag_uuid);
-        whereConditions.push(`its.tag_uuid = $${params.length}::uuid`);
+        whereConditions.push(`its.issue_tags_uuid = $${params.length}::uuid`);
       }
 
       const items = await prisma.$queryRawUnsafe(`
         SELECT 
           'issue_tags_selected' AS table_name,
-          its.uuid, its.issue_uuid, its.tag_uuid, its.created_at,
+          its.uuid, its.issue_uuid, its.issue_tags_uuid, its.created_at,
           it.name AS tag_name, it.color AS tag_color
         FROM ${escapeIdentifier(schema)}.issue_tags_selected its
-        LEFT JOIN ${escapeIdentifier(schema)}.issue_tags it ON it.uuid = its.tag_uuid
+        LEFT JOIN ${escapeIdentifier(schema)}.issue_tags it ON it.uuid = its.issue_tags_uuid
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY it.name
       `, ...params);
@@ -84,25 +84,25 @@ export function registerIssueTagsRoutes(
       return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'issue_uuid required'));
     }
     if (!tag_uuid || !isValidUuid(tag_uuid)) {
-      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'tag_uuid required'));
+      return res.status(400).json(createErrorResponse(req, 'VALIDATION_ERROR', 'tag_uuid (issue_tags_uuid) required'));
     }
 
     try {
       await prisma.$executeRawUnsafe(`
         INSERT INTO ${escapeIdentifier(schema)}.issue_tags_selected 
-        (uuid, issue_uuid, tag_uuid, created_at, updated_at)
-        VALUES (${uuid}::uuid, ${issue_uuid}::uuid, ${tag_uuid}::uuid, NOW(), NOW())
-        ON CONFLICT (issue_uuid, tag_uuid) DO NOTHING
+        (uuid, issue_uuid, issue_tags_uuid, created_at, updated_at)
+        VALUES ('${uuid}'::uuid, '${issue_uuid}'::uuid, '${tag_uuid}'::uuid, NOW(), NOW())
+        ON CONFLICT (issue_uuid, issue_tags_uuid) DO NOTHING
       `);
 
       const items = await prisma.$queryRawUnsafe(`
         SELECT 
           'issue_tags_selected' AS table_name,
-          its.uuid, its.issue_uuid, its.tag_uuid, its.created_at,
+          its.uuid, its.issue_uuid, its.issue_tags_uuid, its.created_at,
           it.name AS tag_name, it.color AS tag_color
         FROM ${escapeIdentifier(schema)}.issue_tags_selected its
-        LEFT JOIN ${escapeIdentifier(schema)}.issue_tags it ON it.uuid = its.tag_uuid
-        WHERE its.issue_uuid = ${issue_uuid}::uuid AND its.tag_uuid = ${tag_uuid}::uuid
+        LEFT JOIN ${escapeIdentifier(schema)}.issue_tags it ON it.uuid = its.issue_tags_uuid
+        WHERE its.issue_uuid = '${issue_uuid}'::uuid AND its.issue_tags_uuid = '${tag_uuid}'::uuid
       `);
 
       res.status(201).json({ rows: items });
@@ -128,7 +128,7 @@ export function registerIssueTagsRoutes(
       await prisma.$executeRawUnsafe(`
         UPDATE ${escapeIdentifier(schema)}.issue_tags_selected
         SET deleted_at = NOW()
-        WHERE uuid = ${uuid}::uuid
+        WHERE uuid = '${uuid}'::uuid
       `);
       res.status(204).send();
     } catch (error: any) {
