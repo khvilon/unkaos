@@ -246,9 +246,9 @@ services:
         for file in /tmp/psql-init/*_m.sql; do
           if [ -f "$${file}" ]; then
             # Копия для public схемы с оригинальным именем
-            cp "$${file}" "/tmp/psql-final/$(basename $${file})" &&
+            cp "$${file}" "/tmp/psql-final/$$(basename $${file})" &&
             # Копия для server схемы с добавлением _server
-            new_name="/tmp/psql-final/$(basename $${file/_m/_m_server})" &&
+            new_name="/tmp/psql-final/$$(basename $${file/_m/_m_server})" &&
             cp "$${file}" "$${new_name}" &&
             sed -i "s/\bpublic\b/server/g" "$${new_name}"
           fi
