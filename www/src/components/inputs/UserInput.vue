@@ -15,42 +15,51 @@ export default {
     return {
       is_open: false,
       users: [],
+      localValue: this.value,
       default_avatar:
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAe9JREFUSEvlVtFRHTEQkyqADggVABWEdAAdQAVABSQVABWkBOgAqACoAEqACsRoZp05fPZ5j8kMH+zPvbnzW3m18srEFwW/CBefApa0D2AnNv1I8n5tAauAJR0A+AtgswJ6BXBM8ia7gTSwpEsAJ4PEZyS9bhgp4KD2NrKZVie/I/kaLJwC+Bnff5G8GyFngR+jp08kd1tJJb0A2ALgnu/9L2BFoi6Vkn4DOPc6ksOChgsqmrs0ZtcVJjLAPwA8xx8Oe8qVdBSK99Jtkqa+G0Ng/1OSj8sGgCuSFtIsJqp/I1kft9n6LPD0KM3ormjubm6KngV2BT4iZVr5t5VuJjxUitK7qq9LTgEH3e61J1MBr3P5fB+NepsWV51dkns8rdKV32Qn1qeBR4Mh+z1FtST30BT72Zxc0XNX7z77uRiLwJIsKruRqV0T1oLdyuJrRhe4Y4FvUVkrmZnwWS+xaJVN4KD2YZLkyo40UqwkK9/im9rnXov6HnBxI1d4kLG5KQXB1nW8a7rVDHjqMgDSxt45dhfx/g9Ju9e/aAF7KtnU01OoJyBJhbl7kr6nLQIX753tco2svXbJoz9UXImqa4HZDVS9/iCyGth0lLtV6u60tImly0EN7IFRJpPV2B0AmapjADXzpUZmBmTtmu8H/A4J79EfjfUqWAAAAABJRU5ErkJggg==",
     };
     
   },
-  watch: {
-    value: function (val, oldVal) {
-      console.log("change_val", val, oldVal, this.id, this.parent_name, this.options);
-
-      if(val && oldVal && val.toString && oldVal.toString && val.toString() === oldVal.toString()) return;
-
-      if(!val){
-        this.$emit("updated", null);
-        this.$emit("updated_full_user", null);
-      }
-      else if(val.uuid){
-        this.$emit("updated", val.uuid);
-        this.$emit("updated_full_user", val);
-      }
-      else{
-        this.$emit("updated", val);
-        for(let i = 0; i < this.options.length; i++){
-        if(this.options[i].uuid && this.options[i].uuid == val){
-          this.$emit("updated_full_user", this.options[i]);
-          break
+  computed: {
+    inputValue: {
+      get() {
+        return this.localValue;
+      },
+      set(val) {
+        this.localValue = val;
+        
+        if(!val){
+          this.$emit("updated", null);
+          this.$emit("updated_full_user", null);
         }
-        this.$emit("updated_full_user", null);
-      }
-      }
+        else if(val.uuid){
+          this.$emit("updated", val.uuid);
+          this.$emit("updated_full_user", val);
+        }
+        else{
+          this.$emit("updated", val);
+          for(let i = 0; i < this.options.length; i++){
+            if(this.options[i].uuid && this.options[i].uuid == val){
+              this.$emit("updated_full_user", this.options[i]);
+              break
+            }
+            this.$emit("updated_full_user", null);
+          }
+        }
 
-      if (this.parent_name == undefined || this.parent_name == "") return;
+        if (this.parent_name == undefined || this.parent_name == "") return;
 
-      this.$store.commit("id_push_update_" + this.parent_name, {
-        id: this.id,
-        val: val,
-      });
+        this.$store.commit("id_push_update_" + this.parent_name, {
+          id: this.id,
+          val: val,
+        });
+      }
+    }
+  },
+  watch: {
+    value: function (newVal) {
+      this.localValue = newVal;
     },
   },
   beforeCreate() {
@@ -150,7 +159,7 @@ export default {
     <div class="label" v-if="label">{{ label }}</div>
 
     <v-select
-      v-model="value"
+      v-model="inputValue"
       label="name"
       :clearable="clearable"
       :options="options"
