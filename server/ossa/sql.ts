@@ -1,5 +1,4 @@
 const postgres = require('postgres') 
-import tools from "../tools";
 
 let dbConf: any;
 
@@ -16,7 +15,7 @@ try {
   };
 }
 
-let ossaDbConf = tools.obj_clone(dbConf)
+let ossaDbConf = structuredClone(dbConf)
 ossaDbConf.publications = 'ossa_publication'
 
 const sql = postgres(ossaDbConf)

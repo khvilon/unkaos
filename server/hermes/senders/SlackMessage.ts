@@ -1,6 +1,8 @@
-import {UsersListResponse, WebClient} from '@slack/web-api';
-import {Member} from "@slack/web-api/dist/response/UsersListResponse";
+import {WebClient} from '@slack/web-api';
 import {sql} from "../Sql";
+import {createLogger} from '../../server/common/logging';
+
+const logger = createLogger('hermes:slack');
 
 let slackConf: any;
 
@@ -18,6 +20,8 @@ class SlackMessage {
   }
 
   async send(username: string, title: string, body: string) {
+    if (!this.webClient) return;
+
     try {
       const userList: UsersListResponse = await this.webClient.users.list();
       if (userList !== undefined && userList.ok) {
@@ -27,13 +31,23 @@ class SlackMessage {
             channel: user.id,
             text: `${title}\n${body}`
           });
-          console.log(`Message sent to ${username}`);
+          logger.info({
+            msg: 'Message sent',
+            to: username
+          });
         } else {
-          console.log(`User ${username} not found`);
+          logger.warn({
+            msg: 'User not found',
+            username
+          });
         }
       }
     } catch (err) {
-      console.log(`Error sending message: ${err}`);
+      logger.error({
+        msg: 'Error sending message',
+        username,
+        error: err
+      });
     }
   }
 }

@@ -1,22 +1,34 @@
-import Gpt from './gpt';
-import Data from './data';
+import { Gpt } from './gpt_arch';
+import { Data } from './data';
+import { createLogger } from '../common/logging';
 
-const dataClass = new Data();
+const logger = createLogger('athena:request');
 const gpt = new Gpt();
+const dataClass = new Data();
 
 export async function processUserInput(userInput: string, workspace: string) {
-  console.log('User request:', userInput);
+  logger.info({
+    msg: 'Processing user request',
+    input: userInput
+  });
 
   const data: any = await dataClass.get(workspace);
   const parsedCommand = await gpt.parseUserCommand(userInput, data.field);
 
-  console.log('AI answer:', JSON.stringify(parsedCommand, null, 2));
+  logger.info({
+    msg: 'AI response',
+    response: parsedCommand
+  });
 
   if (!parsedCommand) return null;
 
   const [updatedCommand, updatedHumanCommand] = dataClass.check(parsedCommand);
-  console.log('AI updated answer:', JSON.stringify(updatedCommand, null, 2));
-  console.log('AI updated human answer:', JSON.stringify(updatedHumanCommand, null, 2));
+  
+  logger.info({
+    msg: 'AI updated response',
+    command: updatedCommand,
+    humanCommand: updatedHumanCommand
+  });
 
   return { updatedCommand, updatedHumanCommand };
 }

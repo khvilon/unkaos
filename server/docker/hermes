@@ -1,18 +1,21 @@
-FROM node:20-bullseye-slim
+FROM node:23.5.0-alpine
 
-COPY ./server /app
+WORKDIR /app
+
+# Копируем common и устанавливаем его зависимости
+COPY ./server/common ./server/common
+WORKDIR /app/server/common
+RUN yarn install
+
+# Копируем сначала только файлы для установки зависимостей hermes
+WORKDIR /app
+COPY ./server/hermes/package.json ./hermes/
 WORKDIR /app/hermes
+RUN yarn install
 
-# Install dependencies using npm instead of yarn
-RUN npm install
-
-# Install ts-node globally
-RUN npm install -g ts-node typescript
+# Затем копируем файлы сервиса
+COPY ./server/hermes .
 
 USER node
-
-# Add health check endpoint
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3005/health || exit 1
 
 CMD [ "npx", "ts-node", "index.ts" ]

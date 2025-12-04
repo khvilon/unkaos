@@ -2,7 +2,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import { gitlabConfig } from './config';
+import { sql } from "./Sql";
+import { createLogger } from '../server/common/logging';
 
+const logger = createLogger('hermes:gitlab');
 
 class GitlabCommit {
 
@@ -15,18 +18,24 @@ class GitlabCommit {
     this.app.post(gitlabConfig.webhookUrl, this.handleCommit);
   }
 
-  handleCommit(req, res) {
+  async handleCommit(req, res) {
     if (req.headers['x-gitlab-token'] !== gitlabConfig.token) {
       return res.status(401).send('Invalid token');
     }
     const commit = req.body;
-    console.log(`Commit data for ${commit.id}`);
-    console.log(`SHA: ${commit.id}`);
-    console.log(`Author: ${commit.author.name}`);
-    console.log(`Author email: ${commit.author.email}`);
-    console.log(`Message: ${commit.message}`);
-    console.log(`Date: ${commit.created_at}`);
+    await this.logCommit(commit);
     return res.status(200).send('Commit data received');
+  }
+
+  async logCommit(commit: any) {
+    logger.info({
+      msg: 'New commit',
+      id: commit.id,
+      author: commit.author.name,
+      email: commit.author.email,
+      message: commit.message,
+      date: commit.created_at
+    });
   }
 
   listen(port) {

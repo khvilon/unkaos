@@ -1,5 +1,4 @@
 import postgres = require('postgres');
-import tools from "../tools";
 
 let dbConf: any;
 
@@ -16,7 +15,7 @@ try {
   };
 }
 
-let hermesDbConf = tools.obj_clone(dbConf)
+let hermesDbConf = structuredClone(dbConf)
 hermesDbConf.publications = 'hermes_publication'
 
 export const sql : postgres.Sql = postgres(hermesDbConf)

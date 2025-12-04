@@ -5,13 +5,14 @@ import {
   MessageStructureObject
 } from "imapflow";
 import { decodeWords } from "libmime";
-import tools from "../tools";
+import { v4 as uuidv4 } from 'uuid';
 import {sql} from "./Sql";
 import {MessagePart, MsgIn, MsgInPart, MsgPipe, MsgStatus} from "./Types";
 import {Readable} from "stream";
 import {AsyncTask, SimpleIntervalJob, ToadScheduler} from "toad-scheduler";
+import { createLogger } from '../server/common/logging';
 
-const log = require('bunyan').createLogger({ name: "MailPoller" });
+const logger = createLogger('hermes:mailpoller');
 
 export class MailPoller {
 
@@ -21,12 +22,17 @@ export class MailPoller {
       'scheduler_mail_poller',
       () => this.pollMessages(),
       (e: Error) => {
-        console.error(`[Scheduler] Unexpected error occurred in scheduled task: \n${e}`)
+        logger.error({
+          msg: 'Unexpected error occurred in scheduled task',
+          error: e.message
+        });
       }
     )
     const mailPollerJob = new SimpleIntervalJob({seconds: 15}, mailPollerTask,{id: 'id_1', preventOverrun: true})
     scheduler.addSimpleIntervalJob(mailPollerJob)
-    log.info('Mail poller online.')
+    logger.info({
+      msg: 'Mail poller online'
+    });
   }
 
   private async pollMessages() {
@@ -51,44 +57,57 @@ export class MailPoller {
             : await this.fetchFirstMessageUid(client, pipe.login)// first launch of poller
           const messages = await this.fetchNewMessages(client, uid, pipe.login)
           if (messages.length > 0) {
-            log.info(`${pipe.login}: ${messages.length} new messages.`)
+            logger.info({
+              msg: 'New messages found',
+              login: pipe.login,
+              count: messages.length
+            });
           }
           for (const message of messages) {
             await this.parseAndSaveMessage(workspace, client, pipe, message);
           }
           await client.logout();
-        } catch (e) {
-          log.error(`Unexpected error occurred while working with pipe ${pipe.login}:\n${e}`)
+        } catch (e: any) {
+          logger.error({
+            msg: 'Unexpected error occurred while working with pipe',
+            login: pipe.login,
+            error: e.message
+          });
         }
       }
     }
   }
 
   private async parseAndSaveMessage(workspace: string, client: ImapFlow, pipe: MsgPipe, msg: FetchMessageObject) {
-    log.info(`New email message from: ${msg.envelope.sender[0].address} to ${pipe.login}; subject: ${msg.envelope.subject}`)
     try {
-      const uuid = tools.uuidv4()
+      const uuid = uuidv4()
       await this.insertMsgIn(workspace, {
         uuid: uuid,
         pipe_uuid: pipe.uuid,
-        message_id: msg.envelope.messageId,
+        message_id: msg.envelope?.messageId || '',
         message_uid: String(msg.uid),
-        title: msg.envelope.subject || '',
+        title: msg.envelope?.subject || '',
         body: '',
-        from: this.mapRecipientsToString(msg.envelope.from),
-        senders: this.mapRecipientsToString(msg.envelope.sender),
-        cc: this.mapRecipientsToString(msg.envelope.cc),
-        bcc: this.mapRecipientsToString(msg.envelope.bcc),
-        reply_to: this.mapRecipientsToString(msg.envelope.replyTo),
-        to: this.mapRecipientsToString(msg.envelope.to),
-        message_date: msg.envelope.date,
+        from: this.mapRecipientsToString(msg.envelope?.from),
+        senders: this.mapRecipientsToString(msg.envelope?.sender),
+        cc: this.mapRecipientsToString(msg.envelope?.cc),
+        bcc: this.mapRecipientsToString(msg.envelope?.bcc),
+        reply_to: this.mapRecipientsToString(msg.envelope?.replyTo),
+        to: this.mapRecipientsToString(msg.envelope?.to),
+        message_date: msg.envelope?.date || new Date(),
         status: MsgStatus.NEW
       })
       for (const part of await this.fetchParts(client, msg)) {
         await this.parseAndSaveMessagePart(workspace, part, msg, uuid)
       }
-    } catch (e) {
-      log.error(`Unexpected error occurred while processing message from: ${msg.envelope.sender[0].address} to ${pipe.login}; subject: ${msg.envelope.subject}:\n${e}`)
+    } catch (e: any) {
+      logger.error({
+        msg: 'Error processing message',
+        from: msg.envelope?.sender?.[0]?.address,
+        to: pipe.login,
+        subject: msg.envelope?.subject,
+        error: e.message
+      });
     }
   }
 
@@ -100,8 +119,12 @@ export class MailPoller {
           const text = await this.streamToString(part.content.content)
           try {
             decodedPartContent = decodeWords(text)
-          } catch (e) {
-            log.warn(`Unexpected error occurred while decoding part of message '${msg.envelope.subject}':\n${e}`)
+          } catch (e: any) {
+            logger.warn({
+              msg: 'Error decoding message part',
+              subject: msg.envelope?.subject,
+              error: e.message
+            });
             decodedPartContent = text
           }
           part.structure.encoding = 'utf8'
@@ -112,30 +135,33 @@ export class MailPoller {
         decodedPartContent = ''
       }
       await this.insertMsgInPart(workspace, {
-        uuid: tools.uuidv4(),
+        uuid: uuidv4(),
         msg_in_uuid: msg_uuid,
         content: decodedPartContent,
         type: part.structure.type,
-        encoding: part.structure.encoding,
+        encoding: part.structure.encoding || 'utf8',
         disposition: part.structure.disposition || '',
         part_id: part.structure.id || '',
         part_num: part.structure.part || '',
         filename: (part.structure.dispositionParameters !== undefined) ? JSON.parse(JSON.stringify(part.structure.dispositionParameters)).filename || '' : ''
       })
-    } catch (e) {
-      log.error(`Unexpected error occurred while processing part of message ${msg.envelope.subject}:\n${(e)}`)
+    } catch (e: any) {
+      logger.error({
+        msg: 'Error processing message part',
+        subject: msg.envelope?.subject,
+        error: e.message
+      });
     }
   }
 
-  // Fetch 50 messages of a client starting from specified uid (exclusively)
   private async fetchNewMessages(client: ImapFlow, uid: number, login: string) : Promise<FetchMessageObject[]> {
     const lock = await client.getMailboxLock('INBOX');
     try {
       const messages = Array<FetchMessageObject>();
-      const maxUid = (await this.getLastMessage(client)).uid
+      const lastMessage = await this.getLastMessage(client)
+      const maxUid = lastMessage?.uid ?? 0
       let maxQueryUid = ((uid+51) < maxUid) ? (uid+51) : maxUid
       while (maxUid > maxQueryUid && messages.length < 50) {
-        // try fetch another 50 messages
         for await (let message of client.fetch(
           (uid+1)+':'+maxQueryUid,
           {envelope: true, bodyStructure: true},
@@ -145,11 +171,14 @@ export class MailPoller {
         }
         uid = uid+50
         maxQueryUid = maxQueryUid+50
-        // try to fetch another 50 uuids in case of uid gap
       }
       return messages;
-    } catch (e) {
-      log.error(`Error occurred while fetching new messages for client ${login}:\n${e}`)
+    } catch (e: any) {
+      logger.error({
+        msg: 'Error fetching new messages',
+        login,
+        error: e.message
+      });
       return []
     } finally {
       lock.release()
@@ -168,27 +197,32 @@ export class MailPoller {
         messages.push(message)
       }
       return messages[0]?.uid | 0
-    } catch (e) {
-      log.error(`Error occurred while fetching first message for client ${login}:\n${e}`)
+    } catch (e: any) {
+      logger.error({
+        msg: 'Error fetching first message',
+        login,
+        error: e.message
+      });
       return 0
     } finally {
       lock.release()
     }
   }
 
-  private async getLastMessage(client: ImapFlow) : Promise<FetchMessageObject> {
-      return await client.fetchOne('*',{ uid: true },{ uid: true } )
+  private async getLastMessage(client: ImapFlow) : Promise<FetchMessageObject | null> {
+    const result = await client.fetchOne('*',{ uid: true },{ uid: true } )
+    return result === false ? null : result
   }
 
   private async fetchParts(client: ImapFlow, message: FetchMessageObject): Promise<MessagePart[]> {
     const lock = await client.getMailboxLock('INBOX');
     try {
       const parts = Array<MessageStructureObject>();
-      if (message.bodyStructure.childNodes !== undefined) {
+      if (message.bodyStructure && message.bodyStructure.childNodes !== undefined) {
         message.bodyStructure.childNodes.forEach((part : MessageStructureObject) => {
           this.stripParts(part, parts)
         })
-      } else {
+      } else if (message.bodyStructure) {
         message.bodyStructure.part = '1'
         parts.push(message.bodyStructure)
       }
@@ -196,8 +230,11 @@ export class MailPoller {
         structure: part,
         content: await client.download(String(message.uid), part.part, {uid: true})
       })))
-    } catch (e) {
-      log.error(`Error occurred while fetching message parts:\n${e}`)
+    } catch (e: any) {
+      logger.error({
+        msg: 'Error fetching message parts',
+        error: e.message
+      });
       return []
     } finally {
       lock.release()
@@ -205,9 +242,9 @@ export class MailPoller {
   }
 
   // Parse body structure as array of parts
-  private stripParts(part : MessageStructureObject, parts: MessageStructureObject[]) {
+  private stripParts(part: MessageStructureObject, parts: MessageStructureObject[]) {
     if (part.type.includes("multipart")) {
-      for (let childNode of part.childNodes) {
+      for (let childNode of (part.childNodes ?? [])) {
         this.stripParts(childNode, parts)
       }
     } else {
@@ -215,7 +252,7 @@ export class MailPoller {
     }
   }
 
-  private mapRecipientsToString(elements: MessageAddressObject[]) : string {
+  private mapRecipientsToString(elements: MessageAddressObject[] | undefined) : string {
     if (elements !== undefined && elements.length !== 0) {
       return elements.map(element => element.address).join(' ').toLowerCase()
     } else {
@@ -304,4 +341,4 @@ export class MailPoller {
 
 }
 
-export default MailPoller
+export default MailPoller;

@@ -10,6 +10,9 @@ import cors from 'cors';
 import { json, urlencoded } from 'body-parser';
 import Gpt from "./gpt";
 import Data from "./data";
+import { createLogger } from '../common/logging';
+
+const logger = createLogger('athena');
 
 let restConf: any;
 
@@ -73,7 +76,10 @@ const init = async function() {
 
     dataClass.updateLogGpt(logUuid, JSON.stringify(parsedCommand, null, 2))
 
-    console.log('AI answer:', JSON.stringify(parsedCommand, null, 2));
+    logger.debug({
+      msg: 'AI answer',
+      command: JSON.stringify(parsedCommand, null, 2)
+    });
 
     if (!parsedCommand || !parsedCommand.command) {
       res.status(400).json({ error: 'Unable to process user input' });
@@ -83,24 +89,30 @@ const init = async function() {
     try{
       const [updatedCommand, updatedHumanCommand] = await dataClass.check(parsedCommand);
       if(!updatedCommand || !updatedHumanCommand){
-        console.log('Unable to process gpt ans')
+        logger.error('Unable to process gpt answer');
         res.status(400).json({ error: 'Unable to process gpt ans' });
         return
       }
-      console.log('AI updated answer:', JSON.stringify(updatedCommand, null, 2));
-      console.log('AI updated human answer:', JSON.stringify(updatedHumanCommand, null, 2));
+      logger.debug({
+        msg: 'AI updated answer',
+        command: JSON.stringify(updatedCommand, null, 2),
+        humanCommand: JSON.stringify(updatedHumanCommand, null, 2)
+      });
 
       dataClass.updateLogAthena(logUuid, JSON.stringify({ gpt: updatedCommand, humanGpt: updatedHumanCommand }, null, 2))
       res.status(200).json({ gpt: updatedCommand, humanGpt: updatedHumanCommand });
     }
     catch(e){
-      console.log('Unable to process gpt ans', e)
+      logger.error({
+        msg: 'Unable to process gpt answer',
+        error: e
+      });
       res.status(400).json({ error: 'Unable to process gpt ans' });
     }
   });
 
   app.listen(restConf.port, () => {
-    console.log(`Listening on port ${restConf.port}`);
+    logger.info(`Listening on port ${restConf.port}`);
   });
 
 }

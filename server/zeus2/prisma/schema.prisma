@@ -1,0 +1,403 @@
+// Prisma schema for Zeus2
+// This schema is designed to work with the existing database
+// Use `prisma db pull` to update from existing DB structure
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== CORE ENTITIES ====================
+
+model issue_statuses {
+  uuid           String           @id @db.Uuid
+  name           String
+  is_start       Boolean?
+  is_end         Boolean?
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @default(now())
+  deleted_at     DateTime?
+  
+  // Relations
+  workflow_nodes workflow_nodes[]
+}
+
+model workflows {
+  uuid           String           @id @db.Uuid
+  name           String
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @default(now())
+  deleted_at     DateTime?
+  
+  // Relations
+  workflow_nodes workflow_nodes[]
+  transitions    transitions[]
+  issue_types    issue_types[]
+}
+
+model workflow_nodes {
+  uuid               String         @id @db.Uuid
+  x                  Int
+  y                  Int
+  workflows_uuid     String         @db.Uuid
+  issue_statuses_uuid String        @db.Uuid
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @default(now())
+  deleted_at         DateTime?
+  
+  // Relations
+  workflows          workflows      @relation(fields: [workflows_uuid], references: [uuid])
+  issue_statuses     issue_statuses @relation(fields: [issue_statuses_uuid], references: [uuid])
+  
+  @@index([workflows_uuid])
+  @@index([issue_statuses_uuid])
+}
+
+model transitions {
+  uuid           String    @id @db.Uuid
+  workflows_uuid String    @db.Uuid
+  from_uuid      String    @db.Uuid
+  to_uuid        String    @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  // Relations
+  workflows      workflows @relation(fields: [workflows_uuid], references: [uuid])
+  
+  @@index([workflows_uuid])
+}
+
+model issue_types {
+  uuid           String    @id @db.Uuid
+  name           String
+  workflow_uuid  String    @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  // Relations
+  workflows      workflows @relation(fields: [workflow_uuid], references: [uuid])
+  
+  @@index([workflow_uuid])
+}
+
+// ==================== USER & AUTH ====================
+
+model users {
+  uuid             String    @id @db.Uuid
+  name             String
+  email            String
+  password         String?
+  is_admin         Boolean   @default(false)
+  token            String?
+  token_created_at DateTime?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @default(now())
+  deleted_at       DateTime?
+  
+  @@index([email])
+}
+
+model roles {
+  uuid           String    @id @db.Uuid
+  name           String
+  author_uuid    String?   @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+}
+
+model permissions {
+  uuid           String    @id @db.Uuid
+  name           String
+  code           String
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+}
+
+// ==================== PROJECTS ====================
+
+model projects {
+  uuid           String    @id @db.Uuid
+  name           String
+  short_name     String
+  description    String?
+  author_uuid    String?   @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@index([short_name])
+}
+
+// ==================== ISSUES ====================
+
+model issues {
+  uuid           String    @id @db.Uuid
+  num            Int?
+  title          String
+  description    String?
+  spent_time     Int?
+  type_uuid      String    @db.Uuid
+  project_uuid   String    @db.Uuid
+  status_uuid    String    @db.Uuid
+  sprint_uuid    String?   @db.Uuid
+  author_uuid    String    @db.Uuid
+  resolved_at    DateTime?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@index([project_uuid])
+  @@index([status_uuid])
+  @@index([type_uuid])
+  @@index([sprint_uuid])
+}
+
+model sprints {
+  uuid           String    @id @db.Uuid
+  name           String
+  project_uuid   String    @db.Uuid
+  start_date     DateTime?
+  end_date       DateTime?
+  is_active      Boolean   @default(false)
+  author_uuid    String?   @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@index([project_uuid])
+}
+
+// ==================== BOARDS ====================
+
+model boards {
+  uuid                String    @id @db.Uuid
+  name                String
+  query               String?
+  estimate_uuid       String?   @db.Uuid
+  swimlanes_field_uuid String?  @db.Uuid
+  swimlanes_by_root   Boolean   @default(true)
+  no_swimlanes        Boolean   @default(false)
+  use_sprint_filter   Boolean   @default(true)
+  config              String?
+  author_uuid         String    @db.Uuid
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now())
+  deleted_at          DateTime?
+}
+
+// ==================== FIELDS ====================
+
+model fields {
+  uuid             String    @id @db.Uuid
+  name             String
+  type_uuid        String    @db.Uuid
+  is_custom        Boolean   @default(true)
+  min_value        Decimal?
+  max_value        Decimal?
+  presision        Int?      @db.SmallInt
+  available_values String?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @default(now())
+  deleted_at       DateTime?
+}
+
+model field_types {
+  uuid           String    @id @db.Uuid
+  name           String
+  code           String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+}
+
+model field_values {
+  uuid           String    @id @db.Uuid
+  issue_uuid     String    @db.Uuid
+  field_uuid     String    @db.Uuid
+  value          String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@index([issue_uuid])
+  @@index([field_uuid])
+}
+
+// ==================== TAGS ====================
+
+model issue_tags {
+  uuid           String    @id @db.Uuid
+  name           String
+  color          String?
+  text_color     String?
+  author_uuid    String?   @db.Uuid
+  is_personal    Boolean   @default(false)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+}
+
+// ==================== TIME TRACKING ====================
+
+model time_entries {
+  uuid           String    @id @db.Uuid
+  issue_uuid     String    @db.Uuid
+  author_uuid    String    @db.Uuid
+  duration       Int
+  work_date      DateTime
+  comment        String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@index([issue_uuid])
+  @@index([author_uuid])
+}
+
+// ==================== DASHBOARDS ====================
+
+model dashboards {
+  uuid           String    @id @db.Uuid
+  name           String
+  author_uuid    String?   @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+}
+
+model gadgets {
+  uuid           String    @id @db.Uuid
+  dashboard_uuid String    @db.Uuid
+  name           String?
+  config         String?
+  x0             Int
+  y0             Int
+  width          Int
+  height         Int
+  type_uuid      String    @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@index([dashboard_uuid])
+}
+
+model gadget_types {
+  uuid           String    @id @db.Uuid
+  name           String
+  code           String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+}
+
+// ==================== RELATIONS ====================
+
+model relations {
+  uuid           String    @id @db.Uuid
+  issue0_uuid    String    @db.Uuid
+  issue1_uuid    String    @db.Uuid
+  type_uuid      String    @db.Uuid
+  author_uuid    String?   @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@index([issue0_uuid])
+  @@index([issue1_uuid])
+}
+
+model relation_types {
+  uuid           String    @id @db.Uuid
+  name           String
+  revert_name    String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+}
+
+// ==================== ATTACHMENTS ====================
+
+model attachments {
+  uuid           String    @id @db.Uuid
+  issue_uuid     String    @db.Uuid
+  name           String
+  path           String
+  size           Int       @default(0)
+  mime_type      String?
+  author_uuid    String?   @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  
+  @@index([issue_uuid])
+}
+
+// ==================== ISSUE ACTIONS (HISTORY) ====================
+
+model issue_actions {
+  uuid           String    @id @db.Uuid
+  issue_uuid     String    @db.Uuid
+  author_uuid    String    @db.Uuid
+  type_uuid      String    @db.Uuid
+  value          String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  archived_at    DateTime?
+  
+  @@index([issue_uuid])
+}
+
+model issue_actions_types {
+  uuid           String    @id @db.Uuid
+  name           String
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+}
+
+// ==================== WATCHERS ====================
+
+model watchers {
+  user_uuid      String    @db.Uuid
+  issue_uuid     String    @db.Uuid
+  
+  @@id([user_uuid, issue_uuid])
+}
+
+// ==================== ISSUE TAGS SELECTED ====================
+
+model issue_tags_selected {
+  uuid           String    @id @db.Uuid
+  issue_uuid     String    @db.Uuid
+  issue_tags_uuid String   @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@unique([issue_uuid, issue_tags_uuid])
+  @@index([issue_uuid])
+}
+
+// ==================== FAVOURITES ====================
+
+model favourites {
+  uuid           String    @id @db.Uuid
+  name           String
+  query          String?
+  author_uuid    String    @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  
+  @@index([author_uuid])
+}
+

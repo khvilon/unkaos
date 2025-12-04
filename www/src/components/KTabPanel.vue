@@ -61,7 +61,8 @@ export default {
   display: flex;
   flex-direction: column-reverse;
   position: relative;
-  height: calc(100% - 60px);
+  height: 100%;
+  flex: 1;
 }
 
 ul.tabs__header {
@@ -94,7 +95,9 @@ ul.tabs__header > li.tab__selected {
 }
 
 .tab {
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   width: 100%;
   margin-top: -1px;
   border-radius: 0 0 var(--border-radius) var(--border-radius);
@@ -102,7 +105,7 @@ ul.tabs__header > li.tab__selected {
   border-color: var(--border-color);
   border-style: groove;
   padding: 20px;
-  height: calc(100% - 40px);
+  overflow: hidden;
 }
 
 .tab-panel .tab {

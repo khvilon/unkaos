@@ -122,6 +122,14 @@ page_helper.create_module = async function (data, methods) {
         short_name: proj_short,
       });
 
+      // Проверка что проект найден
+      if(proj == null || proj[0] == undefined) {
+        console.error('Project not found:', proj_short);
+        // @ts-ignore
+        this.$router.push('/' + this.$store?.state?.['common']?.workspace + '/issues');
+        return;
+      }
+
       this.current_start_project = proj[0];
 
       params = { project_uuid: proj[0].uuid, num: num }
@@ -131,6 +139,15 @@ page_helper.create_module = async function (data, methods) {
       if(issues == null || issues[0] == undefined)
       {
         issues = await rest.run_method("read_old_issue_uuid", params);
+      }
+
+      // Проверка что задача найдена
+      if(issues == null || issues[0] == undefined) {
+        console.error('Issue not found:', this.id);
+        alert(`Задача ${this.id} не найдена`);
+        // @ts-ignore
+        this.$router.push('/' + this.$store?.state?.['common']?.workspace + '/issues');
+        return;
       }
 
       params = { uuid: issues[0].uuid };

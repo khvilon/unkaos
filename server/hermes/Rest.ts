@@ -1,15 +1,26 @@
 import express from 'express';
 import Sender from './Sender';
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('hermes:rest');
 
 let restConf: any;
 
 try {
   const { restConfig } = require('./conf');
   restConf = restConfig;
+  logger.debug({
+    msg: 'Loaded configuration from file',
+    port: restConf.port
+  });
 } catch (error) {
-    restConf = {
-    port: process.env.HERMES_PORT || 3005
+  restConf = {
+    port: process.env.HERMES_PORT
   };
+  logger.debug({
+    msg: 'Using default configuration',
+    port: restConf.port
+  });
 }
 
 export class Rest {
@@ -22,31 +33,61 @@ export class Rest {
         app.use(express.urlencoded({limit: '150mb', extended: true}));
 
         app.post('/send', async (req: any, res: any) => {
-            console.log('send', req.body)
+            const { transport, recipient, title, body, workspace } = req.body;
+            
+            logger.debug({
+              msg: 'Received send request',
+              transport,
+              recipient,
+              workspace
+            });
+
             try {
-                const { transport, recipient, title, body, workspace } = req.body;
-                console.log(transport, recipient, title, body, workspace)
                 let ans = await sender.send(transport, recipient, title, body, workspace);
-                if(ans.status) res.status(200).send({ message: 'message sent' });
-                else res.status(500).send({ message: ans.status_details });
-                
+                if(ans.status) {
+                  logger.debug({
+                    msg: 'Message sent successfully',
+                    transport,
+                    recipient,
+                    workspace
+                  });
+                  res.status(200).send({ message: 'message sent' });
+                } else {
+                  logger.error({
+                    msg: 'Failed to send message',
+                    transport,
+                    recipient,
+                    workspace,
+                    error: ans.status_details
+                  });
+                  res.status(500).send({ message: ans.status_details });
+                }
             } catch (err:any) {
+                logger.error({
+                  msg: 'Error processing send request',
+                  transport,
+                  recipient,
+                  workspace,
+                  error: err.message
+                });
                 res.status(500).send({ message: err.message });
             }
         });
 
-        app.get('/health', async (req: any, res: any) => {
-            res.status(200).send({ status: "healthy" });
-        });
-
         app.get('/ping', async (req: any, res: any) => {
+            logger.debug({
+              msg: 'Received ping request'
+            });
             res.status(200).send({status: "OK"});
         });
 
         app.listen(restConf.port, () => {
-            console.log(`Server running on port ${restConf.port}`);
+            logger.info({
+              msg: 'REST API server started',
+              port: restConf.port
+            });
         });
     }
 }
 
-export default Rest
+export default Rest;

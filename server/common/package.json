@@ -1,0 +1,14 @@
+{
+  "name": "@unkaos/common",
+  "version": "1.1.0",
+  "main": "index.js",
+  "dependencies": {
+    "pino": "9.6.0",
+    "pino-pretty": "13.0.0",
+    "pino-loki": "2.2.1",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0"
+  }
+}
