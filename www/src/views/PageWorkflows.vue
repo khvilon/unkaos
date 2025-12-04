@@ -1,5 +1,6 @@
 <script>
 import page_helper from "../page_helper.ts";
+import SimpleWorkflowEditor from "../components/SimpleWorkflowEditor.vue";
 
 const data = {
   name: "workflows",
@@ -9,6 +10,16 @@ const data = {
       name: "Название",
       id: "name",
       search: true,
+    },
+    {
+      name: "Создана",
+      id: "created_at",
+      type: "date",
+    },
+    {
+      name: "Обновлена", 
+      id: "updated_at",
+      type: "date",
     },
   ],
   inputs: [
@@ -21,11 +32,13 @@ const data = {
       label: "Создана",
       id: "created_at",
       type: "Date",
+      disabled: true,
     },
     {
       label: "Обновлена",
       id: "updated_at",
       type: "Date",
+      disabled: true,
     },
   ],
   instance: {
@@ -50,8 +63,25 @@ mod.computed.workflow_selected=function(){
   this.selected_workflows.created_at
 };
 
+mod.computed.dynamicColumns=function(){
+  // Если карточка открыта (есть выбранный workflow), показываем только название
+  if (this.selected_workflows && this.selected_workflows.uuid) {
+    return [
+      {
+        name: "Название",
+        id: "name",
+        search: true,
+      }
+    ];
+  }
+  
+  // Если карточка не открыта, показываем все колонки
+  return this.collumns;
+};
 
-
+mod.components = {
+  SimpleWorkflowEditor
+};
 
 export default mod;
 </script>
@@ -67,7 +97,7 @@ export default mod;
     <div class="table_down_panel" :class="{table_down_panel_no_card: !selected_workflows.uuid}">
       <div class="table_panel">
         <KTable
-          :collumns="collumns"
+          :collumns="dynamicColumns"
           :table-data="workflows"
           :name="'workflows'"
         />
@@ -77,53 +107,12 @@ export default mod;
             class="bx bx-x table-card-close-button"
             @click="closeMobileTableCard"
         ></i>
-        <KTabPanel>
-          <KTab title="Основное" :visible="true">
-            <div class="table_card_fields">
-              <component
-                v-bind:is="input.type + 'Input'"
-                v-for="(input, index) in inputs"
-                :label="input.label"
-                :key="index"
-                :id="input.id"
-                :value="get_json_val(selected_workflows, input.id)"
-                :parent_name="'workflows'"
-                :disabled="input.disabled"
-              ></component>
-            </div>
-            <div class="table_card_buttons">
-              <div class="table_card_footer">
-                <KButton
-                  class="table_card_footer_btn"
-                  :name="'Сохранить'"
-                  :func="'save_workflows'"
-                />
-                <KButton v-if="workflow_selected"
-                  class="table_card_footer_btn"
-                  :name="'Удалить'"
-                  :func="'delete_workflows'"
-                />
-              </div>
-            </div>
-          </KTab>
-          <KTab title="Схема" :visible="true">
-            <WorkflowsEditor :wdata="selected_workflows" />
-            <div class="table_card_buttons">
-              <div class="table_card_footer">
-                <KButton
-                  class="table_card_footer_btn"
-                  :name="workflows_selected ? 'Сохранить' : 'Создать'"
-                  :func="'save_workflows'"
-                />
-                <KButton
-                  class="table_card_footer_btn"
-                  :name="'Отменить'"
-                  @click="cancel_workflow_changes"
-                />
-              </div>
-            </div>
-          </KTab>
-        </KTabPanel>
+        <SimpleWorkflowEditor 
+          :wdata="selected_workflows" 
+          :inputs="inputs"
+          :workflow-selected="workflow_selected"
+          @cancel="cancel_workflow_changes"
+        />
       </div>
     </div>
   </div>
@@ -134,20 +123,17 @@ export default mod;
   $table-panel-width: 15%
 );
 
-.workflow-table-card{
+.workflow-table-card {
   padding: 0;
-  background: transparent;
-}
-
-.workflow-table-card .tab-panel {
-  height: 100%;
-}
-
-.workflow-table-card .tab{
-  height: 100%;
+  background: var(--bg-color);
+  height: calc(100vh - 88px);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  
 }
 
+.workflow-table-card .simple-workflow-editor {
+  height: 100%;
+  flex: 1;
+}
 </style>

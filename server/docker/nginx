@@ -1,9 +1,17 @@
-FROM node:16.19.0-bullseye-slim as build
- 
+FROM node:23.5.0-alpine as build
+
 WORKDIR /app
-COPY ./www /app
+
+# Устанавливаем переменную для определения контейнерного окружения
+ENV VITE_CONTAINER=true
+
+# Копируем сначала только файлы для установки зависимостей
+COPY ./www/package.json .
 RUN yarn install
+
+# Затем копируем остальные файлы и собираем
+COPY ./www .
 RUN yarn build
- 
-FROM nginx:alpine
+
+FROM nginx:1.27.3-alpine
 COPY --from=build /app/dist /usr/share/nginx/html

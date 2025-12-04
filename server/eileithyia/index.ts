@@ -1,22 +1,19 @@
 import sql from "./sql";
-
 import cors from 'cors';
-
 import express from "express";
-import tools from "../tools";
-
 import axios from "axios";
-
 import fs from 'fs/promises';
+import crypto from 'crypto';
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('eileithyia');
 
 const app:any = express();
 const port = 5001;
 
-
 app.use(express.json({limit: '1mb'}));
 app.use(express.raw({limit: '1mb'}));
 app.use(express.urlencoded({limit: '1mb', extended: true}));
-
 
 app.use(cors({origin: '*'}));
 
@@ -58,7 +55,12 @@ let checkWorkspaceExists = async function(workspace: String){
     );
     `
 
-    console.log("check", ans)
+    logger.debug({
+        msg: 'Checking workspace exists',
+        workspace,
+        exists: ans ? ans[0].exists : true
+    });
+
     if(!ans) return true
     return ans[0].exists
 }
@@ -70,10 +72,22 @@ let execModifSqlFile = async function(file: string, name: string, workspace: str
     .replaceAll(name + ' ', workspace + ' ').replaceAll(name + ';', workspace + ';')
     .replaceAll(name + '_', workspace + '_').replaceAll(name + "'", workspace + "'")
     .replaceAll('root@unkaos.org', email).replaceAll('rootpass', pass);
-    await sql.unsafe(sqlFileContentStr);
+    
+    try {
+        await sql.unsafe(sqlFileContentStr);
+        logger.info({ msg: 'SQL file executed successfully', file, workspace });
+    } catch (error: any) {
+        logger.error({ msg: 'SQL file execution failed', file, workspace, error: error.message });
+        throw error;
+    }
 }
 
 let createWorkspace = async function(workspace: string, email: string, pass: string){
+    logger.info({
+        msg: 'Creating new workspace',
+        workspace,
+        email
+    });
     
     await execModifSqlFile('../db/-public.sql', 'public', workspace, email, pass)
     await execModifSqlFile('../db/-workspace.sql', 'server', workspace, email, pass)
@@ -83,6 +97,10 @@ let createWorkspace = async function(workspace: string, email: string, pass: str
     files = files.filter(file=>file.endsWith('_m.sql')).sort()
 
     for(let i = 0; i < files.length; i++){
+        logger.debug({
+            msg: 'Executing migration file',
+            file: files[i]
+        });
         await execModifSqlFile(sqlPath + files[i], 'public', workspace, email, pass)
     }
 }
@@ -92,7 +110,7 @@ const init = async function() {
     app.post('/upsert_workspace_requests', async (req:any, res:any) => {   
         let workspace = req.body.workspace
         let email = req.body.email
-        let uuid = tools.uuidv4()
+        let uuid = crypto.randomUUID()
 
         workspace = workspace.toLowerCase();
         
@@ -103,15 +121,30 @@ const init = async function() {
         let pass = generatePassword()
 
         if(!exists){
+            logger.info({
+                msg: 'Creating workspace request',
+                workspace,
+                email,
+                uuid
+            });
             
             ans = await sql`INSERT INTO admin.workspace_requests(uuid, workspace, email, pass) 
             VALUES (${uuid}, ${workspace}, ${email}, ${pass})`
             if(!ans){
+                logger.error({
+                    msg: 'Failed to create workspace request',
+                    workspace,
+                    email
+                });
                 res.send({ status: -1 });
                 return
             } 
         }
         else {
+            logger.warn({
+                msg: 'Workspace already exists',
+                workspace
+            });
             res.send({ status: -2 });
             return
         }
@@ -144,8 +177,23 @@ const init = async function() {
             }
         })
 
-        if(hermes_answer && hermes_answer.status == 200) res.send({ status: 0 });
-        else res.send({ status: -3 });
+        if(hermes_answer && hermes_answer.status == 200) {
+            logger.info({
+                msg: 'Workspace request created and email sent',
+                workspace,
+                email
+            });
+            res.send({ status: 0 });
+        }
+        else {
+            logger.error({
+                msg: 'Failed to send email',
+                workspace,
+                email,
+                status: hermes_answer?.status
+            });
+            res.send({ status: -3 });
+        }
     })
 
     app.get('/read_workspace_requests', async (req:any, res:any) => {
@@ -154,21 +202,37 @@ const init = async function() {
         let ans: any = await readWorkspaceRequest(uuid)
 
         if(!ans) {
+            logger.warn({
+                msg: 'Workspace request not found',
+                uuid
+            });
             res.send({ status: -1 });
             return;
         }
 
-        console.log("ans", ans)
+        logger.debug({
+            msg: 'Found workspace request',
+            request: ans
+        });
 
         let exists = await checkWorkspaceExists(ans.workspace)
 
         if(exists){
+            logger.warn({
+                msg: 'Workspace already exists',
+                workspace: ans.workspace
+            });
             res.send({ status: -2 });
             return;
         }
 
         await createWorkspace(ans.workspace, ans.email, ans.pass)
         await sql`UPDATE admin.workspace_requests SET status = 2 WHERE uuid = ${uuid}`
+        
+        logger.info({
+            msg: 'Workspace created successfully',
+            workspace: ans.workspace
+        });
         
         res.send({ status: 2, workspace: ans.workspace });
     })
@@ -188,7 +252,7 @@ const init = async function() {
     })
 
     app.listen(port, async () => {
-        console.log(`Eileithyia running on port ${port}`)
+        logger.info(`Eileithyia running on port ${port}`);
     })
 }
     

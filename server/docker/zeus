@@ -1,11 +1,20 @@
-FROM node:16.19.0-bullseye-slim
+FROM node:23.5.0-alpine
 
-COPY ./server /app
+WORKDIR /app
+
+# Копируем common и устанавливаем его зависимости
+COPY ./server/common ./server/common
+WORKDIR /app/server/common
+RUN yarn install
+
+# Копируем сначала только файлы для установки зависимостей zeus
+WORKDIR /app
+COPY ./server/zeus/package.json ./zeus/
 WORKDIR /app/zeus
 RUN yarn install
-RUN yarn add memcached
-RUN yarn add @types/memcached
-RUN yarn build
+
+# Затем копируем файлы сервиса
+COPY ./server/zeus .
 
 USER node
 

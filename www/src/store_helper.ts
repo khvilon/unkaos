@@ -186,8 +186,10 @@ store_helper.create_module = function (name) {
       state.state["selected_" + name]
     );
 
+    if (ans && ans[0]) {
     state.state["updated_" + name] = ans[0];
     this.commit("update_" + name);
+    }
 
     return ans;
   };
@@ -210,21 +212,72 @@ store_helper.create_module = function (name) {
       state.state["selected_" + name].uuid == undefined ||
       state.state["selected_" + name].is_new;
     //console.log('is_new', is_new)
-    state.state["selected_" + name].is_new = false;
+    // Keep is_new in body for REST API v2 to determine POST vs PUT
+    // It will be reset after the request completes
 
-  if(name=='fields' && tools.isValidJSON('[' + state.state["selected_" + name].available_values + ']')){
-    let av = state.state["selected_" + name].available_values
-    if(av[0] != '[') av = '[' + av + ']'
-      let available_values = JSON.parse(av)
-      for(let i in available_values){
-        if(!available_values[i].uuid) available_values[i].uuid = tools.uuidv4();
-      }
-      state.state["selected_" + name].available_values = JSON.stringify(available_values, null, 4);
+    // Debug logging for workflows
+    if (name === 'workflows') {
+      const selected = state.state["selected_" + name];
+      console.log('SAVE_WORKFLOWS debug:', {
+        uuid: selected?.uuid,
+        name: selected?.name,
+        is_new,
+        workflow_nodes_count: selected?.workflow_nodes?.length || 0,
+        transitions_count: selected?.transitions?.length || 0,
+        workflow_nodes: selected?.workflow_nodes,
+        transitions: selected?.transitions
+      });
     }
 
+  // Обработка available_values для fields - добавляем uuid если нет
+  if(name=='fields' && state.state["selected_" + name].available_values) {
+    let av = state.state["selected_" + name].available_values;
+    let available_values: any[] = [];
+    
+    // Если это уже массив (от vue-select с taggable)
+    if (Array.isArray(av)) {
+      available_values = av;
+    }
+    // Если это строка JSON
+    else if (typeof av === 'string') {
+      try {
+        // Пробуем распарсить как есть
+        if (av.trim().startsWith('[')) {
+          available_values = JSON.parse(av);
+        } else {
+          // Оборачиваем в массив
+          available_values = JSON.parse('[' + av + ']');
+        }
+      } catch (e) {
+        console.error('Failed to parse available_values:', av, e);
+        available_values = [];
+      }
+    }
+    
+    // Добавляем uuid к каждому значению если нет
+    for (let i in available_values) {
+      if (!available_values[i].uuid) {
+        available_values[i].uuid = tools.uuidv4();
+      }
+    }
+    
+    // Сохраняем как массив (бэкенд сам сериализует в JSON)
+    state.state["selected_" + name].available_values = available_values;
+    console.log('>>>available_values processed:', available_values);
+  }
+
     console.log('>>>save', name,  state.state["selected_" + name])
-    if (is_new) return this.dispatch("create_" + name);
-    return this.dispatch("update_" + name);
+    let result;
+    if (is_new) {
+      result = await this.dispatch("create_" + name);
+    } else {
+      result = await this.dispatch("update_" + name);
+    }
+    // Reset is_new after successful request
+    if (state.state["selected_" + name]) {
+      state.state["selected_" + name].is_new = false;
+    }
+    return result;
   };
   actions["delete_" + name] = async function (state) {
     //console.log(state.state['selected_' + name])
@@ -234,7 +287,7 @@ store_helper.create_module = function (name) {
     )
       this.commit("unselect_" + name);
     else {
-      rest.run_method("delete_" + name, state.state["selected_" + name]);
+      await rest.run_method("delete_" + name, state.state["selected_" + name]);
       this.commit("delete_" + name);
     }
   };

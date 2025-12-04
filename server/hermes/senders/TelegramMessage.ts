@@ -1,71 +1,100 @@
-import TelegramBot from 'node-telegram-bot-api';
+import { Bot } from 'grammy';
 import UserData from '../UsersData';
-import {sql} from "../Sql";
+import { sql } from "../Sql";
+import { createLogger } from '../../server/common/logging';
+
+const logger = createLogger('hermes:telegram');
 
 let telegramConf: any;
+let bot: Bot;
+const RECONNECT_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
-//var id = 228803942
-class TelegramMessage {
-  private bot: any;
+export default class TelegramMessage {
+  private userData: UserData;
+  private reconnectTimeout: NodeJS.Timeout | null = null;
 
   constructor(userData: UserData) {
-    this.init(userData);
+    this.userData = userData;
   }
 
-  async init(userData: UserData) {
-    const ans = await sql`SELECT value FROM server.configs WHERE service = 'telegram' AND name = 'token'`;
-    telegramConf = { token: ans[0].value };
+  private async startBot() {
+    try {
+      // Handle messages for user registration
+      bot.on('message', async (ctx) => {
+        if (!ctx.from) return;
+        if (!ctx.from.username) return;
 
-    if(!telegramConf.token) return;
+        const username = ctx.from.username;
+        const telegramId = ctx.from.id.toString();
 
-    await this.stopBot();
+        await this.userData.setTelegramtId(username, telegramId);
+      });
 
-    this.bot = new TelegramBot(telegramConf.token, { polling: true });
-    let me = this
+      // Start the bot
+      await bot.start();
+      
+      logger.info({
+        msg: 'Telegram bot started successfully'
+      });
 
-    this.bot.onText(/.*?/, async (msg: any, match: any) => {
-      if(!msg.from) return
-      if(!msg.from.username) return
+      // Clear reconnect timeout if bot started successfully
+      if (this.reconnectTimeout) {
+        clearTimeout(this.reconnectTimeout);
+        this.reconnectTimeout = null;
+      }
+    } catch (error: any) {
+      logger.error({
+        msg: 'Error starting telegram bot',
+        error: error.message
+      });
 
-      const username = msg.from.username//.toLowerCase();
-      const telegramId = msg.from.id.toString();
-      let added = await userData.setTelegramtId(username, telegramId)
-      let ans = 'ваш телеграм добавлен в список'
-      if(!added) ans = 'пользователь с вашим телеграм именем не найден в базе Unkaos или не требует обновления ID'
-      me.bot.sendMessage(telegramId, username + ', ' + ans);
-    });
-
-    console.log('telegram bot up', telegramConf.token)
-  }
-
-  async stopBot() {
-    console.log('stopBot');
-    if (this.bot) {
-      await this.bot.stopPolling();
-      console.log('Stopped existing bot instance');
-      this.bot = null;
+      // If error is about conflict with another instance, schedule reconnect
+      if (error.error_code === 409) {
+        logger.info({
+          msg: `Will try to reconnect in ${RECONNECT_INTERVAL/1000} seconds`
+        });
+        
+        this.reconnectTimeout = setTimeout(() => this.init(), RECONNECT_INTERVAL);
+      }
     }
   }
 
-  async send(userId: string, title: string, body: string) {
+  async init() {
+    let ans = await sql`SELECT name, value FROM server.configs WHERE service = 'telegram'`
 
-    if(!this.bot){
-      console.log('cant send telegram - not configured');
+    let ans_dict = ans.reduce((obj: any, item: any) => {
+      obj[item.name] = item.value;
+      return obj;
+    }, {});
+
+    if (!ans_dict.token) {
+      logger.warn({
+        msg: 'Telegram token not found in config'
+      });
       return;
     }
 
-    console.log('userId', userId)
-    try{ 
-      await this.bot.sendMessage(userId, `${title}\n${body}`) 
-      console.log(`Message sent to telegram user ${userId}`) 
-      return {status: 2}
-    } 
-    catch(err){ 
-      let errMsg = `Error sending telegram msg ${err}`
-      console.log(errMsg) 
-      return {status:-1, status_details: errMsg}
+    if (ans_dict.token === '') {
+      logger.warn({
+        msg: 'Empty telegram token in config'
+      });
+      return;
     }
+
+    logger.info({
+      msg: 'Initializing telegram bot'
+    });
+
+    telegramConf = { token: ans_dict.token };
+    bot = new Bot(telegramConf.token);
+
+    await this.startBot();
+  }
+
+  async send(userId: string, title: string, body: string) {
+    if (!bot) return;
+    
+    const message = title ? `${title}\n\n${body}` : body;
+    await bot.api.sendMessage(userId, message);
   }
 }
-
-export default TelegramMessage;

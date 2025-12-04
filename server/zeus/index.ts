@@ -1,19 +1,15 @@
 import dbLoger from "./db_loger";
 import sql from "./sql";
-
 import crud from "./crud";
+import cors from 'cors';
+import express from "express";
+import { randomUUID } from 'crypto';
+import { createLogger } from '../server/common/logging';
+import { Server } from 'socket.io';
+
+const logger = createLogger('zeus');
 
 //const cors = require('cors');
-import cors from 'cors';
-
-import express from "express";
-import tools from "../tools";
-
-
-const app:any = express()
-const port = 3006
-
-//var bodyParser = require('body-parser');
 
 const dict:any =
 {
@@ -26,6 +22,12 @@ const dict:any =
 
 var listeners:any[] = []
 
+const app:any = express()
+const httpServer = require('http').createServer(app);
+const port = 3006
+
+//var bodyParser = require('body-parser');
+
 app.use(cors());
 app.use(express.json({limit: '150mb'}));
 app.use(express.raw({limit: '150mb'}));
@@ -33,12 +35,30 @@ app.use(express.urlencoded({limit: '150mb', extended: true}));
 
 const handleRequest = async function(req:any, res:any) {
 
-    // console.log("request: ", req)
-    let req_uuid = tools.uuidv4()
+    let req_uuid = randomUUID()
+    logger.info({
+        msg: 'Received request',
+        req_uuid,
+        url: req.url,
+        method: req.method,
+        headers: req.headers,
+        subdomain: req.headers.subdomain,
+        user_uuid: req.headers.user_uuid
+    });
     dbLoger.writeLogIncoming(req_uuid,  req)
 
     let func_name = req.url.split('/')[1].split('?')[0]
-    let [method, table_name] = tools.split2(func_name, '_')
+    logger.debug({
+        msg: 'Processing request',
+        req_uuid,
+        func_name,
+        url: req.url
+    });
+
+    const parts = func_name.split('_');
+    const method = parts[0];
+    const table_name = parts.slice(1).join('_');
+
     let subdomain = req.headers.subdomain
     let params = req.query
 
@@ -48,18 +68,42 @@ const handleRequest = async function(req:any, res:any) {
 
     if(params.values != undefined && !params.author_uuid) params.author_uuid = req.headers.user_uuid
 
+    logger.info({
+        msg: 'Executing request',
+        req_uuid,
+        method,
+        table_name,
+        subdomain,
+        params,
+        is_admin: req.headers.is_admin
+    });
+
     let ans = await crud.do(subdomain, method, table_name, params, req.headers.user_uuid, req.headers.is_admin)
 
     if(ans.rows == undefined){
+        logger.warn({
+            msg: 'Request failed',
+            req_uuid,
+            error: ans.error,
+            http_code: ans.http_code || 400
+        });
         res.status(ans.http_code != undefined ? ans.http_code : '400');
-    } 
+    } else {
+        logger.info({
+            msg: 'Request successful',
+            req_uuid,
+            rows_affected: Array.isArray(ans.rows) ? ans.rows.length : 1
+        });
+    }
 
-    if(method!='read') dbLoger.writeLogDone(subdomain, req_uuid,  req.headers.user_uuid, table_name, method, params.uuid, params)
-        
-    //add watcher
-    //if(method!='read' && table_name == 'issue'){
-    //    sql.query(subdomain, `INSERT INTO watchers (user_uuid, issue_uuid) VALUES('` + req.headers.user_uuid + "','" + params.uuid + `') ON CONFLICT DO NOTHING`)
-    //} 
+    if(method!='read') dbLoger.writeLogDone(subdomain, req_uuid, req.headers.user_uuid, table_name, method, params.uuid, params)
+
+    logger.debug({
+        msg: 'Request processed',
+        req_uuid,
+        status: ans.rows ? 'success' : 'error',
+        http_code: ans.http_code
+    });
 
     res.send(ans)
 }
@@ -71,7 +115,7 @@ const init = async function() {
     app.post('/upsert_watcher', async (req:any, res:any) => {   
         let subdomain = req.headers.subdomain
         let issue_uuid = req.body.issue_uuid
-        let ans = await sql.query(subdomain, `INSERT INTO watchers (user_uuid, issue_uuid) VALUES('` + req.headers.user_uuid + `','` + issue_uuid + `') ON CONFLICT DO NOTHING`)
+        let ans = await sql.query(subdomain, `INSERT INTO watchers (user_uuid, issue_uuid) VALUES('` + req.headers.user_uuid + `','` + issue_uuid + `') ON CONFLICT DO NOTHING`)//, [req.headers.user_uuid, issue_uuid])
         res.send(ans)
     })
     listeners.push({"method": 'post',"func":'upsert_watcher'})
@@ -105,10 +149,65 @@ const init = async function() {
         }
     }
 
-    app.listen(port, async () => {
-        console.log(`Zeus running on port ${port}`)
-    })
+    // Создаем Socket.IO сервер
+    const io = new Server(httpServer, {
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST", "PUT", "DELETE"],
+            credentials: true
+        },
+        transports: ['polling', 'websocket'],
+        path: '/socket.io'
+    });
 
+    // Обработка Socket.IO подключений
+    io.on('connection', (socket) => {
+        logger.info({
+            msg: 'New gateway connection',
+            socketId: socket.id
+        });
+
+        socket.on('request', async (data, callback) => {
+            // Создаем объект req как в express
+            const req: any = {
+                url: data.url,
+                method: data.method,
+                headers: data.headers,
+                query: {},
+                body: data.body
+            };
+
+            // Создаем объект res как в express
+            const res: any = {
+                status: function(code: number) {
+                    this.statusCode = code;
+                    return this;
+                },
+                send: function(data: any) {
+                    callback({
+                        status: this.statusCode || 200,
+                        data: data
+                    });
+                }
+            };
+
+            // Используем существующий handleRequest
+            await handleRequest(req, res);
+        });
+
+        socket.on('disconnect', () => {
+            logger.info({
+                msg: 'Gateway disconnected',
+                socketId: socket.id
+            });
+        });
+    });
+
+    httpServer.listen(port, () => {
+        logger.info({
+            msg: `Zeus running on port ${port}`
+        });
+    });
 }
     
 init()

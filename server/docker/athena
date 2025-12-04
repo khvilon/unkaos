@@ -1,8 +1,19 @@
-FROM node:21-bookworm-slim
+FROM node:23.5.0-alpine
 
-COPY ./server /app
-WORKDIR /app/athena
+WORKDIR /app
+
+# Копируем common и устанавливаем его зависимости
+COPY ./server/common ./server/common
+WORKDIR /app/server/common
 RUN yarn install
+
+# Копируем сначала только файлы для установки зависимостей athena
+WORKDIR /app/server/athena
+COPY ./server/athena/package.json ./
+RUN yarn install
+
+# Затем копируем файлы сервиса
+COPY ./server/athena .
 
 USER node
 

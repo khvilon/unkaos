@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package zeus2;
+
+// ==================== Generic Request/Response ====================
+// Unified service for all CRUD operations (replaces Socket.IO)
+
+service Zeus2Service {
+  // Generic request handler - mirrors the Socket.IO 'request' event
+  rpc Request(GenericRequest) returns (GenericResponse);
+  
+  // Health check
+  rpc HealthCheck(Empty) returns (HealthResponse);
+  
+  // Get registered listeners (for Gateway initialization)
+  rpc GetListeners(Empty) returns (ListenersResponse);
+}
+
+message Empty {}
+
+// Generic request that matches Socket.IO format
+message GenericRequest {
+  string method = 1;      // get, post, put, patch, delete
+  string url = 2;         // /api/v2/issues, /api/v2/issues/:uuid, etc.
+  map<string, string> headers = 3;  // subdomain, user_uuid, etc.
+  bytes body = 4;         // JSON body as bytes
+}
+
+message GenericResponse {
+  int32 status = 1;       // HTTP status code
+  bytes data = 2;         // JSON response as bytes
+  map<string, string> headers = 3;
+}
+
+message HealthResponse {
+  string status = 1;
+  string service = 2;
+  string version = 3;
+  int64 uptime = 4;
+  int32 endpoints = 5;
+  DatabaseHealth database = 6;
+  MemoryUsage memory = 7;
+  string timestamp = 8;
+}
+
+message DatabaseHealth {
+  string status = 1;
+  int32 latency = 2;
+}
+
+message MemoryUsage {
+  int32 heap_used = 1;
+  int32 heap_total = 2;
+  int32 external = 3;
+  int32 rss = 4;
+}
+
+message ListenersResponse {
+  repeated Listener listeners = 1;
+}
+
+message Listener {
+  string method = 1;
+  string func = 2;
+  string entity = 3;
+}
+
+

@@ -1,6 +1,8 @@
 import nodemailer from 'nodemailer';
 import {sql} from "../Sql";
+import { createLogger } from '../../server/common/logging';
 
+const logger = createLogger('hermes:mailsender');
 let emailConf: any;
 
 class MailSender {
@@ -36,7 +38,9 @@ class MailSender {
 
   async send(address: string, title: string, body: string) {
     if(!this.transport) {
-      console.log('email service not configured');
+      logger.warn({
+        msg: 'email service not configured'
+      });
       return;
     }
 
@@ -53,20 +57,23 @@ class MailSender {
   
     try {
       await this.transport.sendMail(message);
-      console.log(`Email sent to ${address}`);
+      logger.info({
+        msg: 'Email sent',
+        to: address
+      });
       return {status:2}
     } catch (err) {
-      let errMsg = `Error sending email: ${err}`
-      console.log(errMsg);
-      return {status:-1, status_details: errMsg}
+      logger.error({
+        msg: 'Error sending email',
+        to: address,
+        error: err
+      });
+      return {status:-1, status_details: `Error sending email: ${err}`}
     }
   }
 }
 
 export default MailSender;
-
-
-
 
 
 /*var mail:any = {}
@@ -80,6 +87,7 @@ const { info } = require('console')
     mail.user = 'info@unkaos.ru'
     mail.pass = 'info.unkaos.pass'
     mail.pass = 'uixfypcrqoquclbr'
+
 
     
 

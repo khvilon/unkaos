@@ -3,6 +3,9 @@ import DiscordMessage from './senders/DiscordMessage';
 import TelegramMessage from './senders/TelegramMessage';
 import UserData from './UsersData';
 import {sql} from "./Sql";
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('hermes:sender');
 
 class Sender {
   private email;
@@ -16,20 +19,42 @@ class Sender {
     this.discord = new DiscordMessage(this.userData);
     this.telegram = new TelegramMessage(this.userData);
 
-    sql.subscribe('*', this.updateSender.bind(this), this.handleSubscribeConnect)
+    sql.subscribe('*', this.updateSender.bind(this), this.handleSubscribeConnect.bind(this))
   }
 
   private handleSubscribeConnect(){
-    console.log('subscribe sql configs connected!')
+    logger.info({
+      msg: 'Database subscription connected'
+    });
   }
 
   private async updateSender(row:any, { command, relation, key, old }: any){
-    console.log('updateSender', command, relation, key, old)
-    if(relation.table != 'configs' || relation.schema != 'server') return
-    console.log('updating sender conf', row)
-    if(row.service == 'email' ) this.email = new MailSender();
-    if(row.service == 'discord' ) this.discord = new DiscordMessage(this.userData);
-    if(row.service == 'telegram' ) this.telegram.init(this.userData);
+    if(relation.table != 'configs' || relation.schema != 'server') return;
+
+    logger.info({
+      msg: 'Updating sender configuration',
+      service: row.service,
+      command
+    });
+
+    if(row.service == 'email') {
+      this.email = new MailSender();
+      logger.info({
+        msg: 'Email sender reinitialized'
+      });
+    }
+    if(row.service == 'discord') {
+      this.discord = new DiscordMessage(this.userData);
+      logger.info({
+        msg: 'Discord sender reinitialized'
+      });
+    }
+    if(row.service == 'telegram') {
+      this.telegram = new TelegramMessage(this.userData);
+      logger.info({
+        msg: 'Telegram sender reinitialized'
+      });
+    }
   }
 
   private isUUID(str: string): boolean {
@@ -43,78 +68,152 @@ class Sender {
   }
 
   public async init(){
-    await this.userData.init()
+    logger.info({
+      msg: 'Initializing sender components'
+    });
+
+    await this.userData.init();
+    await this.email.init();
+    await this.discord.init(this.userData);
+    await this.telegram.init();
+
+    logger.info({
+      msg: 'Sender components initialized successfully'
+    });
   }
 
   public async send(transport: string, recipient: string, title: string, body: string, workspace: string=''):Promise<any> {
-    console.log('Try send', transport, recipient, title, workspace)
+    logger.debug({
+      msg: 'Attempting to send message',
+      transport,
+      recipient,
+      title,
+      workspace
+    });
 
-    if(!transport)
-    {
-      this.send('telegram',recipient, title, body, workspace)
-      this.send('discord',recipient, title, body, workspace)
-      return await this.send('email',recipient, title, body, workspace)
+    if(!transport) {
+      logger.debug({
+        msg: 'No transport specified, sending to all available transports'
+      });
+      this.send('telegram', recipient, title, body, workspace);
+      this.send('discord', recipient, title, body, workspace);
+      return await this.send('email', recipient, title, body, workspace);
     }
 
     if(!this.isUUID(recipient) && transport == 'email'){
       if(!this.isValidEmail(recipient)){
-        let errMsg = 'Error - email not valid'
-        console.log(errMsg) 
-        return {status:-1, status_details: errMsg}
+        const errMsg = 'Invalid email address';
+        logger.error({
+          msg: errMsg,
+          email: recipient
+        });
+        return {status:-1, status_details: errMsg};
       }
+      logger.debug({
+        msg: 'Sending direct email',
+        recipient
+      });
       return await this.email.send(recipient, title, body); 
     }
 
     if(!workspace){
-      let errMsg = 'Error - workspace missing'
-      console.log(errMsg) 
-      return {status:-1, status_details: errMsg}
+      const errMsg = 'Workspace missing';
+      logger.error({
+        msg: errMsg,
+        transport,
+        recipient
+      });
+      return {status:-1, status_details: errMsg};
     }
 
     if(!this.isUUID(recipient)){
-      let errMsg = 'Error - user uuid not valid'
-      console.log(errMsg) 
-      return {status:-1, status_details: errMsg}
+      const errMsg = 'Invalid user UUID';
+      logger.error({
+        msg: errMsg,
+        transport,
+        recipient
+      });
+      return {status:-1, status_details: errMsg};
     }
 
-    let user:any = this.userData.getUser(recipient, workspace)
+    let user:any = this.userData.getUser(recipient, workspace);
     if(!user){
-      let errMsg = `Error - user ${recipient} not found`
-      console.log(errMsg) 
-      return {status:-1, status_details: errMsg}
+      const errMsg = `User not found`;
+      logger.error({
+        msg: errMsg,
+        transport,
+        recipient,
+        workspace
+      });
+      return {status:-1, status_details: errMsg};
     }
     
     switch (transport) {
       case 'email':
+        logger.debug({
+          msg: 'Sending email',
+          user: user.name,
+          email: user.mail
+        });
         return await this.email.send(user.mail, title, body);
+
       case 'discord':
         if(!user.discord){
-          let errMsg = `Error - user ${user.name} has no registered discord`
-          console.log(errMsg) 
-          return {status:-1, status_details: errMsg}
+          const errMsg = 'User has no registered Discord account';
+          logger.error({
+            msg: errMsg,
+            user: user.name
+          });
+          return {status:-1, status_details: errMsg};
         }
         if(!user.discord_id){
-          let errMsg = `Error - user ${user.name} ${user.discord} is not registered by the discord bot, no message received`
-          console.log(errMsg) 
-          return {status:-1, status_details: errMsg}
+          const errMsg = 'User not registered with Discord bot';
+          logger.error({
+            msg: errMsg,
+            user: user.name,
+            discord: user.discord
+          });
+          return {status:-1, status_details: errMsg};
         }
+        logger.debug({
+          msg: 'Sending Discord message',
+          user: user.name,
+          discord: user.discord
+        });
         return await this.discord.send(user.discord_id, title, body);
+
       case 'telegram':
         if(!user.telegram){
-          let errMsg = `Error - user ${user.name} has no registered telegram`
-          console.log(errMsg, user) 
-          return {status:-1, status_details: errMsg}
+          const errMsg = 'User has no registered Telegram account';
+          logger.error({
+            msg: errMsg,
+            user: user.name
+          });
+          return {status:-1, status_details: errMsg};
         }
         if(!user.telegram_id){
-          let errMsg = `Error - user ${user.name} ${user.telegram} is not registered by the telegram bot, no message received`
-          console.log(errMsg) 
-          return {status:-1, status_details: errMsg}
+          const errMsg = 'User not registered with Telegram bot';
+          logger.error({
+            msg: errMsg,
+            user: user.name,
+            telegram: user.telegram
+          });
+          return {status:-1, status_details: errMsg};
         }
+        logger.debug({
+          msg: 'Sending Telegram message',
+          user: user.name,
+          telegram: user.telegram
+        });
         return await this.telegram.send(user.telegram_id, title, body);
+
       default:
-        let errMsg = `Invalid transport: ${transport}`
-        console.log(errMsg);
-        return {status:-1, status_details: errMsg}
+        const errMsg = `Invalid transport`;
+        logger.error({
+          msg: errMsg,
+          transport
+        });
+        return {status:-1, status_details: errMsg};
     }
   }
 }

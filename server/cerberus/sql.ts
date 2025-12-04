@@ -1,5 +1,8 @@
 const postgres = require('postgres') 
-import tools from "../tools";
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('cerberus');
+
 let dbConf: any;
 
 try {
@@ -15,8 +18,8 @@ try {
   };
 }
 
-console.log('dbConf', dbConf)
-let cerberusDbConf = tools.obj_clone(dbConf)
+logger.debug('Database configuration:', dbConf);
+let cerberusDbConf = structuredClone(dbConf)
 cerberusDbConf.publications = 'cerberus_publication'
 
 const sql = postgres(cerberusDbConf)

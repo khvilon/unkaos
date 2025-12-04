@@ -1,14 +1,27 @@
-FROM node:21-bookworm-slim
+FROM node:23.5.0-alpine
 
-RUN npm install -g npm@10.6.0
+WORKDIR /app
 
-COPY ./server /app
+# Копируем common и устанавливаем его зависимости
+COPY ./server/common ./server/common
+WORKDIR /app/server/common
+RUN yarn install
+
+# Копируем сначала только файлы для установки зависимостей eileithyia
+WORKDIR /app
+COPY ./server/eileithyia/package.json ./eileithyia/
+WORKDIR /app/eileithyia
+RUN yarn install
+
+# Затем копируем файлы сервиса
+COPY ./server/eileithyia .
+
+# Копируем дополнительные файлы в корень /app, так как код ищет их через ../
 COPY ./README.md /app/README.md
 COPY ./README_RU.md /app/README_RU.md
 COPY ./LICENSE /app/LICENSE
 COPY ./meta.json /app/meta.json
-WORKDIR /app/eileithyia
-RUN yarn install
+COPY ./server/db /app/db
 
 USER node
 

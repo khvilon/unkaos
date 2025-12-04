@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zeus
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zeus
+  template:
+    metadata:
+      labels:
+        app: zeus
+    spec:
+      containers:
+      - name: zeus
+        image: unkaos_zeus:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3006
+        envFrom:
+        - configMapRef:
+            name: unkaos-config
+        - secretRef:
+            name: unkaos-secrets
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3006
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3006
+          initialDelaySeconds: 15
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zeus-service
+spec:
+  selector:
+    app: zeus
+  ports:
+    - protocol: TCP
+      port: 3006
+      targetPort: 3006
+  type: ClusterIP

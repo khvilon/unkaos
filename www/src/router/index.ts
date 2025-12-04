@@ -111,6 +111,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   console.log("beforeEach>>>>>>>>>>>>>>>>>",to.params.workspace, window.location.host, to);
   rest.setWorkspace(to.params.workspace)
+  rest.apiVersion = 'v2'; // Use new Zeus2 REST API
   ws.setWorkspace(to.params.workspace)
   cache.setWorkspace(to.params.workspace)
   store.state["common"].workspace = to.params.workspace;

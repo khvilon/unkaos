@@ -1,0 +1,20 @@
+FROM node:23.5.0-alpine
+
+WORKDIR /app
+
+# Копируем common и устанавливаем его зависимости
+COPY ./server/common ./server/common
+WORKDIR /app/server/common
+RUN yarn install
+
+# Копируем сначала только файлы для установки зависимостей gateway
+WORKDIR /app/server/gateway
+COPY ./server/gateway/package.json ./
+RUN yarn install
+
+# Затем копируем файлы сервиса
+COPY ./server/gateway .
+
+USER node
+
+CMD [ "npx", "ts-node", "index.ts" ]

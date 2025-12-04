@@ -1,12 +1,25 @@
-FROM node:21-bookworm-slim
+FROM node:23.5.0-alpine
 
-RUN npm install -g npm@10.6.0
+WORKDIR /app
 
-COPY ./server /app
+# Копируем common и устанавливаем его зависимости
+COPY ./server/common ./server/common
+WORKDIR /app/server/common
+RUN yarn install
+
+# Копируем сначала только файлы для установки зависимостей cerberus
+WORKDIR /app
+COPY ./server/cerberus/package.json ./cerberus/
 WORKDIR /app/cerberus
 RUN yarn install
-RUN npm i --save-dev @types/express
+
+# Устанавливаем pino-gelf глобально
+RUN npm install -g pino-gelf
+
+# Затем копируем файлы сервиса
+COPY ./server/cerberus .
 
 USER node
 
-CMD [ "npx", "ts-node", "index.ts" ]
+# Запускаем сервис и пайплайним логи через pino-gelf
+CMD npx ts-node index.ts

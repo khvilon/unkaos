@@ -105,4 +105,103 @@ export default class graph_math {
     const pnt_mid = graph_math.calc_curve_mid_pnt(pnt0_cut, pnt1_cut);
     return graph_math.get_curve_arrow_str(pnt0_cut, pnt_mid, pnt1_cut);
   }
+
+  // === Функции для D3 графа ===
+
+  // Модифицированная версия calc_edge_d с разными радиусами для начала и конца
+  static calc_edge_d_with_different_radii(
+    pnt0: {x: number, y: number}, 
+    pnt1: {x: number, y: number}, 
+    startRadius: number, 
+    endRadius: number, 
+    is_bidirectional: boolean
+  ): string {
+    // Вычисляем точки обрезки с разными радиусами
+    const [pnt0_cut] = graph_math.cut_radius(pnt0, pnt1, startRadius)
+    const [, pnt1_cut] = graph_math.cut_radius(pnt0, pnt1, endRadius)
+    
+    if (!is_bidirectional) {
+      // Прямая линия
+      return graph_math.get_straight_arrow_str(pnt0_cut, pnt1_cut)
+    } else {
+      // Кривая линия - используем радиус 35+8=43 для конца чтобы линия не доходила до треугольника
+      const pnt0_cut_rotated = graph_math.rotate_pnt(pnt0, pnt0_cut, -graph_math.curve_angle)
+      const pnt1_cut_rotated = graph_math.rotate_pnt(pnt1, pnt1_cut, graph_math.curve_angle)
+      const pnt_mid = graph_math.calc_curve_mid_pnt(pnt0_cut_rotated, pnt1_cut_rotated)
+      return graph_math.get_curve_arrow_str(pnt0_cut_rotated, pnt_mid, pnt1_cut_rotated)
+    }
+  }
+
+  // Проверка двусторонней связи
+  static is_bidirectional_link(link: any, data: any): boolean {
+    return data.transitions.some((t: any) => 
+      t.status_from_uuid === link.status_to_uuid && 
+      t.status_to_uuid === link.status_from_uuid
+    )
+  }
+
+  // Вычисление пути линии для D3
+  static calculate_link_path(link: any, data: any): string {
+    const source = { x: link.source.x, y: link.source.y }
+    const target = { x: link.target.x, y: link.target.y }
+    
+    // Используем разные радиусы: начало - обычный (35), конец - увеличенный (43)
+    return graph_math.calc_edge_d_with_different_radii(
+      source, 
+      target, 
+      35, 
+      43, 
+      graph_math.is_bidirectional_link(link, data)
+    )
+  }
+
+  // Вычисление позиции и угла треугольника стрелки
+  static calculate_arrow_triangle(link: any, data: any) {
+    const source = { x: link.source.x, y: link.source.y }
+    const target = { x: link.target.x, y: link.target.y }
+    
+    // Check if this is bidirectional
+    const isBidirectional = graph_math.is_bidirectional_link(link, data)
+    
+    let endPoint
+    let tangentVector
+    
+    if (!isBidirectional) {
+      // Straight line - position triangle center at line end (radius 43)
+      const [, endPointAtLineEnd] = graph_math.cut_radius(source, target, 43)
+      endPoint = endPointAtLineEnd
+      tangentVector = {
+        x: target.x - source.x,
+        y: target.y - source.y
+      }
+    } else {
+      // Curved line - position triangle center at curve end (radius 43)
+      const [startPoint] = graph_math.cut_radius(source, target, 35)
+      const [, endPointAtLineEnd] = graph_math.cut_radius(source, target, 43)
+      
+      // Apply the same rotations as the line uses
+      const rotatedStartPoint = graph_math.rotate_pnt(source, startPoint, -graph_math.curve_angle)
+      endPoint = graph_math.rotate_pnt(target, endPointAtLineEnd, graph_math.curve_angle)
+      
+      // Calculate curve middle point using the same logic as line
+      const midPoint = graph_math.calc_curve_mid_pnt(rotatedStartPoint, endPoint)
+      
+      // For quadratic curve, tangent at end is direction from control point to end
+      tangentVector = {
+        x: endPoint.x - midPoint.x,
+        y: endPoint.y - midPoint.y
+      }
+    }
+    
+    // Calculate angle from tangent vector
+    const angle = Math.atan2(tangentVector.y, tangentVector.x) * 180 / Math.PI
+    
+    // Position triangle center at line/curve end
+    // The triangle tip will extend forward to touch the circle
+    return {
+      x: endPoint.x,
+      y: endPoint.y,
+      angle: angle
+    }
+  }
 }

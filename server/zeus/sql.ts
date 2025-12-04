@@ -1,6 +1,7 @@
-
 import postgres from "postgres";
-import tools from "../tools";
+import { createLogger } from '../server/common/logging';
+
+const logger = createLogger('zeus');
 
 let dbConf: any;
 
@@ -17,12 +18,17 @@ try {
   };
 }
 
-console.log('dbConf', dbConf)
+logger.info({
+  msg: 'Database configuration loaded',
+  host: dbConf.host,
+  port: dbConf.port,
+  database: dbConf.database,
+  user: dbConf.user
+});
 
 var sql:any = {}
 
-let zeusDbConf = tools.obj_clone(dbConf)
-//zeusDbConf.publications = 'zeus_publication'
+let zeusDbConf = structuredClone(dbConf)
 
 sql.admin = postgres(zeusDbConf) 
 
@@ -32,6 +38,10 @@ workspaceSqls['public'] = sql.admin
 workspaceSqls['admin'] = sql.admin
 
 const addWorkspaceSql = function(name:string, pass:string){
+    logger.debug({
+        msg: 'Adding workspace SQL connection',
+        workspace: name
+    });
     workspaceSqls[name] = postgres({
         user: name,
         password: pass,
@@ -42,22 +52,45 @@ const addWorkspaceSql = function(name:string, pass:string){
 }
 
 sql.init = async function(){
+    logger.info('Initializing SQL connections');
     let workspaces = await sql.admin`SELECT * FROM admin.workspaces`
 
     for(let i in workspaces){
         addWorkspaceSql(workspaces[i].name, workspaces[i].pass)
     }
+    
+    logger.info({
+        msg: 'SQL connections initialized',
+        workspaces: Object.keys(workspaceSqls).length
+    });
 }
 
 sql.query = async function(subdomain:string, query_arr:any, params_arr:any){
+    logger.debug({
+        msg: 'Processing SQL query',
+        subdomain,
+        query_count: Array.isArray(query_arr) ? query_arr.length : 1
+    });
 
     if(workspaceSqls[subdomain] == undefined){
         let workspace = await sql.admin`SELECT * FROM admin.workspaces WHERE name = ${subdomain}`
-        if(!workspace[0]) return null
+        if(!workspace[0]) {
+            logger.warn({
+                msg: 'Workspace not found',
+                subdomain
+            });
+            return null;
+        }
         addWorkspaceSql(workspace[0].name, workspace[0].pass)
     }
 
-    if(workspaceSqls[subdomain] == undefined) return null
+    if(workspaceSqls[subdomain] == undefined) {
+        logger.error({
+            msg: 'Failed to create workspace SQL connection',
+            subdomain
+        });
+        return null;
+    }
 
     if(!Array.isArray(query_arr)){
         query_arr = [query_arr]
@@ -69,24 +102,42 @@ sql.query = async function(subdomain:string, query_arr:any, params_arr:any){
         let query = query_arr[i]
         let params = params_arr[i]
 
-        console.log('sql', query, params)
+        logger.debug({
+            msg: 'Executing SQL query',
+            query,
+            params
+        });
 
         if (typeof query != 'string'){
-            console.log('sql empty query', query+'', '!'+params+'!')
+            logger.warn({
+                msg: 'Empty query',
+                query: query+'',
+                params: '!'+params+'!'
+            });
             continue
         }
 
         try {
             if(params != undefined && params != null && params.length > 0){
                 for(let j in params){
-                    if(params[j] == 'NOW()') params[j] = new Date()//workspaceSqls[subdomain]('NOW()')
+                    if(params[j] == 'NOW()') params[j] = new Date()
                 }
                 ans = await workspaceSqls[subdomain].unsafe(query, params)
             }
             else ans = await workspaceSqls[subdomain].unsafe(query)
+
+            logger.debug({
+                msg: 'SQL query executed successfully',
+                rows: ans?.length
+            });
         }
         catch(e){
-            console.log('sql error', e, query, params)
+            logger.error({
+                msg: 'SQL query error',
+                error: e,
+                query,
+                params
+            });
             ans = {error: 'Ошибка запроса в БД', trace: e, http_code: 400}
         }
     }        

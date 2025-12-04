@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+data:
+  01-init.sql: |
+    -- Create schema if not exists
+    CREATE SCHEMA IF NOT EXISTS server;
+
+    -- Set ownership and permissions
+    ALTER SCHEMA server OWNER TO CURRENT_USER;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA server GRANT ALL ON TABLES TO CURRENT_USER;
+
+    -- Set search path
+    ALTER DATABASE unkaos SET search_path TO server;
