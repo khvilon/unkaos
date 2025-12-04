@@ -1,7 +1,7 @@
 import sql from "./sql";
-import Workspace from "./types/Workspace";
-import UserSession from "./types/UserSession";
-import User from "./types/User";
+import { Workspace } from "./types/Workspace";
+import { UserSession } from "./types/UserSession";
+import { User } from "./types/User";
 import { createLogger } from '../server/common/logging';
 import {Row} from "postgres";
 
