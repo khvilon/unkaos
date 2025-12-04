@@ -371,14 +371,18 @@ export default class Data {
     }
 
     if (relation.table == 'user_sessions' && command == 'insert') {
+      const workspace = this.workspaces.get(relation.schema);
+      const user = workspace?.users?.get(row.user_uuid);
       let session: UserSession = {
         uuid: row.uuid,
         user_uuid: row.user_uuid,
         token: row.token,
         token_created_at: row.created_at,
-        expires_at: new Date(Date.parse(row.created_at) + this.tokenExpirationTimeSec * 1000 )
+        expires_at: new Date(Date.parse(row.created_at) + this.tokenExpirationTimeSec * 1000 ),
+        user: user,
+        timestamp: Date.now()
       }
-      this.workspaces.get(relation.schema)?.sessions?.set(session.token, session)
+      workspace?.sessions?.set(session.token, session)
     } else if (relation.table == 'users') {
       // if users table is updated, update users of a workspace
       await this.updateWorkspaceUsers(relation.schema)
