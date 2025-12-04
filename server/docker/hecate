@@ -7,13 +7,13 @@ COPY ./server/common ./server/common
 WORKDIR /app/server/common
 RUN yarn install
 
-# Копируем сначала только файлы для установки зависимостей gateway
-WORKDIR /app/server/gateway
-COPY ./server/gateway/package.json ./
+# Копируем сначала только файлы для установки зависимостей hecate
+WORKDIR /app/server/hecate
+COPY ./server/hecate/package.json ./
 RUN yarn install
 
 # Затем копируем файлы сервиса
-COPY ./server/gateway .
+COPY ./server/hecate .
 
 USER node
 
