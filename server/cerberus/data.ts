@@ -428,7 +428,7 @@ export default class Data {
       await this.updateWorkspaceSessions(workspaceName);
       return await this.checkSession(workspaceName, token, true);
     }
-    const user: User | undefined = workspace.users.get(userSession.user_uuid);
+    const user: User | undefined = userSession.user_uuid ? workspace.users.get(userSession.user_uuid) : undefined;
     if(!user) return null;
     return user;
   }
