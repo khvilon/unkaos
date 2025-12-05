@@ -81,7 +81,7 @@ export function registerFieldValuesRoutes(
         INSERT INTO ${escapeIdentifier(schema)}.field_values 
         (uuid, issue_uuid, field_uuid, value, created_at, updated_at)
         VALUES ($1::uuid, $2::uuid, $3::uuid, $4, NOW(), NOW())
-        ON CONFLICT (issue_uuid, field_uuid) DO UPDATE SET value = $4, updated_at = NOW()
+        ON CONFLICT (uuid) DO UPDATE SET value = $4, updated_at = NOW()
       `, uuid, issue_uuid, field_uuid, value ?? null);
 
       const items = await prisma.$queryRawUnsafe(`

@@ -88,12 +88,19 @@ export function registerIssueTagsRoutes(
     }
 
     try {
-      await prisma.$executeRawUnsafe(`
-        INSERT INTO ${escapeIdentifier(schema)}.issue_tags_selected 
-        (uuid, issue_uuid, issue_tags_uuid, created_at, updated_at)
-        VALUES ('${uuid}'::uuid, '${issue_uuid}'::uuid, '${tag_uuid}'::uuid, NOW(), NOW())
-        ON CONFLICT (issue_uuid, issue_tags_uuid) DO NOTHING
-      `);
+      // Проверяем, не существует ли уже такая связь
+      const existing: any[] = await prisma.$queryRawUnsafe(`
+        SELECT uuid FROM ${escapeIdentifier(schema)}.issue_tags_selected 
+        WHERE issue_uuid = $1::uuid AND issue_tags_uuid = $2::uuid AND deleted_at IS NULL
+      `, issue_uuid, tag_uuid);
+
+      if (existing.length === 0) {
+        await prisma.$executeRawUnsafe(`
+          INSERT INTO ${escapeIdentifier(schema)}.issue_tags_selected 
+          (uuid, issue_uuid, issue_tags_uuid, created_at, updated_at)
+          VALUES ($1::uuid, $2::uuid, $3::uuid, NOW(), NOW())
+        `, uuid, issue_uuid, tag_uuid);
+      }
 
       const items = await prisma.$queryRawUnsafe(`
         SELECT 
@@ -102,8 +109,8 @@ export function registerIssueTagsRoutes(
           it.name AS tag_name, it.color AS tag_color
         FROM ${escapeIdentifier(schema)}.issue_tags_selected its
         LEFT JOIN ${escapeIdentifier(schema)}.issue_tags it ON it.uuid = its.issue_tags_uuid
-        WHERE its.issue_uuid = '${issue_uuid}'::uuid AND its.issue_tags_uuid = '${tag_uuid}'::uuid
-      `);
+        WHERE its.issue_uuid = $1::uuid AND its.issue_tags_uuid = $2::uuid AND its.deleted_at IS NULL
+      `, issue_uuid, tag_uuid);
 
       res.status(201).json({ rows: items });
     } catch (error: any) {
@@ -128,8 +135,8 @@ export function registerIssueTagsRoutes(
       await prisma.$executeRawUnsafe(`
         UPDATE ${escapeIdentifier(schema)}.issue_tags_selected
         SET deleted_at = NOW()
-        WHERE uuid = '${uuid}'::uuid
-      `);
+        WHERE uuid = $1::uuid
+      `, uuid);
       res.status(204).send();
     } catch (error: any) {
       logger.error({ msg: 'Error deleting issue_tag_selected', error: error.message });
