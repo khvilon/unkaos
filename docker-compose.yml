@@ -121,6 +121,19 @@ services:
       - cerberus
       - athena
 
+  aether:
+    build:
+      context: .
+      dockerfile: server/docker/aether
+    restart: always
+    expose:
+      - '3010'
+    environment:
+      - AETHER_PORT=3010
+      - API_BASE_URL=https://nginx:3002
+    depends_on:
+      - cerberus
+
   hermes:
     build:
       context: .
@@ -194,6 +207,7 @@ services:
       - '3003:3003'
       - '3002:3002'
       - '6001:6001'
+      - '3008:3008'
     environment:
       - BASE_URL="https://${DOMAIN}:3002/"
       - WS_URL="wss://${DOMAIN}:3003/"
@@ -202,6 +216,7 @@ services:
       - DOCKER_BUILDKIT=1
     depends_on:
       - hecate
+      - aether
     healthcheck:
       test: ["CMD-SHELL", "nginx -t"]
       interval: 30s

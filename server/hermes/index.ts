@@ -14,14 +14,23 @@ async function init() {
     });
 
     const sender = new Sender()
-    await sender.init()
-    logger.info({
-        msg: 'Sender initialized'
-    });
-
+    
+    // Запускаем REST API сразу, не дожидаясь инициализации ботов
     Rest.listen(sender)
     logger.info({
         msg: 'REST API started'
+    });
+
+    // Инициализация ботов в фоне (не блокирует REST)
+    sender.init().then(() => {
+        logger.info({
+            msg: 'Sender initialized'
+        });
+    }).catch(error => {
+        logger.error({
+            msg: 'Sender initialization failed (non-critical)',
+            error: error.message
+        });
     });
 
     const msgOut = new MsgOut(sender);

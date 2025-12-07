@@ -1,5 +1,4 @@
 import sql from "./sql";
-import cors from 'cors';
 import express from "express";
 import axios from "axios";
 import fs from 'fs/promises';
@@ -15,7 +14,7 @@ app.use(express.json({limit: '1mb'}));
 app.use(express.raw({limit: '1mb'}));
 app.use(express.urlencoded({limit: '1mb', extended: true}));
 
-app.use(cors({origin: '*'}));
+// CORS handled by nginx
 
 let generatePassword = function(): string {
     const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

@@ -46,6 +46,7 @@ Built on stable and modern technologies such as Vue.js 3, Node.js, TypeScript, a
     - [Architecture](#architecture)
     - [Contributing](#contributing)
     - [API Reference (in progress)](#api-reference-in-progress)
+    - [🤖 MCP Integration](#-mcp-integration-ai-ide-integration)
 3. [📢Info](#📢info)
     - [News](#news)
     - [Contact the Author](#contact-the-author)
@@ -235,6 +236,38 @@ A V2 API is currently in development. Upon release, it will include an OpenAPI s
 For the moment, you can leverage requests captured from developer tools for temporary automation tasks. However, it is recommended to wait for the V2 API for serious development efforts to ensure compatibility and access to the full suite of new features.
 
 Stay tuned for updates and the detailed documentation on how to utilize the Unkaos API effectively.
+
+## 🤖 MCP Integration (Aether)
+
+Отдельный сервис **Aether** принимает MCP (SSE + JSON-RPC) и сам получает токен через Cerberus.
+
+**Endpoint через nginx (TLS 3002):** `GET/POST /aether-mcp`  
+**Headers:** `subdomain`, `email`, `password`
+
+### Возможности
+- Поиск задач по ключевым словам (title/description, limit 20)
+- Просмотр задачи по ключу `PROJ-123`
+- Создание задачи (title/description/project/type)
+- Смена статуса с проверкой workflow, список переходов
+- Списки проектов / статусов / типов задач
+
+### Быстрая настройка (например, Cursor `~/.cursor/mcp.json`)
+```json
+{
+  "mcpServers": {
+    "unkaos": {
+      "url": "https://your-server.com:3002/aether-mcp",
+      "headers": {
+        "subdomain": "your-workspace",
+        "email": "your@email.com",
+        "password": "your-password"
+      }
+    }
+  }
+}
+```
+
+Health: `http://aether:3010/health` (через nginx можно проксировать отдельно при необходимости)
 
 
 # 📢Info
