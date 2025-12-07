@@ -1,0 +1,5 @@
+---
+description: correctly run and rerun services
+alwaysApply: false
+---
+Не забывай, что проект запускается через docker-compose. Никаких локальных запусков. Не засоряй хост машину

@@ -1,0 +1,5 @@
+---
+description: how to act with task tracker issues on start and end working on issue
+alwaysApply: false
+---
+Когда работаешь над задачей из таск трекера обновляй статус когда он фактически меняется - в работе когда приступаешь к работе над задачей, в закрыто при завершении
