@@ -4,6 +4,7 @@
 
 ## Endpoint
 - `GET/POST /aether-mcp` через nginx:3002 (SSE + JSON-RPC)
+- HTTP без TLS доступен только при `NODE_ENV=dev` (локально, порт 3008). В остальных окружениях требуется HTTPS и заголовок `X-Forwarded-Proto: https`.
 
 ## Headers
 - `subdomain` — workspace

@@ -131,6 +131,7 @@ services:
     environment:
       - AETHER_PORT=3010
       - API_BASE_URL=https://nginx:3002
+      - NODE_ENV=${NODE_ENV:-production}
     depends_on:
       - cerberus
 

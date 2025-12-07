@@ -242,7 +242,8 @@ Stay tuned for updates and the detailed documentation on how to utilize the Unka
 Отдельный сервис **Aether** принимает MCP (SSE + JSON-RPC) и сам получает токен через Cerberus.
 
 **Endpoint через nginx (TLS 3002):** `GET/POST /aether-mcp`  
-**Headers:** `subdomain`, `email`, `password`
+**Headers:** `subdomain`, `email`, `password`  
+**HTTP режим:** только в `NODE_ENV=dev` (локально через порт 3008); во всех остальных окружениях требуется HTTPS и корректный `X-Forwarded-Proto=https`.
 
 ### Возможности
 - Поиск задач по ключевым словам (title/description, limit 20)

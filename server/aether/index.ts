@@ -39,8 +39,21 @@ const api: AxiosInstance = axios.create({
 
 const logger = createLogger('aether');
 const app = express();
+// Доверяем прокси, чтобы req.protocol/req.secure учитывали X-Forwarded-Proto
+app.set('trust proxy', true);
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
+
+// Разрешаем HTTP только в dev; в остальных окружениях требуем https (по X-Forwarded-Proto)
+app.use((req, res, next) => {
+  const isDev = process.env.NODE_ENV === 'dev';
+  const proto = (req.headers['x-forwarded-proto'] as string) || (req.secure ? 'https' : req.protocol);
+  if (!isDev && proto !== 'https') {
+    logger.warn({ msg: 'Rejected non-https request', proto, host: req.headers.host, url: req.originalUrl });
+    return res.status(403).json({ error: 'HTTPS is required' });
+  }
+  next();
+});
 
 // Базовый лог всех запросов к Aether (помогает увидеть сам факт подключения)
 app.use((req, res, next) => {
@@ -367,7 +380,12 @@ async function handleRpc(method: string, params: Record<string, unknown>, sessio
     case 'initialize':
       return {
         protocolVersion: '2024-11-05',
-        serverInfo: { name: 'aether-mcp', version: '0.1.0' },
+        serverInfo: {
+          name: 'aether-mcp',
+          version: '0.1.0',
+          description:
+            'Инструменты для таск-трекера Unkaos. Используй их, когда пользователь просит что-то сделать с задачами/проектами в Unkaos (создать, найти, показать, обновить, сменить статус).'
+        },
         capabilities: {
           tools: { list: true, call: true },
           prompts: { list: true },
@@ -382,58 +400,58 @@ async function handleRpc(method: string, params: Record<string, unknown>, sessio
         tools: [
           {
             name: 'search_issues',
-            description: 'Search issues by keyword (title/description, limit 20)',
+            description: 'Unkaos: поиск задач по тексту Названия/Описание (limit 20)',
             inputSchema: {
               type: 'object',
               properties: {
-                keyword: { type: 'string', description: 'Search text' }
+                keyword: { type: 'string', description: 'Текст для поиска по Названию/Описанию' }
               },
               required: ['keyword']
             }
           },
           {
             name: 'get_issue',
-            description: 'Get issue by key PROJECT-123',
+            description: 'Unkaos: получить задачу по ключу (PROJECT-123) или UUID',
             inputSchema: {
               type: 'object',
               properties: {
-                issue_number: { type: 'string', description: 'Issue key, e.g. PROJ-123' },
-                issue_uuid: { type: 'string', description: 'Issue UUID (optional, overrides key)' }
+                issue_number: { type: 'string', description: 'Ключ задачи, напр. PROJ-123' },
+                issue_uuid: { type: 'string', description: 'UUID задачи (если есть, можно без ключа)' }
               },
               required: ['issue_number']
             }
           },
           {
             name: 'create_issue',
-            description: 'Create issue with title/description/project/type',
+            description: 'Unkaos: создать задачу (title/description/project/type)',
             inputSchema: {
               type: 'object',
               properties: {
-                title: { type: 'string' },
-                description: { type: 'string' },
-                project: { type: 'string', description: 'Project short name' },
-                type: { type: 'string', description: 'Issue type name or code' }
+                title: { type: 'string', description: 'Заголовок (обязательно)' },
+                description: { type: 'string', description: 'Описание' },
+                project: { type: 'string', description: 'Короткое имя проекта, напр. BS (обязательно)' },
+                type: { type: 'string', description: 'Имя или код типа задачи (опционально)' }
               },
               required: ['title', 'project']
             }
           },
           {
             name: 'update_issue',
-            description: 'Update issue (title/description/status) by UUID',
+            description: 'Unkaos: обновить задачу по UUID (title/description/status). Статус проверяется по workflow',
             inputSchema: {
               type: 'object',
               properties: {
-                issue_uuid: { type: 'string', description: 'Issue UUID' },
-                title: { type: 'string' },
-                description: { type: 'string' },
-                status: { type: 'string', description: 'Target status name (optional)' }
+                issue_uuid: { type: 'string', description: 'UUID задачи (обязательно)' },
+                title: { type: 'string', description: 'Новое название (опционально)' },
+                description: { type: 'string', description: 'Новое описание (опционально)' },
+                status: { type: 'string', description: 'Целевой статус (опционально, проверяется допустимый переход)' }
               },
               required: ['issue_uuid']
             }
           },
           {
             name: 'get_available_transitions',
-            description: 'List allowed status transitions for an issue',
+            description: 'Unkaos: список допустимых переходов статусов для задачи',
             inputSchema: {
               type: 'object',
               properties: {
@@ -444,25 +462,45 @@ async function handleRpc(method: string, params: Record<string, unknown>, sessio
           },
           {
             name: 'list_projects',
-            description: 'List projects',
+            description: 'Unkaos: список проектов',
             inputSchema: { type: 'object', properties: {} }
           },
           {
             name: 'list_statuses',
-            description: 'List statuses',
+            description: 'Unkaos: список статусов',
             inputSchema: { type: 'object', properties: {} }
           },
           {
             name: 'list_issue_types',
-            description: 'List issue types',
+            description: 'Unkaos: список типов задач',
             inputSchema: { type: 'object', properties: {} }
           }
         ]
       };
 
     case 'prompts/list':
-      // Пока нет готовых промптов — вернуть пустой список
-      return { prompts: [] };
+      return {
+        prompts: [
+          {
+            name: 'unkaos_usage',
+            description: 'Как выбирать инструменты для таск-трекера Unkaos',
+            messages: [
+              {
+                role: 'system',
+                content:
+                  'Ты работаешь с таск-трекером Unkaos. Когда пользователь просит что-то о задачах/трекере/Unkaos (создать, найти, показать, обновить, сменить статус), используй инструменты:\n' +
+                  '- search_issues: поиск задач по тексту Названия/Описание\n' +
+                  '- get_issue: получить задачу по ключу или UUID\n' +
+                  '- create_issue: создать задачу (title, project short name, опционально type/description)\n' +
+                  '- update_issue: обновить по UUID title/description/status (статус только если переход допустим)\n' +
+                  '- get_available_transitions: посмотреть допустимые переходы\n' +
+                  '- list_projects/list_statuses/list_issue_types: справочники\n' +
+                  'Перед обновлением или сменой статуса используй issue_uuid, если он известен. Для статуса — параметр status в update_issue.'
+              }
+            ]
+          }
+        ]
+      };
 
     case 'resources/list':
       // Пока нет ресурсов — вернуть пустой список
