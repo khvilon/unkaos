@@ -118,8 +118,8 @@ export function registerDashboardsRoutes(
       await prisma.$executeRawUnsafe(`
         INSERT INTO ${escapeIdentifier(schema)}.dashboards 
         (uuid, name, author_uuid, created_at, updated_at)
-        VALUES (${uuid}::uuid, ${name}, ${author_uuid ?? null}::uuid, NOW(), NOW())
-      `);
+        VALUES ($1::uuid, $2, $3::uuid, NOW(), NOW())
+      `, uuid, name, author_uuid ?? null);
 
       // Создаём гаджеты
       if (gadgets && Array.isArray(gadgets)) {
@@ -129,11 +129,13 @@ export function registerDashboardsRoutes(
             INSERT INTO ${escapeIdentifier(schema)}.gadgets 
             (uuid, dashboard_uuid, name, config, x0, y0, width, height, type_uuid, created_at, updated_at)
             VALUES (
-              ${gadgetUuid}::uuid, ${uuid}::uuid, ${gadget.name ?? null}, ${gadget.config ?? null},
-              ${gadget.x0 ?? 0}, ${gadget.y0 ?? 0}, ${gadget.width ?? 1}, ${gadget.height ?? 1},
-              ${gadget.type_uuid}::uuid, NOW(), NOW()
+              $1::uuid, $2::uuid, $3, $4,
+              $5, $6, $7, $8,
+              $9::uuid, NOW(), NOW()
             )
-          `);
+          `, gadgetUuid, uuid, gadget.name ?? null, gadget.config ?? null,
+            gadget.x0 ?? 0, gadget.y0 ?? 0, gadget.width ?? 1, gadget.height ?? 1,
+            gadget.type_uuid);
         }
       }
 
@@ -163,9 +165,9 @@ export function registerDashboardsRoutes(
       if (name !== undefined) {
         await prisma.$executeRawUnsafe(`
           UPDATE ${escapeIdentifier(schema)}.dashboards 
-          SET name = ${name}, updated_at = NOW()
-          WHERE uuid = ${uuid}::uuid
-        `);
+          SET name = $1, updated_at = NOW()
+          WHERE uuid = $2::uuid
+        `, name, uuid);
       }
 
       // Обновляем гаджеты
@@ -173,8 +175,8 @@ export function registerDashboardsRoutes(
         // Получаем существующие гаджеты
         const existingGadgets: any[] = await prisma.$queryRawUnsafe(`
           SELECT uuid FROM ${escapeIdentifier(schema)}.gadgets 
-          WHERE dashboard_uuid = ${uuid}::uuid AND deleted_at IS NULL
-        `);
+          WHERE dashboard_uuid = $1::uuid AND deleted_at IS NULL
+        `, uuid);
         const existingUuids = new Set(existingGadgets.map((g: any) => g.uuid));
         const newUuids = new Set(gadgets.map((g: any) => g.uuid).filter(Boolean));
 
@@ -183,8 +185,8 @@ export function registerDashboardsRoutes(
           if (!newUuids.has(existing.uuid)) {
             await prisma.$executeRawUnsafe(`
               UPDATE ${escapeIdentifier(schema)}.gadgets 
-              SET deleted_at = NOW() WHERE uuid = ${existing.uuid}::uuid
-            `);
+              SET deleted_at = NOW() WHERE uuid = $1::uuid
+            `, existing.uuid);
           }
         }
 
@@ -195,22 +197,27 @@ export function registerDashboardsRoutes(
           if (existingUuids.has(gadgetUuid)) {
             await prisma.$executeRawUnsafe(`
               UPDATE ${escapeIdentifier(schema)}.gadgets 
-              SET name = ${gadget.name ?? null}, config = ${gadget.config ?? null},
-                  x0 = ${gadget.x0 ?? 0}, y0 = ${gadget.y0 ?? 0},
-                  width = ${gadget.width ?? 1}, height = ${gadget.height ?? 1},
-                  type_uuid = ${gadget.type_uuid}::uuid, updated_at = NOW()
-              WHERE uuid = ${gadgetUuid}::uuid
-            `);
+              SET name = $1, config = $2,
+                  x0 = $3, y0 = $4,
+                  width = $5, height = $6,
+                  type_uuid = $7::uuid, updated_at = NOW()
+              WHERE uuid = $8::uuid
+            `, gadget.name ?? null, gadget.config ?? null,
+              gadget.x0 ?? 0, gadget.y0 ?? 0,
+              gadget.width ?? 1, gadget.height ?? 1,
+              gadget.type_uuid, gadgetUuid);
           } else {
             await prisma.$executeRawUnsafe(`
               INSERT INTO ${escapeIdentifier(schema)}.gadgets 
               (uuid, dashboard_uuid, name, config, x0, y0, width, height, type_uuid, created_at, updated_at)
               VALUES (
-                ${gadgetUuid}::uuid, ${uuid}::uuid, ${gadget.name ?? null}, ${gadget.config ?? null},
-                ${gadget.x0 ?? 0}, ${gadget.y0 ?? 0}, ${gadget.width ?? 1}, ${gadget.height ?? 1},
-                ${gadget.type_uuid}::uuid, NOW(), NOW()
+                $1::uuid, $2::uuid, $3, $4,
+                $5, $6, $7, $8,
+                $9::uuid, NOW(), NOW()
               )
-            `);
+            `, gadgetUuid, uuid, gadget.name ?? null, gadget.config ?? null,
+              gadget.x0 ?? 0, gadget.y0 ?? 0, gadget.width ?? 1, gadget.height ?? 1,
+              gadget.type_uuid);
           }
         }
       }
@@ -239,13 +246,13 @@ export function registerDashboardsRoutes(
       // Удаляем гаджеты
       await prisma.$executeRawUnsafe(`
         UPDATE ${escapeIdentifier(schema)}.gadgets 
-        SET deleted_at = NOW() WHERE dashboard_uuid = ${uuid}::uuid
-      `);
+        SET deleted_at = NOW() WHERE dashboard_uuid = $1::uuid
+      `, uuid);
       // Удаляем дашборд
       await prisma.$executeRawUnsafe(`
         UPDATE ${escapeIdentifier(schema)}.dashboards 
-        SET deleted_at = NOW() WHERE uuid = ${uuid}::uuid
-      `);
+        SET deleted_at = NOW() WHERE uuid = $1::uuid
+      `, uuid);
       res.status(204).send();
     } catch (error: any) {
       logger.error({ msg: 'Error deleting dashboard', error: error.message });

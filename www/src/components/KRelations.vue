@@ -41,9 +41,9 @@ export default {
 <template>
   <label class="relations">
     <div class="label">
-      <i class="bx bx-link"></i
+      <i class="bx bx-link" @click="() => $emit('new_relation')"></i
       ><i
-        class="add-relation-btn bx bx-plus"
+        class="add-relation-btn add-link-btn bx bx-plus"
         @click="() => $emit('new_relation')"
       ></i
       >{{ label }}

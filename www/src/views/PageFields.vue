@@ -59,7 +59,7 @@ mod.methods.updateSelectVal = function(){
 mod.watch = {
   "selected_fields.type_uuid": function(val) {
       if(!val) return;
-      let types = this.$store.state.dicts.field_types;
+      let types = this.$store.state.field_types?.field_types;
       if(!types) return;
       let type = types.find(t => t.uuid == val);
       if(type) {
