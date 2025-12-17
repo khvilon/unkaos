@@ -115,17 +115,23 @@ export function registerDashboardsRoutes(
 
     try {
       // Создаём дашборд
-      await prisma.$executeRawUnsafe(`
+      await prisma.$executeRawUnsafe(
+        `
         INSERT INTO ${escapeIdentifier(schema)}.dashboards 
         (uuid, name, author_uuid, created_at, updated_at)
         VALUES ($1::uuid, $2, $3::uuid, NOW(), NOW())
-      `, uuid, name, author_uuid ?? null);
+      `,
+        uuid,
+        name,
+        author_uuid ?? null
+      );
 
       // Создаём гаджеты
       if (gadgets && Array.isArray(gadgets)) {
         for (const gadget of gadgets) {
           const gadgetUuid = gadget.uuid && isValidUuid(gadget.uuid) ? gadget.uuid : uuidv4();
-          await prisma.$executeRawUnsafe(`
+          await prisma.$executeRawUnsafe(
+            `
             INSERT INTO ${escapeIdentifier(schema)}.gadgets 
             (uuid, dashboard_uuid, name, config, x0, y0, width, height, type_uuid, created_at, updated_at)
             VALUES (
@@ -133,9 +139,17 @@ export function registerDashboardsRoutes(
               $5, $6, $7, $8,
               $9::uuid, NOW(), NOW()
             )
-          `, gadgetUuid, uuid, gadget.name ?? null, gadget.config ?? null,
-            gadget.x0 ?? 0, gadget.y0 ?? 0, gadget.width ?? 1, gadget.height ?? 1,
-            gadget.type_uuid);
+          `,
+            gadgetUuid,
+            uuid,
+            gadget.name ?? null,
+            gadget.config ?? null,
+            gadget.x0 ?? 0,
+            gadget.y0 ?? 0,
+            gadget.width ?? 1,
+            gadget.height ?? 1,
+            gadget.type_uuid
+          );
         }
       }
 
@@ -163,30 +177,40 @@ export function registerDashboardsRoutes(
     try {
       // Обновляем дашборд
       if (name !== undefined) {
-        await prisma.$executeRawUnsafe(`
+        await prisma.$executeRawUnsafe(
+          `
           UPDATE ${escapeIdentifier(schema)}.dashboards 
           SET name = $1, updated_at = NOW()
           WHERE uuid = $2::uuid
-        `, name, uuid);
+        `,
+          name,
+          uuid
+        );
       }
 
       // Обновляем гаджеты
       if (gadgets && Array.isArray(gadgets)) {
         // Получаем существующие гаджеты
-        const existingGadgets: any[] = await prisma.$queryRawUnsafe(`
+        const existingGadgets: any[] = await prisma.$queryRawUnsafe(
+          `
           SELECT uuid FROM ${escapeIdentifier(schema)}.gadgets 
           WHERE dashboard_uuid = $1::uuid AND deleted_at IS NULL
-        `, uuid);
+        `,
+          uuid
+        );
         const existingUuids = new Set(existingGadgets.map((g: any) => g.uuid));
         const newUuids = new Set(gadgets.map((g: any) => g.uuid).filter(Boolean));
 
         // Удаляем гаджеты которых нет в новом списке
         for (const existing of existingGadgets) {
           if (!newUuids.has(existing.uuid)) {
-            await prisma.$executeRawUnsafe(`
+            await prisma.$executeRawUnsafe(
+              `
               UPDATE ${escapeIdentifier(schema)}.gadgets 
               SET deleted_at = NOW() WHERE uuid = $1::uuid
-            `, existing.uuid);
+            `,
+              existing.uuid
+            );
           }
         }
 
@@ -195,19 +219,27 @@ export function registerDashboardsRoutes(
           const gadgetUuid = gadget.uuid && isValidUuid(gadget.uuid) ? gadget.uuid : uuidv4();
           
           if (existingUuids.has(gadgetUuid)) {
-            await prisma.$executeRawUnsafe(`
+            await prisma.$executeRawUnsafe(
+              `
               UPDATE ${escapeIdentifier(schema)}.gadgets 
               SET name = $1, config = $2,
                   x0 = $3, y0 = $4,
                   width = $5, height = $6,
                   type_uuid = $7::uuid, updated_at = NOW()
               WHERE uuid = $8::uuid
-            `, gadget.name ?? null, gadget.config ?? null,
-              gadget.x0 ?? 0, gadget.y0 ?? 0,
-              gadget.width ?? 1, gadget.height ?? 1,
-              gadget.type_uuid, gadgetUuid);
+            `,
+              gadget.name ?? null,
+              gadget.config ?? null,
+              gadget.x0 ?? 0,
+              gadget.y0 ?? 0,
+              gadget.width ?? 1,
+              gadget.height ?? 1,
+              gadget.type_uuid,
+              gadgetUuid
+            );
           } else {
-            await prisma.$executeRawUnsafe(`
+            await prisma.$executeRawUnsafe(
+              `
               INSERT INTO ${escapeIdentifier(schema)}.gadgets 
               (uuid, dashboard_uuid, name, config, x0, y0, width, height, type_uuid, created_at, updated_at)
               VALUES (
@@ -215,9 +247,17 @@ export function registerDashboardsRoutes(
                 $5, $6, $7, $8,
                 $9::uuid, NOW(), NOW()
               )
-            `, gadgetUuid, uuid, gadget.name ?? null, gadget.config ?? null,
-              gadget.x0 ?? 0, gadget.y0 ?? 0, gadget.width ?? 1, gadget.height ?? 1,
-              gadget.type_uuid);
+            `,
+              gadgetUuid,
+              uuid,
+              gadget.name ?? null,
+              gadget.config ?? null,
+              gadget.x0 ?? 0,
+              gadget.y0 ?? 0,
+              gadget.width ?? 1,
+              gadget.height ?? 1,
+              gadget.type_uuid
+            );
           }
         }
       }
@@ -246,13 +286,13 @@ export function registerDashboardsRoutes(
       // Удаляем гаджеты
       await prisma.$executeRawUnsafe(`
         UPDATE ${escapeIdentifier(schema)}.gadgets 
-        SET deleted_at = NOW() WHERE dashboard_uuid = $1::uuid
-      `, uuid);
+        SET deleted_at = NOW() WHERE dashboard_uuid = ${uuid}::uuid
+      `);
       // Удаляем дашборд
       await prisma.$executeRawUnsafe(`
         UPDATE ${escapeIdentifier(schema)}.dashboards 
-        SET deleted_at = NOW() WHERE uuid = $1::uuid
-      `, uuid);
+        SET deleted_at = NOW() WHERE uuid = ${uuid}::uuid
+      `);
       res.status(204).send();
     } catch (error: any) {
       logger.error({ msg: 'Error deleting dashboard', error: error.message });
@@ -261,6 +301,8 @@ export function registerDashboardsRoutes(
   });
 
   app.use(`${apiPrefix}/dashboards`, router);
+  // Алиас для единственного числа (compat с фронтендом: /api/v2/dashboard/:uuid)
+  app.use(`${apiPrefix}/dashboard`, router);
 
   listeners.push({ method: 'get', func: 'read_dashboards', entity: 'dashboards' });
   listeners.push({ method: 'get', func: 'read_dashboard', entity: 'dashboard' });

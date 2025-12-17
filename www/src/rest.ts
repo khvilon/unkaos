@@ -109,8 +109,9 @@ export default class rest {
       method: method
     };
 
-    // Normalize method name
-    method = method.replace("create", "upsert").replace("update", "upsert");
+    // Важно: в REST v2 у нас есть явные POST (create_*) и PUT (update_*) хэндлеры.
+    // Нормализация create/update -> upsert ломает кейсы, когда uuid генерируется на клиенте
+    // (например, дашборды/гаджеты/избранное): запрос ошибочно уходит в PUT вместо POST.
     
     const { httpMethod, url } = this.buildRestUrl(method, body, query);
     
@@ -188,14 +189,8 @@ export default class rest {
     const data = await resp.json();
     store.state["alerts"][alert_id].type = "ok";
 
-    // Handle 'rows'/'items' and plain object responses (e.g. POST /issues returns single object)
-    let items = data?.rows ?? data?.items;
-    if (!items) {
-      if (Array.isArray(data)) items = data;
-      else if (data && typeof data === 'object') items = [data];
-      else items = [];
-    }
-    if (!Array.isArray(items)) items = [items];
+    // Handle both 'rows' and 'items' response formats
+    const items = data.rows || data.items || [];
 
     // Update cached profile if reading users
     if (method === 'read_users' && items.length > 0) {

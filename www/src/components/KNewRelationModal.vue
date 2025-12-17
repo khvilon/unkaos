@@ -20,7 +20,6 @@ export default {
       issues_info: [],
       issue1_uuid: "",
       relation_type: {},
-      search_text: "",
     };
   },
   created() {},
@@ -38,10 +37,6 @@ export default {
     },
   },
   methods: {
-    on_search(val) {
-      this.search_text = val;
-      this.get_issues_sugestions(val);
-    },
     select_issue1(issue1_uuid) {
       console.log(issue1_uuid);
       this.issue1_uuid = issue1_uuid;
@@ -114,23 +109,14 @@ export default {
       >
       </SelectInput>
 
-      <input
-        type="text"
-        class="relation-search-input"
-        placeholder="Поиск задачи"
-        :value="search_text"
-        @input="on_search($event.target.value)"
-      />
-      <div class="search-results" v-if="issues_info.length">
-        <div
-          class="search-result-item"
-          v-for="issue in issues_info"
-          :key="issue.uuid"
-          @click="select_issue1(issue.uuid)"
-        >
-          {{ issue.name || issue.full_num || issue.uuid }}
-        </div>
-      </div>
+      <SelectInput
+        @search="get_issues_sugestions"
+        label="Задача"
+        :values="issues_info"
+        :parameters="{ clearable: false, reduce: (obj) => obj.uuid }"
+        @update_parent_from_input="select_issue1"
+      >
+      </SelectInput>
 
       <div class="btn-container">
         <KButton
@@ -168,33 +154,6 @@ export default {
 
 .new-relation-modal > *:not(:last-child) {
   margin-bottom: 10px;
-}
-
-.relation-search-input {
-  width: 100%;
-  height: $input-height;
-  padding: 6px 10px;
-  background: var(--input-bg-color);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-}
-
-.search-results {
-  max-height: 200px;
-  overflow-y: auto;
-  background: var(--input-bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-}
-
-.search-result-item {
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.search-result-item:hover {
-  background: var(--table-row-color);
 }
 
 .new-relation-modal SelectInut {

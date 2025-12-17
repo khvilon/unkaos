@@ -194,13 +194,6 @@ page_helper.create_module = async function (data, methods) {
     //instance.name = 'aaa'
     instance.is_new = true;
 
-    // Для проектов сразу подставляем текущего пользователя как владельца,
-    // чтобы не блокировать сохранение при обязательном поле owner_uuid
-    if (this.name == "projects") {
-      const me = cache.getObject("profile");
-      if (me?.uuid) instance.owner_uuid = me.uuid;
-    }
-
     if (this.name == "issue" && params == undefined) {
       instance.project_uuid = this.$store.state["projects"]["projects"][0].uuid;
       instance.type_uuid =

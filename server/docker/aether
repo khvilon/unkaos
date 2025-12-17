@@ -21,3 +21,7 @@ USER node
 CMD [ "npx", "ts-node", "index.ts" ]
 
 
+
+
+
+

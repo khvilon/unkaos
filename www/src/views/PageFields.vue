@@ -59,12 +59,20 @@ mod.methods.updateSelectVal = function(){
 mod.watch = {
   "selected_fields.type_uuid": function(val) {
       if(!val) return;
-      let types = this.$store.state.field_types?.field_types;
-      if(!types) return;
-      let type = types.find(t => t.uuid == val);
-      if(type) {
-          this.selected_fields.type_code = type.code;
-      }
+      const types = this.field_types || [];
+      const type = types.find(t => t.uuid == val);
+      if(type?.code) this.selected_fields.type_code = type.code;
+  },
+  // Если справочник field_types подгрузился позже выбора type_uuid — проставим type_code
+  field_types: {
+    handler: function() {
+      const val = this.selected_fields?.type_uuid;
+      if(!val) return;
+      const types = this.field_types || [];
+      const type = types.find(t => t.uuid == val);
+      if(type?.code) this.selected_fields.type_code = type.code;
+    },
+    deep: true
   }
 }
 

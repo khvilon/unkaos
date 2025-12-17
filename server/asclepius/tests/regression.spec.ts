@@ -975,26 +975,34 @@ test.describe.serial('Регресионный тест', () => {
     
     // Связываем с первой
     console.log('Добавление связи...');
-    // Кнопка может быть "Добавить связь" или иконка
-    const addLinkBtn = page.locator('button:has-text("Связать"), .add-link-btn, .bx-link, button[title="Связи (L)"]');
+    // Кнопка добавления связи находится в блоке связей (иконка "+")
+    const addLinkBtn = page.locator('#issue-relations .add-relation-btn');
     if (await addLinkBtn.count() > 0) {
         await addLinkBtn.first().click();
         await page.waitForTimeout(500);
         
-        // Ждем модалку
-        await page.waitForSelector('.modal, .link-dialog', { timeout: 5000 });
+        // Ждём модалку создания связи
+        await page.waitForSelector('.new-relation-modal', { timeout: 5000 });
         
-        // Вводим название первой задачи для поиска
-        const searchInput = page.locator('.modal input[type="text"], .link-dialog input');
-        await searchInput.fill('Тестовая задача E2E');
-        await page.waitForTimeout(1000);
+        // Выбираем задачу для связи через SelectInput в модалке
+        const issueSelectToggle = page.locator('.new-relation-modal .select-input:has(.label:text-is("Задача")) .vs__dropdown-toggle');
+        if (await issueSelectToggle.count() > 0) {
+          await issueSelectToggle.click();
+          await page.waitForTimeout(200);
+
+          const searchInput = page.locator('.new-relation-modal .select-input:has(.label:text-is("Задача")) .vs__search');
+          if (await searchInput.count() > 0) {
+            await searchInput.fill('Тестовая задача E2E');
+          }
+          await page.waitForTimeout(800);
+        }
         
         // Выбираем из списка (обычно выпадает dropdown или список)
-        const option = page.locator('.search-result-item, .vs__dropdown-option, .suggestion').first();
+        const option = page.locator('.vs__dropdown-option, .search-result-item, .suggestion').first();
         if (await option.count() > 0) {
             await option.click();
             
-            const saveLinkBtn = page.locator('.modal button:has-text("Добавить"), .modal button:has-text("Сохранить")');
+            const saveLinkBtn = page.locator('.new-relation-modal input[type="button"][value="Создать"]');
             await saveLinkBtn.click();
             await page.waitForTimeout(1000);
             
@@ -1004,7 +1012,7 @@ test.describe.serial('Регресионный тест', () => {
             await page.keyboard.press('Escape');
         }
     } else {
-        console.warn('⚠️ Кнопка связей не найдена');
+        console.warn('⚠️ Кнопка добавления связи не найдена');
     }
   });
 
@@ -1190,57 +1198,30 @@ test.describe.serial('Регресионный тест', () => {
     // Кликаем на первый дашборд
     const dashboardLink = page.locator('.ktable a[href*="/dashboard/"], .dashboard-card');
     if (await dashboardLink.count() > 0) {
-      await dashboardLink.first().click();
+      // Иногда сайдбар перекрывает клики — кликаем форсированно
+      await dashboardLink.first().click({ force: true });
       await page.waitForTimeout(2000);
       
-      // Добавляем гаджет TimeReport
-      const addGadgetBtn = page.locator('.add-gadget-btn, .bx-plus-circle');
-      if (await addGadgetBtn.count() > 0) {
-        await addGadgetBtn.first().click();
-        await page.waitForTimeout(1000);
-        
-        // Выбираем TimeReport
-        const timeReportOption = page.locator('.gadget-types-cell:has-text("TimeReport"), .gadget-option:has-text("TimeReport")');
-        if (await timeReportOption.count() > 0) {
-          await timeReportOption.first().click();
-          await page.waitForTimeout(1000);
-          console.log('✅ Гаджет TimeReport добавлен');
-        } else {
-          console.log('⚠️ TimeReport не найден в списке гаджетов');
-          await page.keyboard.press('Escape');
-        }
-        
-        // Добавляем гаджет Burndown
-        if (await addGadgetBtn.count() > 0) {
-          await addGadgetBtn.first().click();
-          await page.waitForTimeout(1000);
-          
-          const burndownOption = page.locator('.gadget-types-cell:has-text("Burndown"), .gadget-option:has-text("Burndown")');
-          if (await burndownOption.count() > 0) {
-            await burndownOption.first().click();
-            await page.waitForTimeout(1000);
-            console.log('✅ Гаджет Burndown добавлен');
-          } else {
-            await page.keyboard.press('Escape');
-          }
-        }
-        
-        // Добавляем гаджет IssuesTable
-        if (await addGadgetBtn.count() > 0) {
-          await addGadgetBtn.first().click();
-          await page.waitForTimeout(1000);
-          
-          const issuesTableOption = page.locator('.gadget-types-cell:has-text("IssuesTable"), .gadget-option:has-text("IssuesTable"), .gadget-types-cell:has-text("Таблица")');
-          if (await issuesTableOption.count() > 0) {
-            await issuesTableOption.first().click();
-            await page.waitForTimeout(1000);
-            console.log('✅ Гаджет IssuesTable добавлен');
-          } else {
-            await page.keyboard.press('Escape');
-          }
-        }
-      } else {
-        console.log('⚠️ Кнопка добавления гаджета не найдена');
+      // Добавляем гаджеты через общий helper (он сам открывает/закрывает модалку)
+      try {
+        await addDashboardGadget(page, 'TimeReport');
+        console.log('✅ Гаджет TimeReport добавлен');
+      } catch (e) {
+        console.log('⚠️ Не удалось добавить TimeReport');
+      }
+
+      try {
+        await addDashboardGadget(page, 'Burndown');
+        console.log('✅ Гаджет Burndown добавлен');
+      } catch (e) {
+        console.log('⚠️ Не удалось добавить Burndown');
+      }
+
+      try {
+        await addDashboardGadget(page, 'IssuesTable');
+        console.log('✅ Гаджет IssuesTable добавлен');
+      } catch (e) {
+        console.log('⚠️ Не удалось добавить IssuesTable');
       }
     } else {
       console.log('⚠️ Дашборд не найден');
@@ -1258,6 +1239,9 @@ test.describe.serial('Регресионный тест', () => {
     // Кликаем на первый дашборд
     const dashboardLink = page.locator('.ktable a[href*="/dashboard/"], .dashboard-card');
     if (await dashboardLink.count() > 0) {
+      // Сайдбар закрывается по mouseout; уводим курсор в контент, чтобы не перехватывал клик
+      await page.mouse.move(320, 40);
+      await page.waitForTimeout(250);
       await dashboardLink.first().click();
       await page.waitForTimeout(2000);
       
