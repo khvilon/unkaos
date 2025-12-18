@@ -435,7 +435,8 @@ router.post('/', async (req: Request, res: Response) => {
           await prisma.$executeRawUnsafe(`
             INSERT INTO ${escapeIdentifier(subdomain)}.field_values (uuid, issue_uuid, field_uuid, value)
             VALUES ($1::uuid, $2::uuid, $3::uuid, $4)
-            ON CONFLICT (uuid) DO UPDATE SET value = EXCLUDED.value, issue_uuid = EXCLUDED.issue_uuid, field_uuid = EXCLUDED.field_uuid
+            ON CONFLICT (issue_uuid, field_uuid) WHERE deleted_at IS NULL
+            DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
           `, fvUuid, issueUuid, fieldValue.field_uuid, String(fieldValue.value));
         }
       }
@@ -525,7 +526,8 @@ router.put('/:uuid', async (req: Request, res: Response) => {
           await prisma.$executeRawUnsafe(`
             INSERT INTO ${escapeIdentifier(subdomain)}.field_values (uuid, issue_uuid, field_uuid, value)
             VALUES ($1::uuid, $2::uuid, $3::uuid, $4)
-            ON CONFLICT (uuid) DO UPDATE SET value = EXCLUDED.value, issue_uuid = EXCLUDED.issue_uuid, field_uuid = EXCLUDED.field_uuid
+            ON CONFLICT (issue_uuid, field_uuid) WHERE deleted_at IS NULL
+            DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
           `, fvUuid, uuid, fieldValue.field_uuid, String(fieldValue.value));
         }
       }

@@ -803,6 +803,8 @@ describe('Issues E2E - Кастомные поля (Field Values)', () => {
       expect(fieldValuesResponse.status).toBe(200);
       expect(fieldValuesResponse.data.rows).toBeDefined();
       expect(fieldValuesResponse.data.rows.length).toBeGreaterThan(0);
+      // Критично: не должно появляться дубликатов field_values для одной пары issue_uuid + field_uuid
+      expect(fieldValuesResponse.data.rows.length).toBe(1);
       expect(fieldValuesResponse.data.rows[0].value).toBe(PRIORITY_VALUES.SHOWSTOPPER);
       
       console.log('Повторное обновление приоритета успешно (ON CONFLICT работает)');

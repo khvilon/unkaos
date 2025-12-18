@@ -81,7 +81,8 @@ export function registerFieldValuesRoutes(
         INSERT INTO ${escapeIdentifier(schema)}.field_values 
         (uuid, issue_uuid, field_uuid, value, created_at, updated_at)
         VALUES ($1::uuid, $2::uuid, $3::uuid, $4, NOW(), NOW())
-        ON CONFLICT (uuid) DO UPDATE SET value = $4, updated_at = NOW()
+        ON CONFLICT (issue_uuid, field_uuid) WHERE deleted_at IS NULL
+        DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
       `, uuid, issue_uuid, field_uuid, value ?? null);
 
       const items = await prisma.$queryRawUnsafe(`
@@ -92,7 +93,7 @@ export function registerFieldValuesRoutes(
         FROM ${escapeIdentifier(schema)}.field_values fv
         LEFT JOIN ${escapeIdentifier(schema)}.fields f ON f.uuid = fv.field_uuid
         LEFT JOIN ${escapeIdentifier(schema)}.field_types ft ON ft.uuid = f.type_uuid
-        WHERE fv.issue_uuid = $1::uuid AND fv.field_uuid = $2::uuid
+        WHERE fv.issue_uuid = $1::uuid AND fv.field_uuid = $2::uuid AND fv.deleted_at IS NULL
       `, issue_uuid, field_uuid);
 
       res.status(201).json({ rows: items });

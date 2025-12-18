@@ -138,6 +138,10 @@ ALTER TABLE ONLY public.field_values
     ADD CONSTRAINT field_values_pkey PRIMARY KEY (uuid);
 --ALTER TABLE ONLY public.field_values
 --    ADD CONSTRAINT field_values_pkey PRIMARY KEY (issue_uuid, field_uuid);
+-- Гарантируем не более одного активного значения на пару (issue_uuid, field_uuid)
+CREATE UNIQUE INDEX IF NOT EXISTS field_values_issue_uuid_field_uuid_uq
+    ON public.field_values (issue_uuid, field_uuid)
+    WHERE deleted_at IS NULL;
 
 CREATE TABLE public.field_types (
     uuid uuid NOT NULL,
