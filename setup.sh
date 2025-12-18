@@ -132,7 +132,7 @@ fi
 CPU_CORES=1
 $DOCKER_COMPOSE up -d \
 --scale cerberus=$CPU_CORES \
---scale zeus=$CPU_CORES \
+--scale zeus2=$CPU_CORES \
 --scale hecate=$CPU_CORES 
 
 # 6. Set up a Cron Job to run update.sh every 5 minutes

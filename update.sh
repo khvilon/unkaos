@@ -156,14 +156,14 @@ else
 fi
 CPU_CORES=1
 
-docker-compose down ossa cerberus zeus hecate hermes eileithyia athena postgres
+docker-compose down ossa cerberus zeus2 hecate hermes eileithyia athena postgres
 docker-compose up -d eileithyia athena postgres
 
 case $OS_ID in
     ubuntu|debian|raspbian|centos|fedora|rhel)
         docker-compose up --build -d \
         --scale cerberus=$CPU_CORES \
-        --scale zeus=$CPU_CORES \
+        --scale zeus2=$CPU_CORES \
         --scale hecate=$CPU_CORES
         ;;
     *)
