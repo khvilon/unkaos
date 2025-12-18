@@ -50,6 +50,41 @@ if [ ! -d "$LE_DIR" ]; then
   exit 1
 fi
 
+# Copy fullchain/privkey into repo-mounted nginx/ssl.
+# NOTE: certbot hooks run ONLY when a renewal is attempted; but we also need
+# to fix the existing installation even if the cert is not due for renewal yet.
+sync_ssl_files() {
+  mkdir -p "$SSL_DIR"
+
+  local tmp_cert tmp_key changed=0
+  tmp_cert="$(mktemp)"
+  tmp_key="$(mktemp)"
+
+  cp -fL "$LE_DIR/fullchain.pem" "$tmp_cert"
+  cp -fL "$LE_DIR/privkey.pem" "$tmp_key"
+
+  if [ ! -f "$SSL_DIR/cert.pem" ] || ! cmp -s "$tmp_cert" "$SSL_DIR/cert.pem"; then
+    cp -f "$tmp_cert" "$SSL_DIR/cert.pem"
+    changed=1
+  fi
+  if [ ! -f "$SSL_DIR/privkey.pem" ] || ! cmp -s "$tmp_key" "$SSL_DIR/privkey.pem"; then
+    cp -f "$tmp_key" "$SSL_DIR/privkey.pem"
+    changed=1
+  fi
+
+  rm -f "$tmp_cert" "$tmp_key"
+
+  chmod 600 "$SSL_DIR/privkey.pem" || true
+  chmod 644 "$SSL_DIR/cert.pem" || true
+
+  # Sanity: cert.pem must contain at least 2 cert blocks (leaf + intermediate)
+  local blocks
+  blocks="$(grep -c "BEGIN CERTIFICATE" "$SSL_DIR/cert.pem" 2>/dev/null || true)"
+  echo "[renew-cert] cert.pem cert-blocks=$blocks (expected >= 2)"
+
+  return $changed
+}
+
 # Detect compose command (docker-compose legacy vs docker compose plugin)
 if command -v docker-compose >/dev/null 2>&1; then
   COMPOSE="docker-compose"
@@ -62,6 +97,15 @@ fi
 
 mkdir -p "$SSL_DIR"
 
+# Ensure fullchain is in place even if certbot does not renew.
+echo "[renew-cert] Syncing fullchain -> nginx/ssl/cert.pem"
+if sync_ssl_files; then
+  echo "[renew-cert] SSL files updated; restarting nginx"
+  $COMPOSE -f "$COMPOSE_FILE" restart nginx
+else
+  echo "[renew-cert] SSL files already up to date"
+fi
+
 # Certbot standalone http-01 needs port 80 -> stop nginx ONLY if a renewal is attempted.
 # Hooks run only when renewal is actually due/attempted.
 PRE_HOOK="$COMPOSE -f $COMPOSE_FILE stop nginx"
@@ -70,6 +114,9 @@ POST_HOOK="$COMPOSE -f $COMPOSE_FILE start nginx && $COMPOSE -f $COMPOSE_FILE re
 
 echo "[renew-cert] Running certbot renew for DOMAIN=$DOMAIN"
 certbot renew --quiet --pre-hook "$PRE_HOOK" --deploy-hook "$DEPLOY_HOOK" --post-hook "$POST_HOOK"
+
+echo "[renew-cert] Syncing fullchain after certbot (safety)"
+sync_ssl_files || true
 
 echo "[renew-cert] Done"
 
