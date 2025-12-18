@@ -99,8 +99,22 @@ if [[ $use_certbot != "no" ]]; then
     eval $CERT_INSTALL
     source $NEW_ENV
     sudo certbot certonly --standalone -d $DOMAIN --register-unsafely-without-email --agree-tos --no-eff-email
-    cp -rfL /etc/letsencrypt/live/$DOMAIN/* /var/app/unkaos/nginx/ssl
-    (crontab -l ; echo "0 */12 * * * /usr/bin/certbot renew --quiet --post-hook \"docker-compose -f /var/app/unkaos/docker-compose.yml restart nginx\"") | crontab -
+
+    # IMPORTANT: nginx expects /etc/nginx/ssl/cert.pem, but LetsEncrypt's cert.pem is only the leaf.
+    # For Node/OpenSSL clients (Cursor MCP) we must serve the FULLCHAIN (leaf + intermediate).
+    sudo mkdir -p /var/app/unkaos/nginx/ssl
+    sudo cp -fL /etc/letsencrypt/live/$DOMAIN/fullchain.pem /var/app/unkaos/nginx/ssl/cert.pem
+    sudo cp -fL /etc/letsencrypt/live/$DOMAIN/privkey.pem /var/app/unkaos/nginx/ssl/privkey.pem
+    sudo chmod 600 /var/app/unkaos/nginx/ssl/privkey.pem || true
+    sudo chmod 644 /var/app/unkaos/nginx/ssl/cert.pem || true
+
+    # Install renewal script & cron (renewals require stopping nginx because certbot uses standalone http-01)
+    if [ -f /var/app/unkaos/renew-cert.sh ]; then
+        sudo chmod +x /var/app/unkaos/renew-cert.sh || true
+        (crontab -l 2>/dev/null ; echo "0 */12 * * * /bin/bash /var/app/unkaos/renew-cert.sh >> /var/log/unkaos-renew-cert.log 2>&1") | crontab -
+    else
+        echo "WARNING: /var/app/unkaos/renew-cert.sh not found; skipping cert renew cron setup"
+    fi
 fi
 
 # 5. Run docker containers
