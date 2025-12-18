@@ -268,6 +268,16 @@ test.describe.serial('Регресионный тест', () => {
     const adminRole = page.locator('.ktable span:has-text("Администратор")').first();
     await adminRole.click({ force: true });
     await page.waitForTimeout(1000);
+
+    // Проверяем, что пользователи роли подгрузились (ожидаем как минимум текущего пользователя)
+    const usersInput = page.locator('.user-input:has(.label:has-text("Пользователи"))');
+    await usersInput.waitFor({ state: 'visible', timeout: 10000 });
+
+    const initiallySelectedUsers = await usersInput.locator('.vs__selected').count();
+    if (initiallySelectedUsers === 0) {
+      await page.screenshot({ path: 'debug-roles-users-empty.png', fullPage: true });
+      throw new Error('Для роли "Администратор" не подгрузились назначенные пользователи (ожидали как минимум текущего пользователя)');
+    }
     
     // Проверяем чекбоксы прав
     const checkboxes = await page.locator('.checkboxlist input[type="checkbox"]').count();
@@ -280,9 +290,49 @@ test.describe.serial('Регресионный тест', () => {
     
     // Пробуем сохранить без изменений (Full Replace тест)
     const saveButton = page.locator('input[type="button"][value="Сохранить"]');
+
+    // Пробуем назначить пользователя роли и проверить сохранение через обновление страницы
+    let assignedTestUser = false;
+    try {
+      await usersInput.locator('.vs__dropdown-toggle').click();
+      await page.waitForTimeout(300);
+
+      const userOption = page.locator(`.vs__dropdown-option:has-text("${userName}")`).first();
+      if (await userOption.count() > 0) {
+        await userOption.click();
+        assignedTestUser = true;
+      } else {
+        console.warn(`⚠️ В выпадающем списке пользователей не найден "${userName}", пропускаем проверку назначения`);
+      }
+
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+    } catch (e) {
+      console.warn('⚠️ Не удалось выбрать пользователя в роли (UI/локатор):', e);
+    }
+
     if (await saveButton.count() > 0) {
       await saveButton.click();
       await page.waitForTimeout(2000);
+    }
+
+    if (assignedTestUser) {
+      console.log('🔄 Обновление страницы для проверки сохранения пользователей роли...');
+      await page.reload();
+      await page.waitForSelector('.table_card_fields', { timeout: 10000 });
+
+      const adminRoleAfterReload = page.locator('.ktable span:has-text("Администратор")').first();
+      await adminRoleAfterReload.click({ force: true });
+      await page.waitForTimeout(1000);
+
+      const usersInputAfterReload = page.locator('.user-input:has(.label:has-text("Пользователи"))');
+      await usersInputAfterReload.waitFor({ state: 'visible', timeout: 10000 });
+
+      const hasTestUserSelected = await usersInputAfterReload.locator(`.vs__selected:has-text("${userName}")`).count();
+      if (hasTestUserSelected === 0) {
+        await page.screenshot({ path: 'debug-roles-users-not-saved.png', fullPage: true });
+        throw new Error(`Назначение пользователя "${userName}" роли не сохранилось после обновления страницы`);
+      }
     }
     
     console.log('✅ Роль проверена и сохранена');
