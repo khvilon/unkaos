@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { getEmailFromTempMail, getIframeBody, waitRegisterMail, sendWorkspaceRegister, signIn, signOut, navigateMainMenu, changeField, createUser, createWorkflow, createStatus, createField, createProject, createIssue, logWork, addDashboardGadget, createAutomation } from '../helpers';
 
 test.describe.serial('Регресионный тест', () => {
@@ -249,6 +249,67 @@ test.describe.serial('Регресионный тест', () => {
     } else {
       console.log('⚠️ Воркфлоу не найден в таблице');
     }
+  });
+
+  test('Воркфлоу: переименование перехода сохраняется (regress BS-15)', async ({ page }) => {
+    console.log('🚀 Тест переименования перехода в воркфлоу (regress BS-15)...');
+
+    await navigateMainMenu(page, 'workflows');
+    await page.waitForSelector('.ktable', { timeout: 10000 });
+
+    // Открываем воркфлоу (может быть уже с суффиксом "(изменён)")
+    const wfRow = page.locator('.ktable span:has-text("Тестовый воркфлоу")').first();
+    if (await wfRow.count() === 0) {
+      console.warn('⚠️ Тестовый воркфлоу не найден, пропускаем тест переименования перехода');
+      return;
+    }
+
+    await wfRow.click({ force: true });
+    await page.waitForSelector('[data-testid="simple-workflow-editor"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="svg-workflow"]', { timeout: 10000 });
+    await page.waitForTimeout(1000);
+
+    const transition = page.locator('[data-testid^="canvas-transition-"]').first();
+    if (await transition.count() === 0) {
+      console.warn('⚠️ Переходы на холсте не найдены, пропускаем тест');
+      return;
+    }
+
+    const transitionTestId = await transition.getAttribute('data-testid');
+    if (!transitionTestId) {
+      console.warn('⚠️ Не удалось прочитать data-testid у перехода, пропускаем тест');
+      return;
+    }
+
+    // Выбираем переход и меняем имя
+    await page.locator(`[data-testid="${transitionTestId}"]`).first().click({ force: true });
+    const nameInput = page.locator('[data-testid="selected-element-name"]');
+    await nameInput.waitFor({ state: 'visible', timeout: 10000 });
+
+    const newTransitionName = `Переход переименован ${startTime}`;
+    await nameInput.fill(newTransitionName);
+
+    // Сохраняем воркфлоу
+    await page.locator('[data-testid="save-workflow"]').click();
+    await page.waitForTimeout(2000);
+
+    // Перезагрузка страницы и повторное открытие воркфлоу
+    await page.reload();
+    await page.waitForSelector('.ktable', { timeout: 10000 });
+
+    await page.locator('.ktable span:has-text("Тестовый воркфлоу")').first().click({ force: true });
+    await page.waitForSelector('[data-testid="simple-workflow-editor"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="svg-workflow"]', { timeout: 10000 });
+    await page.waitForTimeout(1000);
+
+    // Снова выбираем тот же переход (по data-testid зависящему от статусов, а не от имени перехода)
+    await page.locator(`[data-testid="${transitionTestId}"]`).first().click({ force: true });
+    await nameInput.waitFor({ state: 'visible', timeout: 10000 });
+
+    const valueAfterReload = await nameInput.inputValue();
+    expect(valueAfterReload).toBe(newTransitionName);
+
+    console.log('✅ Переименование перехода сохранилось после reload');
   });
 
   test('Роль: проверка и редактирование', async ({ page }) => {
@@ -1237,6 +1298,35 @@ test.describe.serial('Регресионный тест', () => {
     }
     
     console.log('✅ Тест добавления тега завершён');
+  });
+
+  test('Задачи: сортировка по «Создана» не должна приводить к 500', async ({ page }) => {
+    console.log('🚀 Тест сортировки задач по «Создана» (регресс BS-14)...');
+
+    const issuesStatuses: number[] = [];
+    page.on('response', (resp) => {
+      if (resp.url().includes('/api/v2/issues')) {
+        issuesStatuses.push(resp.status());
+      }
+    });
+
+    await navigateMainMenu(page, 'issues');
+    await page.waitForSelector('.ktable', { timeout: 10000 });
+    await page.waitForTimeout(2000); // дать догрузиться первому запросу
+
+    const before = issuesStatuses.length;
+
+    const createdHeader = page.locator('.ktable thead th:has-text("Создана")').first();
+    await createdHeader.click();
+    await page.waitForTimeout(2000);
+
+    const after = issuesStatuses.length;
+    const newStatuses = issuesStatuses.slice(before);
+
+    expect(after).toBeGreaterThan(before); // сортировка должна вызвать запрос
+    expect(newStatuses).not.toContain(500);
+
+    console.log('✅ Сортировка по «Создана» не привела к 500');
   });
 
   test('Дашборд: добавление гаджетов разных типов', async ({ page }) => {
