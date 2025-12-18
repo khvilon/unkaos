@@ -1,6 +1,7 @@
 import express from 'express';
 import Sender from './Sender';
 import { createLogger } from '../server/common/logging';
+import { registerGitlabWebhook } from './GitlabWebhook';
 
 const logger = createLogger('hermes:rest');
 
@@ -31,6 +32,12 @@ export class Rest {
         app.use(express.json({limit: '150mb'}));
         app.use(express.raw({limit: '150mb'}));
         app.use(express.urlencoded({limit: '150mb', extended: true}));
+
+        // GitLab integration (MVP)
+        // Env:
+        // - GITLAB_WEBHOOK_TOKEN (required)
+        // - GITLAB_WEBHOOK_PATH (optional, default: /integrations/gitlab/webhook)
+        registerGitlabWebhook(app);
 
         app.post('/send', async (req: any, res: any) => {
             const { transport, recipient, title, body, workspace } = req.body;

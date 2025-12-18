@@ -145,6 +145,8 @@ services:
     environment:
       - BASE_URL="https://${DOMAIN}/"
       - HERMES_PORT=${HERMES_PORT}
+      - GITLAB_WEBHOOK_TOKEN=${GITLAB_WEBHOOK_TOKEN}
+      - GITLAB_WEBHOOK_PATH=${GITLAB_WEBHOOK_PATH}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
       - DB_USER=${DB_USER}
@@ -231,7 +233,7 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
-      - '5432:5432'
+      - '${POSTGRES_HOST_PORT:-5432}:5432'
     volumes:
       - ./server/db:/sql-scripts:ro
       - unkaos-pg-data:/var/lib/postgresql/data 
