@@ -418,7 +418,14 @@ function updateName(value: string) {
   if (selected.value.node) {
     selected.value.node.issue_statuses[0].name = value
   } else if (selected.value.edge) {
+    // selected.edge — это D3Link (копия transition), созданная в useD3Graph.processData()
+    // ВАЖНО: нужно также обновить исходный объект transition в props.wdata.transitions,
+    // иначе store/save_workflows отправит старое имя и переименование не сохранится.
     selected.value.edge.name = value
+    const original = props.wdata.transitions.find(t => t.uuid === selected.value.edge?.uuid)
+    if (original) {
+      original.name = value
+    }
   }
 }
 

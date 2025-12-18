@@ -18,6 +18,22 @@ export interface QueryOptions {
 }
 
 /**
+ * В query-lang SQLGenerator генерирует ORDER BY с tableAlias (например `ORDER BY I.created_at DESC`).
+ * В этом билдере:
+ * - WHERE применяется внутри CTE к подзапросу с алиасом `I`
+ * - Основной SELECT читает из CTE как `FROM filtered_issues T1`
+ *
+ * Поэтому ORDER BY нужно переписать на алиас `T1`, иначе Postgres упадёт с
+ * "missing FROM-clause entry for table \"I\"" (что и выглядело как 500 на /api/v2/issues).
+ */
+function rewriteOrderByAlias(orderByClause: string, fromAlias: string, toAlias: string): string {
+  if (!orderByClause) return '';
+  // Заменяем только префиксы алиаса вида "I." (граница слова важна, чтобы не задеть что-то ещё)
+  const from = fromAlias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return orderByClause.replace(new RegExp(`\\b${from}\\.`,'g'), `${toAlias}.`);
+}
+
+/**
  * Строит CTE filtered_issues
  * Примечание: field_values_rows не используется здесь, так как значения полей
  * получаются через LATERAL JOIN в основном запросе
@@ -75,6 +91,7 @@ function buildFilteredIssuesCTE(subdomain: string, parsedQuery: ParsedQuery): st
 export function buildIssuesListQuery(subdomain: string, parsedQuery: ParsedQuery, options: QueryOptions): string {
   const cte = buildFilteredIssuesCTE(subdomain, parsedQuery);
   const schema = escapeIdentifier(subdomain);
+  const orderByClause = rewriteOrderByAlias(parsedQuery.orderByClause, 'I', 'T1');
   
   // Валидация offset и limit (защита от некорректных значений)
   const safeOffset = Math.max(0, Math.floor(Number(options.offset) || 0));
@@ -145,7 +162,7 @@ export function buildIssuesListQuery(subdomain: string, parsedQuery: ParsedQuery
       T1.resolved_at, T1.project_uuid, T1.author_uuid, T12.name, T12.short_name,
       T1.status_uuid, T17.name, T19.parent_uuid, T20.name, T21.name,
       T1.sprint_uuid, T11.workflow_uuid
-    ${parsedQuery.orderByClause}
+    ${orderByClause}
     LIMIT ${safeLimit}
     OFFSET ${safeOffset}
   `;
