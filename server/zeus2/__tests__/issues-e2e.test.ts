@@ -715,6 +715,16 @@ describe('Issues E2E - Вложения (Attachments)', () => {
 });
 
 describe('Issues E2E - Кастомные поля (Field Values)', () => {
+  // UUID поля "Приоритет" из базовой конфигурации
+  const PRIORITY_FIELD_UUID = 'b6ddb33f-eea9-40c0-b1c2-d9ab983026a1';
+  // Допустимые значения приоритета
+  const PRIORITY_VALUES = {
+    MINOR: '6acf918c-c9d1-4ba9-8c5b-15d7547e256f',
+    NORMAL: 'd6cb57e0-009e-41c6-9881-869efff966e8',
+    MAJOR: 'a07ca498-e623-4d6b-afe5-ea6b3fe5e5dd',
+    CRITICAL: '9c9ae9e2-206d-4095-8d29-8329b77d4bd0',
+    SHOWSTOPPER: '667dd8eb-c225-4d47-a898-136ca2efbaf9'
+  };
   
   it('должен получать значения кастомных полей', async () => {
     if (!createdIssueUuid) return;
@@ -722,6 +732,99 @@ describe('Issues E2E - Кастомные поля (Field Values)', () => {
     const response = await api.get(`/api/v2/field-values?issue_uuid=${createdIssueUuid}`);
     
     expect(response.status).toBe(200);
+  });
+
+  describe('Обновление приоритета задачи', () => {
+    
+    it('должен устанавливать приоритет через field-values POST', async () => {
+      if (!createdIssueUuid) {
+        console.log('Пропуск: нет созданной задачи');
+        return;
+      }
+
+      const fieldValue = {
+        issue_uuid: createdIssueUuid,
+        field_uuid: PRIORITY_FIELD_UUID,
+        value: PRIORITY_VALUES.MAJOR
+      };
+
+      const response = await api.post('/api/v2/field-values', fieldValue);
+      
+      expect([200, 201]).toContain(response.status);
+      expect(response.data.rows).toBeDefined();
+      expect(response.data.rows.length).toBeGreaterThan(0);
+      console.log('Приоритет установлен через field-values POST');
+    });
+
+    it('должен обновлять приоритет через PUT issue с values (upsert)', async () => {
+      if (!createdIssueUuid) {
+        console.log('Пропуск: нет созданной задачи');
+        return;
+      }
+
+      // Это основной кейс - обновление задачи с массивом values (как делает фронтенд)
+      const updateData = {
+        values: [
+          {
+            field_uuid: PRIORITY_FIELD_UUID,
+            value: PRIORITY_VALUES.CRITICAL
+          }
+        ]
+      };
+
+      const response = await api.put(`/api/v2/issues/${createdIssueUuid}`, updateData);
+      
+      expect(response.status).toBe(200);
+      console.log('Приоритет обновлен через PUT issue с values');
+    });
+
+    it('должен повторно обновлять приоритет (проверка ON CONFLICT)', async () => {
+      if (!createdIssueUuid) {
+        console.log('Пропуск: нет созданной задачи');
+        return;
+      }
+
+      // Повторное обновление - проверяем что ON CONFLICT работает корректно
+      const updateData = {
+        values: [
+          {
+            field_uuid: PRIORITY_FIELD_UUID,
+            value: PRIORITY_VALUES.SHOWSTOPPER
+          }
+        ]
+      };
+
+      const response = await api.put(`/api/v2/issues/${createdIssueUuid}`, updateData);
+      
+      expect(response.status).toBe(200);
+      
+      // Проверяем что значение действительно обновилось
+      const fieldValuesResponse = await api.get(`/api/v2/field-values?issue_uuid=${createdIssueUuid}&field_uuid=${PRIORITY_FIELD_UUID}`);
+      expect(fieldValuesResponse.status).toBe(200);
+      expect(fieldValuesResponse.data.rows).toBeDefined();
+      expect(fieldValuesResponse.data.rows.length).toBeGreaterThan(0);
+      expect(fieldValuesResponse.data.rows[0].value).toBe(PRIORITY_VALUES.SHOWSTOPPER);
+      
+      console.log('Повторное обновление приоритета успешно (ON CONFLICT работает)');
+    });
+
+    it('должен обновлять приоритет обратно на Minor', async () => {
+      if (!createdIssueUuid) return;
+
+      const updateData = {
+        values: [
+          {
+            field_uuid: PRIORITY_FIELD_UUID,
+            value: PRIORITY_VALUES.MINOR
+          }
+        ]
+      };
+
+      const response = await api.put(`/api/v2/issues/${createdIssueUuid}`, updateData);
+      
+      expect(response.status).toBe(200);
+      console.log('Приоритет изменен на Minor');
+    });
   });
 });
 

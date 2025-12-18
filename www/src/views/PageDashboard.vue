@@ -27,8 +27,17 @@ let methods = {
     }
 
     this.gadgets = await rest.run_method('read_gadgets', {dashboard_uuid: this.dashboard[0].uuid})
-
-    this.gadgets = this.gadgets.filter((g)=>!g.deleted_at)
+    this.gadgets = (this.gadgets || []).filter((g)=>!g.deleted_at).map((g) => {
+      // Совместимость: в UI ожидается gadget.type[0].code, а v2 read_gadgets отдаёт type_uuid/type_name/type_code.
+      if (!g.type && g.type_uuid) {
+        g.type = [{
+          uuid: g.type_uuid,
+          name: g.type_name,
+          code: g.type_code
+        }]
+      }
+      return g
+    })
 
   
 
@@ -163,11 +172,22 @@ let methods = {
     let config = tools.clone_obj(e);
     delete config.name;
     gadget.config = JSON.stringify(config);
-    rest.run_method('upsert_gadgets', gadget)
+    rest.run_method('update_gadgets', gadget)
   },
 
   new_gadget:  async function(type){
     if(type.code != 'TimeReport' && type.code != 'Burndown' && type.code != 'IssuesTable') return;
+
+    // Дожидаемся загрузки dashboard (после reload/перехода данные могут быть ещё не подгружены)
+    for (let i = 0; i < 25; i++) {
+      if (this.dashboard && this.dashboard[0] && this.dashboard[0].uuid) break;
+      await new Promise((r) => setTimeout(r, 200));
+    }
+    if (!this.dashboard || !this.dashboard[0] || !this.dashboard[0].uuid) {
+      console.warn('Dashboard not loaded yet, cannot add gadget');
+      this.gadget_types_modal_visible = false;
+      return;
+    }
 
     let gadget = {
       uuid: tools.uuidv4(),
@@ -187,9 +207,17 @@ let methods = {
 
     this.gadget_types_modal_visible = false;
 
-    gadget = (await rest.run_method('upsert_gadgets', gadget))[0];
-
-    this.gadgets.push(gadget);
+    const created = (await rest.run_method('create_gadgets', gadget))?.[0];
+    if (created) {
+      created.type = [{
+        uuid: created.type_uuid,
+        name: created.type_name || type.name,
+        code: created.type_code || type.code
+      }]
+      this.gadgets.push(created);
+    } else {
+      console.warn('Failed to create gadget');
+    }
 
     
   },
@@ -200,10 +228,12 @@ let methods = {
     //rest.run_method('upsert_gadgets', gadget)
   },
   delete_dashboard: async function(){
+    if (!this.dashboard || !this.dashboard[0] || !this.dashboard[0].uuid) return;
     await rest.run_method('delete_dashboards', {uuid: this.dashboard[0].uuid})
     window.location.href = '/' + this.$store.state['common'].workspace + "/dashboards"
   },
   update_name: async function(name){
+    if (!this.dashboard || !this.dashboard[0] || !this.dashboard[0].uuid) return;
     this.dashboard[0].name = name
     this.dashboard[0].table_name = 'dashboards'
     await rest.run_method('update_dashboards', this.dashboard[0])
@@ -325,6 +355,7 @@ mod.props = {
 };
 
 mod.computed.title = function () {
+  if (!this.dashboard || !this.dashboard[0]) return "Дашборд";
   const name = this.dashboard[0].name;
   if (name !== undefined && name !== {} && name !== "") {
     document.title = name;

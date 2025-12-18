@@ -159,14 +159,54 @@ const data = {
 
 const mod = await page_helper.create_module(data);
 
+// Синхронизируем локальные role/users-состояния при выборе роли в таблице.
+// Раньше roleToSave/usersWithRole обновлялись только через roleChanged() (при редактировании полей),
+// из-за чего при простом выборе роли "Пользователи" оставались пустыми и сохранение работало некорректно.
+mod.methods.syncSelectedRole = function () {
+  const selectedRoleUuid = this?.selected_roles?.uuid;
+
+  if (!selectedRoleUuid) {
+    this.roleToSave = null;
+    this.usersToSave = [];
+    this.usersWithRole = null;
+    return;
+  }
+
+  this.roleToSave = tools.clone_obj(this.selected_roles);
+
+  const usersList = Array.isArray(this.users) ? this.users : [];
+  const selectedUserUuids = usersList
+    .filter((u)=> Array.isArray(u?.roles) && u.roles.find((r)=>r?.uuid == selectedRoleUuid))
+    .map((u)=>u.uuid)
+    .filter((uuid)=>!!uuid);
+
+  // UserInput (v-select) использует reduce=(user)=>user.uuid, поэтому value должен быть uuid/uuid[]
+  this.usersWithRole = tools.clone_obj(selectedUserUuids);
+  this.usersToSave = [];
+};
+
+mod.watch = {
+  "selected_roles.uuid": function () {
+    this.syncSelectedRole();
+  },
+  // Если роль выбрана раньше, чем успел загрузиться словарь users,
+  // дособираем usersWithRole после прихода пользователей (не затирая несохранённые изменения).
+  users: function (newUsers) {
+    if(!this?.selected_roles?.uuid) return;
+    if(Array.isArray(this.usersToSave) && this.usersToSave.length > 0) return;
+
+    const hasUsers = Array.isArray(newUsers) && newUsers.length > 0;
+    const currentSelectionEmpty = !Array.isArray(this.usersWithRole) || this.usersWithRole.length === 0;
+    if(hasUsers && currentSelectionEmpty) this.syncSelectedRole();
+  },
+};
 
 mod.methods.roleChanged = function (fieldName, value, crud) {
   if(!this.roleToSave || this.roleToSave.uuid != this.selected_roles.uuid ) {
-    this.roleToSave = tools.clone_obj(this.selected_roles);
-    this.usersWithRole = tools.clone_obj(this.users.filter((u)=>u.roles.find((r)=>r.uuid == this.roleToSave?.uuid)))
-    this.usersToSave = [];
+    this.syncSelectedRole();
     console.log('role updated!!!aaa', fieldName, this.roleToSave)
   }
+  if(!this.roleToSave) return;
 
  // console.log('role changed!!!000', fieldName, this.roleToSave[fieldName])
 
@@ -215,12 +255,24 @@ mod.methods.uuidv4 = function(){
 
 mod.methods.save = async function(){
 
+  if(!this.roleToSave || this.roleToSave.uuid != this.selected_roles.uuid ) {
+    this.syncSelectedRole();
+  }
+  if(!this.roleToSave?.uuid) return;
+
   for(let i in this.usersToSave){
     await rest.run_method('upsert_users', this.usersToSave[i])
   }
-  rest.run_method('upsert_roles', this.roleToSave)
+  await rest.run_method('upsert_roles', this.roleToSave)
   
   this.usersToSave = [];
+
+  // Обновляем стор, иначе визуально кажется, что "не сохранилось"
+  const roleUuid = this.roleToSave.uuid;
+  await this.$store.dispatch('get_users');
+  await this.$store.dispatch('get_roles');
+  if(roleUuid) this.$store.commit('select_roles', roleUuid);
+  this.syncSelectedRole();
 };
 
 mod.methods.usersUpdated = function(val){
@@ -230,20 +282,30 @@ mod.methods.usersUpdated = function(val){
     
   }*/
 
+  if(!Array.isArray(val)) val = [];
+
   let users = []
   for(let i in val){
     let user = tools.obj_clone(val[i])
-    if(!user.uuid) user = tools.obj_clone(this.users.find((u)=>u.uuid == val[i]))
+    if(!user.uuid) user = tools.obj_clone((Array.isArray(this.users) ? this.users : []).find((u)=>u.uuid == val[i]))
     users.push(user);
   }
 
-  this.usersWithRole = tools.obj_clone(users);
+  const selectedUuids = Array.isArray(val)
+    ? val.map((v)=>(typeof v === 'string' ? v : v?.uuid)).filter((v)=>!!v)
+    : [];
+  this.usersWithRole = tools.obj_clone(selectedUuids);
 
   console.log('usersUpdated!!!bbb', val , this.roleToSave)
 
   let me = this;
+
+  if(!this.roleToSave || this.roleToSave.uuid != this.selected_roles.uuid ) {
+    this.syncSelectedRole();
+  }
+  if(!this.roleToSave?.uuid) return;
   
-  let oldUsersWithRole = tools.clone_obj(this.users.filter((u)=>u.roles.find((r)=>r.uuid == this.roleToSave?.uuid)));
+  let oldUsersWithRole = tools.clone_obj((Array.isArray(this.users) ? this.users : []).filter((u)=>(u.roles || []).find((r)=>r.uuid == this.roleToSave?.uuid)));
   
   let excludedUsers = oldUsersWithRole.filter((u)=>!(users.map((u)=>u.uuid).includes(u.uuid)));
   let addedUsers = users.filter((u)=>!(oldUsersWithRole.map((u)=>u.uuid).includes(u.uuid)));
@@ -251,11 +313,14 @@ mod.methods.usersUpdated = function(val){
   this.usersToSave = [];
 
   for(let i in excludedUsers){
-    excludedUsers[i].roles = excludedUsers[i].roles.filter((r)=>r.uuid != me.roleToSave.uuid)
+    excludedUsers[i].roles = Array.isArray(excludedUsers[i].roles)
+      ? excludedUsers[i].roles.filter((r)=>r.uuid != me.roleToSave.uuid)
+      : [];
     this.usersToSave.push(excludedUsers[i])
   }
 
   for(let i in addedUsers){
+    if(!Array.isArray(addedUsers[i].roles)) addedUsers[i].roles = [];
     addedUsers[i].roles.push(this.roleToSave)
     this.usersToSave.push(addedUsers[i])
   }

@@ -1,0 +1,26 @@
+{
+  "name": "aether",
+  "version": "0.1.0",
+  "description": "Aether - MCP gateway service for Unkaos",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.0",
+    "@types/cors": "^2.8.13",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
+

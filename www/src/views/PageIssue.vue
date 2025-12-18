@@ -302,12 +302,34 @@ let methods = {
     cache.setString("last_saved_issue_params", this.get_params_for_localstorage())
     this.title;
     if (this.id !== "") return;
-    window.location.href = '/' + this.$store.state['common'].workspace + "/issue/" + this.issueProjectNum;
+    // Для новой задачи (id == "") нужно дождаться, пока сервер присвоит num и project_short_name,
+    // иначе issueProjectNum вернёт "Новая задача" и роутер уйдёт на /issue/Новая задача → редирект в /issues.
+    const issueUuid = this[this.name]?.[0]?.uuid;
+    if (!issueUuid) {
+      console.error("Issue uuid is empty after save");
+      return;
+    }
+    const ans = await rest.run_method("read_issues", { uuid: issueUuid });
+    if (ans != null && ans[0] !== undefined && ans[0].project_short_name !== undefined && ans[0].num !== undefined) {
+      window.location.href = '/' + this.$store.state['common'].workspace + "/issue/" + ans[0].project_short_name + '-' +  ans[0].num
+    } else {
+      console.error("Issue not found after save:", issueUuid, ans);
+    }
     //setTimeout(this.init, 1000)
   },
-  saved_new: function () {
+  saved_new: async function () {
     this.clear_issue_draft()
-    window.location.href = '/' + this.$store.state['common'].workspace + "/issue/" + this.issueProjectNum;
+    const issueUuid = this[this.name]?.[0]?.uuid;
+    if (!issueUuid) {
+      console.error("Issue uuid is empty after save_new");
+      return;
+    }
+    const ans = await rest.run_method("read_issues", { uuid: issueUuid });
+    if (ans != null && ans[0] !== undefined && ans[0].project_short_name !== undefined && ans[0].num !== undefined) {
+      window.location.href = '/' + this.$store.state['common'].workspace + "/issue/" + ans[0].project_short_name + '-' +  ans[0].num
+    } else {
+      console.error("Issue not found after save_new:", issueUuid, ans);
+    }
   },
   deleted: function (issue) {
     window.location.href = '/' + this.$store.state['common'].workspace + "/issues/";

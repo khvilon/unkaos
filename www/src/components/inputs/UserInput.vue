@@ -55,7 +55,14 @@ export default {
           val: val,
         });
       }
-    }
+    },
+    options: function () {
+      let users = this.$store.getters["get_users"];
+      return this.sort(users)
+    },
+    selected_users: function () {
+      return this.$store.getters["selected_users"];
+    },
   },
   watch: {
     value: function (newVal) {
@@ -104,15 +111,6 @@ export default {
       return new_list
 
     }
-  },
-  computed: {
-    options: function () {
-      let users = this.$store.getters["get_users"];
-      return this.sort(users)
-    },
-    selected_users: function () {
-      return this.$store.getters["selected_users"];
-    },
   },
   props: {
     value: {

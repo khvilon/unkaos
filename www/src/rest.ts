@@ -109,8 +109,9 @@ export default class rest {
       method: method
     };
 
-    // Normalize method name
-    method = method.replace("create", "upsert").replace("update", "upsert");
+    // Важно: в REST v2 у нас есть явные POST (create_*) и PUT (update_*) хэндлеры.
+    // Нормализация create/update -> upsert ломает кейсы, когда uuid генерируется на клиенте
+    // (например, дашборды/гаджеты/избранное): запрос ошибочно уходит в PUT вместо POST.
     
     const { httpMethod, url } = this.buildRestUrl(method, body, query);
     

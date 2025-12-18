@@ -1,0 +1,27 @@
+FROM node:23.5.0-alpine
+
+WORKDIR /app/server/aether
+
+# Общие зависимости
+COPY ./server/common ../common
+WORKDIR /app/server/common
+RUN yarn install
+
+# Устанавливаем зависимости Aether
+WORKDIR /app/server/aether
+COPY ./server/aether/package.json ./
+RUN yarn install
+
+# Копируем исходники
+COPY ./server/aether ./
+COPY ./server/aether/tsconfig.json ./
+
+USER node
+
+CMD [ "npx", "ts-node", "index.ts" ]
+
+
+
+
+
+

@@ -456,6 +456,15 @@ export async function navigateMainMenu(page: Page, menu: string) {
   
   // Ждем загрузки страницы
   await page.waitForTimeout(1000); // Уменьшено с 2000мс
+
+  // Закрываем боковое меню: в UI оно закрывается по mouseout (а не по Escape),
+  // и если курсор "залип" на меню, оно может перехватывать клики по контенту.
+  try {
+    await page.mouse.move(320, 40);
+    await page.waitForTimeout(250);
+  } catch (e) {
+    // ignore
+  }
   
   // Применяем исправление позиционирования после навигации
   console.log('Fixing interface positioning after navigation...');
@@ -1071,20 +1080,20 @@ export async function createProject(page: Page, name: string, prefix: string, de
       await changeField(page, "Описание", description);
     }
 
-    // Выбираем владельца (текущего пользователя)
-    const ownerSelect = page.locator('.user-input:has(.label:text-is("Владелец")) .vs__dropdown-toggle');
+    // Выбираем владельца (обязательное поле)
+    const ownerContainer = page.locator('.user-input:has(.label:text-is("Владелец"))');
+    const ownerSelect = ownerContainer.locator('.vs__dropdown-toggle');
     if (await ownerSelect.count() > 0) {
-        console.log('Selecting owner...');
-        await ownerSelect.click();
-        await page.waitForTimeout(500); // Ждем загрузки списка
-        // Выбираем первый вариант
-        const firstOption = page.locator('.vs__dropdown-option').first();
-        if (await firstOption.count() > 0) {
-            await firstOption.click();
-        } else {
-            // Если список пуст, пробуем нажать Enter (возможно, поиск)
-            await page.keyboard.press('Enter');
-        }
+      console.log('Selecting owner...');
+      await ownerSelect.click();
+      // Ждём появления опций (в новых воркспейсах загрузка users может быть не мгновенной)
+      const firstOption = page.locator('.vs__dropdown-option').first();
+      await firstOption.waitFor({ state: 'visible', timeout: 10000 });
+      await firstOption.click();
+      // Проверяем что значение реально выбрано, иначе KButton не выполнит action из-за stop=true
+      await ownerContainer.locator('.vs__selected').first().waitFor({ state: 'visible', timeout: 5000 });
+    } else {
+      console.warn('⚠️ Owner select not found');
     }
     
     // Нажимаем кнопку "Создать"
@@ -1096,11 +1105,19 @@ export async function createProject(page: Page, name: string, prefix: string, de
     // Ждем сохранения и обновления таблицы
     await page.waitForTimeout(1000);
     await page.waitForSelector('.ktable', { timeout: 5000 });
+    // Дожидаемся появления строки проекта в таблице (иначе тест падает на проверке сразу после helper)
+    await page.locator('.ktable').locator(`:text("${name}")`).first().waitFor({ state: 'visible', timeout: 10000 });
     
     console.log(`✅ Проект "${name}" создан`);
     
   } catch (error) {
     console.error(`Project creation failed:`, error);
+    try {
+      await page.screenshot({ path: 'debug-project-creation.png', fullPage: true });
+      console.log('📸 Скриншот создания проекта сохранен: debug-project-creation.png');
+    } catch (e) {
+      // ignore
+    }
     throw error;
   }
 }
@@ -1284,6 +1301,17 @@ export async function logWork(page: Page, hours: string, comment: string) {
 export async function addDashboardGadget(page: Page, gadgetName: string) {
   console.log(`Adding gadget: ${gadgetName}`);
   
+  // Если модалка осталась с прошлого шага — закрываем
+  const existingModalContainer = page.locator('.gadget-types-modal-container');
+  if (await existingModalContainer.count() > 0) {
+    try {
+      await page.keyboard.press('Escape');
+      await existingModalContainer.first().waitFor({ state: 'hidden', timeout: 2000 });
+    } catch (e) {
+      // ignore
+    }
+  }
+
   // Кнопка добавления гаджета
   const addBtn = page.locator('.add-gadget-btn');
   await addBtn.click();
@@ -1292,16 +1320,43 @@ export async function addDashboardGadget(page: Page, gadgetName: string) {
   const modal = page.locator('.gadget-types-modal');
   await modal.waitFor({ state: 'visible', timeout: 5000 });
   
-  // Выбираем гаджет
-  const gadgetCell = modal.locator(`.gadget-types-cell:has-text("${gadgetName}")`);
+  // Выбираем гаджет (фаззи-матч: ё/е и частичные совпадения)
+  const cells = modal.locator('.gadget-types-cell');
+  let gadgetCell = cells.filter({ hasText: gadgetName }).first();
+
+  if (await gadgetCell.count() === 0) {
+    const normalized = gadgetName.replace(/ё/g, 'е').replace(/Ё/g, 'Е');
+    gadgetCell = cells.filter({ hasText: normalized }).first();
+  }
+
+  if (await gadgetCell.count() === 0) {
+    // Частичный матч по ключевым словам для стабильности (например, "Отчёт по времени")
+    const g = gadgetName.toLowerCase();
+    if (g.includes('отч') || g.includes('timereport') || g.includes('time report')) {
+      gadgetCell = cells.filter({ hasText: /Отч[её]т/i }).first();
+    } else if (g.includes('burndown')) {
+      gadgetCell = cells.filter({ hasText: /сгора/i }).first();
+    } else if (g.includes('issuetable') || g.includes('таблиц')) {
+      gadgetCell = cells.filter({ hasText: /таблиц/i }).first();
+    }
+  }
+
   if (await gadgetCell.count() > 0) {
-    await gadgetCell.click();
-    await page.waitForTimeout(1000); // Ждем добавления
+    await gadgetCell.first().click();
+    // Ждем закрытия модалки после добавления, чтобы она не перехватывала клики
+    await page.locator('.gadget-types-modal-container').waitFor({ state: 'hidden', timeout: 5000 });
+    await page.waitForTimeout(500); // Даем время на отрисовку гаджета
     console.log('✅ Gadget added');
   } else {
     console.warn(`⚠️ Gadget type "${gadgetName}" not found`);
     // Закрываем модалку
-    await page.locator('.gadget-types-modal .btn:has-text("Отменить")').click();
+    const cancelBtn = page.locator('.gadget-types-modal input[type="button"][value="Отменить"], .gadget-types-modal .btn:has-text("Отменить")');
+    if (await cancelBtn.count() > 0) {
+      await cancelBtn.first().click();
+    } else {
+      await page.keyboard.press('Escape');
+    }
+    await page.locator('.gadget-types-modal-container').waitFor({ state: 'hidden', timeout: 5000 });
   }
 }
 
